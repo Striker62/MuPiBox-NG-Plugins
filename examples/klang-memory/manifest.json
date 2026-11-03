@@ -1,0 +1,20 @@
+{
+  "apiVersion": "1",
+  "id": "official.klang-memory",
+  "name": "Klang-Memory",
+  "description": "Ausgelagerte Testversion des MuPiBox-Klang-Memorys; das integrierte QML-Spiel bleibt unverändert.",
+  "author": "MuPiBox Team",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "permissions": [
+    "storage",
+    "controller",
+    "audio"
+  ],
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480
+  }
+}

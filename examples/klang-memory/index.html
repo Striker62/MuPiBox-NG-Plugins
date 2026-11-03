@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Klang-Memory</title><link rel="stylesheet" href="./style.css"></head>
+<body><main><header><span>MuPiBox · Klang-Memory</span><button type="button" id="exit" aria-label="Schließen">Schließen</button></header>
+<section class="score"><div><small>Runde</small><strong id="round">1</strong></div><div class="center"><strong id="status" aria-live="polite">Bereit zum Spielen</strong><small id="hint">Merke dir die Klangfolge</small></div><div><small>Bestwert</small><strong id="best">0</strong></div></section>
+<div class="pads" id="pads"><button type="button" data-pad="0" class="pad blue" aria-label="Blau"></button><button type="button" data-pad="1" class="pad yellow" aria-label="Gelb"></button><button type="button" data-pad="2" class="pad green" aria-label="Grün"></button><button type="button" data-pad="3" class="pad purple" aria-label="Lila"></button></div>
+<footer><button type="button" id="new">Neue Runde</button><span>Touch oder Gamepad: Pfeile + A · B: Zurück</span></footer>
+</main><script src="./mupibox-sdk.js"></script><script src="./app.js"></script></body></html>

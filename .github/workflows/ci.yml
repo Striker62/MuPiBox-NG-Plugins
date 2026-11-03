@@ -22,10 +22,17 @@ jobs:
         run: go test ./game
       - name: Build reference app
         run: python3 tools/build_example.py
+      - name: Build independent Klang Memory preview
+        run: python3 tools/build_klang_memory.py
       - name: Verify package
-        run: python3 tools/mupiapp.py validate dist/tic-tac-toe.mupiapp
+        run: |
+          python3 tools/mupiapp.py validate dist/tic-tac-toe.mupiapp
+          python3 tools/mupiapp.py validate dist/klang-memory.mupiapp
+          node --check examples/klang-memory/app.js
       - uses: actions/upload-artifact@v4
         with:
           name: tic-tac-toe-preview-mupiapp
-          path: dist/tic-tac-toe.mupiapp
+          path: |
+            dist/tic-tac-toe.mupiapp
+            dist/klang-memory.mupiapp
           if-no-files-found: error

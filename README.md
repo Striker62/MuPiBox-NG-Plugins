@@ -55,3 +55,7 @@ python3 tools/mupiapp.py pack ./meine-app ./dist/meine-app.mupiapp
 Siehe [CONTRIBUTING.md](CONTRIBUTING.md) und [SECURITY.md](SECURITY.md). Dieses Repository ist unter der [MIT-Lizenz](LICENSE) veröffentlicht; externe Apps dürfen eine **eigene** Lizenz haben und müssen nicht in dieses Repo aufgenommen werden.
 
 **Offizielle Projektseite:** https://github.com/splitti/MuPiBox-NG (privates Hauptrepository; für Plugin-Entwickler nicht notwendig).
+
+## First built-in application migration preview: Klang-Memory
+
+An independent Klang-Memory implementation is available in `examples/klang-memory/`. Build it with `python3 tools/build_klang_memory.py`; it uses the same `.mupiapp` format as Tic Tac Toe. This is a **browser-only prototype** and **does not replace** the existing Qt Quick Klang-Memory, Piano, Malbuch, Cover-Memory or **MuPi und die verlorenen Noten**. The platform audio focus and Pi touch runtime are not yet integrated.
