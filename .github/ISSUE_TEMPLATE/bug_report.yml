@@ -1,0 +1,19 @@
+name: SDK bug report
+description: Report an issue with SDK, examples, validator or documentation
+labels: [bug]
+body:
+  - type: textarea
+    id: issue
+    attributes:
+      label: What happened?
+      description: Include reproduction steps and expected behavior.
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Python / Go / browser version
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (remove credentials and private data)

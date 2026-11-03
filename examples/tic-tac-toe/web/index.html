@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#101e36">
+  <title>Tic Tac Toe – MuPiBox-NG</title>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="screen">
+    <header>
+      <div class="brand">MuPiBox <span>Community App</span></div>
+      <button id="exit" class="subtle" type="button" aria-label="Spiel verlassen">✕ Schließen</button>
+    </header>
+    <section class="body">
+      <div class="info">
+        <p class="eyebrow">2-Spieler-Spiel</p>
+        <h1>Tic Tac Toe</h1>
+        <p id="status" class="status" aria-live="polite">Wird geladen ...</p>
+        <p class="hint">Touch: Feld wählen. Controller: Pfeile + A.</p>
+        <button id="reset" class="primary" disabled type="button">Neue Runde</button>
+      </div>
+      <div id="board" class="board" role="group" aria-label="Tic-Tac-Toe-Spielfeld">
+        <button type="button" data-cell="0" aria-label="Feld 1"></button>
+        <button type="button" data-cell="1" aria-label="Feld 2"></button>
+        <button type="button" data-cell="2" aria-label="Feld 3"></button>
+        <button type="button" data-cell="3" aria-label="Feld 4"></button>
+        <button type="button" data-cell="4" aria-label="Feld 5"></button>
+        <button type="button" data-cell="5" aria-label="Feld 6"></button>
+        <button type="button" data-cell="6" aria-label="Feld 7"></button>
+        <button type="button" data-cell="7" aria-label="Feld 8"></button>
+        <button type="button" data-cell="8" aria-label="Feld 9"></button>
+      </div>
+    </section>
+    <footer>Unabhängige Go/WebAssembly-App · SDK v1 Preview</footer>
+  </main>
+  <script src="./wasm_exec.js"></script>
+  <script src="./mupibox-sdk.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

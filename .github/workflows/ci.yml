@@ -1,0 +1,31 @@
+name: SDK and example CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.x'
+      - name: Validate Python packaging and security checks
+        run: python3 -m unittest discover -s tests -v
+      - name: Test Go game engine
+        working-directory: examples/tic-tac-toe
+        run: go test ./game
+      - name: Build reference app
+        run: python3 tools/build_example.py
+      - name: Verify package
+        run: python3 tools/mupiapp.py validate dist/tic-tac-toe.mupiapp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tic-tac-toe-preview-mupiapp
+          path: dist/tic-tac-toe.mupiapp
+          if-no-files-found: error

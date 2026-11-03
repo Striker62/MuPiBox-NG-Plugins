@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/splitti/MuPiBox-NG-Plugins/blob/main/schema/manifest-v1.schema.json",
+  "title": "MuPiBox-NG plugin manifest (developer preview v1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "id", "name", "version", "runtime", "entry", "permissions"],
+  "properties": {
+    "apiVersion": { "const": "1" },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$", "minLength": 5, "maxLength": 128 },
+    "name": { "type": "string", "minLength": 2, "maxLength": 80 },
+    "version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$" },
+    "runtime": { "const": "web" },
+    "entry": { "type": "string", "pattern": "^[a-zA-Z0-9_.-]+(?:/[a-zA-Z0-9_.-]+)*\\.html$" },
+    "icon": { "type": "string", "pattern": "^[a-zA-Z0-9_.-]+(?:/[a-zA-Z0-9_.-]+)*\\.(?:png|svg)$" },
+    "description": { "type": "string", "maxLength": 500 },
+    "author": { "type": "string", "maxLength": 100 },
+    "permissions": {
+      "type": "array", "uniqueItems": true, "items": { "enum": ["storage", "controller", "audio", "network"] }, "maxItems": 4
+    },
+    "networkHosts": {
+      "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]*\\.[a-z]{2,}$", "maxLength": 253 }, "maxItems": 20
+    },
+    "display": {
+      "type": "object", "required": ["orientation"], "additionalProperties": false,
+      "properties": {
+        "orientation": { "enum": ["landscape", "portrait", "any"] },
+        "minWidth": { "type": "integer", "minimum": 320, "maximum": 4096 },
+        "minHeight": { "type": "integer", "minimum": 240, "maximum": 4096 }
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "permissions": { "contains": { "const": "network" } } }, "required": ["permissions"] },
+      "then": { "required": ["networkHosts"] }, "else": { "not": { "required": ["networkHosts"] } } }
+  ]
+}

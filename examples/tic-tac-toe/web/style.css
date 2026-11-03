@@ -1,0 +1,28 @@
+:root { color-scheme: dark; font-family: system-ui, -apple-system, Segoe UI, sans-serif; background:#101e36; color:#eff7ff; }
+* { box-sizing: border-box; }
+html, body { margin:0; height:100%; min-height: 360px; }
+body { background:radial-gradient(circle at 82% 10%,#22466c,#101e36 70%); }
+button { font:inherit; cursor:pointer; touch-action:manipulation; }
+button:disabled { cursor:default; opacity:.5; }
+.screen { min-height:100dvh; max-width:1100px; margin:auto; padding:16px 24px; display:flex; flex-direction:column; }
+header, footer { display:flex; align-items:center; justify-content:space-between; }
+header { height:46px; }
+.brand { font-size:17px; font-weight:800; letter-spacing:.1px; }
+.brand span { color:#a8c4db; font-size:12px; font-weight:500; margin-left:10px; }
+.subtle { border:1px solid #4d7190; border-radius:10px; padding:8px 12px; background:#152944; color:#ecf5ff; }
+.body { flex:1; display:flex; gap:5vw; justify-content:center; align-items:center; padding:14px 0; }
+.info { width:min(38%,300px); min-width:190px; }
+.eyebrow { color:#8ed9f6; text-transform:uppercase; font-size:12px; letter-spacing:1.5px; }
+h1 { font-size:clamp(28px,5vw,48px); margin:4px 0 18px; letter-spacing:-1px; }
+.status { min-height:52px; font-size:clamp(18px,2.8vw,25px); font-weight:700; color:#ffdc76; }
+.hint { font-size:13px; color:#a8c4db; line-height:1.5; }
+.primary { background:#22b8cc; color:#041e30; border:0; padding:12px 22px; border-radius:14px; margin-top:14px; font-weight:800; }
+.board { width:min(53vh,50vw,365px); aspect-ratio:1; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:8px; }
+.board button { border:2px solid #496681; background:#1b3757; border-radius:16px; font-size:clamp(40px,8vh,76px); font-weight:800; color:#63dbed; display:grid; place-items:center; transition:background .1s; }
+.board button[data-mark="O"] { color:#ffd57b; }
+.board button.selected { outline:3px solid #ffe08e; outline-offset:1px; }
+.board button:focus-visible, .primary:focus-visible, .subtle:focus-visible { outline:3px solid white; outline-offset:2px; }
+.board button:not(:disabled):active { background:#345e82; }
+footer { height:20px; color:#779cba; font-size:11px; }
+@media(max-width:650px) { .screen{padding:10px 14px} .body{gap:16px} .info{min-width:155px} .board{width:min(56vh,50vw);gap:5px}.board button{border-radius:10px}.hint{font-size:11px} .brand span{display:none} }
+@media(max-height:425px) { .screen{padding:6px 12px} header{height:30px} footer{height:14px} .body{padding:3px} h1{margin:2px 0 8px}.status{min-height:32px}.primary{margin-top:5px;padding:8px 12px}.board{width:min(66vh,48vw)} }
