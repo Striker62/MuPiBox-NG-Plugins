@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "apps": [
+    {
+      "id": "community.tictactoe",
+      "name": "Tic Tac Toe",
+      "description": "Classic Tic Tac Toe with Go/WebAssembly, playable with mouse, touch or controller.",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.3",
+      "asset": "tic-tac-toe.mupiapp",
+      "sha256": "155e30082adb0027694038527e7abe096cf2674bd55ffde4da9aad99258dd08d",
+      "permissions": [
+        "storage",
+        "controller"
+      ]
+    },
+    {
+      "id": "official.klang-memory",
+      "name": "Klang-Memory",
+      "description": "Listen, remember and repeat a growing sequence of tones; includes saved best score.",
+      "category": "games",
+      "author": "MuPiBox Team",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.3",
+      "asset": "klang-memory.mupiapp",
+      "sha256": "b91c2a68889953cae6c8a8cb06729e91e91ac2edef7589f0f83cf60d280ee7e3",
+      "permissions": [
+        "storage",
+        "controller",
+        "audio"
+      ]
+    }
+  ]
+}

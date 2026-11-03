@@ -52,4 +52,16 @@ On **MuPiBox-NG 0.2.0-alpha.18 or newer** (developer-preview host), a parent/adm
 5. Commit and push to **your fork**, then open a **Pull Request targeting this repo's `main`**. Explain what the app does, requested permissions, screenshots or a short demo, how to build/test it, license/attribution and hardware compatibility.
 6. CI and maintainers review the PR. Address feedback; merging is not automatic. Do not submit proprietary core code, private configuration, copied copyrighted art, tokens or credentials.
 
+### Request inclusion in the built-in catalog
+
+The public SDK does not automatically install every pull request. Before your app can appear in **Admin → Community Apps → App Catalog**:
+
+1. Open an issue describing its purpose and source repository, including license and screenshots.
+2. Propose a reviewed PR with the app's source code and a reproducible `.mupiapp` build (or link to a public app repository). A maintainer reviews source, security, permissions, offline compatibility, copyright and accessibility.
+3. A maintainer releases the vetted package in the **official** [MuPiBox-NG-Plugins GitHub Releases](https://github.com/splitti/MuPiBox-NG-Plugins/releases). Arbitrary third-party releases are not downloaded by the official catalog.
+4. Submit or update an entry in [`catalog/apps.json`](catalog/apps.json) with the exact official Release tag, asset filename and its lowercase SHA-256 (`sha256sum my-app.mupiapp` on the released bytes), along with metadata, version and requested permissions.
+5. After review/merge, compatible MuPiBox installations show the app on the next catalog refresh. Users individually approve installation and later updates; nothing installs automatically.
+
+Read [`catalog/README.md`](catalog/README.md) for all catalog field rules and security restrictions.
+
 Read [`ai.md`](ai.md) for coding-assistant guidance, [`CONTRIBUTING.md`](CONTRIBUTING.md), [`docs/manifest-v1.md`](docs/manifest-v1.md) and [`SECURITY.md`](SECURITY.md). Report vulnerabilities privately as described in `SECURITY.md`.

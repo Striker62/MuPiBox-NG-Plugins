@@ -24,6 +24,7 @@ MuPiBox-NG is a Raspberry Pi / DietPi appliance with a private application core.
 | `examples/klang-memory/` | Independent HTML/JS demonstration, not a replacement for the native game |
 | `docs/quickstart.md`, `docs/manifest-v1.md`, `docs/architecture.md` | Developer and security documentation |
 | `GETTING_STARTED.en.md` | Short English creation and contribution guide |
+| `catalog/apps.json` | Curated catalog of reviewed official GitHub Release assets, SHA-256 and permissions |
 
 Apps may also live in **their own repos**. Submit a PR here only for an example, SDK change, compatibility fix, docs, test, or a separately agreed community catalog entry. Do not copy an entire third-party app without the author's permission and license.
 
@@ -84,6 +85,14 @@ cd my-app && python3 -m http.server 8080
 ```
 
 For Go/WASM, build with `GOOS=js GOARCH=wasm CGO_ENABLED=0 go build -o game.wasm ./cmd/wasm` and ship the **matching** Go `wasm_exec.js` plus its license notice.
+
+## Curated catalog rules
+
+- The official in-app catalog is maintained under `catalog/apps.json` in this repository. A catalog entry is **not** code signing; the installer also restricts downloads to this repository’s GitHub Releases, verifies the declared SHA-256, parses the package and compares app ID, version, name and requested permissions.
+- Do not add arbitrary URLs, CDNs, alternative repositories, user-entered hosts, GitHub pull-request build artifacts or private IPs to a catalog entry. Remote changes must be reviewed; never bypass the download allowlist.
+- A third-party developer may keep sources in their own repository, but a maintainer must verify the license/source and publish a vetted `.mupiapp` into the **official MuPiBox-NG-Plugins release** before an official catalog PR adds it. Installing a PR or a fork is not supported by the catalog.
+- For each new version update `releaseTag`, `asset`, `version`, `sha256` and permission list only after the trusted Release asset exists. Pin the checksum of the bytes downloaded from GitHub, not merely a local recompiled build. Never change the app ID to issue an update.
+- The app manager checks for updates on request and installs only after explicit user approval. Manual file upload remains for development and testing.
 
 ## Pull request guidance
 

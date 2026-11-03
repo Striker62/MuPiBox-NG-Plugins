@@ -30,3 +30,7 @@ Read [`GETTING_STARTED.en.md`](GETTING_STARTED.en.md), [`ai.md`](ai.md), [`docs/
 The browser fallback is for local development only; the experimental host integration is not a replacement for the existing native Qt touch apps. A manifest permission **does not** enforce sandboxing. No core code or assets are distributed by this repository.
 
 The SDK and repository code are MIT licensed (see [`LICENSE`](LICENSE)). Third-party apps may use independent licenses. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`SECURITY.md`](SECURITY.md).
+
+## Official app catalog
+
+The curated [app catalog](catalog/apps.json) allows compatible MuPiBox-NG hosts to install verified packages directly from this repository’s GitHub Releases. Manual upload stays available for development. To propose a catalog app, read [catalog contribution rules](catalog/README.md) and submit a Pull Request after the reviewed release artifact is published.
