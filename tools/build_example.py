@@ -31,8 +31,15 @@ def main() -> int:
     if runtime is None:
         raise RuntimeError("could not find Go wasm_exec.js for the installed toolchain")
     shutil.copy2(runtime, STAGING / "wasm_exec.js")
-    # Go runtime assets are BSD-3-Clause licensed; include the notice in distributed packages.
-    shutil.copy2(root / "LICENSE", STAGING / "GO_LICENSE.txt")
+    # Preserve the Go runtime's redistributable license notice. On Debian's
+    # split Go packages GOROOT may not contain LICENSE; the corresponding
+    # Debian copyright file includes the full upstream Go license instead.
+    go_license = root / "LICENSE"
+    if not go_license.is_file() and root.name.startswith("go-"):
+        go_license = Path("/usr/share/doc") / ("golang-" + root.name[3:] + "-go") / "copyright"
+    if not go_license.is_file():
+        raise RuntimeError("Go runtime license notice missing; cannot redistribute wasm_exec.js")
+    shutil.copy2(go_license, STAGING / "GO_LICENSE.txt")
     env = dict(os.environ, GOOS="js", GOARCH="wasm", CGO_ENABLED="0")
     subprocess.run(["go", "build", "-trimpath", "-o", str(STAGING / "game.wasm"), "./cmd/wasm"], cwd=EXAMPLE, env=env, check=True)
     manifest = pack(STAGING, DIST)
