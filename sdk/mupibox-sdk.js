@@ -59,11 +59,48 @@
     }
   });
 
+  // Opt-in audio host capability. The Raspberry Pi uses a dedicated
+  // PipeWire server that Chromium WebAudio cannot automatically reach.
+  // The trusted host enforces the audio permission and device volume ceiling.
+  // Standalone browser previews synthesize tones locally instead.
+  let previewAudioContext = null;
+  const audio = Object.freeze({
+    async playNote(note, volume = 30, instrument = 'musicbox') {
+      if (typeof note !== 'string' || !/^[A-G](?:#)?[45]$/.test(note))
+        throw new TypeError('unsupported note');
+      if (!Number.isInteger(volume) || volume < 0 || volume > 100)
+        throw new TypeError('volume must be 0..100');
+      if (!['musicbox', 'piano', 'epiano', 'glockenspiel', 'xylophone', 'marimba', 'harp'].includes(instrument))
+        throw new TypeError('unsupported instrument');
+      if (bridge) return invoke('audio.note', { note, volume, instrument });
+      // Browser-only developer preview; never a substitute for the appliance
+      // mixer or its local parental-control and volume safeguards.
+      const AC = global.AudioContext || global.webkitAudioContext;
+      if (!AC) return false;
+      if (!previewAudioContext) previewAudioContext = new AC();
+      if (previewAudioContext.state === 'suspended') await previewAudioContext.resume();
+      const semitones = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+      const step = semitones[note[0]] + (note.includes('#') ? 1 : 0) + (Number(note[note.length-1]) - 4) * 12;
+      const frequency = 261.625565 * Math.pow(2, step / 12);
+      const oscillator = previewAudioContext.createOscillator();
+      const gain = previewAudioContext.createGain();
+      const now = previewAudioContext.currentTime;
+      oscillator.type = 'sine'; oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume / 600), now + .015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + .29);
+      oscillator.connect(gain); gain.connect(previewAudioContext.destination);
+      oscillator.start(now); oscillator.stop(now + .31);
+      return true;
+    }
+  });
+
   const sdk = Object.freeze({
     apiVersion: '1',
     isHosted: Boolean(bridge),
     on,
     storage,
+    audio,
     async getContext() {
       if (bridge) return invoke('host.context', {});
       return { apiVersion: '1', preview: true, language: global.navigator.language || 'de' };

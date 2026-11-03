@@ -19,13 +19,13 @@
     {
       "id": "official.klang-memory",
       "name": "Klang-Memory",
-      "description": "Listen, remember and repeat a growing sequence of tones; includes saved best score.",
+      "description": "Sound Memory for touch and controller, with native MuPiBox audio and a saved best score (NG alpha.22+).",
       "category": "games",
       "author": "MuPiBox Team",
-      "version": "0.1.0",
-      "releaseTag": "v0.1.0-preview.3",
+      "version": "0.1.1",
+      "releaseTag": "v0.1.0-preview.4",
       "asset": "klang-memory.mupiapp",
-      "sha256": "b91c2a68889953cae6c8a8cb06729e91e91ac2edef7589f0f83cf60d280ee7e3",
+      "sha256": "7827a1054f5145efd386e7323e8e4359832da379ba2550124f06b425da7da8a3",
       "permissions": [
         "storage",
         "controller",

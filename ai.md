@@ -46,7 +46,7 @@ sdk.on("lifecycle.pause", pauseAnimationAndAudio);
 sdk.on("lifecycle.resume", resumeSafely);
 ```
 
-Available v1 operations: `host.context`, `storage.get`, `storage.set`, `app.exit`; events `input`, `lifecycle.pause`, `lifecycle.resume`. The browser-only SDK fallback is for **preview** and is not a security boundary. The trusted host controls app identity, capabilities, storage namespace and origin isolation. Never send tokens or credentials to a plugin. The `audio` permission is reserved: native audio focus and an official audio API are **not yet available**.
+Available v1 operations: `host.context`, `storage.get`, `storage.set`, `audio.note`, `app.exit`; events `input`, `lifecycle.pause`, `lifecycle.resume`. The browser-only SDK fallback is for **preview** and is not a security boundary. The trusted host controls app identity, capabilities, storage namespace and origin isolation. Never send tokens or credentials to a plugin. The `audio` permission allows `MuPiBoxSDK.audio.playNote(note, volume, instrument)` from NG alpha.22 (restricted C4..C5 and bounded by the box volume/parental settings). This uses the appliance PipeWire mixer, not WebAudio; full streaming audio focus is **not** available yet.
 
 ## Implementation and safety rules for AI assistants
 

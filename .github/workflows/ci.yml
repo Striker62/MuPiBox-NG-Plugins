@@ -29,6 +29,8 @@ jobs:
           python3 tools/mupiapp.py validate dist/tic-tac-toe.mupiapp
           python3 tools/mupiapp.py validate dist/klang-memory.mupiapp
           node --check examples/klang-memory/app.js
+          node --check sdk/mupibox-sdk.js
+          node --test tests/test_sdk_audio.js
       - uses: actions/upload-artifact@v4
         with:
           name: tic-tac-toe-preview-mupiapp

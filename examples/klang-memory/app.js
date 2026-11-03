@@ -3,20 +3,19 @@
 "use strict";
 const sdk=window.MuPiBoxSDK;
 const pads=[...document.querySelectorAll("[data-pad]")];
-const notes=[261.63,329.63,392,523.25];
+const notes=['C4','E4','G4','C5'];
 const status=document.getElementById("status"),hint=document.getElementById("hint"),round=document.getElementById("round"),bestText=document.getElementById("best");
-let audio=null,best=0,sequence=[],position=0,mode="idle",selected=0,token=0;
+let best=0,sequence=[],position=0,mode="idle",selected=0,token=0;
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function tone(index){
- try{
-  if(!audio) audio=new (window.AudioContext||window.webkitAudioContext)();
-  if(audio.state==="suspended")void audio.resume();
-  const osc=audio.createOscillator(),gain=audio.createGain(),time=audio.currentTime;
-  osc.type="sine";osc.frequency.value=notes[index];gain.gain.setValueAtTime(0.0001,time);
-  gain.gain.exponentialRampToValueAtTime(.15,time+.015);gain.gain.exponentialRampToValueAtTime(.0001,time+.29);
-  osc.connect(gain);gain.connect(audio.destination);osc.start(time);osc.stop(time+.31);
- }catch(_e){}
+ // Host audio goes through the MuPiBox native PipeWire mixer, not through
+ // Chromium WebAudio (the latter has no audio sink in the appliance session).
+ // Standalone browser preview still synthesizes locally via the same SDK.
+ void sdk.audio.playNote(notes[index], 30, 'musicbox').catch(error => {
+   console.warn('[Klang-Memory] audio note failed:',error);
+ });
 }
+
 async function flash(index,ms=390){
  const pad=pads[index];pad.classList.add("lit");tone(index);await sleep(ms);pad.classList.remove("lit");
 }
@@ -69,7 +68,7 @@ sdk.on("input",event=>{
  if(b==="A"){if(mode==="lost"||mode==="idle")start();else void tap(selected)}
  draw();
 });
-sdk.on("lifecycle.pause",()=>{token++;mode="idle";status.textContent="Pausiert";if(audio)void audio.suspend()});
-sdk.on("lifecycle.resume",()=>{if(audio)void audio.resume();if(sequence.length){void replay()}});
+sdk.on("lifecycle.pause",()=>{token++;mode="idle";status.textContent="Pausiert";});
+sdk.on("lifecycle.resume",()=>{if(sequence.length){void replay()}});
 (async()=>{try{const stored=await sdk.storage.get("best");if(Number.isSafeInteger(stored)&&stored>=0)best=stored}catch(_e){}draw();start()})();
 })();

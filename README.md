@@ -71,3 +71,7 @@ Webbasierter Plugin-Manager ab **[MuPiBox-NG 0.2.0-alpha.18](https://releases.mu
 ## Offizieller App-Katalog
 
 Ab **NG 0.2.0-alpha.19** können Nutzer Apps direkt aus dem gepflegten [Katalog](catalog/apps.json) im Admin installieren können; der manuelle Upload bleibt für Entwickler. Neue Apps werden über ein geprüftes [Pull Request-Verfahren](catalog/README.md) eingereicht und erst nach Review als offizielles, mit SHA-256 überprüftes GitHub-Release aufgenommen.
+
+## Klang-Memory 0.1.1 – Ton auf dem Touchdisplay
+
+Mit NG **0.2.0-alpha.22** oder neuer nutzt Klang-Memory die neue, berechtigungsgeprüfte `MuPiBoxSDK.audio.playNote()`-Schnittstelle. Die Töne gehen direkt an die MuPiBox-PipeWire-Ausgabe; der in die Box integrierte Browser benötigt dafür keinen eigenen PulseAudio-Ausgang. Der App-Bildschirm ist auch für das Touchdisplay mit oberer MuPiBox-Leiste optimiert. Die aktualisierte App erscheint als **Update** im offiziellen Katalog.

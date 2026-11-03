@@ -65,3 +65,13 @@ The public SDK does not automatically install every pull request. Before your ap
 Read [`catalog/README.md`](catalog/README.md) for all catalog field rules and security restrictions.
 
 Read [`ai.md`](ai.md) for coding-assistant guidance, [`CONTRIBUTING.md`](CONTRIBUTING.md), [`docs/manifest-v1.md`](docs/manifest-v1.md) and [`SECURITY.md`](SECURITY.md). Report vulnerabilities privately as described in `SECURITY.md`.
+
+### Native plugin sound (MuPiBox-NG alpha.22 and newer)
+
+Request the `audio` permission in the app manifest. After the parent explicitly approves it, call the asynchronous SDK method:
+
+```js
+await MuPiBoxSDK.audio.playNote('C4', 30, 'musicbox');
+```
+
+The supported range is C4–C5 (including sharps); instruments are `musicbox`, `piano`, `epiano`, `glockenspiel`, `xylophone`, `marimba` and `harp`. The host verifies permission, parent/child Games restrictions, limits frequency, and caps the note volume against the box's configured startup/maximum volume before rendering through native PipeWire. Unsupported/unapproved requests are rejected. Standalone browser previews use the SDK's WebAudio fallback, which may require a user gesture. This API is for musical notes, **not** audio streams or file playback.

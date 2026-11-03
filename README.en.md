@@ -34,3 +34,7 @@ The SDK and repository code are MIT licensed (see [`LICENSE`](LICENSE)). Third-p
 ## Official app catalog
 
 Starting with **MuPiBox-NG 0.2.0-alpha.19**, the curated [app catalog](catalog/apps.json) allows compatible MuPiBox-NG hosts to install verified packages directly from this repository’s GitHub Releases. Manual upload stays available for development. To propose a catalog app, read [catalog contribution rules](catalog/README.md) and submit a Pull Request after the reviewed release artifact is published.
+
+## Klang-Memory 0.1.1: native touchscreen notes
+
+With NG **0.2.0-alpha.22** or later, Klang-Memory uses the permission-gated `MuPiBoxSDK.audio.playNote()` call for real appliance audio through PipeWire. The game layout fits below the native MuPiBox status bar without scrolling. The new version appears as an Update in the official catalog; the original QML game remains installed.

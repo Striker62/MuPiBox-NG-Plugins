@@ -1,9 +1,9 @@
-# Klang-Memory – independently updateable proof of concept
+# Klang-Memory – independent MuPiBox Plugin
 
-This is a fresh, standalone HTML/JavaScript version of the existing Klang-Memory game using the public MuPiBox SDK.
+An HTML/JavaScript version of Sound Memory. The built-in QML game is untouched.
 
-The **original built-in QML Klang-Memory remains enabled and unchanged**. It is not replaced automatically.
+Build with `python3 tools/build_klang_memory.py`, validate the `.mupiapp` and install it from the curated catalog (or by manual upload for development).
 
-Test mode: build a `.mupiapp` archive using `python3 tools/mupiapp.py pack examples/klang-memory dist/klang-memory.mupiapp` from the SDK repository root, then install manually with Admin approval. Includes WebAudio sound playback, touch, keyboard/controller, and a saved personal best via the storage API.
+**v0.1.1:** Playback on MuPiBox-NG Alpha 22+ uses `MuPiBoxSDK.audio.playNote()` and the native PipeWire/box audio bus rather than Chromium WebAudio, which is not routed into the dedicated appliance audio session. The permission `audio` must have been approved. Box volume limits and parental controls still apply. Standalone browser previews use WebAudio fallback in the SDK.
 
-The HTML runner remains a browser preview. On-board Pi touch integration and host-level audio focus are not implemented in v1.
+The app is height-responsive to the touchscreen's reserved header, with all four pads and the round controls visible without scrolling. Scores remain in per-app private storage.
