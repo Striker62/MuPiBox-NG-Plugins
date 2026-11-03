@@ -41,7 +41,7 @@ python3 -m http.server 8080
 
 For Go/WASM, run `python3 tools/build_example.py` and inspect the `examples/tic-tac-toe` source. You must bundle the Go `wasm_exec.js` matching your compiler.
 
-On a compatible MuPiBox-NG **developer-preview host**, a parent/admin can open **Admin → Provider & Services → Community Apps / Plugins**, select the `.mupiapp` file, inspect and approve permissions, then install or open a browser preview. Host availability and the native touchscreen runtime depend on the installed NG version.
+On **MuPiBox-NG 0.2.0-alpha.18 or newer** (developer-preview host), a parent/admin can open **Admin → Provider & Services → Community Apps / Plugins**, select the `.mupiapp` file, inspect and approve permissions, then install or open a browser preview. Host availability and the native touchscreen runtime depend on the installed NG version.
 
 ## Submit a plugin or SDK improvement via Pull Request
 

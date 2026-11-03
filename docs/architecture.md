@@ -1,4 +1,4 @@
-# Host integration architecture (proposed, not shipped)
+# Host integration architecture (v1 browser preview shipped in NG alpha.18)
 
 ## Layers
 
@@ -45,12 +45,12 @@ When app becomes active, host should negotiate audio focus with the existing pla
 6. Child controls, time limits and RFID launching must be enforced by MuPiBox-NG, not by the app.
 7. Native Go/Python applications are **explicitly excluded from v1** pending OS-level isolation design (uid namespaces, cgroups, seccomp, mount/FS restrictions, no privileged socket).
 
-## Suggested core milestones (not yet implemented)
+## Shipped and remaining milestones
 
-1. Trusted package importer + install database + manually approved permissions.
-2. Web/WASM runtime and bridge contract, previewed on Raspberry Pi 4 and Pi 5; benchmark memory/CPU and Qt WebEngine availability.
-3. Per-app focus, lifecycle, controller and audio routing.
-4. UI/PWA/parental controls, uninstall + storage cleanup.
-5. Catalog backend, signed metadata, publisher identity and updates.
+1. **Shipped in NG 0.2.0-alpha.18:** Trusted archive importer, manually approved manifest permissions, install/update/remove, Admin UI, isolated browser-only Web/WASM runner, persistent scoped storage and an experimental bridge.
+2. **Open:** Native Qt touch runtime for Raspberry Pi 4/5; benchmark memory/CPU and check rendering, rotation and hardware gamepads.
+3. **Open:** Complete media audio focus and controller/touch lifecycle, rather than limited browser and local gamepad forwarding.
+4. **Open:** Per-app child approval, RFID launch, time budgets, complete parental enforcement and content API scopes.
+5. **Open:** Catalog backend, signed metadata, publisher identity, automatic updates and multi-version trust policy.
 
 The core can implement a different rendering engine as long as the public bridge behaves the same.

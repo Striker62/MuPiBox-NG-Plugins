@@ -4,7 +4,7 @@
 
 This public repository provides a **developer-preview v1 app contract**, a web SDK, `.mupiapp` packaging and validation utilities, a standalone Go/WebAssembly Tic-Tac-Toe example, and an independently updateable HTML/JS Klang-Memory preview.
 
-> **Developer preview.** A browser-only host integration has been developed on the private MuPiBox-NG `feature/plugin-host-v1` branch. Whether the installer is available depends on your box version. Native Qt touchscreen rendering, complete audio focus, automatic store updates and signed catalogs are not supported yet. Do not assume packages are installable on older NG builds.
+> **Developer preview.** MuPiBox-NG **0.2.0-alpha.18** introduces the Admin app manager and isolated browser preview for `.mupiapp` files. Native Qt touchscreen rendering, complete audio focus, automatic store updates and a signed catalog are not implemented yet. Earlier NG versions cannot install these packages.
 
 ## Quick start
 

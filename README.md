@@ -4,7 +4,7 @@
 
 Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator und eine vollständig eigenständige Tic-Tac-Toe-Referenz-App in **Go/WebAssembly**.
 
-> **Status: Developer Preview.** Die Werkzeuge und das Beispiel sind hier bereits nutzbar. Der App-Manager, die eingebettete Laufzeit und die sichere Host-Bridge müssen erst im MuPiBox-NG-Kern implementiert werden. Eine `.mupiapp` kann derzeit **nicht** auf einer unveränderten MuPiBox-NG installiert werden.
+> **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Die native Qt-Touch-Laufzeit, vollständiger Audiofokus und ein signierter Plugin-Katalog fehlen noch; ältere NG-Versionen haben keinen Plugin-Manager.
 
 ## Für Entwickler
 
@@ -56,9 +56,9 @@ Siehe [CONTRIBUTING.md](CONTRIBUTING.md) und [SECURITY.md](SECURITY.md). Dieses 
 
 **Offizielle Projektseite:** https://github.com/splitti/MuPiBox-NG (privates Hauptrepository; für Plugin-Entwickler nicht notwendig).
 
-## First built-in application migration preview: Klang-Memory
+## Erste bestehende App als Plugin-Prototyp: Klang-Memory
 
-An independent Klang-Memory implementation is available in `examples/klang-memory/`. Build it with `python3 tools/build_klang_memory.py`; it uses the same `.mupiapp` format as Tic Tac Toe. This is a **browser-only prototype** and **does not replace** the existing Qt Quick Klang-Memory, Piano, Malbuch, Cover-Memory or **MuPi und die verlorenen Noten**. The platform audio focus and Pi touch runtime are not yet integrated.
+Eine unabhängige Klang-Memory-Testversion liegt in `examples/klang-memory/`. Sie lässt sich mit `python3 tools/build_klang_memory.py` als `.mupiapp` verpacken. Die Browser-Version **ersetzt nicht** die bisherigen QML-Apps (Klang-Memory, Piano, Malbuch oder Cover-Memory). **MuPi und die verlorenen Noten bleibt im NG-Kern.** Audiofokus und native Touch-Laufzeit sind noch nicht integriert.
 
 ## Entwickleranleitungen und Beiträge
 
@@ -66,4 +66,4 @@ An independent Klang-Memory implementation is available in `examples/klang-memor
 - [AI coding instructions (Claude, ChatGPT, Codex, etc.)](ai.md)
 - [Contributing](CONTRIBUTING.md)
 
-Webbasierter Plugin-Manager: privater NG-Entwicklungszweig `feature/plugin-host-v1`; die Verfügbarkeit hängt von der installierten NG-Version ab. MuPi und die verlorenen Noten bleibt im NG-Kern.
+Webbasierter Plugin-Manager ab **[MuPiBox-NG 0.2.0-alpha.18](https://releases.mupibox.de/releases/0.2.0-alpha.18/release-notes.txt)**. MuPi und die verlorenen Noten bleibt im NG-Kern.

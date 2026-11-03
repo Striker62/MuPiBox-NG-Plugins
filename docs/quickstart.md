@@ -31,4 +31,4 @@ const score = await host.storage.get('score');
 await host.storage.set('score', 3);
 ```
 
-The browser preview uses **localStorage** for testing. In a future MuPiBox-NG installation, every API call goes through a capability-gated trusted bridge. The SDK is no substitute for host sandboxing.
+A local browser preview uses **localStorage** for testing. Starting with MuPiBox-NG **0.2.0-alpha.18**, installed plugins instead use the isolated browser runner and trusted, narrowly scoped host bridge. Native Qt touch integration is not implemented yet. The SDK itself is no substitute for host sandboxing.
