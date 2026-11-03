@@ -70,4 +70,4 @@ Webbasierter Plugin-Manager ab **[MuPiBox-NG 0.2.0-alpha.18](https://releases.mu
 
 ## Offizieller App-Katalog
 
-Ab NG alpha.19 sollen Nutzer Apps direkt aus dem gepflegten [Katalog](catalog/apps.json) im Admin installieren können; der manuelle Upload bleibt für Entwickler. Neue Apps werden über ein geprüftes [Pull Request-Verfahren](catalog/README.md) eingereicht und erst nach Review als offizielles, mit SHA-256 überprüftes GitHub-Release aufgenommen.
+Ab **NG 0.2.0-alpha.19** können Nutzer Apps direkt aus dem gepflegten [Katalog](catalog/apps.json) im Admin installieren können; der manuelle Upload bleibt für Entwickler. Neue Apps werden über ein geprüftes [Pull Request-Verfahren](catalog/README.md) eingereicht und erst nach Review als offizielles, mit SHA-256 überprüftes GitHub-Release aufgenommen.

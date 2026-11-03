@@ -33,4 +33,4 @@ The SDK and repository code are MIT licensed (see [`LICENSE`](LICENSE)). Third-p
 
 ## Official app catalog
 
-The curated [app catalog](catalog/apps.json) allows compatible MuPiBox-NG hosts to install verified packages directly from this repository’s GitHub Releases. Manual upload stays available for development. To propose a catalog app, read [catalog contribution rules](catalog/README.md) and submit a Pull Request after the reviewed release artifact is published.
+Starting with **MuPiBox-NG 0.2.0-alpha.19**, the curated [app catalog](catalog/apps.json) allows compatible MuPiBox-NG hosts to install verified packages directly from this repository’s GitHub Releases. Manual upload stays available for development. To propose a catalog app, read [catalog contribution rules](catalog/README.md) and submit a Pull Request after the reviewed release artifact is published.
