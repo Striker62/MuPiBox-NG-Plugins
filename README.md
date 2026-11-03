@@ -59,3 +59,11 @@ Siehe [CONTRIBUTING.md](CONTRIBUTING.md) und [SECURITY.md](SECURITY.md). Dieses 
 ## First built-in application migration preview: Klang-Memory
 
 An independent Klang-Memory implementation is available in `examples/klang-memory/`. Build it with `python3 tools/build_klang_memory.py`; it uses the same `.mupiapp` format as Tic Tac Toe. This is a **browser-only prototype** and **does not replace** the existing Qt Quick Klang-Memory, Piano, Malbuch, Cover-Memory or **MuPi und die verlorenen Noten**. The platform audio focus and Pi touch runtime are not yet integrated.
+
+## Entwickleranleitungen und Beiträge
+
+- [English plugin guide: build, use and submit via Pull Request](GETTING_STARTED.en.md)
+- [AI coding instructions (Claude, ChatGPT, Codex, etc.)](ai.md)
+- [Contributing](CONTRIBUTING.md)
+
+Webbasierter Plugin-Manager: privater NG-Entwicklungszweig `feature/plugin-host-v1`; die Verfügbarkeit hängt von der installierten NG-Version ab. MuPi und die verlorenen Noten bleibt im NG-Kern.

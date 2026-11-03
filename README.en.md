@@ -2,9 +2,9 @@
 
 **Independent apps for MuPiBox-NG, without access to the private core repository.**
 
-This public repository provides a **developer-preview v1 app contract**, a web SDK, `.mupiapp` packaging and validation utilities, and a standalone Go/WebAssembly Tic-Tac-Toe example.
+This public repository provides a **developer-preview v1 app contract**, a web SDK, `.mupiapp` packaging and validation utilities, a standalone Go/WebAssembly Tic-Tac-Toe example, and an independently updateable HTML/JS Klang-Memory preview.
 
-> **Developer preview, not yet supported by the host.** The SDK and example work outside MuPiBox-NG, but the MuPiBox-NG app manager, web runtime and secure host bridge are not implemented in the core yet. Packaging an app does not make it installable on an existing box today.
+> **Developer preview.** A browser-only host integration has been developed on the private MuPiBox-NG `feature/plugin-host-v1` branch. Whether the installer is available depends on your box version. Native Qt touchscreen rendering, complete audio focus, automatic store updates and signed catalogs are not supported yet. Do not assume packages are installable on older NG builds.
 
 ## Quick start
 
@@ -25,8 +25,8 @@ Static HTML/JS apps do not need Go:
 python3 tools/mupiapp.py pack ./my-app ./dist/my-app.mupiapp
 ```
 
-Read [`docs/quickstart.md`](docs/quickstart.md), [`docs/manifest-v1.md`](docs/manifest-v1.md), [`docs/architecture.md`](docs/architecture.md), and the SDK [`sdk/mupibox-sdk.js`](sdk/mupibox-sdk.js).
+Read [`GETTING_STARTED.en.md`](GETTING_STARTED.en.md), [`ai.md`](ai.md), [`docs/quickstart.md`](docs/quickstart.md), [`docs/manifest-v1.md`](docs/manifest-v1.md), [`docs/architecture.md`](docs/architecture.md), and the SDK [`sdk/mupibox-sdk.js`](sdk/mupibox-sdk.js).
 
-The host app/API has not shipped; the mock browser fallback is for local development only. A manifest permission **does not** enforce sandboxing. No core code or assets are distributed by this repository.
+The browser fallback is for local development only; the experimental host integration is not a replacement for the existing native Qt touch apps. A manifest permission **does not** enforce sandboxing. No core code or assets are distributed by this repository.
 
 The SDK and repository code are MIT licensed (see [`LICENSE`](LICENSE)). Third-party apps may use independent licenses. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`SECURITY.md`](SECURITY.md).
