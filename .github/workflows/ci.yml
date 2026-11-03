@@ -24,10 +24,15 @@ jobs:
         run: python3 tools/build_example.py
       - name: Build independent Klang Memory preview
         run: python3 tools/build_klang_memory.py
+      - name: Build USB webcam preview
+        run: python3 tools/build_webcam_example.py
       - name: Verify package
         run: |
           python3 tools/mupiapp.py validate dist/tic-tac-toe.mupiapp
           python3 tools/mupiapp.py validate dist/klang-memory.mupiapp
+          python3 tools/mupiapp.py validate dist/webcam-preview.mupiapp
+          node --check examples/webcam-preview/app.js
+          node --test tests/test_sdk_camera_volume.js
           node --check examples/klang-memory/app.js
           node --check sdk/mupibox-sdk.js
           node --test tests/test_sdk_audio.js
@@ -37,4 +42,5 @@ jobs:
           path: |
             dist/tic-tac-toe.mupiapp
             dist/klang-memory.mupiapp
+            dist/webcam-preview.mupiapp
           if-no-files-found: error

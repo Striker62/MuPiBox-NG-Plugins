@@ -7,3 +7,5 @@ Build with `python3 tools/build_klang_memory.py`, validate the `.mupiapp` and in
 **v0.1.1:** Playback on MuPiBox-NG Alpha 22+ uses `MuPiBoxSDK.audio.playNote()` and the native PipeWire/box audio bus rather than Chromium WebAudio, which is not routed into the dedicated appliance audio session. The permission `audio` must have been approved. Box volume limits and parental controls still apply. Standalone browser previews use WebAudio fallback in the SDK.
 
 The app is height-responsive to the touchscreen's reserved header, with all four pads and the round controls visible without scrolling. Scores remain in per-app private storage.
+
+**v0.1.2:** Adds an accessible sound settings popover with a persistent 0–100% slider, test tone, controller Left/Right support and zero/mute. The volume is **relative to the allowed MuPiBox startup/maximum settings**, so 100% can never bypass a parent's volume limit. The prior `playNote` API remains backwards-compatible through an optional `{relative:true}` flag. The saved best score is not reset by the update.

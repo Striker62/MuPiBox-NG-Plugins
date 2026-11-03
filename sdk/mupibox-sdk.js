@@ -65,14 +65,21 @@
   // Standalone browser previews synthesize tones locally instead.
   let previewAudioContext = null;
   const audio = Object.freeze({
-    async playNote(note, volume = 30, instrument = 'musicbox') {
+    async playNote(note, volume = 30, instrument = 'musicbox', options = {}) {
       if (typeof note !== 'string' || !/^[A-G](?:#)?[45]$/.test(note))
         throw new TypeError('unsupported note');
       if (!Number.isInteger(volume) || volume < 0 || volume > 100)
         throw new TypeError('volume must be 0..100');
       if (!['musicbox', 'piano', 'epiano', 'glockenspiel', 'xylophone', 'marimba', 'harp'].includes(instrument))
         throw new TypeError('unsupported instrument');
-      if (bridge) return invoke('audio.note', { note, volume, instrument });
+      // relative:true scales 0..100 across the *allowed* device volume,
+      // without changing the legacy absolute-volume contract for old apps.
+      if (options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.relative !== undefined && typeof options.relative !== 'boolean'))
+        throw new TypeError('audio options must contain a boolean relative field');
+      const payload = {note, volume, instrument};
+      if (options.relative === true) payload.relative = true;
+      if (bridge) return invoke('audio.note', payload);
       // Browser-only developer preview; never a substitute for the appliance
       // mixer or its local parental-control and volume safeguards.
       const AC = global.AudioContext || global.webkitAudioContext;
@@ -95,12 +102,36 @@
     }
   });
 
+  // Host webcam capability: the trusted on-device runner asks the parent
+  // (via a real user-facing button) to confirm each camera session. The
+  // plugin never receives a device path or native video handle and cannot
+  // bypass the permission/consent UI by constructing a URL.
+  const camera = Object.freeze({
+    async list() {
+      const data = await invoke('camera.list', {});
+      return Array.isArray(data?.devices) ? data.devices : [];
+    },
+    async start(id) {
+      if (typeof id !== 'string' || !/^video(?:0|[1-9][0-9]{0,2})$/.test(id))
+        throw new TypeError('camera ID must be an enumerated video device');
+      return invoke('camera.start', {id});
+    },
+    async capture() {
+      const result = await invoke('camera.capture', {});
+      if (!result || typeof result.image !== 'string' || !result.image.startsWith('data:image/jpeg;base64,'))
+        throw new Error('invalid camera frame');
+      return result;
+    },
+    async stop() {return invoke('camera.stop', {});}
+  });
+
   const sdk = Object.freeze({
     apiVersion: '1',
     isHosted: Boolean(bridge),
     on,
     storage,
     audio,
+    camera,
     async getContext() {
       if (bridge) return invoke('host.context', {});
       return { apiVersion: '1', preview: true, language: global.navigator.language || 'de' };
@@ -115,7 +146,7 @@
   if (bridge && typeof bridge.subscribe === 'function') {
     bridge.subscribe((message) => {
       if (!message || typeof message.event !== 'string') return;
-      if (['input', 'lifecycle.pause', 'lifecycle.resume'].includes(message.event)) {
+      if (['input', 'lifecycle.pause', 'lifecycle.resume', 'camera.stopped'].includes(message.event)) {
         emit(message.event, message.payload || {});
       }
     });

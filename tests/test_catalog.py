@@ -11,7 +11,7 @@ VERSION = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$")
 TAG = re.compile(r"^v[0-9]+\.[0-9]+\.[0-9]+-preview\.[0-9]+$")
 ASSET = re.compile(r"^[a-z0-9][a-z0-9-]*\.mupiapp$")
 SHA = re.compile(r"^[0-9a-f]{64}$")
-PERMISSIONS = {"storage","controller","audio"}
+PERMISSIONS = {"storage","controller","audio","camera"}
 
 def validate(catalog):
     if not isinstance(catalog, dict) or set(catalog) != {"schema", "apps"} or catalog["schema"] != 1:
@@ -45,7 +45,8 @@ class CatalogTests(unittest.TestCase):
         cls.catalog = json.loads((ROOT/"catalog/apps.json").read_text())
     def test_published_catalog(self):
         for app in validate(self.catalog):
-            example = "tic-tac-toe" if app["id"]=="community.tictactoe" else "klang-memory"
+            examples={"community.tictactoe":"tic-tac-toe", "official.klang-memory":"klang-memory", "official.webcam-preview":"webcam-preview"}
+            example=examples.get(app["id"],"")
             manifest=json.loads((ROOT/"examples"/example/"manifest.json").read_text()) if (ROOT/"examples"/example/"manifest.json").exists() else None
             if manifest:
                 for key in ("id","name","version","permissions"):

@@ -63,6 +63,14 @@ Available v1 operations: `host.context`, `storage.get`, `storage.set`, `audio.no
 11. Never claim that a browser preview proves device UI, audio focus, touch rotation, child controls, signed catalog or complete sandbox security. Report precisely what was tested.
 12. Keep PRs small, reviewable and scoped; do not push compiled binaries into source history unless explicitly needed and license-compliant.
 
+## USB camera and volume APIs (NG alpha.23+, Developer Preview)
+
+- A webcam requires the new `camera` manifest permission, explicit approval on installation **and** a separate per-session click on the trusted host's **Kamera erlauben** button. Only the local touchscreen can activate a webcam; the remote Admin preview cannot. Capture is 320×240 still-JPEG previews at around one frame per second, **not** unrestricted streaming. No microphone or external network APIs exist.
+- Use `await sdk.camera.list()` to find enumerated USB/V4L2 devices; `await sdk.camera.start(device.id)` requests a visible on-screen consent overlay. After approval `await sdk.camera.capture()` returns `{image: "data:image/jpeg;base64,...", width: 320, height: 240}`. On exit, pause, error or a Stop button, call `await sdk.camera.stop()`. Subscribe to `sdk.on('camera.stopped',...)` and stop any capture timers.
+- All camera calls are local-only, app-specific and rate/size/permission limited. Never guess device names, send a `/dev/videoN` filesystem path, persist a camera capture without an explicit user request, or automatically upload any image to a server. The host never saves webcam frames.
+- `sdk.audio.playNote('C4', 70, 'musicbox', {relative:true})` scales 0–100% relative to the parent's **configured startup and maximum volume**. Legacy 3-argument calls remain unchanged. Store any in-app volume preference in the app's own `storage` namespace and offer an obvious Mute/0% option.
+- On Box 85 **no physical webcam was connected for testing**: sample-camera FFmpeg capture on USB hardware is not yet validated. Never report end-to-end webcam operation as confirmed until tested with a UVC device.
+
 ## Build and test checklist
 
 ```bash
@@ -74,6 +82,9 @@ python3 tools/mupiapp.py validate dist/tic-tac-toe.mupiapp
 python3 tools/mupiapp.py validate dist/klang-memory.mupiapp
 node --check sdk/mupibox-sdk.js
 node --check examples/klang-memory/app.js
+python3 tools/build_webcam_example.py
+python3 tools/mupiapp.py validate dist/webcam-preview.mupiapp
+node --test tests/test_sdk_camera_volume.js
 ```
 
 For your own web app:

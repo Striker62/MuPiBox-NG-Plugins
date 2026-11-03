@@ -1,0 +1,7 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Webcam-Vorschau</title><link rel="stylesheet" href="style.css"></head><body><main>
+<header><strong>USB-Webcam</strong><span id="device-count" aria-live="polite"></span></header>
+<div class="content">
+<section class="viewport"><img id="camera-preview" alt="Webcam-Vorschau" hidden><div id="placeholder">Kamera noch nicht gestartet</div><div id="live-indicator" hidden>● LIVE</div></section>
+<section class="controls"><label for="device-select">Kamera</label><select id="device-select"><option value="">Kameras suchen …</option></select><button id="refresh" type="button">Kameras suchen</button><button id="start" class="primary" type="button">Kamera einschalten</button><button id="capture" type="button" disabled>Foto anhalten</button><button id="stop" type="button" disabled>Kamera ausschalten</button><p id="message" role="status" aria-live="polite"></p></section>
+</div><footer>Bilder werden nur lokal angezeigt. Keine Speicherung und kein Upload. Die MuPiBox fragt vor jedem Kamerastart um Erlaubnis.</footer>
+</main><script src="mupibox-sdk.js"></script><script src="app.js"></script></body></html>

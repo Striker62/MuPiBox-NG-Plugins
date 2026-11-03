@@ -75,3 +75,9 @@ Ab **NG 0.2.0-alpha.19** können Nutzer Apps direkt aus dem gepflegten [Katalog]
 ## Klang-Memory 0.1.1 – Ton auf dem Touchdisplay
 
 Mit NG **0.2.0-alpha.22** oder neuer nutzt Klang-Memory die neue, berechtigungsgeprüfte `MuPiBoxSDK.audio.playNote()`-Schnittstelle. Die Töne gehen direkt an die MuPiBox-PipeWire-Ausgabe; der in die Box integrierte Browser benötigt dafür keinen eigenen PulseAudio-Ausgang. Der App-Bildschirm ist auch für das Touchdisplay mit oberer MuPiBox-Leiste optimiert. Die aktualisierte App erscheint als **Update** im offiziellen Katalog.
+
+## Lautstärke pro App und USB-Webcam (NG alpha.23+)
+
+Klang-Memory **0.1.2** hat nun ein eigenes Ton-Einstellungsmenü mit Lautstärkeregler und Probeton. Die Einstellung wird pro App gespeichert und bleibt unter der MuPiBox-Lautstärkebegrenzung.
+
+Das neue SDK erlaubt per `camera`-Berechtigung USB-Webcams. Ein Beispiel `Webcam-Vorschau` ist als experimentelle, lokal begrenzte Kamera-App verfügbar. Vor jeder Nutzung muss direkt am Touchdisplay eine zweite Freigabe bestätigt werden; ein roter Hinweis zeigt den Kamerabetrieb und bietet sofortiges Stoppen. Fotos werden nicht automatisch gespeichert oder hochgeladen. Auf Box 85 war bisher keine USB-Kamera angeschlossen, weshalb ein echter Hardwaretest noch aussteht.

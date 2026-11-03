@@ -19,3 +19,7 @@ You can develop in your own repository without NG core access. For inclusion in 
 On new versions, upload the vetted artifact as an official Release asset, then update `version`, `releaseTag`, `asset`, and `sha256`. Do not change app IDs. Installed versions are only updated after user confirmation. Manual `.mupiapp` upload remains available to developers independently of catalog review.
 
 The catalog only lists **curated official copies** of apps; do not link arbitrary third-party URLs because this would bypass the host's download allowlist.
+
+## Camera-capable catalog apps
+
+A catalog entry with the `camera` permission must explain why it needs an attached USB/V4L2 camera. Admin approval at installation does **not** turn the camera on: the trusted local touchscreen asks for explicit session consent each time. A red Stop indicator is always visible. Camera apps are local-only; media is not uploaded or persisted by the host. For the experimental `official.webcam-preview` app, device capture has not been validated with physical hardware on Box 85.

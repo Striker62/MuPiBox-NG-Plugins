@@ -38,3 +38,7 @@ Starting with **MuPiBox-NG 0.2.0-alpha.19**, the curated [app catalog](catalog/a
 ## Klang-Memory 0.1.1: native touchscreen notes
 
 With NG **0.2.0-alpha.22** or later, Klang-Memory uses the permission-gated `MuPiBoxSDK.audio.playNote()` call for real appliance audio through PipeWire. The game layout fits below the native MuPiBox status bar without scrolling. The new version appears as an Update in the official catalog; the original QML game remains installed.
+
+## Plugin sound settings and experimental USB webcam support
+
+With NG **0.2.0-alpha.23+**, Klang-Memory v0.1.2 offers its own saved 0–100% sound slider with a test tone, always respecting the parent's device limits. New `camera`-permission plugins may use the opt-in USB webcam API. The `examples/webcam-preview/` app demonstrates local, in-memory still previews with a separate **on-device** user consent dialog and visible Stop control. It does not record or upload video. **Physical webcam capture has not yet been tested on Pi box 85**, where no camera was attached.

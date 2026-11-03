@@ -75,3 +75,19 @@ await MuPiBoxSDK.audio.playNote('C4', 30, 'musicbox');
 ```
 
 The supported range is C4–C5 (including sharps); instruments are `musicbox`, `piano`, `epiano`, `glockenspiel`, `xylophone`, `marimba` and `harp`. The host verifies permission, parent/child Games restrictions, limits frequency, and caps the note volume against the box's configured startup/maximum volume before rendering through native PipeWire. Unsupported/unapproved requests are rejected. Standalone browser previews use the SDK's WebAudio fallback, which may require a user gesture. This API is for musical notes, **not** audio streams or file playback.
+
+### Camera access and per-app sound settings (MuPiBox-NG alpha.23+)
+
+**Audio:** To build an optional 0–100% volume slider, call `await MuPiBoxSDK.audio.playNote('C4', volume, 'musicbox', {relative:true})`. Relative volume can never exceed the configured box startup/maximum limits. The original three-argument call is unchanged. Save the slider value with `MuPiBoxSDK.storage.set('volume', volume)` and restore it with `storage.get('volume')`. See `examples/klang-memory/` v0.1.2.
+
+**Camera:** USB/V4L2 webcams use the new manifest permission `camera`. The official sample under `examples/webcam-preview/` shows:
+
+```js
+const devices = await MuPiBoxSDK.camera.list();
+await MuPiBoxSDK.camera.start(devices[0].id); // asks user on local touchscreen
+const {image} = await MuPiBoxSDK.camera.capture(); // local, bounded JPEG data URL
+document.querySelector('img').src = image;
+await MuPiBoxSDK.camera.stop();
+```
+
+The app cannot bypass the **separate user-facing consent dialog**; a visible Stop indicator remains in the trusted host, outside the plugin frame. The API returns bounded 320x240 JPEG snapshots (roughly 1 frame/second) and is available only on the local touchscreen, not the remote Admin preview. The host does not store or upload frames, does not grant microphone access and rejects unrecognized camera paths. An attached compatible UVC camera is required; physical capture was **not verified on box 85** because no webcam was connected. Use `python3 tools/build_webcam_example.py` to build the example.

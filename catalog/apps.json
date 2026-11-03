@@ -19,17 +19,31 @@
     {
       "id": "official.klang-memory",
       "name": "Klang-Memory",
-      "description": "Sound Memory for touch and controller, with native MuPiBox audio and a saved best score (NG alpha.22+).",
+      "description": "Sound Memory with a saved volume slider, native MuPiBox audio and persistent best score (NG alpha.23+).",
       "category": "games",
       "author": "MuPiBox Team",
-      "version": "0.1.1",
-      "releaseTag": "v0.1.0-preview.4",
+      "version": "0.1.2",
+      "releaseTag": "v0.1.0-preview.5",
       "asset": "klang-memory.mupiapp",
-      "sha256": "7827a1054f5145efd386e7323e8e4359832da379ba2550124f06b425da7da8a3",
+      "sha256": "b2bd20d59a5aa2df2ebdcfdb2b814fd98e43c9e43747419af135d7f5d230dba2",
       "permissions": [
         "storage",
         "controller",
         "audio"
+      ]
+    },
+    {
+      "id": "official.webcam-preview",
+      "name": "Webcam-Vorschau",
+      "description": "Local 320x240 USB webcam preview, explicit on-device camera approval and visible stop indicator. A physical webcam is required; not hardware-validated yet.",
+      "category": "creative",
+      "author": "MuPiBox Team",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.5",
+      "asset": "webcam-preview.mupiapp",
+      "sha256": "5ba53196b74d6dfea0843a92c554075dc82210f6480ab66db936eb7ad0ba3159",
+      "permissions": [
+        "camera"
       ]
     }
   ]
