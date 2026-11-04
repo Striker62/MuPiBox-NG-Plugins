@@ -5,7 +5,7 @@ A `.mupiapp` is a ZIP archive with `manifest.json` **at archive root**. The root
 Example:
 
 ```text
-community.tictactoe.mupiapp (ZIP)
+mupi-kreuz-kreis.mupiapp (ZIP)
 ├── manifest.json
 ├── index.html
 ├── app.js
@@ -22,8 +22,8 @@ Example manifest:
 {
   "apiVersion": "1",
   "id": "community.tictactoe",
-  "name": "Tic Tac Toe",
-  "version": "0.1.0",
+  "name": "MuPi Kreuz & Kreis",
+  "version": "0.2.0",
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.svg",

@@ -20,7 +20,7 @@ MuPiBox-NG is a Raspberry Pi / DietPi appliance with a private application core.
 | `sdk/mupibox-sdk.js` | Public browser facade; only stable documented APIs |
 | `schema/manifest-v1.schema.json` | Published manifest contract |
 | `tools/mupiapp.py` | Deterministic packager + adversarial validator |
-| `examples/tic-tac-toe/` | Go/WASM example; **Go compiles to WASM**, not a Linux binary |
+| `examples/tic-tac-toe/` | MuPi Kreuz & Kreis (legacy path and stable app ID): Go/WASM example; **Go compiles to WASM**, not a Linux binary |
 | `examples/klang-memory/` | Independent HTML/JS demonstration, not a replacement for the native game |
 | `docs/quickstart.md`, `docs/manifest-v1.md`, `docs/architecture.md` | Developer and security documentation |
 | `GETTING_STARTED.en.md` | Short English creation and contribution guide |
@@ -78,7 +78,7 @@ python3 -m unittest discover -s tests -v
 (cd examples/tic-tac-toe && go test ./game)
 python3 tools/build_example.py
 python3 tools/build_klang_memory.py
-python3 tools/mupiapp.py validate dist/tic-tac-toe.mupiapp
+python3 tools/mupiapp.py validate dist/mupi-kreuz-kreis.mupiapp
 python3 tools/mupiapp.py validate dist/klang-memory.mupiapp
 node --check sdk/mupibox-sdk.js
 node --check examples/klang-memory/app.js
@@ -96,6 +96,17 @@ cd my-app && python3 -m http.server 8080
 ```
 
 For Go/WASM, build with `GOOS=js GOARCH=wasm CGO_ENABLED=0 go build -o game.wasm ./cmd/wasm` and ship the **matching** Go `wasm_exec.js` plus its license notice.
+
+## Game-name and copyright risk documentation
+
+For MuPi Kreuz & Kreis, MuPi 4er-Reihe and MuPi Krümelwurm, refer to
+[\`docs/release-checklist.md\`](docs/release-checklist.md) and the
+[preliminary review](docs/trademark-preflight-2026-11-04.md).
+The owner accepted the **remaining unverified trademark risk** and chose
+not to pay for external legal advice. Never claim that DPMA/EUIPO/WIPO
+full register searches were completed when they were not.
+An official catalog entry still requires actual verified Release bytes.
+The legacy Tic-Tac-Toe app ID stays stable through the rename.
 
 ## Curated catalog rules
 

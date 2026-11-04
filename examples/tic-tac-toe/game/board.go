@@ -1,4 +1,4 @@
-// Package game implements the portable Tic-Tac-Toe rules without host dependencies.
+// Package game implements the portable MuPi Kreuz & Kreis rules without host dependencies.
 package game
 
 // State is a complete JSON-friendly snapshot of the board.

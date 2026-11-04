@@ -20,15 +20,30 @@ jobs:
       - name: Test Go game engine
         working-directory: examples/tic-tac-toe
         run: go test ./game
+      - name: Test board game logic and translations
+        run: |
+          node --test tests/test_board_games.js tests/test_crumbworm.js
+          node --check examples/tic-tac-toe/web/app.js
+          node --check examples/four-in-a-row/web/app.js
+          node --check examples/four-in-a-row/web/logic.js
+          node --check examples/crumbworm/web/logic.js
+          node --check examples/crumbworm/web/app.js
+          node --check examples/shared/game-i18n.js
       - name: Build reference app
         run: python3 tools/build_example.py
+      - name: Build four-in-a-row app
+        run: python3 tools/build_four_in_a_row.py
+      - name: Build Crumbworm app
+        run: python3 tools/build_crumbworm.py
       - name: Build independent Klang Memory preview
         run: python3 tools/build_klang_memory.py
       - name: Build USB webcam preview
         run: python3 tools/build_webcam_example.py
       - name: Verify package
         run: |
-          python3 tools/mupiapp.py validate dist/tic-tac-toe.mupiapp
+          python3 tools/mupiapp.py validate dist/mupi-kreuz-kreis.mupiapp
+          python3 tools/mupiapp.py validate dist/four-in-a-row.mupiapp
+          python3 tools/mupiapp.py validate dist/crumbworm.mupiapp
           python3 tools/mupiapp.py validate dist/klang-memory.mupiapp
           python3 tools/mupiapp.py validate dist/webcam-preview.mupiapp
           node --check examples/webcam-preview/app.js
@@ -38,9 +53,11 @@ jobs:
           node --test tests/test_sdk_audio.js
       - uses: actions/upload-artifact@v4
         with:
-          name: tic-tac-toe-preview-mupiapp
+          name: board-games-and-examples-preview
           path: |
-            dist/tic-tac-toe.mupiapp
+            dist/mupi-kreuz-kreis.mupiapp
+            dist/four-in-a-row.mupiapp
+            dist/crumbworm.mupiapp
             dist/klang-memory.mupiapp
             dist/webcam-preview.mupiapp
           if-no-files-found: error

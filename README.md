@@ -2,7 +2,7 @@
 
 **Unabhängige Apps für MuPiBox-NG – ohne Zugriff auf das private Haupt-Repository.**
 
-Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator und eine vollständig eigenständige Tic-Tac-Toe-Referenz-App in **Go/WebAssembly**.
+Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator und drei eigenständige Community-Spiele: **MuPi Kreuz & Kreis** (Go/WebAssembly), **MuPi 4er-Reihe** und **MuPi Krümelwurm** (HTML/JavaScript).
 
 > **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Die native Qt-Touch-Laufzeit, vollständiger Audiofokus und ein signierter Plugin-Katalog fehlen noch; ältere NG-Versionen haben keinen Plugin-Manager.
 
@@ -15,11 +15,11 @@ Voraussetzungen: Python 3.10+, Go 1.24+ (für das Go-Beispiel; das SDK selbst be
 git clone https://github.com/splitti/MuPiBox-NG-Plugins.git
 cd MuPiBox-NG-Plugins
 
-# Referenz-App bauen und als .mupiapp packen
+# MuPi Kreuz & Kreis bauen und als .mupiapp packen
 python3 tools/build_example.py
 
 # Paketinhalt und Manifest sicherheitstechnisch prüfen
-python3 tools/mupiapp.py validate dist/tic-tac-toe.mupiapp
+python3 tools/mupiapp.py validate dist/mupi-kreuz-kreis.mupiapp
 
 # Lokal im Browser ausprobieren (noch kein Host-API-Zugriff)
 cd .build/tic-tac-toe && python3 -m http.server 8080
@@ -39,7 +39,10 @@ python3 tools/mupiapp.py pack ./meine-app ./dist/meine-app.mupiapp
 - [`docs/quickstart.md`](docs/quickstart.md) – Eigene App entwickeln
 - [`schema/manifest-v1.schema.json`](schema/manifest-v1.schema.json) – JSON-Schema
 - [`sdk/mupibox-sdk.js`](sdk/mupibox-sdk.js) – öffentlicher JavaScript-SDK-Entwurf
-- [`examples/tic-tac-toe`](examples/tic-tac-toe) – Go/WASM-Referenz-App
+- [`examples/tic-tac-toe`](examples/tic-tac-toe) – **MuPi Kreuz & Kreis** (Go/WASM, stabile Legacy-App-ID)
+- [`examples/four-in-a-row`](examples/four-in-a-row) – **MuPi 4er-Reihe**
+- [`examples/crumbworm`](examples/crumbworm) – **MuPi Krümelwurm**
+- [`docs/release-checklist.md`](docs/release-checklist.md) – **Pflichtprüfung vor Veröffentlichung der Spiele**
 - [`tools/mupiapp.py`](tools/mupiapp.py) – Packen und Validieren
 
 ## Leitlinien
@@ -49,6 +52,16 @@ python3 tools/mupiapp.py pack ./meine-app ./dist/meine-app.mupiapp
 3. V1 setzt auf statische Web-Apps/WASM. Native Prozesse (Go/Python) brauchen ein gesondertes Sicherheitsdesign und sind **nicht Teil von V1**.
 4. Neue Host-Funktionen werden nach API-Version eingeführt. Die App-Laufzeit entscheidet, welche APIs verfügbar sind.
 5. Apps und SDK sind unabhängig vom proprietär lizenzierten MuPiBox-NG-Kern.
+
+## Community-Spiele (noch nicht als Update freigegeben)
+
+Die drei neuen Spielversionen übernehmen `getContext().language` aus der Box
+(de, en, fr, es, it, nl, sv), unterstützen Touch und Controller und benötigen
+keine externe Online-API. **Die neue Veröffentlichung im offiziellen App-Katalog
+ist bis zum Abschluss von [Release-Checkliste und Markenprüfung](docs/release-checklist.md)
+gesperrt.** Der derzeitige Katalogeintrag des bestehenden Spiels zeigt weiterhin
+den früher veröffentlichten Stand; er wird erst gemeinsam mit dem neuen
+verifizierten Release-Asset umgestellt.
 
 ## Mitmachen
 

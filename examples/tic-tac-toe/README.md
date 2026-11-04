@@ -1,12 +1,32 @@
-# Tic Tac Toe – Go / WebAssembly
+# MuPi Kreuz & Kreis – Community-App
 
-A self-contained two-player game that illustrates the public MuPiBox-NG plugin package contract.
+Ein vollständig offline laufendes Go/WebAssembly-Spiel auf einem 3×3-Raster für MuPiBox-NG.
+Die Spielregeln bleiben in Go/WASM implementiert, der MuPi-Gegner läuft im
+Browser-JavaScript und benutzt dieselben Go-Zugregeln.
 
-- `game/`: portable pure-Go rules with unit tests
-- `cmd/wasm/`: Go-to-JavaScript bridge using `syscall/js`
-- `web/`: touch/controller-friendly HTML/CSS/JS view
-- `manifest.json`: static app metadata
+## Modi
 
-Build from the repository root with `python3 tools/build_example.py`. The produced `dist/tic-tac-toe.mupiapp` is a ZIP file and **cannot yet be installed into MuPiBox-NG** without the future host app manager.
+- **2 Spieler:** X gegen O auf derselben Box.
+- **Leicht:** zufällige erlaubte Züge.
+- **Normal:** überwiegend Minimax, aber gelegentlich zufällige Züge.
+- **Schwer:** vollständiges Minimax; bei korrektem Spiel verliert MuPi nicht.
 
-For a browser demo, run `python3 -m http.server 8080` from `.build/tic-tac-toe` and open `http://localhost:8080`. Arrow keys select, Enter/Space places a mark, and the buttons support touch/mouse. The SDK simulates controller input in browser-preview mode.
+Die Übersetzung kommt über `sdk.getContext().language` aus der Box. Verfügbar:
+Deutsch, Englisch, Französisch, Spanisch, Italienisch, Niederländisch, Schwedisch.
+Im Browser ohne Host wird die Browser-Sprache verwendet; sonst Englisch als
+Fallback für unbekannte Werte.
+
+Touch: Feld antippen. Controller: Pfeiltasten, A setzt ein Feld, X schaltet
+zwischen Modi um, B/Back schließt die App. Modi werden app-lokal gespeichert.
+
+## Build
+
+```bash
+(cd examples/tic-tac-toe && go test ./game)
+python3 tools/build_example.py
+python3 tools/mupiapp.py validate dist/mupi-kreuz-kreis.mupiapp
+```
+
+Das gebündelte `wasm_exec.js` enthält einen Go-Laufzeit-Lizenzhinweis.
+Quellcode: MIT, keine Drittanbieter-Grafiken oder -Sounds. Ein veröffentlichter
+Katalog-Release muss seinen Hash nach dem Upload aktualisieren.

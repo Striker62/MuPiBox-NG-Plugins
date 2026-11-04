@@ -1,5 +1,4 @@
-"""The catalog is reviewed data, not an arbitrary URL downloader."""
-import hashlib
+"""The published catalog is pinned data; source examples may be newer than releases."""
 import json
 import re
 import unittest
@@ -39,27 +38,41 @@ def validate(catalog):
             raise ValueError("invalid permissions")
     return apps
 
+def version_tuple(value):
+    return tuple(int(part) for part in value.split("-", 1)[0].split(".")[:3])
+
 class CatalogTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.catalog = json.loads((ROOT/"catalog/apps.json").read_text())
     def test_published_catalog(self):
+        examples = {
+            "community.tictactoe":"tic-tac-toe",
+            "official.klang-memory":"klang-memory",
+            "official.webcam-preview":"webcam-preview"
+        }
         for app in validate(self.catalog):
-            examples={"community.tictactoe":"tic-tac-toe", "official.klang-memory":"klang-memory", "official.webcam-preview":"webcam-preview"}
-            example=examples.get(app["id"],"")
-            manifest=json.loads((ROOT/"examples"/example/"manifest.json").read_text()) if (ROOT/"examples"/example/"manifest.json").exists() else None
-            if manifest:
-                for key in ("id","name","version","permissions"):
-                    self.assertEqual(app[key],manifest[key],key)
+            example = examples.get(app["id"], "")
+            path = ROOT/"examples"/example/"manifest.json"
+            if path.exists():
+                manifest = json.loads(path.read_text())
+                for key in ("id", "permissions"):
+                    self.assertEqual(app[key], manifest[key], key)
+                # Unreleased source changes must not silently change the trusted
+                # release asset/hash recorded in the curated catalog.
+                self.assertGreaterEqual(version_tuple(manifest["version"]),
+                                        version_tuple(app["version"]))
+                if version_tuple(manifest["version"]) == version_tuple(app["version"]):
+                    self.assertEqual(app["name"], manifest["name"])
     def test_url_injection_rejected(self):
         for key,val in (("releaseTag","../main"),("asset","https://evil.local/a.mupiapp"),("asset","../../etc"),("sha256","abc"),("id","../../../evil")):
-            catalog=json.loads(json.dumps(self.catalog))
-            catalog["apps"][0][key]=val
+            catalog = json.loads(json.dumps(self.catalog))
+            catalog["apps"][0][key] = val
             with self.subTest(key=key,val=val),self.assertRaises(ValueError): validate(catalog)
     def test_duplicate_rejected(self):
-        catalog=json.loads(json.dumps(self.catalog))
+        catalog = json.loads(json.dumps(self.catalog))
         catalog["apps"].append(catalog["apps"][0])
-        with self.assertRaises(ValueError):validate(catalog)
+        with self.assertRaises(ValueError): validate(catalog)
 
 if __name__=="__main__":
     unittest.main()

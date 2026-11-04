@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="MuPi Krümelwurm">
+<rect width="128" height="128" rx="24" fill="#153d40"/>
+<circle cx="32" cy="89" r="15" fill="#4cb982"/><circle cx="53" cy="84" r="16" fill="#69d99b"/>
+<circle cx="73" cy="68" r="18" fill="#4cb982"/><circle cx="93" cy="45" r="23" fill="#94eeb0"/>
+<circle cx="86" cy="40" r="4" fill="#163e35"/><circle cx="100" cy="40" r="4" fill="#163e35"/>
+<path d="M87 52 Q95 60 102 51" stroke="#206451" stroke-width="3" fill="none" stroke-linecap="round"/>
+<circle cx="29" cy="38" r="10" fill="#edbd69"/><circle cx="27" cy="35" r="2" fill="#fff2c6"/>
+</svg>

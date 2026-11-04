@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#102f35">
+  <title>MuPi Krümelwurm – MuPiBox-NG</title>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="screen">
+    <header>
+      <div class="brand">MuPiBox <span data-i18n="community">Community-App</span></div>
+      <button id="exit" class="subtle" type="button"><span aria-hidden="true">✕ </span><span data-i18n="exit">Schließen</span></button>
+    </header>
+    <section class="body">
+      <aside class="info">
+        <h1 data-i18n="wormTitle">MuPi Krümelwurm</h1>
+        <div class="scoreboard">
+          <div><span data-i18n="wormScore">Punkte</span><strong id="points">0</strong></div>
+          <div><span data-i18n="wormBest">Rekord</span><strong id="best">0</strong></div>
+        </div>
+        <label for="speed" data-i18n="wormSpeed">Geschwindigkeit</label>
+        <select id="speed">
+          <option value="easy" data-i18n="easy">Leicht</option>
+          <option value="normal" selected data-i18n="normal">Normal</option>
+          <option value="hard" data-i18n="hard">Schwer</option>
+        </select>
+        <p id="status" class="status" aria-live="polite" data-i18n="wormReady">Bereit? Drücke Start!</p>
+        <div class="actions">
+          <button id="toggle" class="primary" type="button" data-i18n="wormStart">Los geht's!</button>
+          <button id="reset" class="secondary" type="button" data-i18n="restart">Neue Runde</button>
+        </div>
+        <div class="dpad" role="group" aria-label="Steuerkreuz">
+          <button data-direction="up" data-i18n-aria="directionUp" aria-label="Nach oben" type="button">▲</button>
+          <button data-direction="left" data-i18n-aria="directionLeft" aria-label="Nach links" type="button">◀</button>
+          <button data-direction="down" data-i18n-aria="directionDown" aria-label="Nach unten" type="button">▼</button>
+          <button data-direction="right" data-i18n-aria="directionRight" aria-label="Nach rechts" type="button">▶</button>
+        </div>
+        <p class="hint" data-i18n="wormHint">Pfeile, WASD oder Wischen. A: Pause.</p>
+      </aside>
+      <div class="garden">
+        <canvas id="garden" width="600" height="400" role="img" data-i18n-aria="gardenBoard" aria-label="Garten-Spielfeld"></canvas>
+      </div>
+    </section>
+    <footer>MuPiBox-NG · unabhängiges Offline-Spiel · SDK v1</footer>
+  </main>
+  <script src="./mupibox-sdk.js"></script>
+  <script src="./i18n.js"></script>
+  <script src="./logic.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

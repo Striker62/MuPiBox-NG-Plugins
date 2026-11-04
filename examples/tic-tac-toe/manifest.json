@@ -1,13 +1,13 @@
 {
   "apiVersion": "1",
   "id": "community.tictactoe",
-  "name": "Tic Tac Toe",
-  "version": "0.1.0",
+  "name": "MuPi Kreuz & Kreis",
+  "version": "0.2.0",
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.svg",
   "author": "MuPiBox-NG Community",
-  "description": "Zwei-Spieler-Tic-Tac-Toe auf dem Touchscreen oder per Controller",
+  "description": "MuPi Kreuz & Kreis in sieben Boxsprachen, mit 2 Spielern oder MuPi-KI in leicht, normal und schwer.",
   "permissions": ["storage", "controller"],
   "display": { "orientation": "landscape", "minWidth": 800, "minHeight": 480 }
 }

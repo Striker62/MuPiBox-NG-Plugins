@@ -1,0 +1,13 @@
+{
+  "apiVersion": "1",
+  "id": "community.mupi-four-in-a-row",
+  "name": "MuPi 4er-Reihe",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "author": "MuPiBox-NG Community",
+  "description": "Eigenständiges Vierer-Reihe-Spiel mit 2-Spieler-Modus oder MuPi-KI in drei Stufen. Sieben Sprachen.",
+  "permissions": ["storage", "controller"],
+  "display": { "orientation": "landscape", "minWidth": 800, "minHeight": 480 }
+}

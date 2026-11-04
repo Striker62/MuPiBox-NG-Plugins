@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#101e36">
+  <title>MuPi 4er-Reihe – MuPiBox-NG</title>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="screen">
+    <header>
+      <div class="brand">MuPiBox <span data-i18n="community">Community-App</span></div>
+      <button id="exit" class="subtle" type="button"><span aria-hidden="true">✕ </span><span data-i18n="exit">Schließen</span></button>
+    </header>
+    <section class="body">
+      <div class="info">
+        <h1 data-i18n="fourTitle">MuPi 4er-Reihe</h1>
+        <label for="mode" data-i18n="mode">Spielmodus</label>
+        <select id="mode" aria-label="Spielmodus">
+          <option value="two" data-i18n="two">2 Spieler</option>
+          <option value="easy" data-i18n="easy">Leicht</option>
+          <option value="normal" data-i18n="normal" selected>Normal</option>
+          <option value="hard" data-i18n="hard">Schwer</option>
+        </select>
+        <p id="status" class="status" aria-live="polite" data-i18n="loading">Wird geladen …</p>
+        <p class="hint" data-i18n="fourHint">Touch: Spalte antippen. Controller: Links/Rechts + A, X: Modus.</p>
+        <button id="reset" class="primary" type="button" data-i18n="restart">Neue Runde</button>
+      </div>
+      <div id="board" class="board" role="group" data-i18n-aria="fourTitle" aria-label="MuPi 4er-Reihe"></div>
+    </section>
+    <footer>MuPiBox-NG · unabhängiges HTML/JS-Spiel · SDK v1</footer>
+  </main>
+  <script src="./mupibox-sdk.js"></script>
+  <script src="./i18n.js"></script>
+  <script src="./logic.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
