@@ -48,6 +48,8 @@ class CatalogTests(unittest.TestCase):
     def test_published_catalog(self):
         examples = {
             "community.tictactoe":"tic-tac-toe",
+            "community.mupi-four-in-a-row":"four-in-a-row",
+            "community.mupi-kruemelwurm":"crumbworm",
             "official.klang-memory":"klang-memory",
             "official.webcam-preview":"webcam-preview"
         }
