@@ -3,14 +3,44 @@
   "apps": [
     {
       "id": "community.tictactoe",
-      "name": "Tic Tac Toe",
-      "description": "Classic Tic Tac Toe with Go/WebAssembly, playable with mouse, touch or controller.",
+      "name": "MuPi Kreuz & Kreis",
+      "description": "Kreuz & Kreis: 2 Spieler oder MuPi-KI (leicht, normal, schwer), 7 Boxsprachen, Touch/Controller.",
       "category": "games",
       "author": "MuPiBox Community",
+      "version": "0.2.0",
+      "releaseTag": "v0.1.0-preview.6",
+      "asset": "mupi-kreuz-kreis.mupiapp",
+      "sha256": "5eff8de01466b52b1dfa12642f8e876c37ee21626a71f0dbdc96db0c958b4a56",
+      "permissions": [
+        "storage",
+        "controller"
+      ]
+    },
+    {
+      "id": "community.mupi-four-in-a-row",
+      "name": "MuPi 4er-Reihe",
+      "description": "Eigenständiges 7x6-Reihenspiel für 2 Spieler oder gegen MuPi (3 KI-Stufen), 7 Sprachen.",
+      "category": "games",
+      "author": "MuPiBox-NG Community",
       "version": "0.1.0",
-      "releaseTag": "v0.1.0-preview.3",
-      "asset": "tic-tac-toe.mupiapp",
-      "sha256": "155e30082adb0027694038527e7abe096cf2674bd55ffde4da9aad99258dd08d",
+      "releaseTag": "v0.1.0-preview.6",
+      "asset": "four-in-a-row.mupiapp",
+      "sha256": "ea735dd69666ee49e035b9f3ae68a6fd59c3cdb3aedc937d3a2d69587cd53028",
+      "permissions": [
+        "storage",
+        "controller"
+      ]
+    },
+    {
+      "id": "community.mupi-kruemelwurm",
+      "name": "MuPi Krümelwurm",
+      "description": "Eigenständiges Wurmspiel mit Krümeln, Rekord, 3 Geschwindigkeiten und 7 Boxsprachen.",
+      "category": "games",
+      "author": "MuPiBox-NG Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.6",
+      "asset": "crumbworm.mupiapp",
+      "sha256": "baa5ffc901c11e6cd140b6f52a8dea0cffdf7b1d94094fd813ff0698848c7c28",
       "permissions": [
         "storage",
         "controller"
