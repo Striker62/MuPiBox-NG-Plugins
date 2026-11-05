@@ -20,7 +20,7 @@ MAX_TOTAL_BYTES = 50 * 1024 * 1024
 MAX_FILE_BYTES = 20 * 1024 * 1024
 MAX_MANIFEST_BYTES = 1024 * 1024
 MAX_COMPRESSION_RATIO = 200
-ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "network"}
+ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "network"}
 ALLOWED_FIELDS = {
     "apiVersion", "id", "name", "version", "runtime", "entry", "icon",
     "description", "author", "permissions", "networkHosts", "display",
@@ -84,7 +84,7 @@ def validate_manifest(data: object, files: set[str]) -> dict:
         if icon not in files or not icon.endswith((".svg", ".png")):
             raise PackageError("icon must point to an existing .svg/.png file")
     perms = data["permissions"]
-    if not isinstance(perms, list) or len(perms) > 5 or any(type(p) is not str for p in perms):
+    if not isinstance(perms, list) or len(perms) > 6 or any(type(p) is not str for p in perms):
         raise PackageError("permissions must be a string array")
     if len(set(perms)) != len(perms) or not set(perms).issubset(ALLOWED_PERMISSIONS):
         raise PackageError("permissions contain duplicates or unsupported values")

@@ -40,7 +40,7 @@ Example manifest:
 | `version` | Semantic release version, for update comparisons |
 | `runtime` | Only `"web"` for v1; Go must be compiled to WASM |
 | `entry`, `icon` | Relative paths inside the package, no absolute paths or `..` |
-| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `network` |
+| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save` (`network` is not supported by the current host) |
 | `networkHosts` | Explicit hostname allowlist **required** when requesting `network` |
 | `display` | Preferred orientation and minimum display size |
 
@@ -49,3 +49,5 @@ Example manifest:
 **Packaging restrictions implemented by the validator:** 200 files max, 50 MiB total uncompressed, 20 MiB per file, max 1 MiB manifest, no absolute paths, traversal paths, symbolic links, duplicate paths or case-insensitive collisions. Host enforcement must repeat checks and enforce time/CPU/memory/file limits. Invalid packages must never be extracted directly into system directories.
 
 **Integrity and provenance:** ZIP files are **not signed** in v1. The official future catalog should publish SHA-256 digests and provide a publisher-review/signature policy before auto-install/update. A hash alone verifies downloaded bytes, not publisher trust.
+
+**`photo-save` (host development):** Explicit, parent-approved permission to save PNG/JPEG image Blobs through `MuPiBoxSDK.photos`, not arbitrary file access. The API is available on the local touch runner only (no remote Admin preview). Max 8 MiB/file, 16 MP, 250 MiB and 1000 photos per application. The host owns all paths and IDs; photos survive plugin updates/uninstall. See `GETTING_STARTED.en.md`.

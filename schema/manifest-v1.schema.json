@@ -16,7 +16,7 @@
     "description": { "type": "string", "maxLength": 500 },
     "author": { "type": "string", "maxLength": 100 },
     "permissions": {
-      "type": "array", "uniqueItems": true, "items": { "enum": ["storage", "controller", "audio", "camera", "network"] }, "maxItems": 5
+      "type": "array", "uniqueItems": true, "items": { "enum": ["storage", "controller", "audio", "camera", "photo-save", "network"] }, "maxItems": 6
     },
     "networkHosts": {
       "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]*\\.[a-z]{2,}$", "maxLength": 253 }, "maxItems": 20

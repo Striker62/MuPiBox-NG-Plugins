@@ -121,3 +121,9 @@ The legacy Tic-Tac-Toe app ID stays stable through the rename.
 Read `GETTING_STARTED.en.md` and `CONTRIBUTING.md`; fork the public repository, create a feature branch and propose a focused PR against `main`. State purpose, demo steps, requested permissions, device/browser compatibility, licensing and test results. For security issues, use `SECURITY.md`, **not** a public issue or PR.
 
 **Important:** This file guides repository contributions. It is not an instruction to publish private core code or to bypass the host application's permission model.
+
+## Durable photo capability (host development)
+
+- `photo-save` must be declared and approved separately from `camera`; never use direct `/dev/video*` access, filesystem paths, blob download hacks or hidden browser storage for photos.
+- `sdk.photos.save({blob})`, `sdk.photos.list()`, `sdk.photos.get(id)`, `sdk.photos.delete(id)` are local touchscreen-only and host-scoped. The host accepts PNG/JPEG Blobs, 8 MiB each, up to 16 MP and 250 MiB/1000 files per app. Images survive updates and uninstall.
+- These calls do not provide global Gallery or printer access. Do not copy photos to network services or print them without a separate explicit user action and host capability.

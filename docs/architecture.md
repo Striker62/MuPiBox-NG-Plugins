@@ -54,3 +54,7 @@ When app becomes active, host should negotiate audio focus with the existing pla
 5. **Open:** Catalog backend, signed metadata, publisher identity, automatic updates and multi-version trust policy.
 
 The core can implement a different rendering engine as long as the public bridge behaves the same.
+
+## Per-app photo storage (host development)
+
+An optional `photo-save` permission allows the local trusted touch runner to carry image Blobs across the opaque iframe boundary. The privileged host sends the validated PNG/JPEG bytes to an app-scoped, quota-limited local store via a session-authenticated binary request. The untrusted app never sees paths or session tokens, cannot access other apps' photos, and cannot call the Admin API. Unlike 1-MiB JSON preferences, images use a separate 250-MiB per-app store. The host does not automatically publish them into the built-in Gallery or to printers.

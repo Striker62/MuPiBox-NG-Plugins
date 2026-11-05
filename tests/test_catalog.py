@@ -10,7 +10,7 @@ VERSION = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$")
 TAG = re.compile(r"^v[0-9]+\.[0-9]+\.[0-9]+-preview\.[0-9]+$")
 ASSET = re.compile(r"^[a-z0-9][a-z0-9-]*\.mupiapp$")
 SHA = re.compile(r"^[0-9a-f]{64}$")
-PERMISSIONS = {"storage","controller","audio","camera"}
+PERMISSIONS = {"storage","controller","audio","camera","photo-save"}
 
 def validate(catalog):
     if not isinstance(catalog, dict) or set(catalog) != {"schema", "apps"} or catalog["schema"] != 1:

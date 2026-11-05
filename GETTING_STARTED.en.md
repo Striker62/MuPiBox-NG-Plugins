@@ -91,3 +91,32 @@ await MuPiBoxSDK.camera.stop();
 ```
 
 The app cannot bypass the **separate user-facing consent dialog**; a visible Stop indicator remains in the trusted host, outside the plugin frame. The API returns bounded 320x240 JPEG snapshots (roughly 1 frame/second) and is available only on the local touchscreen, not the remote Admin preview. The host does not store or upload frames, does not grant microphone access and rejects unrecognized camera paths. An attached compatible UVC camera is required; physical capture was **not verified on box 85** because no webcam was connected. Use `python3 tools/build_webcam_example.py` to build the example.
+
+### Durable photos (development host builds with photo-save)
+
+For touch apps such as **FotoSpaß**, request a separate `photo-save` permission
+in `manifest.json` alongside `camera` if taking pictures. The photo permission is
+reviewed when the parent installs or updates the app. Neither permission grants
+general filesystem access. On an equipped, updated **local MuPiBox touchscreen**
+the API stores edited, finished images:
+
+```javascript
+const sdk = window.MuPiBoxSDK;
+const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+if (!blob) throw new Error('Foto konnte nicht erstellt werden');
+const saved = await sdk.photos.save({blob}); // host chooses filename and directory
+const photos = await sdk.photos.list();      // [{id, filename, mimeType, size, createdAt}, ...]
+const imageBlob = await sdk.photos.get(saved.id); // native Blob
+const url = URL.createObjectURL(imageBlob);
+preview.src = url; // call URL.revokeObjectURL(url) when preview is no longer needed
+// await sdk.photos.delete(saved.id); // explicit deletion
+```
+
+Only **PNG/JPEG**, maximum **8 MiB per file**, **16 MP**, **250 MiB** and
+**1000 photos per plugin**. The host validates and decodes the image, saves it
+atomically under its private app-data root, and returns an opaque image ID.
+Images survive app updates and uninstall. The built-in MuPiBox Gallery is not
+automatically populated: export, backup and printing will need their own
+separately approved host integration. On remote Admin/browser previews these
+operations are intentionally unavailable. The webcam's camera consent dialog
+still governs starting a camera.

@@ -125,6 +125,38 @@
     async stop() {return invoke('camera.stop', {});}
   });
 
+  // Persistent host-owned image storage. The caller supplies only a Blob or
+  // an opaque photo ID. The trusted parent uploads binary data; untrusted apps
+  // cannot choose filenames, directories, tokens or filesystem paths.
+  const photoID = /^\d{8}T\d{6}\.\d{9}Z-[a-f0-9]{16}\.(?:png|jpg)$/;
+  function checkPhotoID(id) {
+    if (typeof id !== 'string' || !photoID.test(id))
+      throw new TypeError('invalid photo ID');
+  }
+  const photos = Object.freeze({
+    async save(input) {
+      const blob = input instanceof global.Blob ? input : input?.blob;
+      if (!(blob instanceof global.Blob) || !['image/png', 'image/jpeg'].includes(blob.type) ||
+          blob.size < 1 || blob.size > 8 * 1024 * 1024)
+        throw new TypeError('save requires a PNG or JPEG Blob up to 8 MiB');
+      return invoke('photos.save', {blob});
+    },
+    async list() {
+      const result = await invoke('photos.list', {});
+      return Array.isArray(result?.photos) ? result.photos : [];
+    },
+    async get(id) {
+      checkPhotoID(id);
+      const result = await invoke('photos.get', {id});
+      if (!(result?.blob instanceof global.Blob)) throw new Error('invalid photo response');
+      return result.blob;
+    },
+    async delete(id) {
+      checkPhotoID(id);
+      return invoke('photos.delete', {id});
+    }
+  });
+
   const sdk = Object.freeze({
     apiVersion: '1',
     isHosted: Boolean(bridge),
@@ -132,6 +164,7 @@
     storage,
     audio,
     camera,
+    photos,
     async getContext() {
       if (bridge) return invoke('host.context', {});
       return { apiVersion: '1', preview: true, language: global.navigator.language || 'de' };

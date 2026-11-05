@@ -54,6 +54,14 @@ class PackageTests(unittest.TestCase):
         with self.assertRaises(PackageError):
             validate_manifest(self.manifest, {"index.html"})
 
+    def test_photo_permission_is_explicit_and_supported(self):
+        self.manifest["permissions"] = ["camera", "photo-save"]
+        validated = validate_manifest(self.manifest, {"index.html"})
+        self.assertEqual(validated["permissions"], ["camera", "photo-save"])
+        self.manifest["permissions"] = ["photo-save", "photo-save"]
+        with self.assertRaises(PackageError):
+            validate_manifest(self.manifest, {"index.html"})
+
     def test_requires_network_hosts(self):
         self.manifest["permissions"] = ["network"]
         with self.assertRaises(PackageError):

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>MuPiBox Foto-Speicher Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header><strong>Foto-Speicher Test</strong><span id="status" role="status" aria-live="polite">Bereit</span></header>
+    <section class="layout">
+      <div class="editor">
+        <canvas id="drawing" width="480" height="260" aria-label="Hier mit dem Finger malen"></canvas>
+        <div class="toolbar">
+          <button id="example" type="button">Testbild</button>
+          <button id="clear" type="button">Leeren</button>
+          <button id="save" class="primary" type="button">Als PNG speichern</button>
+        </div>
+      </div>
+      <div class="library">
+        <h2>Meine Fotos <span id="count"></span></h2>
+        <div id="photo-list" class="list" aria-live="polite"></div>
+        <button id="refresh" type="button">Liste aktualisieren</button>
+      </div>
+    </section>
+    <footer>Nur lokale MuPiBox-Speicherung. Keine Kamera, kein Drucker, kein Upload ins Internet.</footer>
+  </main>
+  <script src="mupibox-sdk.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "apiVersion": "1",
+  "id": "official.photo-library-demo",
+  "name": "Foto-Speicher Test",
+  "description": "Lokaler Test für die sichere Fotoablage von Community-Apps: Canvas malen, als PNG speichern, laden und löschen. Keine Kamera und kein Netzwerk.",
+  "author": "MuPiBox Team",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "permissions": [
+    "photo-save"
+  ],
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480
+  }
+}
