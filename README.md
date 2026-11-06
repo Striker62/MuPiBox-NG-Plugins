@@ -2,7 +2,7 @@
 
 **Unabhängige Apps für MuPiBox-NG – ohne Zugriff auf das private Haupt-Repository.**
 
-Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator drei eigenständige Community-Spiele (**MuPi Kreuz & Kreis**, **MuPi 4er-Reihe**, **MuPi Krümelwurm**) sowie die Community-Fotobox **FotoSpaß**.
+Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator, drei eigenständige Community-Spiele (**MuPi Kreuz & Kreis**, **MuPi 4er-Reihe**, **MuPi Krümelwurm**) sowie die Community-Fotobox **FotoSpaß**.
 
 > **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Die native Qt-Touch-Laufzeit, vollständiger Audiofokus und ein signierter Plugin-Katalog fehlen noch; ältere NG-Versionen haben keinen Plugin-Manager.
 
@@ -41,7 +41,7 @@ python3 tools/mupiapp.py pack ./meine-app ./dist/meine-app.mupiapp
 - **MuPi 4er-Reihe** – Quellcode unter [`examples/`](examples/)
 - [**MuPi Krümelwurm**](examples/crumbworm)
 - [FotoSpaß](examples/fotospass) – Community-Fotobox mit Kamera, Bearbeitung und lokaler Galerie
-- [`docs/release-checklist.md`](docs/release-checklist.md) – **Pflichtprüfung vor Veröffentlichung der Spiele**
+- [`docs/release-checklist.md`](docs/release-checklist.md) – Technische Prüfschritte vor Veröffentlichungen
 - [Community-Beitragende](CONTRIBUTORS.md) – Zuordnung und Prüfung externer Beiträge
 - [`tools/mupiapp.py`](tools/mupiapp.py) – Packen und Validieren
 
@@ -53,15 +53,9 @@ python3 tools/mupiapp.py pack ./meine-app ./dist/meine-app.mupiapp
 4. Neue Host-Funktionen werden nach API-Version eingeführt. Die App-Laufzeit entscheidet, welche APIs verfügbar sind.
 5. Apps und SDK sind unabhängig vom proprietär lizenzierten MuPiBox-NG-Kern.
 
-## Community-Spiele (noch nicht als Update freigegeben)
+## Community-Spiele
 
-Die drei neuen Spielversionen übernehmen `getContext().language` aus der Box
-(de, en, fr, es, it, nl, sv), unterstützen Touch und Controller und benötigen
-keine externe Online-API. **Die neue Veröffentlichung im offiziellen App-Katalog
-ist bis zum Abschluss von [Release-Checkliste und Markenprüfung](docs/release-checklist.md)
-gesperrt.** Der derzeitige Katalogeintrag des bestehenden Spiels zeigt weiterhin
-den früher veröffentlichten Stand; er wird erst gemeinsam mit dem neuen
-verifizierten Release-Asset umgestellt.
+Die Spiele übernehmen `getContext().language` aus der Box (de, en, fr, es, it, nl, sv), unterstützen Touch und Controller und benötigen keine externe Online-API. Versionen im offiziellen App-Katalog werden erst nach technischem Review, Paketprüfung und Kontrolle der veröffentlichten SHA-256 bereitgestellt.
 
 ## Mitmachen
 
