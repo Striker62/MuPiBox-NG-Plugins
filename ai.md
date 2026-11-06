@@ -97,16 +97,9 @@ cd my-app && python3 -m http.server 8080
 
 For Go/WASM, build with `GOOS=js GOARCH=wasm CGO_ENABLED=0 go build -o game.wasm ./cmd/wasm` and ship the **matching** Go `wasm_exec.js` plus its license notice.
 
-## Game-name and copyright risk documentation
+## Community app release checks
 
-For MuPi Kreuz & Kreis, MuPi 4er-Reihe and MuPi Krümelwurm, refer to
-[\`docs/release-checklist.md\`](docs/release-checklist.md) and the
-[preliminary review](docs/trademark-preflight-2026-11-04.md).
-The owner accepted the **remaining unverified trademark risk** and chose
-not to pay for external legal advice. Never claim that DPMA/EUIPO/WIPO
-full register searches were completed when they were not.
-An official catalog entry still requires actual verified Release bytes.
-The historical internal app ID must remain stable through the visible-name change.
+Before an official release, review source code, assets, licensing, manifest permissions, package validation and the actual published release SHA-256. Keep existing internal app IDs stable when changing display names. See [the release checklist](docs/release-checklist.md).
 
 ## Curated catalog rules
 
