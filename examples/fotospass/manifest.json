@@ -3,7 +3,7 @@
   "id": "community.fotospass",
   "name": "FotoSpass",
   "description": "FotoSpass mit Kamera, Malen, Accessoires, Speichern und Galerie mit Einzelbild-Loeschfunktion.",
-  "author": "MuPiBox Community",
+  "author": "Striker62",
   "version": "0.4.2",
   "runtime": "web",
   "entry": "index.html",
