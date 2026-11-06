@@ -37,8 +37,8 @@ python3 tools/mupiapp.py pack ./meine-app ./dist/meine-app.mupiapp
 - [`docs/quickstart.md`](docs/quickstart.md) – Eigene App entwickeln
 - [`schema/manifest-v1.schema.json`](schema/manifest-v1.schema.json) – JSON-Schema
 - [`sdk/mupibox-sdk.js`](sdk/mupibox-sdk.js) – öffentlicher JavaScript-SDK-Entwurf
-- [**MuPi Kreuz & Kreis**](examples/tic-tac-toe) – Go/WASM (stabile Legacy-App-ID)
-- [**MuPi 4er-Reihe**](examples/four-in-a-row)
+- **MuPi Kreuz & Kreis** – Go/WASM (stabile interne App-ID; Quellcode unter [`examples/`](examples/))
+- **MuPi 4er-Reihe** – Quellcode unter [`examples/`](examples/)
 - [**MuPi Krümelwurm**](examples/crumbworm)
 - [FotoSpaß](examples/fotospass) – Community-Fotobox mit Kamera, Bearbeitung und lokaler Galerie
 - [`docs/release-checklist.md`](docs/release-checklist.md) – **Pflichtprüfung vor Veröffentlichung der Spiele**
