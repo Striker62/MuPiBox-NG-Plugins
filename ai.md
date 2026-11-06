@@ -106,7 +106,7 @@ The owner accepted the **remaining unverified trademark risk** and chose
 not to pay for external legal advice. Never claim that DPMA/EUIPO/WIPO
 full register searches were completed when they were not.
 An official catalog entry still requires actual verified Release bytes.
-The legacy Tic-Tac-Toe app ID stays stable through the rename.
+The historical internal app ID must remain stable through the visible-name change.
 
 ## Curated catalog rules
 
