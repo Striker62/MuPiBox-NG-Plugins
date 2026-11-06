@@ -51,6 +51,13 @@ jobs:
           node --check examples/klang-memory/app.js
           node --check sdk/mupibox-sdk.js
           node --test tests/test_sdk_audio.js
+      - name: Validate FotoSpaß community plugin and shared SDK
+        run: |
+          node --check examples/fotospass/app.js
+          node --check examples/fotospass/mupibox-sdk.js
+          python3 -c "from pathlib import Path; assert Path('examples/fotospass/mupibox-sdk.js').read_bytes() == Path('sdk/mupibox-sdk.js').read_bytes(), 'FotoSpaß SDK must match canonical SDK'"
+          python3 tools/mupiapp.py pack examples/fotospass dist/fotospass.mupiapp
+          python3 tools/mupiapp.py validate dist/fotospass.mupiapp
       - uses: actions/upload-artifact@v4
         with:
           name: board-games-and-examples-preview
@@ -60,4 +67,5 @@ jobs:
             dist/crumbworm.mupiapp
             dist/klang-memory.mupiapp
             dist/webcam-preview.mupiapp
+            dist/fotospass.mupiapp
           if-no-files-found: error
