@@ -2,7 +2,7 @@
 
 **Unabhängige Apps für MuPiBox-NG – ohne Zugriff auf das private Haupt-Repository.**
 
-Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator und drei eigenständige Community-Spiele: **MuPi Kreuz & Kreis** (Go/WebAssembly), **MuPi 4er-Reihe** und **MuPi Krümelwurm** (HTML/JavaScript).
+Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator drei eigenständige Community-Spiele (**MuPi Kreuz & Kreis**, **MuPi 4er-Reihe**, **MuPi Krümelwurm**) sowie die Community-Fotobox **FotoSpaß**.
 
 > **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Die native Qt-Touch-Laufzeit, vollständiger Audiofokus und ein signierter Plugin-Katalog fehlen noch; ältere NG-Versionen haben keinen Plugin-Manager.
 
@@ -21,9 +21,7 @@ python3 tools/build_example.py
 # Paketinhalt und Manifest sicherheitstechnisch prüfen
 python3 tools/mupiapp.py validate dist/mupi-kreuz-kreis.mupiapp
 
-# Lokal im Browser ausprobieren (noch kein Host-API-Zugriff)
-cd .build/tic-tac-toe && python3 -m http.server 8080
-# http://localhost:8080
+# Browser-Vorschau: siehe docs/quickstart.md (ohne Host-API-Zugriff)
 ```
 
 Eine eigene HTML-/JavaScript-App kann ohne Go entwickelt werden. Sie benötigt ein `manifest.json`, einen lokalen HTML-Einstiegspunkt und alle Dateien im Paket:
@@ -39,10 +37,12 @@ python3 tools/mupiapp.py pack ./meine-app ./dist/meine-app.mupiapp
 - [`docs/quickstart.md`](docs/quickstart.md) – Eigene App entwickeln
 - [`schema/manifest-v1.schema.json`](schema/manifest-v1.schema.json) – JSON-Schema
 - [`sdk/mupibox-sdk.js`](sdk/mupibox-sdk.js) – öffentlicher JavaScript-SDK-Entwurf
-- [`examples/tic-tac-toe`](examples/tic-tac-toe) – **MuPi Kreuz & Kreis** (Go/WASM, stabile Legacy-App-ID)
-- [`examples/four-in-a-row`](examples/four-in-a-row) – **MuPi 4er-Reihe**
-- [`examples/crumbworm`](examples/crumbworm) – **MuPi Krümelwurm**
+- [**MuPi Kreuz & Kreis**](examples/tic-tac-toe) – Go/WASM (stabile Legacy-App-ID)
+- [**MuPi 4er-Reihe**](examples/four-in-a-row)
+- [**MuPi Krümelwurm**](examples/crumbworm)
+- [FotoSpaß](examples/fotospass) – Community-Fotobox mit Kamera, Bearbeitung und lokaler Galerie
 - [`docs/release-checklist.md`](docs/release-checklist.md) – **Pflichtprüfung vor Veröffentlichung der Spiele**
+- [Community-Beitragende](CONTRIBUTORS.md) – Zuordnung und Prüfung externer Beiträge
 - [`tools/mupiapp.py`](tools/mupiapp.py) – Packen und Validieren
 
 ## Leitlinien
@@ -94,3 +94,9 @@ Mit NG **0.2.0-alpha.22** oder neuer nutzt Klang-Memory die neue, berechtigungsg
 Klang-Memory **0.1.2** hat nun ein eigenes Ton-Einstellungsmenü mit Lautstärkeregler und Probeton. Die Einstellung wird pro App gespeichert und bleibt unter der MuPiBox-Lautstärkebegrenzung.
 
 Das neue SDK erlaubt per `camera`-Berechtigung USB-Webcams. Ein Beispiel `Webcam-Vorschau` ist als experimentelle, lokal begrenzte Kamera-App verfügbar. Vor jeder Nutzung muss direkt am Touchdisplay eine zweite Freigabe bestätigt werden; ein roter Hinweis zeigt den Kamerabetrieb und bietet sofortiges Stoppen. Fotos werden nicht automatisch gespeichert oder hochgeladen. Auf Box 85 war bisher keine USB-Kamera angeschlossen, weshalb ein echter Hardwaretest noch aussteht.
+
+## Community-Fotobox: FotoSpaß 0.4.2
+
+[FotoSpaß](examples/fotospass) wurde von [@Striker62](https://github.com/Striker62) mit [Pull Request #4](https://github.com/splitti/MuPiBox-NG-Plugins/pull/4) beigesteuert. Die App bietet einen lokalen Webcam-Fotomodus, Countdown, Malen, Accessoires und eine Foto-Galerie mit Einzelbildlöschung. Berechtigungen: `camera` und `photo-save`, **kein** `network`. Die Kamera erfordert die Freigabe am Gerät, die lokale Speicherung die explizite Foto-Berechtigung. Weitere Details und Prüfnachweis: [CONTRIBUTORS.md](CONTRIBUTORS.md).
+
+Die Aufnahme des Quellcodes in `main` ist **keine** Aufnahme in den offiziellen App-Katalog. Erst ein geprüftes, veröffentlichtes `.mupiapp`-Paket mit kontrollierter SHA-256 darf dort eingetragen werden. Die internen Ordner-/App-IDs älterer Spiele bleiben aus Kompatibilitätsgründen bestehen; ihre **sichtbaren Titel** lauten MuPi Kreuz & Kreis, MuPi 4er-Reihe und MuPi Krümelwurm.
