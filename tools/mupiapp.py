@@ -20,6 +20,12 @@ MAX_TOTAL_BYTES = 50 * 1024 * 1024
 MAX_FILE_BYTES = 20 * 1024 * 1024
 MAX_MANIFEST_BYTES = 1024 * 1024
 MAX_COMPRESSION_RATIO = 200
+# Match the MuPiBox-NG plugin host archive allowlist; documentation belongs in the repository.
+HOST_ALLOWED_EXTENSIONS = {
+    ".html", ".htm", ".js", ".mjs", ".css", ".wasm", ".json",
+    ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico",
+    ".woff", ".woff2", ".ttf", ".mp3", ".ogg", ".wav", ".txt",
+}
 ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "network"}
 ALLOWED_FIELDS = {
     "apiVersion", "id", "name", "version", "runtime", "entry", "icon",
@@ -126,6 +132,8 @@ def validate_package(path: Path) -> dict:
             if info.is_dir():
                 raise PackageError("directory entries not needed (files only)")
             name = checked_path(info.filename)
+            if PurePosixPath(name).suffix.lower() not in HOST_ALLOWED_EXTENSIONS:
+                raise PackageError(f"unsupported file type for MuPiBox-NG: {name}")
             if name.casefold() in seen:
                 raise PackageError(f"duplicate/case-colliding path: {name}")
             seen.add(name.casefold())
@@ -154,13 +162,14 @@ def validate_package(path: Path) -> dict:
         return validate_manifest(manifest, names)
 
 
-def pack(source: Path, destination: Path) -> dict:
+def pack(source: Path, destination: Path, excluded: tuple[str, ...] | list[str] = ()) -> dict:
     source = source.resolve()
     destination = destination.resolve()
     if not source.is_dir():
         raise PackageError(f"source is not a directory: {source}")
     if source in destination.parents:
         raise PackageError("destination must not be inside source directory")
+    excluded_paths = {checked_path(name) for name in excluded}
     names: set[str] = set()
     paths: list[tuple[str, Path]] = []
     total = 0
@@ -173,6 +182,8 @@ def pack(source: Path, destination: Path) -> dict:
             if actual.is_symlink() or not actual.is_file():
                 raise PackageError(f"nonregular file: {actual}")
             name = checked_path(actual.relative_to(source).as_posix())
+            if name in excluded_paths:
+                continue
             if name.casefold() in names:
                 raise PackageError("case-colliding paths")
             names.add(name.casefold())
@@ -209,9 +220,11 @@ def main() -> int:
     sub_pack = subs.add_parser("pack", help="create a .mupiapp ZIP from a directory")
     sub_pack.add_argument("directory", type=Path)
     sub_pack.add_argument("archive", type=Path)
+    sub_pack.add_argument("--exclude", action="append", default=[], metavar="PATH",
+                          help="omit an exact repository-only file, e.g. README.md")
     args = parser.parse_args()
     try:
-        manifest = validate_package(args.archive) if args.command == "validate" else pack(args.directory, args.archive)
+        manifest = validate_package(args.archive) if args.command == "validate" else pack(args.directory, args.archive, args.exclude)
     except (PackageError, OSError, zipfile.BadZipFile) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1

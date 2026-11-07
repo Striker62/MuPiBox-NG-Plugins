@@ -39,6 +39,23 @@ class PackageTests(unittest.TestCase):
         pack(self.source, self.output)
         self.assertEqual(a, self.output.read_bytes())
 
+    def test_readme_requires_explicit_exclusion_from_release_package(self):
+        (self.source / "README.md").write_text("Source documentation only")
+        with self.assertRaisesRegex(PackageError, "unsupported file type"):
+            pack(self.source, self.output)
+        result = pack(self.source, self.output, excluded=["README.md"])
+        self.assertEqual(result["id"], "community.testapp")
+        with zipfile.ZipFile(self.output) as archive:
+            self.assertNotIn("README.md", archive.namelist())
+
+    def test_downloaded_archive_with_readme_is_rejected_by_host_contract(self):
+        with zipfile.ZipFile(self.output, "w") as archive:
+            archive.writestr("manifest.json", json.dumps(self.manifest))
+            archive.writestr("index.html", "ok")
+            archive.writestr("README.md", "source only")
+        with self.assertRaisesRegex(PackageError, "unsupported file type"):
+            validate_package(self.output)
+
     def test_rejects_traversal(self):
         for name in ("../etc/passwd", "/root/.ssh/id_rsa", "a/../b", r"a\b", "a//b", "./index.html"):
             with self.subTest(name=name), self.assertRaises(PackageError):
