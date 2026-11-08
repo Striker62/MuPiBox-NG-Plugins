@@ -50,6 +50,7 @@ class CatalogTests(unittest.TestCase):
             "community.tictactoe":"tic-tac-toe",
             "community.mupi-four-in-a-row":"four-in-a-row",
             "community.mupi-kruemelwurm":"crumbworm",
+            "community.mupi-chess":"chess",
             "official.klang-memory":"klang-memory",
             "official.webcam-preview":"webcam-preview",
             "community.fotospass":"fotospass",
@@ -68,6 +69,22 @@ class CatalogTests(unittest.TestCase):
                                         version_tuple(app["version"]))
                 if version_tuple(manifest["version"]) == version_tuple(app["version"]):
                     self.assertEqual(app["name"], manifest["name"])
+    def test_chess_cover_and_library_metadata(self):
+        import struct
+        chess = next(a for a in self.catalog['apps'] if a['id'] == 'community.mupi-chess')
+        manifest = json.loads((ROOT/'examples/chess/manifest.json').read_text())
+        self.assertEqual(chess['category'], 'games')
+        self.assertEqual(chess['version'], manifest['version'])
+        self.assertEqual(chess['permissions'], manifest['permissions'])
+        self.assertEqual(manifest['cover'], 'cover.png')
+        self.assertEqual(manifest['display']['background'], 'system')
+        self.assertFalse(manifest['display']['showBackButton'])
+        self.assertFalse(manifest['display']['showSystemInfo'])
+        self.assertTrue(manifest['display']['fullScreen'])
+        cover = (ROOT/'examples/chess/web/cover.png').read_bytes()
+        self.assertTrue(cover.startswith(b'\x89PNG\r\n\x1a\n'))
+        self.assertEqual(struct.unpack('>II', cover[16:24]), (512, 512))
+
     def test_url_injection_rejected(self):
         for key,val in (("releaseTag","../main"),("asset","https://evil.local/a.mupiapp"),("asset","../../etc"),("sha256","abc"),("id","../../../evil")):
             catalog = json.loads(json.dumps(self.catalog))

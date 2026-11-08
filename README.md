@@ -100,9 +100,9 @@ nicht als verlässliche Kachelbilder vorausgesetzt.
 4. Neue Host-Funktionen werden nach API-Version eingeführt. Die App-Laufzeit entscheidet, welche APIs verfügbar sind.
 5. Apps und SDK sind unabhängig vom proprietär lizenzierten MuPiBox-NG-Kern.
 
-## MuPi Schach (0.1.0 – Quellcode/Preview)
+## MuPi Schach (0.1.0 – offizieller Spielekatalog)
 
-`python3 tools/build_chess.py` baut das eigenständige, vollständig offline spielbare Schach inklusive lokalem Computergegner und einer Zugzeit-Uhr. Der Host-Theme-Hintergrund bleibt sichtbar, native Header-/Systemelemente sind ausgeblendet; ein eigener Pfeil verlässt das Spiel. Technische Details und Tests: [examples/chess/README.md](examples/chess/README.md). Aufnahme in den offiziellen Katalog erst mit geprüftem Release-Artefakt und SHA-256.
+`python3 tools/build_chess.py` baut das eigenständige, vollständig offline spielbare Schach inklusive lokalem Computergegner und einer Zugzeit-Uhr. Der Host-Theme-Hintergrund bleibt sichtbar, native Header-/Systemelemente sind ausgeblendet; ein eigener Pfeil verlässt das Spiel. Technische Details und Tests: [examples/chess/README.md](examples/chess/README.md). Die App ist als **Spiele-Kachel mit eigenem Springer-Cover** im offiziellen [App-Katalog](catalog/apps.json) eingetragen. Geprüftes GitHub-Release: [Preview 0.10](https://github.com/splitti/MuPiBox-NG-Plugins/releases/tag/v0.1.0-preview.10), SHA-256 des veröffentlichten Pakets: `5b3698c0dbe1ee4884158e764989b94f025741acd70830f2a149c619e1c557db`.
 
 ## Community-Spiele
 

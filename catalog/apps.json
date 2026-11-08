@@ -47,6 +47,20 @@
       ]
     },
     {
+      "id": "community.mupi-chess",
+      "name": "MuPi Schach",
+      "description": "Offline-Schach für 2 Spieler oder gegen MuPi (4 KI-Stufen), inklusive Zugzeit, Durchschnittszeit und optionalem Limit pro Zug. Theme-Hintergrund und eigene Schach-Cover-Kachel.",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.10",
+      "asset": "mupi-chess.mupiapp",
+      "sha256": "5b3698c0dbe1ee4884158e764989b94f025741acd70830f2a149c619e1c557db",
+      "permissions": [
+        "controller"
+      ]
+    },
+    {
       "id": "official.klang-memory",
       "name": "Klang-Memory",
       "description": "Sound Memory with a saved volume slider, native MuPiBox audio and persistent best score (NG alpha.23+).",

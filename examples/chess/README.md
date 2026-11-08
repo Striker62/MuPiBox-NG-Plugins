@@ -26,4 +26,4 @@ node --test tests/test_chess.js
 
 Der Builder bündelt die vorhandene öffentliche `sdk/mupibox-sdk.js`-Datei in das Paket. Der Code ist MIT-lizenziert und verwendet keine externe Schachbibliothek. Die KI ist eine lokal laufende, budgetierte Alpha-Beta-Suche, **keine** starke Stockfish-Engine. Schwierigkeit und Rechenzeit sind bewusst für Raspberry-Pi-Touchgeräte begrenzt. Uhren werden bei App-Pause und bei verborgenem Browser angehalten. Einstellungen starten eine neue Partie.
 
-**Katalog:** Neue Apps dürfen erst nach Prüfung des tatsächlich veröffentlichten `.mupiapp`-GitHub-Release-Artefakts und SHA-256-Kontrolle in `catalog/apps.json` eingetragen werden. Kein Katalogeintrag allein aufgrund des Quellcodes.
+**Offizieller Katalog:** `community.mupi-chess` ist seit [Preview 0.10](https://github.com/splitti/MuPiBox-NG-Plugins/releases/tag/v0.1.0-preview.10) mit dem überprüften GitHub-Release-Asset `mupi-chess.mupiapp` im `catalog/apps.json` unter `games` enthalten. Die Prüfsumme stammt aus einem erneuten Download des tatsächlich veröffentlichten Pakets. Die MuPiBox muss den Katalog neu laden, damit die neue Kachel angezeigt wird.
