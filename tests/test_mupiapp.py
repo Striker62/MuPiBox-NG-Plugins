@@ -79,6 +79,58 @@ class PackageTests(unittest.TestCase):
         with self.assertRaises(PackageError):
             validate_manifest(self.manifest, {"index.html"})
 
+    def test_presentation_defaults_and_gallery_are_packable(self):
+        self.manifest["category"] = "creative"
+        self.manifest["permissions"] = ["photo-save"]
+        self.manifest["display"] = {
+            "orientation": "landscape", "minWidth": 800, "minHeight": 480,
+            "showBackButton": False, "showSystemInfo": False,
+            "fullScreen": True, "background": "app"
+        }
+        self.manifest["galleryDirectories"] = [
+            {"path": "photos", "name": "My photos"},
+            {"path": "photos/portraits"}
+        ]
+        (self.source / "manifest.json").write_text(json.dumps(self.manifest))
+        result = pack(self.source, self.output)
+        self.assertEqual(result["category"], "creative")
+        self.assertFalse(validate_package(self.output)["display"]["showBackButton"])
+
+    def test_presentation_without_orientation(self):
+        self.manifest["display"] = {"showBackButton": False, "showSystemInfo": True}
+        result = validate_manifest(self.manifest, {"index.html"})
+        self.assertFalse(result["display"]["showBackButton"])
+
+    def test_rejects_invalid_presentation_flags(self):
+        self.manifest["display"] = {"orientation": "landscape"}
+        for key, bad in (
+            ("showBackButton", "false"), ("showSystemInfo", 1),
+            ("fullScreen", None), ("background", "https://example.com"),
+        ):
+            with self.subTest(key=key, bad=bad):
+                self.manifest["display"][key] = bad
+                with self.assertRaises(PackageError):
+                    validate_manifest(self.manifest, {"index.html"})
+                del self.manifest["display"][key]
+        self.manifest["category"] = "admin"
+        with self.assertRaises(PackageError):
+            validate_manifest(self.manifest, {"index.html"})
+
+    def test_gallery_registration_requires_scope_and_permission(self):
+        self.manifest["galleryDirectories"] = [{"path": "photos"}]
+        with self.assertRaisesRegex(PackageError, "photo-save"):
+            validate_manifest(self.manifest, {"index.html"})
+        self.manifest["permissions"] = ["photo-save"]
+        for bad in ("../etc", "/photos", "photos/../secrets",
+                    "photos/a//b", "images", "photos/a/b/c/d/e/f"):
+            with self.subTest(path=bad):
+                self.manifest["galleryDirectories"] = [{"path": bad}]
+                with self.assertRaises(PackageError):
+                    validate_manifest(self.manifest, {"index.html"})
+        self.manifest["galleryDirectories"] = [{"path": "photos", "name": "A"}, {"path": "photos", "name": "B"}]
+        with self.assertRaises(PackageError):
+            validate_manifest(self.manifest, {"index.html"})
+
     def test_requires_network_hosts(self):
         self.manifest["permissions"] = ["network"]
         with self.assertRaises(PackageError):

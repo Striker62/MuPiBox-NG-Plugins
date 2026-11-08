@@ -4,7 +4,7 @@
 
 Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator, drei eigenständige Community-Spiele (**MuPi Kreuz & Kreis**, **MuPi 4er-Reihe**, **MuPi Krümelwurm**) sowie die Community-Fotobox **FotoSpaß**.
 
-> **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Die native Qt-Touch-Laufzeit, vollständiger Audiofokus und ein signierter Plugin-Katalog fehlen noch; ältere NG-Versionen haben keinen Plugin-Manager.
+> **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Native Qt-Touch-Apps und der offizielle, geprüfte App-Katalog sind inzwischen verfügbar. Vollständiger Audiofokus und unabhängige Publisher-Signaturen fehlen weiterhin; ältere NG-Versionen haben keinen Plugin-Manager.
 
 ## Für Entwickler
 
@@ -45,6 +45,14 @@ python3 tools/mupiapp.py pack ./meine-app ./dist/meine-app.mupiapp
 - [Community-Beitragende](CONTRIBUTORS.md) – Zuordnung und Prüfung externer Beiträge
 - [`tools/mupiapp.py`](tools/mupiapp.py) – Packen und Validieren
 
+## App-Darstellung und eigener Zurück-Button (NG alpha.30+)
+
+Jede Community-App kann über ihr `manifest.json` vorschlagen, **in welchem Menü** sie erscheint und **welche MuPiBox-Elemente** auf dem Touchdisplay sichtbar bleiben: Zurück-Schaltfläche mit Titel, Systeminformationen, Vollbild und Hintergrund. Eltern bzw. Administratoren können diese Vorgaben **für jede installierte App einzeln überschreiben**; die Einstellungen bleiben bei Updates erhalten.
+
+Verzichtet eine App auf die native Zurück-Schaltfläche, sollte sie ihren eigenen gut erreichbaren Button mit `window.MuPiBoxSDK.exit()` anbieten. Die vorhandene Einstellung `showBackButton` blendet derzeit die ganze linke Gruppe aus **Zurück + Titel** aus; ein separates `showTitle` gibt es noch nicht.
+
+**Für Entwickler:** [Manifest-Felder und Beispielcode](docs/manifest-v1.md#native-app-appearance-and-navigation-ng-020-alpha30) · [Englische Schritt-für-Schritt-Anleitung](GETTING_STARTED.en.md#integrate-with-the-native-mupibox-interface-ng-alpha30).
+
 ## Leitlinien
 
 1. Plugin-Entwickler bekommen **keinen Zugriff** auf den Quellcode, die API-Schlüssel oder das Dateisystem des MuPiBox-NG-Kerns.
@@ -65,7 +73,7 @@ Siehe [CONTRIBUTING.md](CONTRIBUTING.md) und [SECURITY.md](SECURITY.md). Dieses 
 
 ## Erste bestehende App als Plugin-Prototyp: Klang-Memory
 
-Eine unabhängige Klang-Memory-Testversion liegt in `examples/klang-memory/`. Sie lässt sich mit `python3 tools/build_klang_memory.py` als `.mupiapp` verpacken. Die Browser-Version **ersetzt nicht** die bisherigen QML-Apps (Klang-Memory, Piano, Malbuch oder Cover-Memory). **MuPi und die verlorenen Noten bleibt im NG-Kern.** Audiofokus und native Touch-Laufzeit sind noch nicht integriert.
+Eine unabhängige Klang-Memory-Testversion liegt in `examples/klang-memory/`. Sie lässt sich mit `python3 tools/build_klang_memory.py` als `.mupiapp` verpacken. Die Browser-Version **ersetzt nicht** die bisherigen QML-Apps (Klang-Memory, Piano, Malbuch oder Cover-Memory). **MuPi und die verlorenen Noten bleibt im NG-Kern.** Vollständiger Audiofokus bleibt in Entwicklung; die native Qt-Touch-Laufzeit steht inzwischen zur Verfügung.
 
 ## Entwickleranleitungen und Beiträge
 

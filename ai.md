@@ -28,6 +28,16 @@ MuPiBox-NG is a Raspberry Pi / DietPi appliance with a private application core.
 
 Apps may also live in **their own repos**. Submit a PR here only for an example, SDK change, compatibility fix, docs, test, or a separately agreed community catalog entry. Do not copy an entire third-party app without the author's permission and license.
 
+## Native shell integration (NG alpha.30+)
+
+- Optional manifest `category`: `games`, `creative`, `learning`, `tools`, or `other`; fallback `games`.
+- Optional `display.showBackButton`, `showSystemInfo` (booleans), `fullScreen` (boolean), and `background` (`system` or `app`).
+- `showBackButton: false` hides both native Back **and title** on the left; there is no separate `showTitle` v1 setting. The system indicators at right are controlled separately.
+- When hiding native Back, include a visible, accessible, touch-sized exit button that calls `window.MuPiBoxSDK.exit()` (host `app.exit`). Do not use `history.back()`, undocumented host APIs or browser navigation as an exit route. Handle standalone-preview `preview.exit` if needed.
+- The user/admin may override these manifest preferences per installed app; app code must not change these trusted settings. The sandbox and parental permissions do not change.
+- Manifest `galleryDirectories` is optional and only valid with `photo-save`. Paths are restricted under `photos` and need an **independent** Admin approval before becoming visible in Gallery.
+- Keep `schema/manifest-v1.schema.json`, `tools/mupiapp.py`, tests and `docs/manifest-v1.md` synchronized when introducing new manifest fields. Older manifests must continue to work.
+
 ## Public SDK v1
 
 Use `window.MuPiBoxSDK` after loading the bundled `mupibox-sdk.js`.

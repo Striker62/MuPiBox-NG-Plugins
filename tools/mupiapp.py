@@ -30,6 +30,7 @@ ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save",
 ALLOWED_FIELDS = {
     "apiVersion", "id", "name", "version", "runtime", "entry", "icon",
     "description", "author", "permissions", "networkHosts", "display",
+    "category", "galleryDirectories",
 }
 APP_ID = re.compile(r"^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$")
 SEMVER = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
@@ -104,12 +105,38 @@ def validate_manifest(data: object, files: set[str]) -> dict:
             raise PackageError("duplicate networkHosts")
     elif hosts is not None:
         raise PackageError("networkHosts requires network permission")
+    category = data.get("category")
+    if category is not None and category not in ("games", "creative", "learning", "tools", "other"):
+        raise PackageError("invalid app category")
+    gallery_directories = data.get("galleryDirectories")
+    if gallery_directories is not None:
+        if not isinstance(gallery_directories, list) or len(gallery_directories) > 8:
+            raise PackageError("galleryDirectories must contain at most 8 entries")
+        if "photo-save" not in perms:
+            raise PackageError("galleryDirectories requires photo-save permission")
+        seen_gallery_paths: set[str] = set()
+        for directory in gallery_directories:
+            if not isinstance(directory, dict) or set(directory) - {"path", "name"}:
+                raise PackageError("invalid gallery directory object")
+            path = directory.get("path")
+            if (not isinstance(path, str) or len(path) > 160
+                    or not re.fullmatch(r"photos(?:/[A-Za-z0-9_-]+){0,5}", path)
+                    or path in seen_gallery_paths):
+                raise PackageError("unsafe or duplicate gallery directory path")
+            seen_gallery_paths.add(path)
+            if "name" in directory and (not isinstance(directory["name"], str) or len(directory["name"]) > 100):
+                raise PackageError("invalid gallery directory name")
     display = data.get("display")
     if display is not None:
-        if not isinstance(display, dict) or set(display) - {"orientation", "minWidth", "minHeight"}:
+        if not isinstance(display, dict) or set(display) - {"orientation", "minWidth", "minHeight", "showBackButton", "showSystemInfo", "fullScreen", "background"}:
             raise PackageError("invalid display object")
-        if display.get("orientation") not in ("any", "landscape", "portrait"):
+        if "orientation" in display and display["orientation"] not in ("any", "landscape", "portrait"):
             raise PackageError("display.orientation must be any/landscape/portrait")
+        for flag in ("showBackButton", "showSystemInfo", "fullScreen"):
+            if flag in display and type(display[flag]) is not bool:
+                raise PackageError(f"invalid {flag} (boolean required)")
+        if "background" in display and display["background"] not in ("system", "app"):
+            raise PackageError("display.background must be system or app")
         for dimension in ("minWidth", "minHeight"):
             if dimension in display:
                 val = display[dimension]
