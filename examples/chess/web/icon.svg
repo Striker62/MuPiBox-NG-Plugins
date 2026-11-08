@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Schach">
+  <rect width="128" height="128" rx="23" fill="#1b4447"/>
+  <rect x="17" y="17" width="94" height="94" rx="6" fill="#e9ddbc"/>
+  <path d="M17 17h47v47H17zm47 47h47v47H64z" fill="#84a98c"/>
+  <text x="64" y="93" text-anchor="middle" font-family="DejaVu Sans,serif" font-size="81" fill="#1b2928" stroke="#fff5e1" stroke-width=".8">♞</text>
+</svg>

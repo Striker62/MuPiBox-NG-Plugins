@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>MuPi Schach</title>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="layout">
+    <section class="game-area" aria-label="Schachspiel">
+      <div class="game-bar">
+        <button id="exit" type="button" class="exit" aria-label="Spiel verlassen" title="Zurück">←</button>
+        <strong id="status" role="status" aria-live="polite">Schach · Weiß am Zug</strong>
+      </div>
+      <div class="board-shell">
+        <div id="board" class="board" role="group" aria-label="Schachbrett: Weiß unten"></div>
+        <div id="promotion" class="promotion hidden" role="dialog" aria-modal="true" aria-label="Bauernumwandlung">
+          <div class="promotion-box">
+            <strong id="promotion-label">Figur wählen</strong>
+            <div id="promotion-options" class="promotion-options"></div>
+            <button type="button" id="cancel-promotion" class="minor">Abbrechen</button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <aside class="panel">
+      <header class="panel-header"><h1 id="title">Schach</h1><span id="level-badge">MuPi</span></header>
+      <div class="clocks">
+        <div class="clock-card" id="card-white">
+          <div class="clock-head"><span id="name-white">Weiß</span><strong id="timer-white">00:00</strong></div>
+          <small><span id="average-label-white">Ø/Zug</span> <b id="average-white">–</b> · <span id="moves-white">0</span> <span id="moves-label-white">Züge</span></small>
+        </div>
+        <div class="clock-card" id="card-black">
+          <div class="clock-head"><span id="name-black">Schwarz</span><strong id="timer-black">00:00</strong></div>
+          <small><span id="average-label-black">Ø/Zug</span> <b id="average-black">–</b> · <span id="moves-black">0</span> <span id="moves-label-black">Züge</span></small>
+        </div>
+      </div>
+      <div class="settings">
+        <label><span id="mode-label">Gegner</span>
+          <select id="mode"><option value="ai">MuPi</option><option value="two">2 Spieler</option></select>
+        </label>
+        <label id="difficulty-wrap"><span id="difficulty-label">Stärke</span>
+          <select id="difficulty"><option value="easy">Anfänger</option><option value="normal" selected>Leicht</option><option value="hard">Mittel</option><option value="expert">Schwer</option></select>
+        </label>
+        <label id="color-wrap"><span id="color-label">Deine Farbe</span>
+          <select id="player-color"><option value="1">Weiß</option><option value="-1">Schwarz</option></select>
+        </label>
+        <label><span id="limit-label">Zeit pro Zug</span>
+          <select id="turn-limit"><option value="0">Unbegrenzt</option><option value="15">15 s</option><option value="30">30 s</option><option value="60">60 s</option><option value="120">2 min</option><option value="300">5 min</option></select>
+        </label>
+      </div>
+      <div class="actions">
+        <button id="new-game" type="button" class="primary">Neue Partie</button>
+        <button id="undo" type="button" class="minor">Zurücknehmen</button>
+        <button id="claim" type="button" class="minor hidden">Remis fordern</button>
+      </div>
+      <div class="history-block"><span id="history-label">Zugfolge</span><div id="history" aria-live="off">–</div></div>
+      <div class="help" id="help">Figur antippen, dann markiertes Zielfeld wählen. Pfeiltasten/A: Auswahl; B: Abbruch.</div>
+    </aside>
+  </main>
+  <script src="./mupibox-sdk.js"></script>
+  <script src="./engine.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

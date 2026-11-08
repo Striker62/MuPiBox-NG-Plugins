@@ -22,7 +22,9 @@ jobs:
         run: go test ./game
       - name: Test board game logic and translations
         run: |
-          node --test tests/test_board_games.js tests/test_crumbworm.js tests/test_crumbworm_ui.js
+          node --test tests/test_board_games.js tests/test_crumbworm.js tests/test_crumbworm_ui.js tests/test_chess.js
+          node --check examples/chess/web/engine.js
+          node --check examples/chess/web/app.js
           node --check examples/tic-tac-toe/web/app.js
           node --check examples/four-in-a-row/web/app.js
           node --check examples/four-in-a-row/web/logic.js
@@ -35,6 +37,8 @@ jobs:
         run: python3 tools/build_four_in_a_row.py
       - name: Build Crumbworm app
         run: python3 tools/build_crumbworm.py
+      - name: Build MuPi Schach
+        run: python3 tools/build_chess.py
       - name: Build independent Klang Memory preview
         run: python3 tools/build_klang_memory.py
       - name: Build USB webcam preview
@@ -44,6 +48,7 @@ jobs:
           python3 tools/mupiapp.py validate dist/mupi-kreuz-kreis.mupiapp
           python3 tools/mupiapp.py validate dist/four-in-a-row.mupiapp
           python3 tools/mupiapp.py validate dist/crumbworm.mupiapp
+          python3 tools/mupiapp.py validate dist/mupi-chess.mupiapp
           python3 tools/mupiapp.py validate dist/klang-memory.mupiapp
           python3 tools/mupiapp.py validate dist/webcam-preview.mupiapp
           node --check examples/webcam-preview/app.js
@@ -65,6 +70,7 @@ jobs:
             dist/mupi-kreuz-kreis.mupiapp
             dist/four-in-a-row.mupiapp
             dist/crumbworm.mupiapp
+            dist/mupi-chess.mupiapp
             dist/klang-memory.mupiapp
             dist/webcam-preview.mupiapp
             dist/fotospass.mupiapp

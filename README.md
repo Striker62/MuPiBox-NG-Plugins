@@ -2,7 +2,7 @@
 
 **Unabhängige Apps für MuPiBox-NG – ohne Zugriff auf das private Haupt-Repository.**
 
-Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator, drei eigenständige Community-Spiele (**MuPi Kreuz & Kreis**, **MuPi 4er-Reihe**, **MuPi Krümelwurm**) sowie die Community-Fotobox **FotoSpaß**.
+Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator, vier eigenständige Community-Spiele (**MuPi Kreuz & Kreis**, **MuPi 4er-Reihe**, **MuPi Krümelwurm**, **MuPi Schach**) sowie die Community-Fotobox **FotoSpaß**.
 
 > **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Native Qt-Touch-Apps und der offizielle, geprüfte App-Katalog sind inzwischen verfügbar. Vollständiger Audiofokus und unabhängige Publisher-Signaturen fehlen weiterhin; ältere NG-Versionen haben keinen Plugin-Manager.
 
@@ -40,6 +40,7 @@ python3 tools/mupiapp.py pack ./meine-app ./dist/meine-app.mupiapp
 - **MuPi Kreuz & Kreis** – Go/WASM (stabile interne App-ID; Quellcode unter [`examples/`](examples/))
 - **MuPi 4er-Reihe** – Quellcode unter [`examples/`](examples/)
 - [**MuPi Krümelwurm**](examples/crumbworm)
+- [**MuPi Schach**](examples/chess) – Offline-Schach für zwei Personen oder gegen vier lokale MuPi-KI-Stärken, Zugstatistiken und optionales Zeitlimit pro Zug
 - [FotoSpaß](examples/fotospass) – Community-Fotobox mit Kamera, Bearbeitung und lokaler Galerie
 - [`docs/release-checklist.md`](docs/release-checklist.md) – Technische Prüfschritte vor Veröffentlichungen
 - [Community-Beitragende](CONTRIBUTORS.md) – Zuordnung und Prüfung externer Beiträge
@@ -98,6 +99,10 @@ nicht als verlässliche Kachelbilder vorausgesetzt.
 3. V1 setzt auf statische Web-Apps/WASM. Native Prozesse (Go/Python) brauchen ein gesondertes Sicherheitsdesign und sind **nicht Teil von V1**.
 4. Neue Host-Funktionen werden nach API-Version eingeführt. Die App-Laufzeit entscheidet, welche APIs verfügbar sind.
 5. Apps und SDK sind unabhängig vom proprietär lizenzierten MuPiBox-NG-Kern.
+
+## MuPi Schach (0.1.0 – Quellcode/Preview)
+
+`python3 tools/build_chess.py` baut das eigenständige, vollständig offline spielbare Schach inklusive lokalem Computergegner und einer Zugzeit-Uhr. Der Host-Theme-Hintergrund bleibt sichtbar, native Header-/Systemelemente sind ausgeblendet; ein eigener Pfeil verlässt das Spiel. Technische Details und Tests: [examples/chess/README.md](examples/chess/README.md). Aufnahme in den offiziellen Katalog erst mit geprüftem Release-Artefakt und SHA-256.
 
 ## Community-Spiele
 

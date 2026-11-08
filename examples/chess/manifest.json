@@ -1,0 +1,23 @@
+{
+  "apiVersion": "1",
+  "id": "community.mupi-chess",
+  "name": "MuPi Schach",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "cover": "cover.png",
+  "author": "MuPiBox Community",
+  "description": "Offline-Schach zu zweit oder gegen MuPi in vier Stärken, mit Zugzeit, Durchschnitt und optionaler Zugzeitbegrenzung.",
+  "permissions": ["controller"],
+  "category": "games",
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "system"
+  }
+}
