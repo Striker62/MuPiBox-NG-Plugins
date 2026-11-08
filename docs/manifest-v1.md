@@ -45,7 +45,7 @@ Example manifest:
 | `version` | Semantic release version, for update comparisons |
 | `runtime` | Only `"web"` for v1; Go must be compiled to WASM |
 | `entry`, `icon` | Relative paths inside the package, no absolute paths or `..` |
-| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save` (`network` is not supported by the current host) |
+| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save, `shared-assets`` (`network` is not supported by the current host) |
 | `networkHosts` | Explicit hostname allowlist **required** when requesting `network` |
 | `category` | Preferred native menu location: `games`, `creative`, `learning`, `tools`, or `other` (defaults to `games`) |
 | `display` | Preferred orientation, minimum size and optional native MuPiBox chrome settings |
@@ -106,3 +106,54 @@ A plugin with explicitly approved `"photo-save"` permission may declare up to ei
 These are **additional fields in a complete manifest**, not a standalone valid manifest. Paths must begin with `photos`, contain at most six slash-separated segments, have no dots or symlinks, and use letters, digits, underscores or hyphens only. They must not duplicate one another. `name` is optional (at most 100 characters). The app cannot create arbitrary host paths by declaring them.
 
 Declaring a directory never publishes pictures automatically. An owner must separately enable **„Gespeicherte Fotos in Galerie anzeigen“** for that app in the Admin UI. Once enabled, its photos can become visible to other clients of the box's Gallery. This is independent of the private app storage API and can be revoked.
+
+## Shared SMB folders for owner-managed app content (host development)
+
+With the explicitly approved `shared-assets` permission, a local touchscreen
+app can read only its own folder within the existing MuPiBox SMB share:
+
+```text
+<MuPiBox SMB share>/
+  CommunityApps/
+    community.buecherkiste/
+      books/
+        Ole/
+          book.json
+          images/
+            cover.png
+    community.fotospass/
+      accessoires/
+        baerte/
+        brillen/
+        huete/
+```
+
+The trusted host maps this to
+`/srv/mupibox/CommunityApps/<manifest.id>/` on the box. Apps do **not**
+receive that path, SMB credentials or directory handles. Uploads are made
+by the owner through the existing SMB share, not by an untrusted app.
+
+```js
+const sdk = window.MuPiBoxSDK;
+const books = await sdk.shared.list('books');
+// {entries:[{name,path,isDir,size,modified}],revision,truncated}
+const definition = await sdk.shared.read('books/Ole/book.json'); // Blob
+const metadata = JSON.parse(await definition.text());
+const stop = sdk.shared.watch('books', result => {
+  console.log('Book folders updated:', result.entries);
+}, {intervalMs: 30000}); // stop() on exit
+```
+
+`shared.list(folder = '')` lists up to 512 immediate files/directories and
+returns a content revision for polling. `shared.watch()` checks every 15 to
+300 seconds (default 30 seconds), only while the document is visible, and
+invokes the callback when a change is detected. It is **polling**, not an
+always-on kernel watcher. `shared.read(path)` returns a Blob (8 MiB maximum)
+for JSON, text, SVG, JPEG/PNG/WebP/GIF, MP3/OGG/WAV or PDF. Other file types,
+hidden dot paths, traversal, symlinks and device files are rejected.
+
+The API is not available in the remote Admin preview. No write/delete
+capability and no access to other applications, the music library, Gallery,
+operating-system files or arbitrary SMB mounts is granted. Files placed in
+the SMB share are user-provided/untrusted: do not interpret SVGs as HTML or
+execute scripts; treat text and book metadata as content only.

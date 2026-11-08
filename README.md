@@ -53,6 +53,22 @@ Verzichtet eine App auf die native Zurück-Schaltfläche, sollte sie ihren eigen
 
 **Für Entwickler:** [Manifest-Felder und Beispielcode](docs/manifest-v1.md#native-app-appearance-and-navigation-ng-020-alpha30) · [Englische Schritt-für-Schritt-Anleitung](GETTING_STARTED.en.md#integrate-with-the-native-mupibox-interface-ng-alpha30).
 
+## Bücherkiste und FotoSpaß: SMB-Assets (Host-Entwicklung)
+
+Neue Community-Apps können mit der optionalen, bei Installation zu
+bestätigenden Berechtigung `shared-assets` ausschließlich ihre eigenen
+Verzeichnisse der bestehenden MuPiBox-SMB-Freigabe lesen:
+`CommunityApps/<App-ID>/`. Für Bücherkiste sind darunter z. B.
+`books/Ole/book.json`, für FotoSpaß
+`accessoires/baerte/`, `accessoires/brillen/` und `accessoires/huete/`
+vorgesehen. `MuPiBoxSDK.shared.list()`, `shared.read()` und
+`shared.watch()` liefern Verzeichnislisten, Datei-Blobs und
+Änderungserkennung (Polling). Kein direkter Pfad-/SMB-Zugriff und keine
+Schreibmöglichkeit. **Vor Benutzung muss eine NG-Version mit der neuen
+Host-Berechtigung veröffentlicht und installiert sein.**
+
+Details, Sicherheitsgrenzen und Beispiele: [Manifest-Dokumentation](docs/manifest-v1.md#shared-smb-folders-for-owner-managed-app-content-host-development).
+
 ## Leitlinien
 
 1. Plugin-Entwickler bekommen **keinen Zugriff** auf den Quellcode, die API-Schlüssel oder das Dateisystem des MuPiBox-NG-Kerns.

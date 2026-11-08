@@ -61,6 +61,7 @@
           "audio",
           "camera",
           "photo-save",
+          "shared-assets",
           "network"
         ]
       },

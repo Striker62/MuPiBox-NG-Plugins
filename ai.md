@@ -130,3 +130,16 @@ Read `GETTING_STARTED.en.md` and `CONTRIBUTING.md`; fork the public repository, 
 - `photo-save` must be declared and approved separately from `camera`; never use direct `/dev/video*` access, filesystem paths, blob download hacks or hidden browser storage for photos.
 - `sdk.photos.save({blob})`, `sdk.photos.list()`, `sdk.photos.get(id)`, `sdk.photos.delete(id)` are local touchscreen-only and host-scoped. The host accepts PNG/JPEG Blobs, 8 MiB each, up to 16 MP and 250 MiB/1000 files per app. Images survive updates and uninstall.
 - These calls do not provide global Gallery or printer access. Do not copy photos to network services or print them without a separate explicit user action and host capability.
+
+
+## Owner-managed SMB content (host development)
+
+Apps such as Bücherkiste and FotoSpaß may request **`shared-assets`** to read
+their own area in the pre-existing MuPiBox share:
+`CommunityApps/<app-id>/` only. Use `sdk.shared.list(folder)` to enumerate
+one level and detect new folders via `revision`, `sdk.shared.read(file)` to
+receive an 8-MiB-capped Blob, or `sdk.shared.watch(folder, cb)` to poll every
+30 seconds while visible. Do not scan the filesystem or use raw SMB paths,
+internal HTTP routes, dynamic code execution or hidden network requests.
+The SDK requires a host that supports `shared-assets`; older alpha versions
+reject this permission. Any newly requested permission requires user approval.

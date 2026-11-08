@@ -151,3 +151,49 @@ automatically populated: export, backup and printing will need their own
 separately approved host integration. On remote Admin/browser previews these
 operations are intentionally unavailable. The webcam's camera consent dialog
 still governs starting a camera.
+
+
+## Import owner-provided books and accessories over SMB (host development)
+
+The **`shared-assets`** manifest permission is optional and must be approved
+again when an installed app adds it. This is distinct from `storage` and
+`photo-save`: apps cannot create or modify arbitrary files with it.
+
+When Samba is enabled in the MuPiBox Admin, the owner can create the following
+folders inside the existing MuPiBox share (the host maps `CommunityApps`
+to `/srv/mupibox/CommunityApps`):
+
+```text
+CommunityApps/
+  community.buecherkiste/books/Ole/book.json
+  community.buecherkiste/books/Ole/images/cover.png
+  community.fotospass/accessoires/baerte/
+  community.fotospass/accessoires/brillen/
+  community.fotospass/accessoires/huete/
+```
+
+Only the matching app can read its own folder via the trusted touchscreen
+runtime:
+
+```js
+const sdk = window.MuPiBoxSDK;
+const books = await sdk.shared.list('books');
+const book = await sdk.shared.read('books/Ole/book.json'); // Blob
+const data = JSON.parse(await book.text());
+const stop = sdk.shared.watch('books', listing => {
+  // Compare listing.entries; the host changes listing.revision on changes.
+}, {intervalMs: 30000});
+
+// On app exit:
+stop();
+```
+
+`list()` is one-level (up to 512 entries) and returns
+`{entries, revision, truncated}`. `watch()` polls at an allowed interval
+of 15–300 seconds only while visible. This detects newly added books without
+an always-running background scan. `read()` returns Blob data up to 8 MiB
+and supports JSON/text, pictures/SVG, audio and PDF only. Treat files as
+untrusted data, especially SVG; do not inject SVG source as executable HTML.
+There is no direct NAS mount access, no arbitrary filesystem listing, no
+SMB credentials and no network upload. Admin browser previews cannot use
+this capability. The host update must be installed first.
