@@ -7,7 +7,7 @@
 1. The MuPiBox host checks the package, manifest and permissions before installing it.
 2. A web runtime launches the app in an isolated browser context; the host decides what it may do.
 3. Your app can use the public `MuPiBoxSDK` for input events, app-specific JSON storage, language/context and exit. Do not call internal MuPiBox APIs directly.
-4. Apps should work offline. Currently, no third-party network access or native executables are supported. Browser previews do **not** yet replace the native Pi touchscreen UI.
+4. Apps should work offline. Currently, no third-party network access or native executables are supported. Browser previews are distinct from the native Qt touchscreen runner available in NG alpha.20+; appearance integration requires alpha.30+.
 5. Official built-in games remain installed. In particular, **“MuPi und die verlorenen Noten” stays in the NG core**.
 
 ## Create your first plugin
@@ -42,6 +42,37 @@ python3 -m http.server 8080
 For Go/WASM, run `python3 tools/build_example.py` and inspect the `examples/tic-tac-toe` source. You must bundle the Go `wasm_exec.js` matching your compiler.
 
 On **MuPiBox-NG 0.2.0-alpha.18 or newer** (developer-preview host), a parent/admin can open **Admin → Provider & Services → Community Apps / Plugins**, select the `.mupiapp` file, inspect and approve permissions, then install or open a browser preview. For **0.2.0-alpha.19 and newer**, the official catalog offers direct verified GitHub installation without downloading files yourself. In alpha.18 only manual upload is available. The native touchscreen runtime remains a separate feature.
+
+## Integrate with the native MuPiBox interface (NG alpha.30+)
+
+You can suggest where your app appears and which MuPiBox controls are visible. Add these **optional** fields to your app's `manifest.json` (the regular required fields still apply):
+
+```json
+{
+  "category": "creative",
+  "display": {
+    "orientation": "landscape",
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "app"
+  }
+}
+```
+
+The fragment above is *not* a complete manifest. Supported categories: `games`, `creative`, `learning`, `tools`, `other`. `showBackButton` controls the **entire native Back + title group**, not just the arrow; a separate `showTitle` option does not currently exist. `showSystemInfo` controls the right status indicators; fullscreen draws the HTML app edge-to-edge. An opaque HTML/CSS background covers the native theme even if `background` is `system`.
+
+**If you disable the native Back button, implement your own exit action:**
+
+```javascript
+document.querySelector('#back-button').addEventListener('click', () => {
+  window.MuPiBoxSDK.exit();
+});
+```
+
+Give this control a large touch target, visible label, and accessible name. `exit()` calls the existing trusted `app.exit` bridge; it does not access OS navigation and does not require a new permission. In local browser preview, it emits `preview.exit` instead of closing the tab. Provide a safe fallback for app navigation that does not rely solely on a controller. The host always retains control over the running app.
+
+Users may override the preferences independently for each installed app in **Admin → Provider & Dienste → Community-Apps / Plugins → Installierte Apps → Darstellung & Integration**. Host overrides survive app updates. See [the full manifest contract](docs/manifest-v1.md#native-app-appearance-and-navigation-ng-020-alpha30) and the [JSON schema](schema/manifest-v1.schema.json).
 
 ## Submit a plugin or SDK improvement via Pull Request
 
@@ -120,3 +151,94 @@ automatically populated: export, backup and printing will need their own
 separately approved host integration. On remote Admin/browser previews these
 operations are intentionally unavailable. The webcam's camera consent dialog
 still governs starting a camera.
+
+
+## Import owner-provided books and accessories over SMB (host development)
+
+The **`shared-assets`** manifest permission is optional and must be approved
+again when an installed app adds it. This is distinct from `storage` and
+`photo-save`: apps cannot create or modify arbitrary files with it.
+
+When Samba is enabled in the MuPiBox Admin, the owner can create the following
+folders inside the existing MuPiBox share (the host maps `CommunityApps`
+to `/srv/mupibox/CommunityApps`):
+
+```text
+CommunityApps/
+  community.buecherkiste/books/Ole/book.json
+  community.buecherkiste/books/Ole/images/cover.png
+  community.fotospass/accessoires/baerte/
+  community.fotospass/accessoires/brillen/
+  community.fotospass/accessoires/huete/
+```
+
+Only the matching app can read its own folder via the trusted touchscreen
+runtime:
+
+```js
+const sdk = window.MuPiBoxSDK;
+const books = await sdk.shared.list('books');
+const book = await sdk.shared.read('books/Ole/book.json'); // Blob
+const data = JSON.parse(await book.text());
+const stop = sdk.shared.watch('books', listing => {
+  // Compare listing.entries; the host changes listing.revision on changes.
+}, {intervalMs: 30000});
+
+// On app exit:
+stop();
+```
+
+`list()` is one-level (up to 512 entries) and returns
+`{entries, revision, truncated}`. `watch()` polls at an allowed interval
+of 15–300 seconds only while visible. This detects newly added books without
+an always-running background scan. `read()` returns Blob data up to 8 MiB
+and supports JSON/text, pictures/SVG, audio and PDF only. Treat files as
+untrusted data, especially SVG; do not inject SVG source as executable HTML.
+There is no direct NAS mount access, no arbitrary filesystem listing, no
+SMB credentials and no network upload. Admin browser previews cannot use
+this capability. The host update must be installed first.
+
+
+## Custom app background and menu/category images (NG alpha.34+)
+
+A plugin-owned **wallpaper** is rendered by the app itself. It is **not**
+uploaded to the MuPiBox Admin, and it does not appear on the Home screen.
+Place the file in your app package, for example
+`assets/background.jpg`, and use a relative URL in your CSS:
+
+```css
+/* style.css in the same directory as index.html */
+html, body { margin:0; width:100%; min-height:100%; }
+body { background: url("./assets/background.jpg") center/cover no-repeat; }
+```
+
+`display.background: "app"` selects the app-side host background mode.
+It is **not** an image path or automatic background loader. To show the
+MuPiBox theme behind the web content, use `"system"` and keep the web
+document transparent; opaque app CSS will still hide the system theme.
+
+For a **native touch menu tile** instead, bundle a square raster
+illustration and declare `cover` at the manifest root:
+
+```json
+{
+  "apiVersion":"1", "id":"community.example", "name":"Example",
+  "version":"1.0.0", "runtime":"web", "entry":"index.html",
+  "icon":"assets/icon.svg", "cover":"assets/cover.png",
+  "category":"creative", "permissions":[],
+  "display":{"background":"app"}
+}
+```
+
+The package contains `index.html`, `style.css`,
+`assets/background.jpg`, `assets/icon.svg`, and `assets/cover.png`.
+The `cover` file must exist and be a PNG/JPEG/WebP image (preferably
+512 × 512), not SVG. Icon SVGs remain allowed for admin/catalog use but
+are not dependable Qt Quick artwork. MuPiBox falls back to a built-in
+illustration for Creative/Learning/Tools/Other when neither raster
+`cover` nor raster `icon` is provided, including for older packages.
+The cover appears inside the **Home or category tile**, not behind the app.
+
+Read [the complete manifest contract](docs/manifest-v1.md#app-wallpaper-versus-native-menu-tile-image-ng-020-alpha34)
+before submitting a PR. No special permission is needed; do not add
+external HTTP image URLs or paths outside the app package.

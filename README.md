@@ -2,9 +2,9 @@
 
 **Unabhängige Apps für MuPiBox-NG – ohne Zugriff auf das private Haupt-Repository.**
 
-Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator und drei eigenständige Community-Spiele: **MuPi Kreuz & Kreis** (Go/WebAssembly), **MuPi 4er-Reihe** und **MuPi Krümelwurm** (HTML/JavaScript).
+Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SDK für Web-Apps, das Paketformat `.mupiapp`, einen Validator, drei eigenständige Community-Spiele (**MuPi Kreuz & Kreis**, **MuPi 4er-Reihe**, **MuPi Krümelwurm**) sowie die Community-Fotobox **FotoSpaß**.
 
-> **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Die native Qt-Touch-Laufzeit, vollständiger Audiofokus und ein signierter Plugin-Katalog fehlen noch; ältere NG-Versionen haben keinen Plugin-Manager.
+> **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Native Qt-Touch-Apps und der offizielle, geprüfte App-Katalog sind inzwischen verfügbar. Vollständiger Audiofokus und unabhängige Publisher-Signaturen fehlen weiterhin; ältere NG-Versionen haben keinen Plugin-Manager.
 
 ## Für Entwickler
 
@@ -21,9 +21,7 @@ python3 tools/build_example.py
 # Paketinhalt und Manifest sicherheitstechnisch prüfen
 python3 tools/mupiapp.py validate dist/mupi-kreuz-kreis.mupiapp
 
-# Lokal im Browser ausprobieren (noch kein Host-API-Zugriff)
-cd .build/tic-tac-toe && python3 -m http.server 8080
-# http://localhost:8080
+# Browser-Vorschau: siehe docs/quickstart.md (ohne Host-API-Zugriff)
 ```
 
 Eine eigene HTML-/JavaScript-App kann ohne Go entwickelt werden. Sie benötigt ein `manifest.json`, einen lokalen HTML-Einstiegspunkt und alle Dateien im Paket:
@@ -39,11 +37,59 @@ python3 tools/mupiapp.py pack ./meine-app ./dist/meine-app.mupiapp
 - [`docs/quickstart.md`](docs/quickstart.md) – Eigene App entwickeln
 - [`schema/manifest-v1.schema.json`](schema/manifest-v1.schema.json) – JSON-Schema
 - [`sdk/mupibox-sdk.js`](sdk/mupibox-sdk.js) – öffentlicher JavaScript-SDK-Entwurf
-- [`examples/tic-tac-toe`](examples/tic-tac-toe) – **MuPi Kreuz & Kreis** (Go/WASM, stabile Legacy-App-ID)
-- [`examples/four-in-a-row`](examples/four-in-a-row) – **MuPi 4er-Reihe**
-- [`examples/crumbworm`](examples/crumbworm) – **MuPi Krümelwurm**
-- [`docs/release-checklist.md`](docs/release-checklist.md) – **Pflichtprüfung vor Veröffentlichung der Spiele**
+- **MuPi Kreuz & Kreis** – Go/WASM (stabile interne App-ID; Quellcode unter [`examples/`](examples/))
+- **MuPi 4er-Reihe** – Quellcode unter [`examples/`](examples/)
+- [**MuPi Krümelwurm**](examples/crumbworm)
+- [FotoSpaß](examples/fotospass) – Community-Fotobox mit Kamera, Bearbeitung und lokaler Galerie
+- [`docs/release-checklist.md`](docs/release-checklist.md) – Technische Prüfschritte vor Veröffentlichungen
+- [Community-Beitragende](CONTRIBUTORS.md) – Zuordnung und Prüfung externer Beiträge
 - [`tools/mupiapp.py`](tools/mupiapp.py) – Packen und Validieren
+
+## App-Darstellung und eigener Zurück-Button (NG alpha.30+)
+
+Jede Community-App kann über ihr `manifest.json` vorschlagen, **in welchem Menü** sie erscheint und **welche MuPiBox-Elemente** auf dem Touchdisplay sichtbar bleiben: Zurück-Schaltfläche mit Titel, Systeminformationen, Vollbild und Hintergrund. Eltern bzw. Administratoren können diese Vorgaben **für jede installierte App einzeln überschreiben**; die Einstellungen bleiben bei Updates erhalten.
+
+Verzichtet eine App auf die native Zurück-Schaltfläche, sollte sie ihren eigenen gut erreichbaren Button mit `window.MuPiBoxSDK.exit()` anbieten. Die vorhandene Einstellung `showBackButton` blendet derzeit die ganze linke Gruppe aus **Zurück + Titel** aus; ein separates `showTitle` gibt es noch nicht.
+
+**Für Entwickler:** [Manifest-Felder und Beispielcode](docs/manifest-v1.md#native-app-appearance-and-navigation-ng-020-alpha30) · [Englische Schritt-für-Schritt-Anleitung](GETTING_STARTED.en.md#integrate-with-the-native-mupibox-interface-ng-alpha30).
+
+## Bücherkiste und FotoSpaß: SMB-Assets (Host-Entwicklung)
+
+Neue Community-Apps können mit der optionalen, bei Installation zu
+bestätigenden Berechtigung `shared-assets` ausschließlich ihre eigenen
+Verzeichnisse der bestehenden MuPiBox-SMB-Freigabe lesen:
+`CommunityApps/<App-ID>/`. Für Bücherkiste sind darunter z. B.
+`books/Ole/book.json`, für FotoSpaß
+`accessoires/baerte/`, `accessoires/brillen/` und `accessoires/huete/`
+vorgesehen. `MuPiBoxSDK.shared.list()`, `shared.read()` und
+`shared.watch()` liefern Verzeichnislisten, Datei-Blobs und
+Änderungserkennung (Polling). Kein direkter Pfad-/SMB-Zugriff und keine
+Schreibmöglichkeit. **Vor Benutzung muss eine NG-Version mit der neuen
+Host-Berechtigung veröffentlicht und installiert sein.**
+
+Details, Sicherheitsgrenzen und Beispiele: [Manifest-Dokumentation](docs/manifest-v1.md#shared-smb-folders-for-owner-managed-app-content-host-development).
+
+## App-Hintergrund und Bilder für die Kategorien (NG alpha.34+)
+
+Die Auswahl **„Hintergrund aus der App (HTML/CSS)“** im NG-Admin legt
+**keinen Uploadordner** fest. Ein App-Hintergrund gehört direkt ins
+`.mupiapp`-Paket, etwa `assets/background.jpg`, und wird in der eigenen
+`style.css` mit `background: url("./assets/background.jpg") center/cover`
+eingebunden. Sichtbar ist er **nur innerhalb der laufenden App**.
+Für den MuPiBox-Theme-Hintergrund `display.background: "system"` wählen
+und `html/body` transparent halten.
+
+Die **Kachelbilder auf der MuPiBox-Startseite** sind etwas anderes:
+Mit `"cover": "assets/cover.png"` im Plugin-Manifest bekommt die
+App ein individuelles Kachelbild. Erlaubt sind PNG/JPEG/WebP (empfohlen
+quadratisch, ca. 512×512). Ohne dieses Feld verwendet NG zuerst ein
+rasterbasiertes App-Icon oder automatisch passende Illustrationen für
+Kreativ, Lernen, Werkzeuge und Weitere Apps. SVG-Icons bleiben für
+Browser/Metadaten zulässig, werden aber auf der Qt-Touchoberfläche
+nicht als verlässliche Kachelbilder vorausgesetzt.
+
+**Für Entwickler und KI-Assistenten:** [genaue Regeln und Beispiel mit CSS](docs/manifest-v1.md#app-wallpaper-versus-native-menu-tile-image-ng-020-alpha34),
+[englische Entwickleranleitung](GETTING_STARTED.en.md) und [AI-Anleitung](ai.md).
 
 ## Leitlinien
 
@@ -53,15 +99,9 @@ python3 tools/mupiapp.py pack ./meine-app ./dist/meine-app.mupiapp
 4. Neue Host-Funktionen werden nach API-Version eingeführt. Die App-Laufzeit entscheidet, welche APIs verfügbar sind.
 5. Apps und SDK sind unabhängig vom proprietär lizenzierten MuPiBox-NG-Kern.
 
-## Community-Spiele (noch nicht als Update freigegeben)
+## Community-Spiele
 
-Die drei neuen Spielversionen übernehmen `getContext().language` aus der Box
-(de, en, fr, es, it, nl, sv), unterstützen Touch und Controller und benötigen
-keine externe Online-API. **Die neue Veröffentlichung im offiziellen App-Katalog
-ist bis zum Abschluss von [Release-Checkliste und Markenprüfung](docs/release-checklist.md)
-gesperrt.** Der derzeitige Katalogeintrag des bestehenden Spiels zeigt weiterhin
-den früher veröffentlichten Stand; er wird erst gemeinsam mit dem neuen
-verifizierten Release-Asset umgestellt.
+Die Spiele übernehmen `getContext().language` aus der Box (de, en, fr, es, it, nl, sv), unterstützen Touch und Controller und benötigen keine externe Online-API. Versionen im offiziellen App-Katalog werden erst nach technischem Review, Paketprüfung und Kontrolle der veröffentlichten SHA-256 bereitgestellt.
 
 ## Mitmachen
 
@@ -71,7 +111,7 @@ Siehe [CONTRIBUTING.md](CONTRIBUTING.md) und [SECURITY.md](SECURITY.md). Dieses 
 
 ## Erste bestehende App als Plugin-Prototyp: Klang-Memory
 
-Eine unabhängige Klang-Memory-Testversion liegt in `examples/klang-memory/`. Sie lässt sich mit `python3 tools/build_klang_memory.py` als `.mupiapp` verpacken. Die Browser-Version **ersetzt nicht** die bisherigen QML-Apps (Klang-Memory, Piano, Malbuch oder Cover-Memory). **MuPi und die verlorenen Noten bleibt im NG-Kern.** Audiofokus und native Touch-Laufzeit sind noch nicht integriert.
+Eine unabhängige Klang-Memory-Testversion liegt in `examples/klang-memory/`. Sie lässt sich mit `python3 tools/build_klang_memory.py` als `.mupiapp` verpacken. Die Browser-Version **ersetzt nicht** die bisherigen QML-Apps (Klang-Memory, Piano, Malbuch oder Cover-Memory). **MuPi und die verlorenen Noten bleibt im NG-Kern.** Vollständiger Audiofokus bleibt in Entwicklung; die native Qt-Touch-Laufzeit steht inzwischen zur Verfügung.
 
 ## Entwickleranleitungen und Beiträge
 
@@ -94,3 +134,9 @@ Mit NG **0.2.0-alpha.22** oder neuer nutzt Klang-Memory die neue, berechtigungsg
 Klang-Memory **0.1.2** hat nun ein eigenes Ton-Einstellungsmenü mit Lautstärkeregler und Probeton. Die Einstellung wird pro App gespeichert und bleibt unter der MuPiBox-Lautstärkebegrenzung.
 
 Das neue SDK erlaubt per `camera`-Berechtigung USB-Webcams. Ein Beispiel `Webcam-Vorschau` ist als experimentelle, lokal begrenzte Kamera-App verfügbar. Vor jeder Nutzung muss direkt am Touchdisplay eine zweite Freigabe bestätigt werden; ein roter Hinweis zeigt den Kamerabetrieb und bietet sofortiges Stoppen. Fotos werden nicht automatisch gespeichert oder hochgeladen. Auf Box 85 war bisher keine USB-Kamera angeschlossen, weshalb ein echter Hardwaretest noch aussteht.
+
+## Community-Fotobox: FotoSpaß 0.4.2
+
+[FotoSpaß](examples/fotospass) wurde von [@Striker62](https://github.com/Striker62) mit [Pull Request #4](https://github.com/splitti/MuPiBox-NG-Plugins/pull/4) beigesteuert. Die App bietet einen lokalen Webcam-Fotomodus, Countdown, Malen, Accessoires und eine Foto-Galerie mit Einzelbildlöschung. Berechtigungen: `camera` und `photo-save`, **kein** `network`. Die Kamera erfordert die Freigabe am Gerät, die lokale Speicherung die explizite Foto-Berechtigung. Weitere Details und Prüfnachweis: [CONTRIBUTORS.md](CONTRIBUTORS.md).
+
+Die Aufnahme des Quellcodes in `main` ist **keine** Aufnahme in den offiziellen App-Katalog. Erst ein geprüftes, veröffentlichtes `.mupiapp`-Paket mit kontrollierter SHA-256 darf dort eingetragen werden. Die internen Ordner-/App-IDs älterer Spiele bleiben aus Kompatibilitätsgründen bestehen; ihre **sichtbaren Titel** lauten MuPi Kreuz & Kreis, MuPi 4er-Reihe und MuPi Krümelwurm.

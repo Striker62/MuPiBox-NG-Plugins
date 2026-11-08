@@ -28,6 +28,16 @@ MuPiBox-NG is a Raspberry Pi / DietPi appliance with a private application core.
 
 Apps may also live in **their own repos**. Submit a PR here only for an example, SDK change, compatibility fix, docs, test, or a separately agreed community catalog entry. Do not copy an entire third-party app without the author's permission and license.
 
+## Native shell integration (NG alpha.30+)
+
+- Optional manifest `category`: `games`, `creative`, `learning`, `tools`, or `other`; fallback `games`.
+- Optional `display.showBackButton`, `showSystemInfo` (booleans), `fullScreen` (boolean), and `background` (`system` or `app`).
+- `showBackButton: false` hides both native Back **and title** on the left; there is no separate `showTitle` v1 setting. The system indicators at right are controlled separately.
+- When hiding native Back, include a visible, accessible, touch-sized exit button that calls `window.MuPiBoxSDK.exit()` (host `app.exit`). Do not use `history.back()`, undocumented host APIs or browser navigation as an exit route. Handle standalone-preview `preview.exit` if needed.
+- The user/admin may override these manifest preferences per installed app; app code must not change these trusted settings. The sandbox and parental permissions do not change.
+- Manifest `galleryDirectories` is optional and only valid with `photo-save`. Paths are restricted under `photos` and need an **independent** Admin approval before becoming visible in Gallery.
+- Keep `schema/manifest-v1.schema.json`, `tools/mupiapp.py`, tests and `docs/manifest-v1.md` synchronized when introducing new manifest fields. Older manifests must continue to work.
+
 ## Public SDK v1
 
 Use `window.MuPiBoxSDK` after loading the bundled `mupibox-sdk.js`.
@@ -97,16 +107,9 @@ cd my-app && python3 -m http.server 8080
 
 For Go/WASM, build with `GOOS=js GOARCH=wasm CGO_ENABLED=0 go build -o game.wasm ./cmd/wasm` and ship the **matching** Go `wasm_exec.js` plus its license notice.
 
-## Game-name and copyright risk documentation
+## Community app release checks
 
-For MuPi Kreuz & Kreis, MuPi 4er-Reihe and MuPi Krümelwurm, refer to
-[\`docs/release-checklist.md\`](docs/release-checklist.md) and the
-[preliminary review](docs/trademark-preflight-2026-11-04.md).
-The owner accepted the **remaining unverified trademark risk** and chose
-not to pay for external legal advice. Never claim that DPMA/EUIPO/WIPO
-full register searches were completed when they were not.
-An official catalog entry still requires actual verified Release bytes.
-The legacy Tic-Tac-Toe app ID stays stable through the rename.
+Before an official release, review source code, assets, licensing, manifest permissions, package validation and the actual published release SHA-256. Keep existing internal app IDs stable when changing display names. See [the release checklist](docs/release-checklist.md).
 
 ## Curated catalog rules
 
@@ -127,3 +130,44 @@ Read `GETTING_STARTED.en.md` and `CONTRIBUTING.md`; fork the public repository, 
 - `photo-save` must be declared and approved separately from `camera`; never use direct `/dev/video*` access, filesystem paths, blob download hacks or hidden browser storage for photos.
 - `sdk.photos.save({blob})`, `sdk.photos.list()`, `sdk.photos.get(id)`, `sdk.photos.delete(id)` are local touchscreen-only and host-scoped. The host accepts PNG/JPEG Blobs, 8 MiB each, up to 16 MP and 250 MiB/1000 files per app. Images survive updates and uninstall.
 - These calls do not provide global Gallery or printer access. Do not copy photos to network services or print them without a separate explicit user action and host capability.
+
+
+## Owner-managed SMB content (host development)
+
+Apps such as Bücherkiste and FotoSpaß may request **`shared-assets`** to read
+their own area in the pre-existing MuPiBox share:
+`CommunityApps/<app-id>/` only. Use `sdk.shared.list(folder)` to enumerate
+one level and detect new folders via `revision`, `sdk.shared.read(file)` to
+receive an 8-MiB-capped Blob, or `sdk.shared.watch(folder, cb)` to poll every
+30 seconds while visible. Do not scan the filesystem or use raw SMB paths,
+internal HTTP routes, dynamic code execution or hidden network requests.
+The SDK requires a host that supports `shared-assets`; older alpha versions
+reject this permission. Any newly requested permission requires user approval.
+
+
+## IMPORTANT: App wallpaper vs. category/Home card art (NG alpha.34+)
+
+These surfaces are separate. **Do not confuse them.**
+
+- `display.background` is only `system|app`, a host presentation flag.
+  It is not a file name. With `app`, the web app should paint its own
+  wallpaper using HTML/CSS. Bundle `assets/background.jpg` and reference
+  it from the bundled CSS (`background: url("./assets/background.jpg") center/cover`
+  if the stylesheet is at package root). This wallpaper appears **only
+  inside the running app**. The `system` mode requires transparent CSS if
+  MuPiBox's theme is to show through.
+- `manifest.cover` is an optional **raster** image path within the app
+  archive, e.g. `assets/cover.png`. It is used for the Home/category
+  card, not for app wallpaper. Accepted formats: PNG/JPEG/WebP; use
+  approximately 512×512 artwork. The host validates that the asset
+  exists and cannot traverse directories.
+- `manifest.icon` is separate; SVG is fine for browsers but Qt Quick
+  on lean DietPi lacks reliable SVG support. Native card priority:
+  `cover` → raster `icon` → built-in category art (Creative, Learning,
+  Tools, Other). Old packages work without `cover`.
+- Both image files must be part of `.mupiapp`, **not** placed in SMB
+  `CommunityApps/<id>` folders. Those folders are for optional, explicitly
+  permissioned user content, not packaged UI images.
+- Follow `docs/manifest-v1.md`, `GETTING_STARTED.en.md` and its linked
+  tests. Never invent an SDK method for background selection, assume
+  the Admin dropdown uploads files, or use external URLs/CDN assets.

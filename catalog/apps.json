@@ -75,6 +75,21 @@
       "permissions": [
         "camera"
       ]
+    },
+    {
+      "id": "community.fotospass",
+      "name": "FotoSpaß",
+      "description": "Offline-Fotobox mit USB-Kamera, Countdown, Malen, Accessoires und einer lokalen Fotogalerie. Bilder bleiben auf der Box.",
+      "category": "creative",
+      "author": "Striker62",
+      "version": "0.4.2",
+      "releaseTag": "v0.1.0-preview.8",
+      "asset": "fotospass.mupiapp",
+      "sha256": "8ca0bb8da912fa23e7e0453075e1f9bbbfdccf164b332c93e884ac8a6fae3fd3",
+      "permissions": [
+        "camera",
+        "photo-save"
+      ]
     }
   ]
 }

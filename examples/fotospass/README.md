@@ -19,7 +19,13 @@ Getestet mit Raspberry Pi 4, eMeet C960 USB-Webcam und 800 × 480-Touchdisplay.
 
 ## Installation
 
-Das Plugin wird als `.mupiapp` über die Entwicklerfunktion der MuPiBox-NG-Pluginverwaltung installiert.
+Das Plugin kann aus dem Community-App-Katalog installiert werden. Für ein lokales Paket müssen die reinen Repository-Dokumente ausgeschlossen werden, weil der NG-Installer nur unterstützte Web-Runtime-Dateitypen zulässt:
+
+```bash
+python3 tools/mupiapp.py pack examples/fotospass dist/fotospass.mupiapp --exclude README.md
+```
+
+Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginverwaltung installiert werden.
 
 ## Version
 

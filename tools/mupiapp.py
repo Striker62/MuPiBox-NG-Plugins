@@ -20,10 +20,17 @@ MAX_TOTAL_BYTES = 50 * 1024 * 1024
 MAX_FILE_BYTES = 20 * 1024 * 1024
 MAX_MANIFEST_BYTES = 1024 * 1024
 MAX_COMPRESSION_RATIO = 200
-ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "network"}
+# Match the MuPiBox-NG plugin host archive allowlist; documentation belongs in the repository.
+HOST_ALLOWED_EXTENSIONS = {
+    ".html", ".htm", ".js", ".mjs", ".css", ".wasm", ".json",
+    ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico",
+    ".woff", ".woff2", ".ttf", ".mp3", ".ogg", ".wav", ".txt",
+}
+ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "shared-assets", "network"}
 ALLOWED_FIELDS = {
-    "apiVersion", "id", "name", "version", "runtime", "entry", "icon",
+    "apiVersion", "id", "name", "version", "runtime", "entry", "icon", "cover",
     "description", "author", "permissions", "networkHosts", "display",
+    "category", "galleryDirectories",
 }
 APP_ID = re.compile(r"^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$")
 SEMVER = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
@@ -83,6 +90,10 @@ def validate_manifest(data: object, files: set[str]) -> dict:
         checked_path(icon)
         if icon not in files or not icon.endswith((".svg", ".png")):
             raise PackageError("icon must point to an existing .svg/.png file")
+    if (cover := _string(data, "cover", 5, 255)) is not None:
+        checked_path(cover)
+        if cover not in files or not cover.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+            raise PackageError("cover must point to an existing PNG/JPEG/WebP file")
     perms = data["permissions"]
     if not isinstance(perms, list) or len(perms) > 6 or any(type(p) is not str for p in perms):
         raise PackageError("permissions must be a string array")
@@ -98,12 +109,38 @@ def validate_manifest(data: object, files: set[str]) -> dict:
             raise PackageError("duplicate networkHosts")
     elif hosts is not None:
         raise PackageError("networkHosts requires network permission")
+    category = data.get("category")
+    if category is not None and category not in ("games", "creative", "learning", "tools", "other"):
+        raise PackageError("invalid app category")
+    gallery_directories = data.get("galleryDirectories")
+    if gallery_directories is not None:
+        if not isinstance(gallery_directories, list) or len(gallery_directories) > 8:
+            raise PackageError("galleryDirectories must contain at most 8 entries")
+        if "photo-save" not in perms:
+            raise PackageError("galleryDirectories requires photo-save permission")
+        seen_gallery_paths: set[str] = set()
+        for directory in gallery_directories:
+            if not isinstance(directory, dict) or set(directory) - {"path", "name"}:
+                raise PackageError("invalid gallery directory object")
+            path = directory.get("path")
+            if (not isinstance(path, str) or len(path) > 160
+                    or not re.fullmatch(r"photos(?:/[A-Za-z0-9_-]+){0,5}", path)
+                    or path in seen_gallery_paths):
+                raise PackageError("unsafe or duplicate gallery directory path")
+            seen_gallery_paths.add(path)
+            if "name" in directory and (not isinstance(directory["name"], str) or len(directory["name"]) > 100):
+                raise PackageError("invalid gallery directory name")
     display = data.get("display")
     if display is not None:
-        if not isinstance(display, dict) or set(display) - {"orientation", "minWidth", "minHeight"}:
+        if not isinstance(display, dict) or set(display) - {"orientation", "minWidth", "minHeight", "showBackButton", "showSystemInfo", "fullScreen", "background"}:
             raise PackageError("invalid display object")
-        if display.get("orientation") not in ("any", "landscape", "portrait"):
+        if "orientation" in display and display["orientation"] not in ("any", "landscape", "portrait"):
             raise PackageError("display.orientation must be any/landscape/portrait")
+        for flag in ("showBackButton", "showSystemInfo", "fullScreen"):
+            if flag in display and type(display[flag]) is not bool:
+                raise PackageError(f"invalid {flag} (boolean required)")
+        if "background" in display and display["background"] not in ("system", "app"):
+            raise PackageError("display.background must be system or app")
         for dimension in ("minWidth", "minHeight"):
             if dimension in display:
                 val = display[dimension]
@@ -126,6 +163,8 @@ def validate_package(path: Path) -> dict:
             if info.is_dir():
                 raise PackageError("directory entries not needed (files only)")
             name = checked_path(info.filename)
+            if PurePosixPath(name).suffix.lower() not in HOST_ALLOWED_EXTENSIONS:
+                raise PackageError(f"unsupported file type for MuPiBox-NG: {name}")
             if name.casefold() in seen:
                 raise PackageError(f"duplicate/case-colliding path: {name}")
             seen.add(name.casefold())
@@ -154,13 +193,14 @@ def validate_package(path: Path) -> dict:
         return validate_manifest(manifest, names)
 
 
-def pack(source: Path, destination: Path) -> dict:
+def pack(source: Path, destination: Path, excluded: tuple[str, ...] | list[str] = ()) -> dict:
     source = source.resolve()
     destination = destination.resolve()
     if not source.is_dir():
         raise PackageError(f"source is not a directory: {source}")
     if source in destination.parents:
         raise PackageError("destination must not be inside source directory")
+    excluded_paths = {checked_path(name) for name in excluded}
     names: set[str] = set()
     paths: list[tuple[str, Path]] = []
     total = 0
@@ -173,6 +213,8 @@ def pack(source: Path, destination: Path) -> dict:
             if actual.is_symlink() or not actual.is_file():
                 raise PackageError(f"nonregular file: {actual}")
             name = checked_path(actual.relative_to(source).as_posix())
+            if name in excluded_paths:
+                continue
             if name.casefold() in names:
                 raise PackageError("case-colliding paths")
             names.add(name.casefold())
@@ -209,9 +251,11 @@ def main() -> int:
     sub_pack = subs.add_parser("pack", help="create a .mupiapp ZIP from a directory")
     sub_pack.add_argument("directory", type=Path)
     sub_pack.add_argument("archive", type=Path)
+    sub_pack.add_argument("--exclude", action="append", default=[], metavar="PATH",
+                          help="omit an exact repository-only file, e.g. README.md")
     args = parser.parse_args()
     try:
-        manifest = validate_package(args.archive) if args.command == "validate" else pack(args.directory, args.archive)
+        manifest = validate_package(args.archive) if args.command == "validate" else pack(args.directory, args.archive, args.exclude)
     except (PackageError, OSError, zipfile.BadZipFile) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1

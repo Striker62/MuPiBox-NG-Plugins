@@ -31,4 +31,4 @@ const score = await host.storage.get('score');
 await host.storage.set('score', 3);
 ```
 
-A local browser preview uses **localStorage** for testing. Starting with MuPiBox-NG **0.2.0-alpha.18**, installed plugins instead use the isolated browser runner and trusted, narrowly scoped host bridge. Native Qt touch integration is not implemented yet. The SDK itself is no substitute for host sandboxing.
+A local browser preview uses **localStorage** for testing. Starting with MuPiBox-NG **0.2.0-alpha.18**, installed plugins instead use the isolated browser runner and trusted, narrowly scoped host bridge. Native Qt touch integration is available in NG alpha.20+; per-app native header, status and fullscreen preferences are available from alpha.30 (see [the manifest specification](manifest-v1.md#native-app-appearance-and-navigation-ng-020-alpha30)). The SDK itself is no substitute for host sandboxing.

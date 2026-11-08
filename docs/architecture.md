@@ -31,6 +31,10 @@ Illustrative payloads:
 
 **Preview fallback:** Without a host bridge, the SDK uses origin-local browser storage and synthetic keyboard input. This is for development only and is *not a sandbox*.
 
+## Native UI preferences and app exit (alpha.30+)
+
+Plugins may suggest menu placement (`category`) and host-owned appearance (`display.showBackButton`, `showSystemInfo`, `fullScreen`, `background`). These optional manifest fields never grant privileges. Admin overrides are stored by the host, not in plugin storage. Hiding the Back/title group requires a prominent in-app exit control using `MuPiBoxSDK.exit()`; the host remains responsible for closing the app, and the system Back/exit mechanism stays available independently of plugin code. See [manifest appearance options](manifest-v1.md#native-app-appearance-and-navigation-ng-020-alpha30).
+
 ## Audio and background lifecycle
 
 When app becomes active, host should negotiate audio focus with the existing player. On `lifecycle.pause`, apps stop animation, timers and audio; on `resume`, they restore safe state. Controller events route only to the focused app. `app.exit` returns to the official UI. The host must remain able to revoke focus or terminate an app without its cooperation.
@@ -51,7 +55,7 @@ When app becomes active, host should negotiate audio focus with the existing pla
 2. **Open:** Native Qt touch runtime for Raspberry Pi 4/5; benchmark memory/CPU and check rendering, rotation and hardware gamepads.
 3. **Partly shipped in NG alpha.22:** Native musical notes through the permission-gated SDK and appliance PipeWire stream; complete media/stream audio focus is still open. Controller/touch lifecycle remains browser preview quality.
 4. **Open:** Per-app child approval, RFID launch, time budgets, complete parental enforcement and content API scopes.
-5. **Open:** Catalog backend, signed metadata, publisher identity, automatic updates and multi-version trust policy.
+5. **Shipped since alpha.19:** Curated GitHub Releases catalog with reviewed package metadata and SHA-256 verification; **open:** independent publisher signatures/identity and automatic updates with multi-version trust policy.
 
 The core can implement a different rendering engine as long as the public bridge behaves the same.
 
