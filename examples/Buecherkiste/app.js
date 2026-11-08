@@ -1,0 +1,166 @@
+(()=>{'use strict';const $=id=>document.getElementById(id),shelf=$('shelf'),reader=$('reader'),viewport=$('viewport');let henText=["Es war einmal eine Henne und ein Adler, die Freunde waren. Sie lebten friedlich mit all den anderen Vögeln. Keiner von ihnen konnte fliegen.", "Eines Tages überkam eine Hungersnot das Land. Adler musste sehr weit laufen, um Essen zu finden. Sie kam sehr müde zurück. „Es muss eine leichtere Art der Fortbewegung geben!“, rief Adler.", "Nach einer erholsamen Nacht hatte Henne eine großartige Idee. Sie machte sich daran, alle ausgefallenen Federn ihrer Vogelfreunde einzusammeln. „Lasst uns sie über unsere eigenen Federn nähen“, meinte sie. „Vielleicht wird so die Fortbewegung leichter.“", "Adler war die einzige mit einer Nadel, also nähte sie zuerst. Sie nähte sich ein Paar wunderschöne Flügel und flog hoch über Henne. Henne borgte sich die Nadel, aber sie verlor schnell die Lust am Nähen. Sie ließ die Nadel auf dem Schrank und ging in die Küche, um Essen für ihre Kinder zu machen.", "Aber die anderen Vögel hatten Adler davonfliegen sehen. Sie baten Henne, ihnen die Nadel zu leihen, um sich selbst auch Flügel zu nähen. Schon bald flogen am ganzen Himmel Vögel.", "Als der letzte Vogel die geliehene Nadel zurückbrachte, war Henne nicht da. Also nahmen ihre Kinder die Nadel und spielten damit. Als sie keine Lust mehr am Spielen hatten, ließen sie die Nadel im Sand liegen.", "Später am Nachmittag kam Adler zurück. Sie fragte nach der Nadel, um einige Federn, die sich beim Flug gelockert hatten, zu reparieren. Henne sah auf dem Schrank nach. Sie sah in der Küche nach. Sie sah im Garten nach. Aber die Nadel war nirgends zu finden.", "„Gib mir bloß einen Tag“, bat Henne Adler. „Dann kannst du deinen Flügel reparieren und davonfliegen, um Essen zu holen.“ „Nur ein Tag“, sagte Adler, „Wenn du die Nadel bis dann nicht findest, musst du mir eins deiner Küken zur Wiedergutmachung geben.“", "Als Adler am nächsten Tag vorbeikam, fand sie Henne im Sand scharren, aber ohne Nadel. Daher ging Adler in den Sturzflug und schnappte sich eins der Küken. Sie trug es davon. Seitdem, immer wenn Adler auftaucht, sieht sie Henne im Sand auf der Suche nach der Nadel scharren.", "Wenn Adlers Flügel Schatten auf den Boden werfen, warnt Henne ihre Küken: „Meidet das freie und trockene Land.“ Und sie antworten: „Wir sind keine Narren. Wir werden laufen.“"];fetch("books/henne-und-adler/text/pages.json").then(r=>{if(!r.ok)throw Error(r.status);return r.json()}).then(data=>{if(Array.isArray(data.pages)){const values=data.pages.map(p=>p.text);if(values.length===10){henText=values;if(book==="henne"&&!reader.hidden)show()}}}).catch(()=>{});let book='ole',current=1,zoomed=false;
+let shelfEntries=[],shelfPage=0,shelfCols=3,shelfRows=2;
+const bookInfo={ole:{pageCount:15,title:'Ole und der verschwundene Knopf',imagePattern:'images/{page:02d}.jpg',layout:'full-page'},henne:{pageCount:10,title:'Henne und Adler',imagePattern:'images/{page_plus_one:02d}.jpg',layout:'image-and-text'}};
+const bookFolder={ole:'ole',henne:'henne-und-adler'};const bookTexts={};
+const pageFiles={ole:[],henne:[]};const MAX_PAGES=200;
+
+function getTotal(){return pageFiles[book].length||Math.max(1,Number(bookInfo[book].pageCount)||1)}
+function getImagePath(which,page){
+ const info=bookInfo[which],folder=bookFolder[which];
+ const pattern=info.imagePattern||'images/{page:02d}.jpg';
+ return 'books/'+folder+'/'+pattern.replace(/\{(page|page_plus_one)(?::0?(\d+)d)?\}/g,(_,kind,width)=>String(page+(kind==='page_plus_one'?1:0)).padStart(Number(width)||1,'0'));
+}
+async function loadBookInfo(which){
+ try{
+  const response=await fetch('books/'+bookFolder[which]+'/book.json?ts='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  const info=await response.json();
+  // pageCount is optional: available image files determine the real number of pages.
+  if(typeof info.title==='string'&&info.title)bookInfo[which].title=info.title;
+  if(typeof info.layout==='string')bookInfo[which].layout=info.layout;
+  if(typeof info.text==='string'&&/^text\/[a-zA-Z0-9_.-]+\.json$/.test(info.text)){try{const tr=await fetch('books/'+bookFolder[which]+'/'+info.text+'?ts='+Date.now(),{cache:'no-store'});if(tr.ok){const td=await tr.json();if(Array.isArray(td.pages))bookTexts[which]=td.pages.map(p=>typeof p==='string'?p:(p.text||''));}}catch(e){console.warn('Buchtext nicht geladen',which,e)}}
+  if(typeof info.imagePattern==='string'&&/^images\/[a-zA-Z0-9_{}:.\/-]+$/.test(info.imagePattern)&&!info.imagePattern.includes('..'))bookInfo[which].imagePattern=info.imagePattern;
+ }catch(err){console.warn('Buchinformationen nicht geladen:',which,err)}
+ updateShelfCount(which);
+}
+function updateShelfCount(which){
+ const el=null;
+ // Die Regalansicht zeigt bewusst keine Seitenzahl.
+}
+function getBookTotal(which){return pageFiles[which].length||Math.max(1,Number(bookInfo[which].pageCount)||1)}
+// Probe file existence without decoding the image. Try common image formats.
+// Stop after two consecutive missing page numbers; keep Pi 4 requests bounded.
+async function existsImage(url){
+ try{
+  let r=await fetch(url,{method:'HEAD',cache:'no-store'});
+  if(r.status===405||r.status===501){r=await fetch(url,{headers:{Range:'bytes=0-0'},cache:'no-store'});if(r.body)await r.body.cancel().catch(()=>{});}
+  return r.ok;
+ }catch(e){console.warn('Bildprüfung fehlgeschlagen',url,e);return false;}
+}
+async function scanPages(which){
+ const result=[],base=bookInfo[which].imagePattern||'images/{page:02d}.jpg';
+ let misses=0;
+ for(let p=1;p<=MAX_PAGES&&misses<2;p++){
+  const original=getImagePath(which,p);
+  const candidates=[original];
+  const root=original.replace(/\.(jpe?g|png)$/i,'');
+  if(root!==original){for(const ext of ['jpg','jpeg','png','JPG','JPEG','PNG']){const path=root+'.'+ext;if(!candidates.includes(path))candidates.push(path);}}
+  let found=null;
+  for(const path of candidates){if(await existsImage(path)){found=path;break;}}
+  if(found){result.push(found);misses=0;}else misses++;
+ }
+ if(result.length){pageFiles[which]=result;bookInfo[which].pageCount=result.length;}
+ else console.warn('Keine Buchbilder gefunden, bisherige Seitenliste bleibt aktiv:',which);
+ updateShelfCount(which);
+}
+function pagePath(which,page){return pageFiles[which][page-1]||getImagePath(which,page)}
+function fitHenneText(){
+  const panel=$('henne-page'), image=$('henne-image'), el=$('henne-text');
+  if(bookInfo[book].layout!=='image-and-text'||reader.hidden||zoomed||panel.hidden)return;
+  const cs=getComputedStyle(panel);
+  const padX=(parseFloat(cs.paddingLeft)||0)+(parseFloat(cs.paddingRight)||0);
+  const padY=(parseFloat(cs.paddingTop)||0)+(parseFloat(cs.paddingBottom)||0);
+  const gap=parseFloat(cs.columnGap)||10;
+  // Both squares are exactly equal and sized to the ACTUAL plugin viewport.
+  const square=Math.max(1,Math.floor(Math.min(panel.clientHeight-padY,(panel.clientWidth-padX-gap)/2)));
+  panel.style.setProperty('--square-size',square+'px');
+  const inner=$('henne-text-inner');
+  if(!inner||!inner.textContent)return;
+  const available=el.clientHeight-(parseFloat(getComputedStyle(el).paddingTop)||0)-(parseFloat(getComputedStyle(el).paddingBottom)||0)-5;
+  if(available<20)return;
+  // Measure actual wrapped text, not a character count or estimated line count.
+  // scrollHeight on the inner text node remains reliable with flex centering.
+  let lo=8,hi=38,best=8;
+  for(let i=0;i<17;i++){
+    const mid=(lo+hi)/2;
+    inner.style.fontSize=mid+'px';
+    inner.style.lineHeight='1.2';
+    if(inner.scrollHeight<=available){best=mid;lo=mid}else{hi=mid;}
+  }
+  inner.style.fontSize=Math.max(8,best-0.35).toFixed(2)+'px';
+  for(let i=0;i<12&&inner.scrollHeight>available;i++){
+    inner.style.fontSize=Math.max(8,parseFloat(inner.style.fontSize)-0.5).toFixed(2)+'px';
+  }
+}
+const imageUrl=n=>pagePath(book,n);function show(){let total=getTotal();if(bookInfo[book].layout!=='image-and-text'){let src=pagePath(book,current);$('page').src=src;$('page').hidden=false;$('henne-page').hidden=true;$('backdrop').style.backgroundImage='url("'+src+'")';$('credits').hidden=true;}else{$('page').hidden=true;$('henne-page').hidden=false;$('henne-image').src=imageUrl(current);$('henne-image').onload=()=>requestAnimationFrame(fitHenneText);$('henne-text').innerHTML='';const textInner=document.createElement('div');textInner.id='henne-text-inner';textInner.textContent=(bookTexts[book]||henText)[current-1]||'';$('henne-text').appendChild(textInner);$('credits').hidden=book!=='henne';requestAnimationFrame(fitHenneText);}$('counter').textContent=current+' / '+total;$('prev').disabled=current===1;$('next').disabled=current===total;viewport.scrollTop=0;viewport.scrollLeft=0;if(bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}function zoom(on){zoomed=on;viewport.classList.toggle('zoom',on);reader.classList.toggle('zoomed',on);$('zoom').textContent=on?'⊟ Ganz':'⌕ Zoom';viewport.scrollTop=0;viewport.scrollLeft=0;if(!on&&bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}async function open(which){book=which;current=1;shelf.hidden=true;reader.hidden=false;reader.classList.toggle('henne',bookInfo[book].layout==='image-and-text');$('reader-title').textContent=bookInfo[which].title;zoom(false);show();await loadBookInfo(which);await scanPages(which);if(book!==which||reader.hidden)return;$('reader-title').textContent=bookInfo[which].title;show()}
+async function loadShelf(){
+ const holder=document.querySelector('#shelf .books');
+ try{
+  const response=await fetch('books/index.json?ts='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const data=await response.json();
+  if(!Array.isArray(data.books))throw Error('books muss ein Array sein');
+  const folders=[...new Set(data.books.filter(n=>typeof n==='string'&&/^[a-zA-Z0-9_-]+$/.test(n)))].slice(0,60);
+  const entries=await Promise.all(folders.map(async folder=>{
+   try{
+    const r=await fetch('books/'+folder+'/book.json?ts='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw Error('HTTP '+r.status);
+    const info=await r.json();
+    if(!info||typeof info.title!=='string'||!info.title.trim())throw Error('Titel fehlt');
+    const cover=typeof info.cover==='string'&&/^images\/[a-zA-Z0-9_.-]+$/.test(info.cover)?info.cover:'images/01.jpg';
+    return {folder,info,cover};
+   }catch(e){console.warn('Buch übersprungen:',folder,e);return null}
+  }));
+  shelfEntries=[];
+  for(const entry of entries.filter(Boolean)){
+   const {folder,info,cover}=entry;
+   bookFolder[folder]=folder;
+   bookInfo[folder]={title:info.title,pageCount:1,imagePattern:info.imagePattern||'images/{page:02d}.jpg',layout:info.layout||'full-page'};
+   pageFiles[folder]=[];
+   shelfEntries.push({folder,title:info.title,cover});
+  }
+  if(!shelfEntries.length)throw Error('Keine gültigen Bücher gefunden');
+  shelfPage=Math.min(shelfPage,Math.ceil(shelfEntries.length/booksPerPage())-1);
+  renderShelf();
+ }catch(e){console.warn('Bücherliste nicht geladen:',e);if(!holder.children.length)holder.textContent='Bücherliste nicht verfügbar';}
+}
+function booksPerPage(){measureShelf();return shelfCols*shelfRows;}
+function measureShelf(){
+ const w=window.innerWidth,h=window.innerHeight;
+ shelfCols=w<540?2:3;
+ shelfRows=h<315?1:2;
+ document.documentElement.style.setProperty('--shelf-cols',shelfCols);
+ document.documentElement.style.setProperty('--shelf-rows',shelfRows);
+}
+function renderShelf(){
+ measureShelf();
+ const holder=document.querySelector('#shelf .books'),pager=document.querySelector('.shelf-pager');
+ const per=booksPerPage(),pages=Math.max(1,Math.ceil(shelfEntries.length/per));
+ shelfPage=Math.max(0,Math.min(shelfPage,pages-1));
+ holder.replaceChildren();
+ const slice=shelfEntries.slice(shelfPage*per,(shelfPage+1)*per);
+ for(let i=0;i<per;i++){
+  const slot=document.createElement('div');slot.className='book-slot';
+  const entry=slice[i];
+  if(entry){
+   const btn=document.createElement('button');btn.className='book';btn.type='button';btn.setAttribute('aria-label',entry.title);btn.title=entry.title;
+   const img=document.createElement('img');img.src='books/'+entry.folder+'/'+entry.cover;img.alt=entry.title;img.loading='eager';
+   // 0.2.19: Buchruecken exakt an die sichtbare Covergroesse anpassen.
+   // Keine feste Hoehe, keine braunen Streifen ueber/unter dem Buch.
+   const spineColors=['#c82132','#1974d2','#23944e','#8a4bb9','#d9a31a','#008fae'];
+   const spineIndex=entry.folder==='ole'?0:entry.folder==='henne-und-adler'?1:
+      Array.from(entry.folder).reduce((n,ch)=>n+ch.charCodeAt(0),0)%spineColors.length;
+   btn.style.setProperty('--spine-color',spineColors[spineIndex]);
+   const fitSpine=()=>{
+     if(!img.isConnected||!img.offsetHeight)return;
+     btn.style.setProperty('--spine-left',(img.offsetLeft-7)+'px');
+     btn.style.setProperty('--spine-bottom',(btn.clientHeight-img.offsetTop-img.offsetHeight)+'px');
+     btn.style.setProperty('--spine-height',img.offsetHeight+'px');
+   };
+   img.addEventListener('load',()=>requestAnimationFrame(fitSpine),{once:true});
+   btn.appendChild(img);btn.onclick=()=>{if(Date.now()-lastShelfSwipe>350)open(entry.folder)};slot.appendChild(btn);
+   requestAnimationFrame(fitSpine);
+  }
+  holder.appendChild(slot);
+ }
+ pager.replaceChildren();
+ if(pages>1){
+  for(let i=0;i<pages;i++){const dot=document.createElement('button');dot.type='button';dot.className='pager-dot'+(i===shelfPage?' active':'');dot.setAttribute('aria-label','Regalseite '+(i+1));dot.setAttribute('aria-current',i===shelfPage?'page':'false');dot.onclick=()=>{shelfPage=i;renderShelf()};pager.appendChild(dot)}
+ }
+}
+function changeShelfPage(direction){const pages=Math.max(1,Math.ceil(shelfEntries.length/booksPerPage()));const next=Math.max(0,Math.min(pages-1,shelfPage+direction));if(next!==shelfPage){shelfPage=next;renderShelf()}}
+let touchStart=null,lastShelfSwipe=0;
+shelf.addEventListener('touchstart',e=>{if(e.touches.length===1)touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY}},{passive:true});
+shelf.addEventListener('touchend',e=>{if(!touchStart||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-touchStart.x,dy=e.changedTouches[0].clientY-touchStart.y;touchStart=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.4){lastShelfSwipe=Date.now();changeShelfPage(dx<0?1:-1)}},{passive:true});
+loadShelf();
+$('back').onclick=()=>{reader.hidden=true;shelf.hidden=false;loadShelf()};function turn(d){let total=getTotal();let n=Math.max(1,Math.min(total,current+d));if(n!==current){current=n;show()}}$('prev').onclick=()=>turn(-1);$('next').onclick=()=>turn(1);$('zoom').onclick=()=>zoom(!zoomed);window.addEventListener('resize',()=>{requestAnimationFrame(fitHenneText);if(!shelf.hidden)renderShelf()});if(window.ResizeObserver){new ResizeObserver(()=>requestAnimationFrame(fitHenneText)).observe($('viewport'));}if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>requestAnimationFrame(fitHenneText));document.addEventListener('keydown',e=>{if(reader.hidden){if(e.key==='ArrowRight')changeShelfPage(1);if(e.key==='ArrowLeft')changeShelfPage(-1);return;}if(e.key==='ArrowRight')turn(1);if(e.key==='ArrowLeft')turn(-1);if(e.key==='Escape')$('back').click()})})();
