@@ -26,7 +26,7 @@ HOST_ALLOWED_EXTENSIONS = {
     ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico",
     ".woff", ".woff2", ".ttf", ".mp3", ".ogg", ".wav", ".txt",
 }
-ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "network"}
+ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "shared-assets", "network"}
 ALLOWED_FIELDS = {
     "apiVersion", "id", "name", "version", "runtime", "entry", "icon",
     "description", "author", "permissions", "networkHosts", "display",

@@ -116,6 +116,14 @@ class PackageTests(unittest.TestCase):
         with self.assertRaises(PackageError):
             validate_manifest(self.manifest, {"index.html"})
 
+    def test_explicit_shared_assets_permission_supported(self):
+        self.manifest["permissions"] = ["shared-assets"]
+        result = validate_manifest(self.manifest, {"index.html"})
+        self.assertEqual(result["permissions"], ["shared-assets"])
+        self.manifest["permissions"] = ["shared-assets", "shared-assets"]
+        with self.assertRaises(PackageError):
+            validate_manifest(self.manifest, {"index.html"})
+
     def test_gallery_registration_requires_scope_and_permission(self):
         self.manifest["galleryDirectories"] = [{"path": "photos"}]
         with self.assertRaisesRegex(PackageError, "photo-save"):
