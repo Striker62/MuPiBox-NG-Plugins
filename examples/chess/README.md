@@ -12,6 +12,10 @@ Offline-Schach als unabhängige, touchscreenfreundliche Community-App für MuPiB
 - Deutsche, englische, französische, spanische, italienische, niederländische und schwedische Oberfläche.
 - Keine Server, CDN, Werbung, Telemetrie oder Internetzugriffe. Nur Berechtigung `controller`.
 
+## Cover und Anzeige in der Spielebibliothek
+
+Die App gehört zur Kategorie `games` und erscheint in der MuPiBox-Spielebibliothek unter **MuPi Schach**. Die quadratische Kachel `web/cover.png` (512 × 512 PNG, Springer auf Schachbrett) wird beim Paketbau zu `cover.png` und über `manifest.cover` als App-Kachel angezeigt. Die Kachel ist **kein** App-Hintergrund: `display.background: "system"` und transparente CSS-Flächen lassen weiterhin das MuPiBox-Theme durchscheinen. `showBackButton: false`, `showSystemInfo: false` und `fullScreen: true` entfernen die nativen MuPiBox-Leisten; zum Verlassen gibt es die eigene SDK-Zurück-Schaltfläche.
+
 ## Bauen und testen
 
 ```bash

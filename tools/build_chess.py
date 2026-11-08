@@ -17,9 +17,6 @@ def main():
     STAGING.mkdir(parents=True)
     for src in (SOURCE/'web').iterdir():
         if src.is_file() and src.name!='mupibox-sdk.js': copy2(src,STAGING/src.name)
-    import base64
-    cover_source=SOURCE/'cover.base64.txt'
-    (STAGING/'cover.png').write_bytes(base64.b64decode(cover_source.read_text(encoding='ascii').strip(),validate=True))
     copy2(SOURCE/'manifest.json',STAGING/'manifest.json')
     copy2(ROOT/'sdk'/'mupibox-sdk.js',STAGING/'mupibox-sdk.js')
     manifest=pack(STAGING,DIST)
