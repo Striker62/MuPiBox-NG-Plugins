@@ -157,6 +157,59 @@
     }
   });
 
+  // Owner-managed SMB content, scoped to CommunityApps/<app-id>. The host
+  // accepts only the manifest-approved "shared-assets" permission. No
+  // filesystem paths, unrestricted disk access or write methods are exposed.
+  function sharedPath(input, allowRoot = false) {
+    if (typeof input !== 'string' || input.length > 240 ||
+        (!input && !allowRoot) || input.startsWith('/') || input.includes('\\') ||
+        input.includes(':') || /[\x00-\x1f\x7f]/.test(input) ||
+        (input && (input.split('/').length > 9 ||
+          input.split('/').some(part => !part || part.startsWith('.'))))) {
+      throw new TypeError('invalid shared content path');
+    }
+    return input;
+  }
+  const shared = Object.freeze({
+    async list(folder = '') {
+      const result = await invoke('shared.list', {path: sharedPath(folder, true)});
+      if (!result || !Array.isArray(result.entries) || typeof result.revision !== 'string')
+        throw new Error('invalid shared directory response');
+      return result; // {entries:[{name,path,isDir,size,modified}],revision,truncated}
+    },
+    async read(filename) {
+      const result = await invoke('shared.read', {path: sharedPath(filename)});
+      if (!(result?.blob instanceof global.Blob)) throw new Error('invalid shared file response');
+      return result.blob;
+    },
+    watch(folder, onChange, options = {}) {
+      sharedPath(folder, true);
+      if (typeof onChange !== 'function') throw new TypeError('watch callback required');
+      const intervalMs = options.intervalMs ?? 30000;
+      if (!Number.isFinite(intervalMs) || intervalMs < 15000 || intervalMs > 300000)
+        throw new TypeError('polling interval must be 15–300 seconds');
+      let active = true, running = false, lastRevision = null;
+      async function poll() {
+        if (!active || running || global.document?.hidden) return;
+        running = true;
+        try {
+          const result = await shared.list(folder);
+          if (lastRevision !== result.revision) {
+            lastRevision = result.revision;
+            if (active) onChange(result);
+          }
+        } catch (error) {
+          // Permission revocation/unavailable SMB share is not silently retried
+          // faster; application code can present the error to its users.
+          if (active) global.console.warn('[MuPiBoxSDK] shared.watch:', error);
+        } finally { running = false; }
+      }
+      void poll();
+      const timer = global.setInterval(poll, intervalMs);
+      return () => {active = false; global.clearInterval(timer);};
+    }
+  });
+
   const sdk = Object.freeze({
     apiVersion: '1',
     isHosted: Boolean(bridge),
@@ -165,6 +218,7 @@
     audio,
     camera,
     photos,
+    shared,
     async getContext() {
       if (bridge) return invoke('host.context', {});
       return { apiVersion: '1', preview: true, language: global.navigator.language || 'de' };
