@@ -96,6 +96,24 @@ class PackageTests(unittest.TestCase):
         self.assertEqual(result["category"], "creative")
         self.assertFalse(validate_package(self.output)["display"]["showBackButton"])
 
+    def test_optional_raster_cover_is_packaged_and_validated(self):
+        self.manifest["cover"] = "assets/cover.png"
+        (self.source / "assets").mkdir()
+        (self.source / "assets" / "cover.png").write_bytes(b"raster-cover")
+        (self.source / "manifest.json").write_text(json.dumps(self.manifest))
+        installed = pack(self.source, self.output)
+        self.assertEqual(installed["cover"], "assets/cover.png")
+        self.assertEqual(validate_package(self.output)["cover"], "assets/cover.png")
+
+        for invalid in ("../outside.png", "/root/secret.jpg", "assets/missing.png",
+                        "assets/icon.svg", "index.html", "assets/script.js"):
+            with self.subTest(filename=invalid):
+                self.manifest["cover"] = invalid
+                with self.assertRaises(PackageError):
+                    validate_manifest(self.manifest, {"index.html", "assets/cover.png"})
+        self.manifest.pop("cover")
+        validate_manifest(self.manifest, {"index.html"})
+
     def test_presentation_without_orientation(self):
         self.manifest["display"] = {"showBackButton": False, "showSystemInfo": True}
         result = validate_manifest(self.manifest, {"index.html"})

@@ -197,3 +197,48 @@ untrusted data, especially SVG; do not inject SVG source as executable HTML.
 There is no direct NAS mount access, no arbitrary filesystem listing, no
 SMB credentials and no network upload. Admin browser previews cannot use
 this capability. The host update must be installed first.
+
+
+## Custom app background and menu/category images (NG alpha.34+)
+
+A plugin-owned **wallpaper** is rendered by the app itself. It is **not**
+uploaded to the MuPiBox Admin, and it does not appear on the Home screen.
+Place the file in your app package, for example
+`assets/background.jpg`, and use a relative URL in your CSS:
+
+```css
+/* style.css in the same directory as index.html */
+html, body { margin:0; width:100%; min-height:100%; }
+body { background: url("./assets/background.jpg") center/cover no-repeat; }
+```
+
+`display.background: "app"` selects the app-side host background mode.
+It is **not** an image path or automatic background loader. To show the
+MuPiBox theme behind the web content, use `"system"` and keep the web
+document transparent; opaque app CSS will still hide the system theme.
+
+For a **native touch menu tile** instead, bundle a square raster
+illustration and declare `cover` at the manifest root:
+
+```json
+{
+  "apiVersion":"1", "id":"community.example", "name":"Example",
+  "version":"1.0.0", "runtime":"web", "entry":"index.html",
+  "icon":"assets/icon.svg", "cover":"assets/cover.png",
+  "category":"creative", "permissions":[],
+  "display":{"background":"app"}
+}
+```
+
+The package contains `index.html`, `style.css`,
+`assets/background.jpg`, `assets/icon.svg`, and `assets/cover.png`.
+The `cover` file must exist and be a PNG/JPEG/WebP image (preferably
+512 × 512), not SVG. Icon SVGs remain allowed for admin/catalog use but
+are not dependable Qt Quick artwork. MuPiBox falls back to a built-in
+illustration for Creative/Learning/Tools/Other when neither raster
+`cover` nor raster `icon` is provided, including for older packages.
+The cover appears inside the **Home or category tile**, not behind the app.
+
+Read [the complete manifest contract](docs/manifest-v1.md#app-wallpaper-versus-native-menu-tile-image-ng-020-alpha34)
+before submitting a PR. No special permission is needed; do not add
+external HTTP image URLs or paths outside the app package.
