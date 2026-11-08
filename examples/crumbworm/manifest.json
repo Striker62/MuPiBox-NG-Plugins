@@ -2,12 +2,23 @@
   "apiVersion": "1",
   "id": "community.mupi-kruemelwurm",
   "name": "MuPi Krümelwurm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.svg",
   "author": "MuPiBox-NG Community",
-  "description": "Wurmspiel mit Krümeln, Bonuskrümeln, eigenem Design, drei Geschwindigkeiten und sieben Sprachen.",
-  "permissions": ["storage", "controller"],
-  "display": { "orientation": "landscape", "minWidth": 800, "minHeight": 480 }
+  "description": "Vollbild-Wurmspiel mit Theme-Hintergrund, eigener Zurück-Taste, Touch-Pfeilen und Controller-Steuerung.",
+  "permissions": [
+    "storage",
+    "controller"
+  ],
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "system"
+  }
 }

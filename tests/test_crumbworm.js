@@ -69,3 +69,27 @@ test('food selection never picks an occupied cell and handles a full garden', ()
   const single = g.chooseFood(entire.slice(1),()=>.99,true);
   assert.deepEqual(single,{position:0,gold:true});
 });
+
+test('new touch rounds start safely in the chosen direction', () => {
+  const deltas = {up:-g.WIDTH, down:g.WIDTH, left:-1, right:1};
+  for (const [direction, delta] of Object.entries(deltas)) {
+    const engine = g.create(() => .42);
+    const ready = engine.reset(direction);
+    assert.equal(ready.phase, 'ready');
+    assert.equal(ready.direction, direction);
+    assert.equal(ready.queued, direction);
+    assert.equal(ready.body[0] - ready.body[1], delta);
+    assert.equal(ready.body[1] - ready.body[2], delta);
+    engine.start();
+    const moved = engine.tick();
+    assert.equal(moved.phase, 'playing', direction);
+    assert.equal(moved.body[0], ready.body[0]+delta, direction);
+  }
+});
+
+test('invalid initial directions revert to the backwards-compatible right direction', () => {
+  const engine=g.create(()=>.5);
+  const initial=engine.snapshot();
+  assert.deepEqual(engine.reset('diagonal').body,initial.body);
+  assert.equal(engine.snapshot().direction,'right');
+});

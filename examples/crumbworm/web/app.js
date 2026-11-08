@@ -5,14 +5,13 @@
   const engine = rules.create();
   const canvas = document.getElementById('garden');
   const ctx = canvas.getContext('2d');
-  const speed = document.getElementById('speed');
+  const screen = document.querySelector('.screen');
   const status = document.getElementById('status');
   const points = document.getElementById('points');
   const bestText = document.getElementById('best');
-  const toggle = document.getElementById('toggle');
-  const reset = document.getElementById('reset');
   const exit = document.getElementById('exit');
   let locale = null, best = 0, level = 'normal', ticker = null, pausedByHost = false;
+  let exiting = false;
   let pointerStart = null;
   const t = (key,args) => locale ? locale.t(key,args) : key;
   const delays = Object.freeze({easy:230,normal:150,hard:95});
@@ -55,16 +54,22 @@
   function setSpeed(value) {
     if (!Object.prototype.hasOwnProperty.call(delays, value)) return;
     level = value;
-    speed.value = value;
     void sdk.storage.set('speed', value).catch(() => {});
     if (engine.snapshot().phase === 'playing') clock();
   }
   function steer(direction) {
     if (pausedByHost) return;
     const state = engine.snapshot();
-    if (state.phase === 'over' || state.phase === 'won') return;
-    engine.turn(direction);
-    if (state.phase === 'ready') { engine.start(); clock(); }
+    if (state.phase === 'over' || state.phase === 'won' || state.phase === 'ready') {
+      // No Start/Restart controls: the first arrow starts (or restarts)
+      // the worm in the requested direction, including Left.
+      engine.reset(direction);
+      engine.start();
+      clock();
+    } else {
+      engine.turn(direction);
+      if (state.phase === 'paused') { engine.start(); clock(); }
+    }
     paint(engine.snapshot());
   }
   function paint(state) {
@@ -115,53 +120,84 @@
     }
     points.textContent=String(state.points);
     bestText.textContent=String(best);
-    if (pausedByHost || state.phase==='paused') status.textContent=t('wormPause');
-    else if (state.phase==='ready') status.textContent=t('wormReady');
-    else if (state.phase==='over') status.textContent=t('wormOver');
-    else if (state.phase==='won') status.textContent=t('youWin');
-    else status.textContent=t('wormStart');
-    toggle.textContent=state.phase==='playing' ? t('wormPause') :
-      state.phase==='paused' ? t('wormResume') : t('wormStart');
-    toggle.disabled=pausedByHost;
+    status.hidden = !pausedByHost && state.phase === 'playing';
+    if (pausedByHost || state.phase==='paused') status.textContent=t('wormTouchPaused');
+    else if (state.phase==='ready') status.textContent=t('wormTouchReady');
+    else if (state.phase==='over') status.textContent=t('wormTouchOver');
+    else if (state.phase==='won') status.textContent=t('wormTouchWon');
+    else status.textContent='';
   }
 
   document.querySelectorAll('[data-direction]').forEach(button => {
-    button.addEventListener('click', () => steer(button.dataset.direction));
+    button.addEventListener('click', () => {
+      screen.classList.remove('controller-mode');
+      steer(button.dataset.direction);
+    });
   });
-  toggle.addEventListener('click', togglePlay);
-  reset.addEventListener('click', restart);
-  speed.addEventListener('change', () => setSpeed(speed.value));
-  exit.addEventListener('click', () => {
+  function leave() {
+    if (exiting) return;
+    exiting = true;
+    stopClock();
     void sdk.exit().then(handled => {
-      if (!handled && !sdk.isHosted) status.textContent=t('previewExit');
-    }).catch(() => {});
-  });
+      if (!handled && !sdk.isHosted) {
+        // A standalone browser preview has no host to close. Keep the
+        // game playable rather than leaving its timer permanently stopped.
+        exiting = false;
+        if (engine.snapshot().phase === 'playing') clock();
+        status.hidden = false;
+        status.textContent = t('previewExit');
+      }
+    }).catch(error => {
+      exiting = false;
+      console.warn('[MuPi Krümelwurm] exit request failed:', error);
+      if (engine.snapshot().phase === 'playing') clock();
+      status.hidden = false;
+      status.textContent = t('previewExit');
+    });
+  }
+  exit.addEventListener('click', leave);
   canvas.addEventListener('pointerdown', event => {
+    // A touch after using a controller restores the on-screen arrows.
+    if (event.pointerType === 'touch') screen.classList.remove('controller-mode');
     pointerStart = {x:event.clientX,y:event.clientY};
   });
+  canvas.addEventListener('pointercancel', () => { pointerStart = null; });
   canvas.addEventListener('pointerup', event => {
     if (!pointerStart) return;
     const dx=event.clientX-pointerStart.x,dy=event.clientY-pointerStart.y;
     pointerStart=null;
-    if (Math.max(Math.abs(dx),Math.abs(dy)) < 16) return;
+    if (Math.max(Math.abs(dx),Math.abs(dy)) < 16) {
+      // A short tap also starts, pauses or restarts a round.
+      togglePlay();
+      return;
+    }
     steer(Math.abs(dx)>Math.abs(dy) ? (dx>0?'right':'left') : (dy>0?'down':'up'));
   });
   const keys={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',
     ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};
   document.addEventListener('keydown', event => {
-    if (event.target === speed) return;
-    if (keys[event.code]) {event.preventDefault();steer(keys[event.code]);}
-    else if (event.code === 'Space' || event.code === 'Enter') {
+    if (keys[event.code]) {
+      event.preventDefault();screen.classList.add('controller-mode');
+      steer(keys[event.code]);
+    } else if (event.code === 'Space' || event.code === 'Enter') {
       event.preventDefault();togglePlay();
     } else if (event.code === 'KeyR') restart();
+    else if (event.code === 'Digit1') setSpeed('easy');
+    else if (event.code === 'Digit2') setSpeed('normal');
+    else if (event.code === 'Digit3') setSpeed('hard');
+    else if (event.code === 'Escape' || event.code === 'Backspace') leave();
   });
   sdk.on('input', ({button,action}) => {
     if (action !== 'press') return;
+    // A gamepad has no reason to show on-screen touch arrows. Keyboard
+    // arrows can also arrive through the trusted host bridge.
+    if (['UP','DOWN','LEFT','RIGHT','A','X','START'].includes(button))
+      screen.classList.add('controller-mode');
     const direction={UP:'up',DOWN:'down',LEFT:'left',RIGHT:'right'}[button];
     if (direction) steer(direction);
-    if (button === 'A') togglePlay();
+    if (button === 'A' || button === 'START') togglePlay();
     if (button === 'X') restart();
-    if (button === 'B' || button === 'BACK') void sdk.exit();
+    if (button === 'B' || button === 'BACK') leave();
   });
   sdk.on('lifecycle.pause', () => {
     pausedByHost=true; engine.pause();stopClock();paint(engine.snapshot());
@@ -179,7 +215,6 @@
       const storedLevel = await sdk.storage.get('speed');
       if (Object.prototype.hasOwnProperty.call(delays, storedLevel)) level=storedLevel;
     } catch (_) { /* Browser preview can lack storage. */ }
-    speed.value=level;
     paint(engine.snapshot());
   })().catch(error => {
     console.error('[MuPi Krümelwurm] startup error:',error);
