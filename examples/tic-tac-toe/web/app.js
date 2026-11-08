@@ -5,6 +5,7 @@
   const cells = [...document.querySelectorAll('[data-cell]')];
   const status = document.getElementById('status');
   const reset = document.getElementById('reset');
+  const exit = document.getElementById('exit');
   const modePicker = document.getElementById('mode');
   let selected = 0, current = null, mode = 'normal', i18n = null;
   let paused = false, botTimer = null, roundToken = 0;
@@ -129,6 +130,7 @@
 
   cells.forEach(button => button.addEventListener('click', () => play(Number(button.dataset.cell))));
   reset.addEventListener('click', restart);
+  exit.addEventListener('click', exitApp);
   modePicker.addEventListener('change', () => changeMode(modePicker.value));
 
   sdk.on('input', ({button, action}) => {

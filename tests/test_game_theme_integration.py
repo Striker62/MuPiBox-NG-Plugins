@@ -22,16 +22,20 @@ class Markup(HTMLParser):
 
 class ThemeIntegrationTests(unittest.TestCase):
     def test_native_back_theme_and_game_only_layout(self):
-        for slug, version in (("four-in-a-row", "0.1.1"), ("tic-tac-toe", "0.2.1")):
+        for slug, version in (("four-in-a-row", "0.1.2"), ("tic-tac-toe", "0.2.2")):
             with self.subTest(slug=slug):
                 directory = ROOT / "examples" / slug
                 manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
                 self.assertEqual(manifest["version"], version)
                 self.assertEqual(manifest["category"], "games")
+                self.assertEqual(manifest["cover"], "assets/cover.jpg")
+                self.assertTrue((directory / manifest["cover"]).is_file())
+                self.assertEqual(manifest["icon"], "assets/icon.png")
+                self.assertTrue((directory / manifest["icon"]).is_file())
                 self.assertEqual(manifest["display"]["background"], "system")
-                self.assertIs(manifest["display"]["showBackButton"], True)
+                self.assertIs(manifest["display"]["showBackButton"], False)
                 self.assertIs(manifest["display"]["showSystemInfo"], False)
-                self.assertIs(manifest["display"]["fullScreen"], False)
+                self.assertIs(manifest["display"]["fullScreen"], True)
 
                 css = (directory / "web/style.css").read_text(encoding="utf-8")
                 for selector in (r":root", r"html,body", r"body", r"\.screen"):
@@ -39,12 +43,12 @@ class ThemeIntegrationTests(unittest.TestCase):
                 markup = Markup()
                 markup.feed((directory / "web/index.html").read_text(encoding="utf-8"))
                 self.assertTrue({"board", "mode", "status", "reset"}.issubset(markup.ids))
-                self.assertNotIn("exit", markup.ids)
+                self.assertIn("exit", markup.ids)
                 self.assertNotIn("header", markup.tags)
                 self.assertNotIn("footer", markup.tags)
                 js = (directory / "web/app.js").read_text(encoding="utf-8")
                 self.assertIn("sdk.exit()", js)
-                self.assertNotIn("exit.addEventListener", js)
+                self.assertIn("exit.addEventListener", js)
 
 
 if __name__ == "__main__":

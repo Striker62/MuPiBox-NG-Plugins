@@ -21,6 +21,7 @@ def main() -> int:
     for asset in (EXAMPLE / "web").iterdir():
         if asset.is_file():
             shutil.copy2(asset, STAGING / asset.name)
+    shutil.copytree(EXAMPLE / "assets", STAGING / "assets")
     shutil.copy2(EXAMPLE / "manifest.json", STAGING / "manifest.json")
     shutil.copy2(ROOT / "sdk" / "mupibox-sdk.js", STAGING / "mupibox-sdk.js")
     shutil.copy2(ROOT / "examples" / "shared" / "game-i18n.js", STAGING / "i18n.js")

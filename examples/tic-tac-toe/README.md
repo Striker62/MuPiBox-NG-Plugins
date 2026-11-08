@@ -31,22 +31,24 @@ Das gebündelte `wasm_exec.js` enthält einen Go-Laufzeit-Lizenzhinweis.
 Quellcode: MIT, keine Drittanbieter-Grafiken oder -Sounds. Ein veröffentlichter
 Katalog-Release muss seinen Hash nach dem Upload aktualisieren.
 
-## Darstellung in MuPiBox-NG (alpha.30+)
+## Native Darstellung (NG alpha.34+)
 
-Die App verwendet den ausgewählten **MuPiBox-Theme-Hintergrund**
-(`display.background: "system"`) mit transparentem HTML-/CSS-Hintergrund.
-Die **native Zurück-Schaltfläche samt App-Titel** bleibt eingeblendet,
-Systeminformationen werden ausgeblendet und der native Kopfbereich wird
-freigehalten (`fullScreen: false`). Es gibt keine zweite Kopf-/Fußzeile
-und keinen zusätzlichen Schließen-Button im Spiel.
+Die Entwickler-Voreinstellungen sind im Manifest unabhängig wählbar:
 
-Spielmodus, Spielstand/Status und „Neue Runde“ bleiben für die Bedienung
-sichtbar. Über Controller **B/Back** kann die App weiterhin über
-`MuPiBoxSDK.exit()` verlassen werden.
+- `display.background: "system"` übernimmt das vom Nutzer gewählte MuPiBox-Theme.
+  Dafür müssen HTML, Body und vollflächige App-Container transparent bleiben.
+  Die farbigen Spielfelder und das kleine Steuerpanel bleiben bewusst deckend.
+- `display.background: "app"` erlaubt eine eigene, im Paket enthaltene
+  Hintergrundgrafik in der HTML/CSS-Anwendung.
+- `showBackButton` regelt die native Zurück-/Titelgruppe, `showSystemInfo`
+  die Batterie-/WLAN-/Uhr-Anzeigen, `fullScreen` den reservierten oberen Rand.
+  Diese Werte dürfen je App anders gesetzt werden.
 
-**Wichtig:** Vom Nutzer im Admin-Interface gesetzte Darstellungsoptionen
-haben Vorrang vor dem Manifest und bleiben bei einem Update erhalten.
-Im normalen Desktop-Browser gibt es keine native MuPiBox-Zurück-Schaltfläche.
-Eine neue Version erscheint erst im offiziellen Katalog, wenn das neue
-`.mupiapp` veröffentlicht und der Katalogeintrag samt SHA-256 aktualisiert
-wurde.
+Dieses Spiel wählt **Systemhintergrund**, **Vollbild**, **keine native Leiste**
+und einen **eigenen gut erreichbaren Zurück-Button** (`MuPiBoxSDK.exit()`).
+Die im Admin gesetzten Anzeige-Overrides der MuPiBox haben Vorrang vor den
+App-Voreinstellungen. Das native Kartenbild ist unter `assets/cover.jpg`
+und das dazugehörige Raster-Icon unter `assets/icon.png` abgelegt.
+
+Beim Test ohne MuPiBox-Host liefert der Zurück-Button lediglich das sichere
+SDK-Ereignis `preview.exit` statt den Browser ungefragt zu schließen.

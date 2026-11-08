@@ -5,7 +5,7 @@ body { background: transparent; overflow: hidden; }
 button,select{font:inherit;touch-action:manipulation}
 button{cursor:pointer}
 button:disabled{cursor:default}
-.screen { width: 100%; height: 100dvh; margin: auto; padding: 8px 16px; display: flex; flex-direction: column; background: transparent; }
+.screen { position: relative; width: 100%; height: 100dvh; margin: auto; padding: 8px 16px; display: flex; flex-direction: column; background: transparent; }
 .body{flex:1;display:flex;align-items:center;justify-content:center;gap:3vw;padding:4px 0}
 .info { width: min(34%, 300px); min-width: 205px; padding: 14px; background: rgba(10, 29, 49, .80); border-radius: 16px; }
 label{display:block;font-size:13px;color:#b4d0e3;font-weight:650;margin-bottom:6px}
@@ -24,3 +24,12 @@ button:focus-visible,select:focus-visible{outline:3px solid white;outline-offset
 @media(max-width:650px){.screen{padding:7px 10px}.body{gap:10px}.info{min-width:150px}.board{width:min(76vh,61vw);gap:3px;padding:6px;border-radius:12px}.brand span{display:none} .hint{font-size:11px} }
 @media(max-height:450px){.screen{padding:4px 10px}header{min-height:30px}footer{min-height:13px}h1{font-size:24px;margin-bottom:6px}.status{min-height:37px;margin-top:7px}.primary{margin-top:5px;padding:7px 12px}select{min-height:37px;padding:6px}.board{width:min(82vh,62vw,505px)}}
 @media(max-width:440px){.body{flex-direction:column}.info{width:100%;text-align:center}h1{font-size:25px;margin-bottom:4px}.status{margin:5px 0}.hint{display:none}.board{width:min(94vw,430px)}}
+
+/* Native toolbar hidden: visible and accessible exit, independent of the host theme. */
+.app-back { position: absolute; z-index: 20; top: 10px; left: 10px;
+  width: 52px; height: 52px; border: 2px solid rgba(223, 241, 255, .85);
+  border-radius: 15px; background: rgba(12, 36, 60, .84); color: white;
+  font-size: 35px; line-height: 1; display: grid; place-items: center;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .3); }
+.app-back:focus-visible { outline: 3px solid #ffe08e; outline-offset: 2px; }
+@media (max-height: 420px) { .app-back { width: 44px; height: 44px; top: 6px; left: 6px; } }

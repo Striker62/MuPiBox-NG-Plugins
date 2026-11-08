@@ -5,6 +5,7 @@
   const status = document.getElementById('status'), modePicker = document.getElementById('mode');
   const board = document.getElementById('board');
   const reset = document.getElementById('reset');
+  const exit = document.getElementById('exit');
   let mode = 'normal', selected = 3, paused = false, timer = null, token = 0, i18n;
   let state = game.fresh();
   const buttons = [];
@@ -87,6 +88,7 @@
     }
   }
   reset.addEventListener('click', restart);
+  exit.addEventListener('click', exitApp);
   modePicker.addEventListener('change', () => changeMode(modePicker.value));
 
   sdk.on('input', ({button, action}) => {

@@ -5,7 +5,7 @@ body { background: transparent; overflow: hidden; }
 button,select { font:inherit; touch-action:manipulation; }
 button { cursor:pointer; }
 button:disabled { cursor:default; opacity:.58; }
-.screen { width: 100%; height: 100dvh; margin: auto; padding: 8px 16px; display: flex; flex-direction: column; background: transparent; }
+.screen { position: relative; width: 100%; height: 100dvh; margin: auto; padding: 8px 16px; display: flex; flex-direction: column; background: transparent; }
 .body { flex:1; display:flex; gap:4vw; justify-content:center; align-items:center; padding:6px 0; }
 .info { width: min(34%, 300px); min-width: 205px; padding: 14px; background: rgba(10, 29, 49, .80); border-radius: 16px; }
 label { display:block; margin:0 0 6px; font-weight:650; font-size:13px; color:#a8c4db; }
@@ -21,3 +21,12 @@ button:focus-visible,select:focus-visible { outline:3px solid #fff; outline-offs
 @media(max-width:650px) { .screen{padding:8px 12px} .body{gap:12px} .info{min-width:150px} .board{width:min(66vh,47vw);gap:5px}.board button{border-radius:9px} .hint{font-size:11px} .brand span{display:none} }
 @media(max-height:450px) { .screen{padding:5px 12px} header{min-height:30px} footer{min-height:12px} .body{padding:1px} h1{font-size:28px;margin-bottom:6px} .status{margin-top:8px;min-height:31px} .primary{margin-top:5px;padding:7px 13px} .board{width:min(74vh,47vw,355px)} select{min-height:37px;padding:5px 9px} }
 @media(max-width:450px) { .body{flex-direction:column} .info{width:100%;text-align:center} .board{width:min(67vw,300px)} h1{margin:3px 0} .hint{display:none} }
+
+/* Native toolbar hidden: visible and accessible exit, independent of the host theme. */
+.app-back { position: absolute; z-index: 20; top: 10px; left: 10px;
+  width: 52px; height: 52px; border: 2px solid rgba(223, 241, 255, .85);
+  border-radius: 15px; background: rgba(12, 36, 60, .84); color: white;
+  font-size: 35px; line-height: 1; display: grid; place-items: center;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .3); }
+.app-back:focus-visible { outline: 3px solid #ffe08e; outline-offset: 2px; }
+@media (max-height: 420px) { .app-back { width: 44px; height: 44px; top: 6px; left: 6px; } }
