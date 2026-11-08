@@ -32,3 +32,23 @@ Das Spiel nutzt eigenen JavaScript-Code, ein eigenes SVG-Icon und die MIT-lizenz
 MuPiBox-SDK-Fassade. Es enthält keine Drittanbieter-Medien. Eine Veröffentlichung
 im offiziellen App-Katalog erfordert zusätzlich einen geprüften GitHub-Release-Asset
 und einen SHA-256-Eintrag; der Quellcode allein ändert den offiziellen Katalog nicht.
+
+## Darstellung in MuPiBox-NG (alpha.30+)
+
+Die App verwendet den ausgewählten **MuPiBox-Theme-Hintergrund**
+(`display.background: "system"`) mit transparentem HTML-/CSS-Hintergrund.
+Die **native Zurück-Schaltfläche samt App-Titel** bleibt eingeblendet,
+Systeminformationen werden ausgeblendet und der native Kopfbereich wird
+freigehalten (`fullScreen: false`). Es gibt keine zweite Kopf-/Fußzeile
+und keinen zusätzlichen Schließen-Button im Spiel.
+
+Spielmodus, Spielstand/Status und „Neue Runde“ bleiben für die Bedienung
+sichtbar. Über Controller **B/Back** kann die App weiterhin über
+`MuPiBoxSDK.exit()` verlassen werden.
+
+**Wichtig:** Vom Nutzer im Admin-Interface gesetzte Darstellungsoptionen
+haben Vorrang vor dem Manifest und bleiben bei einem Update erhalten.
+Im normalen Desktop-Browser gibt es keine native MuPiBox-Zurück-Schaltfläche.
+Eine neue Version erscheint erst im offiziellen Katalog, wenn das neue
+`.mupiapp` veröffentlicht und der Katalogeintrag samt SHA-256 aktualisiert
+wurde.

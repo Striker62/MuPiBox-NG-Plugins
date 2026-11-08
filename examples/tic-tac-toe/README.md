@@ -30,3 +30,23 @@ python3 tools/mupiapp.py validate dist/mupi-kreuz-kreis.mupiapp
 Das gebündelte `wasm_exec.js` enthält einen Go-Laufzeit-Lizenzhinweis.
 Quellcode: MIT, keine Drittanbieter-Grafiken oder -Sounds. Ein veröffentlichter
 Katalog-Release muss seinen Hash nach dem Upload aktualisieren.
+
+## Darstellung in MuPiBox-NG (alpha.30+)
+
+Die App verwendet den ausgewählten **MuPiBox-Theme-Hintergrund**
+(`display.background: "system"`) mit transparentem HTML-/CSS-Hintergrund.
+Die **native Zurück-Schaltfläche samt App-Titel** bleibt eingeblendet,
+Systeminformationen werden ausgeblendet und der native Kopfbereich wird
+freigehalten (`fullScreen: false`). Es gibt keine zweite Kopf-/Fußzeile
+und keinen zusätzlichen Schließen-Button im Spiel.
+
+Spielmodus, Spielstand/Status und „Neue Runde“ bleiben für die Bedienung
+sichtbar. Über Controller **B/Back** kann die App weiterhin über
+`MuPiBoxSDK.exit()` verlassen werden.
+
+**Wichtig:** Vom Nutzer im Admin-Interface gesetzte Darstellungsoptionen
+haben Vorrang vor dem Manifest und bleiben bei einem Update erhalten.
+Im normalen Desktop-Browser gibt es keine native MuPiBox-Zurück-Schaltfläche.
+Eine neue Version erscheint erst im offiziellen Katalog, wenn das neue
+`.mupiapp` veröffentlicht und der Katalogeintrag samt SHA-256 aktualisiert
+wurde.
