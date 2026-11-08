@@ -7,10 +7,10 @@
       "description": "Kreuz & Kreis: 2 Spieler oder MuPi-KI (leicht, normal, schwer), 7 Boxsprachen, Touch/Controller.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.1",
-      "releaseTag": "v0.1.0-preview.9",
+      "version": "0.2.2",
+      "releaseTag": "v0.1.0-preview.11",
       "asset": "mupi-kreuz-kreis.mupiapp",
-      "sha256": "1af789b274504d70bf3056b8e4e8a4cdeefa0a4515a92f09b8692bbe9f280f8c",
+      "sha256": "b5a18329f0b555aebf8c30689bd70be3c16efedaa77817f55f3d29837c466278",
       "permissions": [
         "storage",
         "controller"
@@ -22,10 +22,10 @@
       "description": "Eigenständiges 7x6-Reihenspiel für 2 Spieler oder gegen MuPi (3 KI-Stufen), 7 Sprachen.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.1.1",
-      "releaseTag": "v0.1.0-preview.9",
+      "version": "0.1.2",
+      "releaseTag": "v0.1.0-preview.11",
       "asset": "four-in-a-row.mupiapp",
-      "sha256": "6b35c2c290f0fd5274a3b1b62e3cb7b9aa70c9b486d64a1dd078d2b64512103f",
+      "sha256": "82c24c621287ebd214fae989873383c42fe12f9f0a0f454548828d70ae7332bd",
       "permissions": [
         "storage",
         "controller"
