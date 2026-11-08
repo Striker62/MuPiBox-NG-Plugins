@@ -7,10 +7,10 @@
       "description": "Kreuz & Kreis: 2 Spieler oder MuPi-KI (leicht, normal, schwer), 7 Boxsprachen, Touch/Controller.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.0",
-      "releaseTag": "v0.1.0-preview.6",
+      "version": "0.2.1",
+      "releaseTag": "v0.1.0-preview.9",
       "asset": "mupi-kreuz-kreis.mupiapp",
-      "sha256": "5eff8de01466b52b1dfa12642f8e876c37ee21626a71f0dbdc96db0c958b4a56",
+      "sha256": "1af789b274504d70bf3056b8e4e8a4cdeefa0a4515a92f09b8692bbe9f280f8c",
       "permissions": [
         "storage",
         "controller"
@@ -22,10 +22,10 @@
       "description": "Eigenständiges 7x6-Reihenspiel für 2 Spieler oder gegen MuPi (3 KI-Stufen), 7 Sprachen.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.1.0",
-      "releaseTag": "v0.1.0-preview.6",
+      "version": "0.1.1",
+      "releaseTag": "v0.1.0-preview.9",
       "asset": "four-in-a-row.mupiapp",
-      "sha256": "ea735dd69666ee49e035b9f3ae68a6fd59c3cdb3aedc937d3a2d69587cd53028",
+      "sha256": "6b35c2c290f0fd5274a3b1b62e3cb7b9aa70c9b486d64a1dd078d2b64512103f",
       "permissions": [
         "storage",
         "controller"
@@ -90,6 +90,18 @@
         "camera",
         "photo-save"
       ]
+    },
+    {
+      "id": "community.buecherkiste",
+      "name": "Bücherkiste",
+      "description": "Bücherkiste (Testversion): Offline-Bilderbuch-Regal mit Buchseiten, Zoom und zwei Beispielbüchern. Eigene Bücher im Plugin-Verzeichnis vor einem Update sichern.",
+      "category": "learning",
+      "author": "MuPiBox Community",
+      "version": "0.2.19",
+      "releaseTag": "v0.1.0-preview.9",
+      "asset": "buecherkiste.mupiapp",
+      "sha256": "eb2946fb09cecda2829b9f1d67ed2704c447d1df9aad3ad22ad93c0593a9d4a5",
+      "permissions": []
     }
   ]
 }
