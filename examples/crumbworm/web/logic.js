@@ -23,11 +23,16 @@
       return {...state, body:state.body.slice(),
         food:state.food ? {...state.food} : null};
     }
-    function reset() {
+    function reset(initialDirection = 'right') {
+      // A new touch round can start in ANY direction. Position the body
+      // behind the head so tapping Left never drives into the old tail.
+      const direction = Object.prototype.hasOwnProperty.call(VECTORS, initialDirection)
+        ? initialDirection : 'right';
+      const [dx, dy] = VECTORS[direction];
       const x = Math.floor(WIDTH / 2), y = Math.floor(HEIGHT / 2);
-      const body = [at(x,y),at(x-1,y),at(x-2,y)];
-      state = {body, food:chooseFood(body,rng), direction:'right',
-        queued:'right', points:0, meals:0, phase:'ready'};
+      const body = [at(x,y),at(x-dx,y-dy),at(x-2*dx,y-2*dy)];
+      state = {body, food:chooseFood(body,rng), direction,
+        queued:direction, points:0, meals:0, phase:'ready'};
       return snapshot();
     }
     function start() {

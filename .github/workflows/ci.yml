@@ -22,7 +22,7 @@ jobs:
         run: go test ./game
       - name: Test board game logic and translations
         run: |
-          node --test tests/test_board_games.js tests/test_crumbworm.js
+          node --test tests/test_board_games.js tests/test_crumbworm.js tests/test_crumbworm_ui.js
           node --check examples/tic-tac-toe/web/app.js
           node --check examples/four-in-a-row/web/app.js
           node --check examples/four-in-a-row/web/logic.js
