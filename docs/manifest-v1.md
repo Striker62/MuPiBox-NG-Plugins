@@ -27,6 +27,7 @@ Example manifest:
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.svg",
+  "cover": "assets/cover.png",
   "permissions": ["storage", "controller", "audio"],
   "category": "games",
   "display": {
@@ -45,6 +46,7 @@ Example manifest:
 | `version` | Semantic release version, for update comparisons |
 | `runtime` | Only `"web"` for v1; Go must be compiled to WASM |
 | `entry`, `icon` | Relative paths inside the package, no absolute paths or `..` |
+| `cover` | Optional raster home-tile image (PNG/JPG/JPEG/WebP) relative to the package root; not the app background |
 | `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save, `shared-assets`` (`network` is not supported by the current host) |
 | `networkHosts` | Explicit hostname allowlist **required** when requesting `network` |
 | `category` | Preferred native menu location: `games`, `creative`, `learning`, `tools`, or `other` (defaults to `games`) |
@@ -157,3 +159,51 @@ capability and no access to other applications, the music library, Gallery,
 operating-system files or arbitrary SMB mounts is granted. Files placed in
 the SMB share are user-provided/untrusted: do not interpret SVGs as HTML or
 execute scripts; treat text and book metadata as content only.
+
+
+## App wallpaper versus native menu tile image (NG 0.2.0-alpha.34+)
+
+`display.background` is a **mode**, not a path:
+- `"app"`: the host runner has its normal background; the web app
+  draws its own wallpaper through CSS/HTML when it is opened.
+- `"system"`: the host runner can reveal the MuPiBox theme if the
+  plugin's `html`, `body` and other full-screen elements are transparent.
+  An explicit opaque plugin CSS background is never overwritten.
+
+To set an app-owned wallpaper, include **both** the image and stylesheet
+inside the `.mupiapp` package. For example:
+
+```text
+index.html
+style.css
+assets/background.jpg
+assets/cover.png
+assets/icon.svg
+```
+
+```css
+/* style.css next to index.html */
+html, body { margin: 0; width: 100%; min-height: 100%; }
+body { background: url("./assets/background.jpg") center / cover no-repeat; }
+```
+
+Select `"display":{"background":"app"}` if desired. The wallpaper is
+visible only **inside the opened app**, never on Home. The setting does not
+look for `background.jpg` automatically or make the app picture the
+MuPiBox global background.
+
+For the **Home/category tile**, add a top-level `"cover":
+"assets/cover.png"` to the manifest. The file must be in the package,
+with PNG/JPEG/WebP format; recommended approximately 512 × 512 pixels.
+Native Qt uses `cover` first, then a raster `icon` (PNG etc.) if
+available, then a themed fallback picture for `creative`, `learning`,
+`tools` or `other`. Qt Quick on some DietPi installations cannot load
+SVG, so `cover` deliberately rejects SVG. Existing `icon.svg` remains
+valid for Admin/catalog/browser use. No additional permission or
+migration is needed for legacy apps.
+
+This contract applies to categories automatically generated for Community
+Apps and to matching existing user-configured Home categories. Admin
+category overrides are respected. Avoid external URLs, network requests,
+dynamic code evaluation, raw host filesystem paths or developer-specific
+NG implementation dependencies.

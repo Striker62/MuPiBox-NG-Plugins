@@ -143,3 +143,31 @@ receive an 8-MiB-capped Blob, or `sdk.shared.watch(folder, cb)` to poll every
 internal HTTP routes, dynamic code execution or hidden network requests.
 The SDK requires a host that supports `shared-assets`; older alpha versions
 reject this permission. Any newly requested permission requires user approval.
+
+
+## IMPORTANT: App wallpaper vs. category/Home card art (NG alpha.34+)
+
+These surfaces are separate. **Do not confuse them.**
+
+- `display.background` is only `system|app`, a host presentation flag.
+  It is not a file name. With `app`, the web app should paint its own
+  wallpaper using HTML/CSS. Bundle `assets/background.jpg` and reference
+  it from the bundled CSS (`background: url("./assets/background.jpg") center/cover`
+  if the stylesheet is at package root). This wallpaper appears **only
+  inside the running app**. The `system` mode requires transparent CSS if
+  MuPiBox's theme is to show through.
+- `manifest.cover` is an optional **raster** image path within the app
+  archive, e.g. `assets/cover.png`. It is used for the Home/category
+  card, not for app wallpaper. Accepted formats: PNG/JPEG/WebP; use
+  approximately 512×512 artwork. The host validates that the asset
+  exists and cannot traverse directories.
+- `manifest.icon` is separate; SVG is fine for browsers but Qt Quick
+  on lean DietPi lacks reliable SVG support. Native card priority:
+  `cover` → raster `icon` → built-in category art (Creative, Learning,
+  Tools, Other). Old packages work without `cover`.
+- Both image files must be part of `.mupiapp`, **not** placed in SMB
+  `CommunityApps/<id>` folders. Those folders are for optional, explicitly
+  permissioned user content, not packaged UI images.
+- Follow `docs/manifest-v1.md`, `GETTING_STARTED.en.md` and its linked
+  tests. Never invent an SDK method for background selection, assume
+  the Admin dropdown uploads files, or use external URLs/CDN assets.

@@ -69,6 +69,28 @@ Host-Berechtigung veröffentlicht und installiert sein.**
 
 Details, Sicherheitsgrenzen und Beispiele: [Manifest-Dokumentation](docs/manifest-v1.md#shared-smb-folders-for-owner-managed-app-content-host-development).
 
+## App-Hintergrund und Bilder für die Kategorien (NG alpha.34+)
+
+Die Auswahl **„Hintergrund aus der App (HTML/CSS)“** im NG-Admin legt
+**keinen Uploadordner** fest. Ein App-Hintergrund gehört direkt ins
+`.mupiapp`-Paket, etwa `assets/background.jpg`, und wird in der eigenen
+`style.css` mit `background: url("./assets/background.jpg") center/cover`
+eingebunden. Sichtbar ist er **nur innerhalb der laufenden App**.
+Für den MuPiBox-Theme-Hintergrund `display.background: "system"` wählen
+und `html/body` transparent halten.
+
+Die **Kachelbilder auf der MuPiBox-Startseite** sind etwas anderes:
+Mit `"cover": "assets/cover.png"` im Plugin-Manifest bekommt die
+App ein individuelles Kachelbild. Erlaubt sind PNG/JPEG/WebP (empfohlen
+quadratisch, ca. 512×512). Ohne dieses Feld verwendet NG zuerst ein
+rasterbasiertes App-Icon oder automatisch passende Illustrationen für
+Kreativ, Lernen, Werkzeuge und Weitere Apps. SVG-Icons bleiben für
+Browser/Metadaten zulässig, werden aber auf der Qt-Touchoberfläche
+nicht als verlässliche Kachelbilder vorausgesetzt.
+
+**Für Entwickler und KI-Assistenten:** [genaue Regeln und Beispiel mit CSS](docs/manifest-v1.md#app-wallpaper-versus-native-menu-tile-image-ng-020-alpha34),
+[englische Entwickleranleitung](GETTING_STARTED.en.md) und [AI-Anleitung](ai.md).
+
 ## Leitlinien
 
 1. Plugin-Entwickler bekommen **keinen Zugriff** auf den Quellcode, die API-Schlüssel oder das Dateisystem des MuPiBox-NG-Kerns.

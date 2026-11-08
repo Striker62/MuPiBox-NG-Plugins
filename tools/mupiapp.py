@@ -28,7 +28,7 @@ HOST_ALLOWED_EXTENSIONS = {
 }
 ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "shared-assets", "network"}
 ALLOWED_FIELDS = {
-    "apiVersion", "id", "name", "version", "runtime", "entry", "icon",
+    "apiVersion", "id", "name", "version", "runtime", "entry", "icon", "cover",
     "description", "author", "permissions", "networkHosts", "display",
     "category", "galleryDirectories",
 }
@@ -90,6 +90,10 @@ def validate_manifest(data: object, files: set[str]) -> dict:
         checked_path(icon)
         if icon not in files or not icon.endswith((".svg", ".png")):
             raise PackageError("icon must point to an existing .svg/.png file")
+    if (cover := _string(data, "cover", 5, 255)) is not None:
+        checked_path(cover)
+        if cover not in files or not cover.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+            raise PackageError("cover must point to an existing PNG/JPEG/WebP file")
     perms = data["permissions"]
     if not isinstance(perms, list) or len(perms) > 6 or any(type(p) is not str for p in perms):
         raise PackageError("permissions must be a string array")
