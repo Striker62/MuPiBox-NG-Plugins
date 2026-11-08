@@ -1,0 +1,303 @@
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#17283d;color:#fff;font-family:Arial,sans-serif}button{font:inherit;border:0;cursor:pointer;touch-action:manipulation}main{width:100vw;height:100vh}#shelf{padding:12px 22px;background:linear-gradient(135deg,#163550,#2c5b73)}h1{font-size:26px;margin:4px 0 12px}#book{display:flex;align-items:center;gap:22px;padding:12px;border-radius:10px;background:#fff4d6;color:#17283d;text-align:left;width:min(650px,95%);height:calc(100vh - 75px);max-height:350px;font-size:23px;font-weight:bold}#book img{height:100%;max-width:45%;object-fit:contain;border-radius:5px}#reader{position:relative;isolation:isolate;background:#263344;overflow:hidden}#reader[hidden],#shelf[hidden]{display:none!important}#backdrop{position:absolute;inset:-35px;background-position:center;background-size:cover;filter:blur(22px) brightness(.52);z-index:-1}#viewport{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:pan-x pan-y}#page{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain}#controls{position:absolute;inset:0;pointer-events:none}#controls>*{pointer-events:auto}#controls button,#counter{position:absolute;display:flex;align-items:center;justify-content:center;background:rgba(13,24,39,.52);color:white;border:1px solid rgba(255,255,255,.2);border-radius:12px;min-height:48px;min-width:56px;padding:8px 13px;font-size:18px;font-weight:bold;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);text-shadow:0 1px 2px #111}#controls button:disabled{opacity:.25}#controls .top-left{top:12px;left:12px}#controls .top-right{top:12px;right:12px;font-size:16px}#controls .bottom-right{bottom:12px;right:12px;font-size:16px}#controls .side{top:50%;transform:translateY(-50%);height:76px;width:52px;padding:0;font-size:32px}#controls .left{left:12px}#controls .right{right:12px}#viewport.zoom{display:block;overflow:auto;overscroll-behavior:contain}#viewport.zoom #page{width:794px;height:794px;max-width:none;max-height:none;margin:0}#reader.zoomed #backdrop{filter:blur(22px) brightness(.36)}@media(max-width:600px){#controls .side{width:44px;min-width:44px}#controls .left{left:5px}#controls .right{right:5px}#controls .top-left{left:5px;top:5px}#controls .top-right{right:5px;top:5px}#controls .bottom-right{right:5px;bottom:5px}}
+.books{display:flex;gap:16px;height:calc(100vh - 68px)}.book{width:45%;max-width:370px;display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:#fff4d6;color:#17283d;text-align:left;font-size:20px;font-weight:bold}.book img{height:95%;max-width:48%;object-fit:contain}.book small{display:block;font-size:13px;margin-top:12px;font-weight:normal}#henne-page{height:100%;width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 76px 12px}#henne-page[hidden]{display:none}#henne-image{max-width:54%;max-height:100%;object-fit:contain;background:white}#henne-text{flex:1;max-height:100%;overflow:auto;background:rgba(255,250,236,.97);color:#1c2835;padding:15px 17px;border-radius:12px;font-size:clamp(16px,2.8vw,25px);line-height:1.28;font-weight:600}#credits{position:absolute;bottom:0;left:0;right:0;font-size:10px;text-align:center;background:#17283ddd;color:white;padding:2px 70px}#credits[hidden]{display:none}#viewport.zoom #henne-page{width:1200px;height:700px;max-width:none;justify-content:flex-start}#viewport.zoom #henne-image{height:680px;max-width:680px}#viewport.zoom #henne-text{font-size:28px;max-height:680px}#reader.henne #backdrop{background:#1f3c50!important;filter:none}#reader.henne #zoom{bottom:20px}
+/* 0.1.7: Texte ohne Scrollbalken, sauberer Viewport */
+#henne-page{min-width:0;min-height:0;overflow:hidden;padding:10px 75px 19px;gap:14px}
+#henne-image{flex:0 1 54%;min-width:0;min-height:0;max-width:54%;max-height:100%;object-fit:contain}
+#henne-text{display:block;flex:1 1 0;min-width:0;min-height:0;height:auto;max-height:100%;overflow:hidden;padding:10px 12px;font-size:18px;line-height:1.18;font-weight:600;overflow-wrap:break-word;hyphens:auto}
+#reader:not(.zoomed) #henne-page{overflow:hidden}
+#reader:not(.zoomed) #henne-text{overflow:hidden}
+#reader.henne #credits{pointer-events:none}
+#reader.henne #controls .left{left:8px}
+#reader.henne #controls .right{right:8px}
+#reader.henne #controls .side{z-index:3}
+#reader.henne #controls .top-left{z-index:3}
+#reader.henne #controls .top-right{z-index:3}
+#reader.henne #controls .bottom-right{z-index:3}
+/* Kein fremder Text am linken Bildrand: nur aktuelle Buchansicht sichtbar */
+#shelf[hidden],#reader[hidden],#henne-page[hidden],#page[hidden]{display:none!important}
+@media(max-width:680px){#henne-page{padding:7px 54px 18px;gap:7px}#henne-text{padding:7px 8px}}
+
+/* 0.1.8: Textbox has a real, measurable height; no clipped last line. */
+#reader.henne:not(.zoomed) #henne-page{align-items:stretch;}
+#reader.henne:not(.zoomed) #henne-text{height:100%;max-height:none;align-self:stretch;overflow:hidden;display:block;}
+#reader.henne:not(.zoomed) #henne-image{align-self:center;}
+
+/* 0.1.9: Text must fit in full on compact MuPiBox screens. */
+#reader.henne:not(.zoomed) #henne-text{line-height:1.18;overflow:hidden;}
+
+/* 0.2.0: Bild und Text haben identische quadratische Seitenflächen. */
+#reader.henne:not(.zoomed) #henne-page{
+  position:relative;width:100%;height:100%;padding:6px 55px 17px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  overflow:hidden;
+}
+#reader.henne:not(.zoomed) #henne-image,
+#reader.henne:not(.zoomed) #henne-text{
+  box-sizing:border-box;flex:none;width:var(--square-size,200px);
+  height:var(--square-size,200px);max-width:none;max-height:none;
+  min-width:0;min-height:0;align-self:center;
+}
+#reader.henne:not(.zoomed) #henne-image{object-fit:contain;background:white;}
+#reader.henne:not(.zoomed) #henne-text{
+  display:flex;align-items:center;justify-content:center;
+  padding:12px 13px;overflow:hidden;white-space:normal;
+  overflow-wrap:break-word;hyphens:auto;line-height:1.2;
+  font-weight:600;text-align:left;
+}
+#henne-text-inner{width:100%;min-width:0;max-height:none;line-height:inherit;}
+#reader.henne.zoomed #henne-text{display:block;overflow:auto;}
+
+/* 0.2.1 – Fullscreen navigation: keep the host back control accessible.
+   The SDK exit API has not been verified; do not create a dead home button. */
+.shelf-header,.reader-header{position:absolute;top:0;left:0;right:0;height:54px;z-index:4;pointer-events:none;display:flex;align-items:center;justify-content:center;padding:0 160px;}
+.shelf-header h1,.reader-header h2{margin:0;color:#fff;font-size:clamp(16px,2.7vw,24px);font-weight:700;line-height:1.1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-shadow:0 2px 4px #132536;}
+#shelf{position:relative;padding:0 22px 12px;}
+#shelf .books{padding-top:58px;height:100%;box-sizing:border-box;}
+#reader .reader-header{z-index:2;}
+#reader #controls .top-left{left:118px;top:4px;z-index:5;min-height:42px;min-width:78px;font-size:15px;padding:6px 9px;}
+#reader #controls .top-right{top:5px;z-index:5;}
+@media(max-width:680px){.shelf-header,.reader-header{padding:0 120px;height:48px}.shelf-header h1,.reader-header h2{font-size:16px}#reader #controls .top-left{left:105px;top:3px;min-width:70px;font-size:13px}}
+
+/* 0.2.2: Book view has no redundant title; shelf button at lower left. */
+#reader .reader-header{display:none!important;}
+#reader #controls .top-left{top:auto;bottom:12px;left:12px;right:auto;z-index:5;min-height:48px;min-width:88px;font-size:16px;padding:8px 12px;}
+@media(max-width:680px){#reader #controls .top-left{top:auto;bottom:6px;left:6px;min-height:44px;min-width:78px;font-size:14px;}}
+
+/* 0.2.8: additional books in the shelf */
+#shelf .books{overflow-x:auto;overflow-y:hidden;align-items:stretch;padding-bottom:8px;}
+#shelf .books .book{flex:0 0 34%;min-width:220px;max-width:370px;}
+
+/* 0.2.9 – kindgerechtes Bücherregal für 800×480 und größere Displays */
+#shelf{overflow:hidden;background:linear-gradient(145deg,#123956 0%,#24617a 100%)}
+#shelf .books{
+  display:flex;align-items:stretch;gap:14px;
+  height:100%;padding:64px 2px 18px;
+  overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;-ms-overflow-style:none;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+}
+#shelf .books::-webkit-scrollbar{display:none}
+#shelf .books .book{
+  flex:0 0 calc((100% - 28px)/3);width:calc((100% - 28px)/3);
+  min-width:0;max-width:none;height:100%;min-height:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:14px 12px 12px;
+  background:#fff8e8;color:#23384a;border-radius:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,.17);
+  text-align:center;overflow:hidden;scroll-snap-align:start;
+}
+#shelf .books .book img{
+  display:block;flex:1 1 auto;min-height:0;
+  width:100%;height:0;max-width:100%;max-height:none;
+  object-fit:contain;border-radius:5px;
+}
+#shelf .books .book span{
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+  flex:0 0 auto;max-height:4.05em;overflow:hidden;
+  font-size:clamp(14px,1.9vw,20px);line-height:1.35;
+  font-weight:700;overflow-wrap:anywhere;
+}
+@media(max-width:680px){
+  #shelf{padding-left:14px;padding-right:14px}
+  #shelf .books{gap:10px;padding-top:55px}
+  #shelf .books .book{flex-basis:calc((100% - 10px)/2);width:calc((100% - 10px)/2);padding:9px}
+}
+
+/* 0.2.10: leichtgewichtige 3D-Buchoptik, 3 Spalten x 2 Reihen */
+#shelf{background:linear-gradient(145deg,#123956,#24617a);overflow:hidden}
+#shelf .books{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:180px;
+ gap:12px 20px;align-content:start;align-items:stretch;
+ padding:60px 16px 16px;height:100%;overflow-x:hidden;overflow-y:auto;
+ scrollbar-width:none;-ms-overflow-style:none;scroll-snap-type:none;
+}
+#shelf .books::-webkit-scrollbar{display:none}
+#shelf .books .book{
+ position:relative;isolation:isolate;display:flex;flex-direction:column;
+ justify-content:flex-start;align-items:center;gap:5px;
+ width:100%;height:180px;min-width:0;max-width:none;min-height:0;
+ padding:6px 13px 13px 20px;border:0;border-radius:0;
+ background:transparent;color:#fff;box-shadow:none;overflow:visible;
+ font-size:13px;text-align:center;scroll-snap-align:none;
+}
+/* Holzbrett unter jedem Buch: keine Bilddatei oder GPU-Animation nötig */
+#shelf .books .book::after{
+ content:'';position:absolute;z-index:-2;bottom:3px;left:-5px;right:-5px;height:10px;
+ border-radius:3px;background:linear-gradient(#d8a46c 0%,#a76837 42%,#6c3d22 100%);
+ box-shadow:0 4px 5px rgba(0,0,0,.35);
+}
+#shelf .books .book::before{
+ content:'';position:absolute;z-index:-1;top:8px;left:calc(50% - 62px);width:13px;height:133px;
+ background:linear-gradient(90deg,#4e2f27,#a9764b 45%,#dbad7e 85%,#6a4432);
+ transform:skewY(-12deg);border-radius:3px 0 0 3px;
+ box-shadow:-3px 4px 5px rgba(0,0,0,.25);
+}
+#shelf .books .book img{
+ display:block;flex:none;width:auto;height:132px;max-width:min(78%,120px);
+ max-height:132px;min-height:0;object-fit:contain;
+ border-radius:1px 3px 3px 1px;
+ box-shadow:3px 3px 0 #e9ddc6,6px 5px 0 #8e755a,8px 8px 9px rgba(0,0,0,.42);
+ transform:perspective(550px) rotateY(-8deg);transform-origin:left center;
+}
+#shelf .books .book span{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+ flex:none;max-width:100%;max-height:2.5em;overflow:hidden;
+ color:#fff;font-size:12px;line-height:1.2;font-weight:700;
+ text-shadow:0 1px 3px #102b3c;overflow-wrap:anywhere;
+}
+#shelf .books .book:active img{transform:perspective(550px) rotateY(-4deg)}
+@media(max-width:680px){
+ #shelf .books{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;grid-auto-rows:160px;padding:53px 4px 8px}
+ #shelf .books .book{height:160px;padding:5px 3px 10px}
+ #shelf .books .book img{height:116px;max-height:116px;max-width:82%}
+ #shelf .books .book::before{height:116px;left:calc(50% - 52px)}
+ #shelf .books .book span{font-size:11px}
+}
+
+
+/* 0.2.11 – illustrierter Buchladen, responsive und sparsam */
+#shelf{
+ background-color:#483121;
+ background-image:linear-gradient(90deg,rgba(23,20,22,.35),rgba(23,20,22,.13) 48%,rgba(23,20,22,.35)),url("buchladen-hintergrund.jpg");
+ background-position:center center;background-size:cover;background-repeat:no-repeat;
+}
+#shelf .shelf-header{height:clamp(36px,10vh,54px);background:linear-gradient(180deg,rgba(20,42,62,.88),rgba(20,42,62,.58));}
+#shelf .shelf-header h1{font-size:clamp(14px,2.8vw,24px);}
+#shelf .books{
+ --shelf-head:clamp(36px,10vh,54px);
+ --book-row:clamp(85px,calc((100vh - var(--shelf-head) - 32px)/2),180px);
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ grid-auto-rows:var(--book-row);
+ gap:clamp(5px,1.8vh,12px) clamp(5px,2vw,20px);
+ padding:calc(var(--shelf-head) + 6px) clamp(4px,2vw,16px) 12px;
+ height:100%;align-content:start;
+ overflow-y:auto;overflow-x:hidden;
+}
+#shelf .books .book{height:var(--book-row);padding:4px 6px 12px;gap:3px;}
+#shelf .books .book img{
+ height:calc(var(--book-row) - 36px);max-height:calc(var(--book-row) - 36px);
+ max-width:82%;width:auto;object-fit:contain;
+}
+#shelf .books .book::before{
+ top:5px;left:calc(50% - min(6.7vw,62px));height:calc(var(--book-row) - 38px);
+ width:clamp(6px,1.6vw,13px);
+}
+#shelf .books .book span{font-size:clamp(9px,1.6vw,12px);line-height:1.15;max-height:2.3em;}
+#shelf .books .book::after{bottom:1px;height:8px;}
+@media(max-width:520px){
+ #shelf{padding-left:8px;padding-right:8px;}
+ #shelf .books{grid-template-columns:repeat(2,minmax(0,1fr));}
+ #shelf .books .book::before{left:calc(50% - min(10vw,62px));}
+ #shelf .books .book span{font-size:clamp(10px,2.6vw,12px);}
+}
+@media(max-height:350px){
+ #shelf .books{--book-row:clamp(78px,calc((100vh - var(--shelf-head) - 25px)/2),150px);gap:5px;}
+ #shelf .books .book{padding-bottom:8px;}
+ #shelf .books .book img{height:calc(var(--book-row) - 27px);max-height:calc(var(--book-row) - 27px);}
+ #shelf .books .book::before{height:calc(var(--book-row) - 29px);}
+ #shelf .books .book span{font-size:10px;}
+}
+
+
+/* 0.2.12: feste Buchhandlung und zwei feste Regalbretter; nur Bücher wechseln */
+#shelf{padding:0!important;position:relative;overflow:hidden;background:#754b31 url("buchladen-szene.svg") center center/cover no-repeat!important;}
+#shelf .shelf-header{height:clamp(38px,12vh,54px);background:linear-gradient(#1163a0,#064a7e);box-shadow:0 3px 8px #24180c88;z-index:5;}
+#shelf .books{--header-h:clamp(38px,12vh,54px);position:absolute;inset:var(--header-h) 6% 23px;display:grid!important;grid-template-columns:repeat(var(--shelf-cols,3),minmax(0,1fr))!important;grid-template-rows:repeat(var(--shelf-rows,2),minmax(0,1fr))!important;grid-auto-rows:auto!important;gap:0 2.5%!important;height:auto!important;width:auto!important;padding:0!important;margin:0!important;overflow:hidden!important;align-content:stretch!important;}
+#shelf .books::before,#shelf .books::after{content:"";position:absolute;left:0;right:0;height:12px;border-radius:3px;background:linear-gradient(#f4c081 0%,#c08349 30%,#88522c 70%,#4e2b19 100%);box-shadow:0 5px 7px #21130799;z-index:0;pointer-events:none;}
+#shelf .books::before{top:calc(50% - 12px)}
+#shelf .books::after{bottom:0}
+#shelf .books .book-slot{position:relative;min-height:0;min-width:0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;z-index:1;}
+#shelf .books .book-slot .book{position:relative;display:flex!important;align-items:flex-end!important;justify-content:center!important;flex:none!important;width:100%!important;height:100%!important;min-width:0!important;max-width:none!important;min-height:0!important;margin:0!important;padding:8px 4px 4px!important;background:none!important;border:0!important;box-shadow:none!important;overflow:visible!important;}
+#shelf .books .book-slot .book::after{display:none!important;}
+#shelf .books .book-slot .book::before{content:"";position:absolute;top:auto;bottom:5px;left:calc(50% - min(6.4vw,47px));width:10px;height:min(67%,145px);border-radius:3px 0 0 3px;background:linear-gradient(90deg,#3d2a27,#b07c4c,#e4ba82);transform:skewY(-10deg);box-shadow:-2px 3px 4px #1e160f88;z-index:0;}
+#shelf .books .book-slot .book img{position:relative;z-index:1;display:block!important;flex:none!important;max-width:78%!important;width:auto!important;height:auto!important;max-height:92%!important;min-height:0!important;object-fit:contain!important;border-radius:2px 4px 4px 1px;box-shadow:3px 2px 0 #e8d9b5,6px 4px 0 #8c6c51,8px 6px 10px #160d0b99;transform:perspective(550px) rotateY(-7deg);}
+#shelf .books .book-slot .book span{display:none!important;}
+#shelf .shelf-pager{position:absolute;bottom:1px;left:0;right:0;height:22px;display:flex;justify-content:center;align-items:center;gap:9px;z-index:3;}
+#shelf .pager-dot{display:block;width:13px;height:13px;padding:0;border:1px solid #fff9;border-radius:50%;background:#7a5545cc;box-shadow:0 1px 4px #0008;}
+#shelf .pager-dot.active{background:#fff;}
+@media(max-width:540px){#shelf .books{left:7%;right:7%;gap:0 3%!important;}#shelf .books .book-slot .book img{max-width:70%!important;}#shelf .books .book-slot .book::before{left:calc(50% - min(9vw,47px));}}
+@media(max-height:315px){#shelf .books::before{display:none!important;}#shelf .books .book-slot .book img{max-height:88%!important;}}
+
+/* 0.2.13: fixierter Hintergrund, Regale und Bücher passen sich der Anzeige an */
+#shelf .books .book-slot .book{touch-action:pan-y;}
+#shelf .books .book-slot .book img{user-select:none;-webkit-user-drag:none;}
+@media(max-width:540px){#shelf .books .book-slot .book img{max-height:89%!important;}}
+
+/* 0.2.14: Buchladen mit leeren Stellflächen, echte Buchcover bleiben dynamisch */
+#shelf{background:#653c26 url("buchladen-leere-regale.jpg") center center/100% 100% no-repeat!important;}
+#shelf .books{inset:clamp(38px,12vh,54px) 14% 29px!important;}
+#shelf .books::before,#shelf .books::after{height:12px!important;background:linear-gradient(#f7c98c 0%,#bb763a 36%,#7a3d1c 78%,#3d2114 100%)!important;box-shadow:0 6px 8px #160d09aa!important;}
+#shelf .books .book-slot .book img{max-height:86%!important;max-width:74%!important;}
+@media(max-width:540px){#shelf .books{left:10%!important;right:10%!important;}#shelf .books .book-slot .book img{max-width:74%!important;}}
+
+/* 0.2.15: Dekorative Regale im Hintergrund, keine doppelten CSS-Bretter. */
+#shelf{background-image:url("buchladen-leere-regale.jpg")!important;background-size:100% 100%!important;}
+#shelf .books{inset:12% 14% 15%!important;}
+#shelf .books::before,#shelf .books::after{display:none!important;}
+#shelf .books .book-slot{padding-bottom:0!important;}
+#shelf .books .book-slot .book{padding:0 4px 0!important;}
+#shelf .books .book-slot .book img{max-height:82%!important;max-width:74%!important;}
+@media(max-width:540px){#shelf .books{left:10%!important;right:10%!important;}}
+
+/* 0.2.16 – statischer, scharfer Buchladen; dynamische Cover als Overlay */
+#shelf{background-image:url("buchladen-leere-regale.jpg")!important;background-size:100% 100%!important;}
+#shelf .books{inset:12% 14% 15%!important;z-index:2;}
+#shelf .books::before,#shelf .books::after{display:none!important;}
+#shelf .books .book-slot .book::after{display:none!important;}
+#shelf .books .book-slot .book img{filter:none!important;backdrop-filter:none!important;}
+#shelf .shelf-header{background:transparent!important;box-shadow:none!important;}
+@media(max-width:540px){#shelf .books{left:10%!important;right:10%!important;}}
+
+
+/* 0.2.17 – exakt das vom Nutzer gewählte Hintergrundbild; keine zusätzlichen Bretter */
+#shelf{padding:0!important;background:#6e4229 url("buchladen-original.jpg") center center/100% 100% no-repeat!important;}
+#shelf .shelf-header{background:transparent!important;box-shadow:none!important;pointer-events:none;}
+#shelf .shelf-header h1{visibility:hidden!important;}
+#shelf .books{
+ position:absolute!important;inset:12.5% 15% 9.5%!important;
+ display:grid!important;grid-template-columns:repeat(var(--shelf-cols,3),minmax(0,1fr))!important;
+ grid-template-rows:repeat(var(--shelf-rows,2),minmax(0,1fr))!important;
+ gap:0 5%!important;padding:0!important;margin:0!important;
+ height:auto!important;overflow:hidden!important;z-index:2;
+}
+#shelf .books::before,#shelf .books::after{display:none!important;content:none!important;}
+#shelf .books .book-slot{padding:0!important;min-width:0;min-height:0;align-items:flex-end;justify-content:center;}
+#shelf .books .book-slot .book{
+ display:flex!important;align-items:flex-end!important;justify-content:center!important;
+ height:100%!important;width:100%!important;padding:0 0 6px!important;
+ margin:0!important;border:0!important;background:none!important;
+ box-shadow:none!important;overflow:visible!important;touch-action:pan-y;
+}
+#shelf .books .book-slot .book::after{display:none!important;content:none!important;}
+#shelf .books .book-slot .book::before{
+ content:""!important;position:absolute!important;bottom:9px!important;top:auto!important;
+ left:calc(50% - min(6.6vw,45px))!important;width:9px!important;
+ height:min(72%,145px)!important;border-radius:2px 0 0 2px;
+ background:linear-gradient(90deg,#4d2c22,#aa6e43 60%,#e4b784)!important;
+ transform:skewY(-9deg);box-shadow:-2px 2px 4px #1a110c77;z-index:0;
+}
+#shelf .books .book-slot .book img{
+ display:block!important;position:relative!important;z-index:1!important;
+ width:auto!important;height:auto!important;max-height:79%!important;
+ max-width:74%!important;min-height:0!important;object-fit:contain!important;
+ border-radius:2px 4px 4px 1px;filter:none!important;
+ box-shadow:3px 2px 0 #e8d9b5,5px 4px 0 #886b51,7px 6px 10px #160d0b99!important;
+ transform:perspective(550px) rotateY(-7deg)!important;
+}
+#shelf .books .book-slot .book span{display:none!important;}
+#shelf .shelf-pager{bottom:1.5%!important;}
+@media(max-width:540px){#shelf .books{inset:13% 11% 10%!important;gap:0 4%!important;}#shelf .books .book-slot .book img{max-width:79%!important;}}
+@media(max-height:315px){#shelf .books .book-slot .book img{max-height:82%!important;}}
+
+/* 0.2.19 – nur Buchruecken, passgenau zum jeweiligen Cover. */
+#shelf .books .book-slot .book::before{
+  top:auto!important;bottom:var(--spine-bottom,6px)!important;
+  left:var(--spine-left,0px)!important;
+  width:8px!important;height:var(--spine-height,0px)!important;
+  background:linear-gradient(90deg,rgba(0,0,0,.25),transparent 45%,rgba(255,255,255,.24)),var(--spine-color,#1974d2)!important;
+  transform:skewY(-6deg)!important;
+  border-radius:2px 0 0 2px!important;
+  box-shadow:-1px 2px 3px rgba(0,0,0,.28)!important;
+  pointer-events:none!important;
+}
