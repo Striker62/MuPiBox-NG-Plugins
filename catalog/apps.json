@@ -34,13 +34,13 @@
     {
       "id": "community.mupi-kruemelwurm",
       "name": "MuPi Krümelwurm",
-      "description": "Eigenständiges Wurmspiel mit Krümeln, Rekord, 3 Geschwindigkeiten und 7 Boxsprachen.",
+      "description": "Vollbild-Wurmspiel mit Theme-Hintergrund, eigener Zurück-Taste und Touch-Pfeilen direkt links am Spielfeld; Rekord, 3 Geschwindigkeiten und 7 Boxsprachen.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.1.0",
-      "releaseTag": "v0.1.0-preview.6",
+      "version": "0.1.1",
+      "releaseTag": "v0.1.0-preview.12",
       "asset": "crumbworm.mupiapp",
-      "sha256": "baa5ffc901c11e6cd140b6f52a8dea0cffdf7b1d94094fd813ff0698848c7c28",
+      "sha256": "6137b0d144f40c9bfbe99e29e192191d82fb4b3504a217ba711d5c593dc46119",
       "permissions": [
         "storage",
         "controller"
