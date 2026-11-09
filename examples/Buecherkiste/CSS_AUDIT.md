@@ -134,3 +134,10 @@ Die alte `background`-Kurzschreibweise aus Version 0.2.12 (`buchladen-szene.svg`
 ### Gerätetest der siebten Bereinigung – 2026-11-09
 
 Nutzer bestätigt nach Installation des Testpakets auf der MuPiBox mit 10,1-Zoll-Monitor: „auch ok funktioniert“. Siebte Bereinigung (`c4ee41f`) damit auf diesem Gerät visuell und funktional bestätigt. 5- und 7-Zoll-Tests weiterhin offen.
+
+## Achte Bereinigung – Commit `b492409` (2026-11-09)
+
+Entfernt wurde der vollständige alte 0.2.14-Dekorationsblock für `#shelf .books::before` und `::after` (Regalbretter: Höhe, Farbverlauf, Schatten). Seit 0.2.17 sind beide Pseudoelemente mit `display:none!important` und `content:none!important` deaktiviert. Die tatsächlichen Regalbretter gehören zum Hintergrundbild.
+
+- **278 Zeichen** entfernt; kumulativ **1997 Zeichen**.
+- GitHub-CI und Sichttest für diese Änderung stehen noch aus; 5- und 7-Zoll-Tests ebenfalls.
