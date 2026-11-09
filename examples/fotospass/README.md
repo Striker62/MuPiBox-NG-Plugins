@@ -88,7 +88,22 @@ Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginv
 
 ## Version
 
-0.5.4 (Testversion mit eigenem Zurück-Pfeil)
+0.5.5 (Testversion mit freundlicher Fotobox-Oberfläche)
+
+## Neue Oberfläche (ab 0.5.5)
+
+Cremefarbener Hintergrund, Akzente in Türkis, Koralle und Sonnengelb sowie
+pastellfarbene Accessoire-Karten ersetzen die bisherige dunkle Darstellung.
+Die wichtigsten Schaltflächen verwenden mitgelieferte SVG-Symbole statt
+geräteabhängiger Emoji-Zeichen. Es werden keine externen Bilder oder Schriften
+geladen. Foto und Kameraaufnahme bleiben unverändert.
+
+Die Aktionen für Größe, Fertig/Entfernen, Rückgängig, Speichern und Neues Foto
+bleiben außerhalb der scrollenden Auswahl sichtbar. Die Kategorien bleiben
+bildbasiert; alle bestehenden PNG-Import- und Bearbeitungsfunktionen bleiben
+erhalten. Layout und Bedienung wurden in einer Browser-Vorschau mit simuliertem
+Host bei 800 × 480 geprüft. Ein Test der Darstellung und Touchbedienung auf der
+MuPiBox steht für diese Version noch aus.
 
 ## Zurück zur MuPiBox (ab 0.5.4)
 
@@ -106,9 +121,9 @@ können diese Vorgabe übersteuern; nötigenfalls den nativen Button dort
 ausschalten. Die unabhängige Kamera-Freigabe und der Sicherheits-Stopp der
 MuPiBox bleiben unter Kontrolle des Hosts.
 
-SMB-Import, Platzierung, Skalierung und Mitspeichern aus Version 0.5.3 wurden
-vom Anwender auf MuPiBox NG Alpha 41 bestätigt. Die neue Navigation aus 0.5.4
-muss auf dem Gerät noch geprüft werden.
+SMB-Import, Platzierung, Skalierung und Mitspeichern aus Version 0.5.3 sowie
+die Navigation und der Schutz ungespeicherter Fotos aus Version 0.5.4 wurden
+vom Anwender auf MuPiBox NG Alpha 41 bestätigt.
 
 ## Prüfungen und Gerätetest
 

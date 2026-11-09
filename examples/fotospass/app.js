@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const sdk=window.MuPiBoxSDK,$=id=>document.getElementById(id);
-function cameraState(message,kind='off'){const el=$('camera-state');if(el){el.textContent=(kind==='on'?'● ':kind==='error'?'⚠ ':'○ ')+message;el.dataset.kind=kind}}
+function cameraState(message,kind='off'){const el=$('camera-state');if(el){el.textContent=message;el.dataset.kind=kind}}
 
 const preview=$('preview'),photo=$('photo'),photoCtx=photo.getContext('2d'),canvas=$('painting'),ctx=canvas.getContext('2d'),select=$('devices'),delay=$('delay'),stickersBox=$('stickers');
 const colors=['#f72585','#ff8c00','#ffea00','#18d675','#20b9ff','#ffffff'];
@@ -114,16 +114,17 @@ window.addEventListener('pagehide',()=>{
 });
 
 const say=s=>{$('message').textContent=s};
+function buttonLabel(id,text){const button=$(id),label=button.querySelector?.('.button-label');(label||button).textContent=text}
 function controls(){
  $('app-exit').disabled=saving||exitBusy||exitComplete;
- $('freeze').textContent='📷 Foto machen ('+delay.value+' Sek.)';delay.disabled=counting;
+ buttonLabel('freeze','Foto machen ('+delay.value+' Sek.)');delay.disabled=counting;
  $('start').disabled=active||!select.value||autoStarting;$('freeze').disabled=!active||counting;
  $('scan').disabled=counting;$('devices').disabled=counting;$('cancel').hidden=!counting;
  $('stop').disabled=!active||counting;$('countdown').hidden=!counting;
- $('camera-panel').hidden=frozen;$('edit-panel').hidden=!frozen;
- $('mode').textContent=frozen?'✏️ BEARBEITEN':'● LIVE';
+ $('camera-panel').hidden=frozen;$('edit-panel').hidden=!frozen;$('edit-actions').hidden=!frozen;$('sticker-controls').hidden=mode!=='stickers';
+ $('mode').textContent=frozen?'Bearbeiten':'Live';
  $('status').textContent=frozen?'Standbild bearbeiten':counting?'Countdown läuft':active?'Kamera aktiv':'Kamera aus';
- $('save-photo').disabled=!frozen||saving;$('save-photo').textContent=saving?'⏳ Speichere …':'💾 Foto speichern';$('undo').disabled=!frozen||history.length===0||undoBusy;$('clear').disabled=!frozen;$('smaller').disabled=!selected;$('larger').disabled=!selected;$('remove-sticker').disabled=!selected;$('finish-sticker').disabled=!selected;
+ $('save-photo').disabled=!frozen||saving;buttonLabel('save-photo',saving?'Speichere …':'Foto speichern');$('undo').disabled=!frozen||history.length===0||undoBusy;$('clear').disabled=!frozen;$('smaller').disabled=!selected;$('larger').disabled=!selected;$('remove-sticker').disabled=!selected;$('finish-sticker').disabled=!selected;
 }
 async function scan(autostart=false){try{const list=await sdk.camera.list(),old=select.value;select.replaceChildren();for(const d of list){const o=document.createElement('option');o.value=d.id;o.textContent=d.name+' ('+d.id+')';select.append(o)}if(list.some(d=>d.id===old))select.value=old;else if(list.some(d=>d.id===lastCameraId))select.value=lastCameraId;if(!list.length){const o=document.createElement('option');o.value='';o.textContent='Keine Kamera gefunden';select.append(o)}cameraState(list.length?'Kamera erkannt – starte …':'Keine Kamera erkannt',list.length?'off':'error');say(list.length?'Kamera erkannt.':'Keine USB-Kamera gefunden.');controls();if(autostart&&list.length&&!autoStartSuppressed&&!active&&!frozen){autoStarting=true;controls();try{await start()}finally{autoStarting=false;controls()}}}catch(e){cameraState('Kamerazugriff nicht verfügbar','error');say('Kamerazugriff nur am MuPiBox-Touchdisplay: '+e.message);controls()}}
 async function frame(){if(!active||frozen||busy||document.hidden)return;busy=true;const current=epoch;try{const f=await sdk.camera.capture();if(active&&!frozen&&current===epoch){preview.src=f.image;preview.hidden=false;$('placeholder').hidden=true}}catch(e){if(!frozen){say('Kamerafehler: '+e.message);await stop()}}finally{busy=false}}
@@ -155,7 +156,7 @@ function point(e){const r=canvas.getBoundingClientRect(),scale=Math.min(r.width/
 function draw(e){if(!painting||!frozen||mode!=='paint')return;photoDirty=true;++photoRevision;e.preventDefault();const p=point(e);ctx.lineWidth=size;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineTo(p.x,p.y);ctx.stroke()}
 canvas.addEventListener('pointerdown',e=>{if(!frozen||mode!=='paint')return;e.preventDefault();saveHistory();painting=true;canvas.setPointerCapture(e.pointerId);const p=point(e);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.strokeStyle=color;ctx.globalCompositeOperation=eraser?'destination-out':'source-over';ctx.lineWidth=size;ctx.lineCap='round';ctx.lineTo(p.x+.01,p.y+.01);ctx.stroke()});
 canvas.addEventListener('pointermove',draw);for(const ev of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(ev,()=>{painting=false;ctx.beginPath();ctx.globalCompositeOperation='source-over'});
-function setMode(m){mode=m;$('tab-stickers').classList.toggle('chosen',m==='stickers');$('tab-paint').classList.toggle('chosen',m==='paint');$('sticker-tools').hidden=m!=='stickers';$('paint-tools').hidden=m!=='paint';canvas.classList.toggle('passthrough',m==='stickers');canvas.classList.toggle('drawable',m==='paint');stickersBox.style.pointerEvents=m==='stickers'?'auto':'none';for(const el of stickersBox.children)el.style.pointerEvents=m==='stickers'?'auto':'none'}
+function setMode(m){mode=m;$('sticker-controls').hidden=m!=='stickers';$('tab-stickers').classList.toggle('chosen',m==='stickers');$('tab-paint').classList.toggle('chosen',m==='paint');$('sticker-tools').hidden=m!=='stickers';$('paint-tools').hidden=m!=='paint';canvas.classList.toggle('passthrough',m==='stickers');canvas.classList.toggle('drawable',m==='paint');stickersBox.style.pointerEvents=m==='stickers'?'auto':'none';for(const el of stickersBox.children)el.style.pointerEvents=m==='stickers'?'auto':'none'}
 function renderStickers(){stickersBox.replaceChildren();for(const item of items){const el=document.createElement('img');setAccessoryImage(el,item.type);el.alt=accessoryLabel(item.type);el.draggable=false;el.className='sticker'+(selected===item.id?' selected':'');el.dataset.id=String(item.id);el.style.left=item.x+'%';el.style.top=item.y+'%';el.style.width=item.width+'%';el.style.height=accessoryHeight(item)+'%';el.style.pointerEvents=mode==='stickers'?'auto':'none';el.addEventListener('pointerdown',stickerDown);stickersBox.append(el)}}
 async function addSticker(type){
  if(!frozen)return;
@@ -245,7 +246,7 @@ async function savePhoto(){
 }
 $('save-photo').addEventListener('click',()=>void savePhoto());
 
-$('camera-settings').addEventListener('click',()=>{const e=$('advanced-camera');e.hidden=!e.hidden;$('camera-settings').textContent=e.hidden?'⚙ Kamera-Einstellungen':'⚙ Einstellungen schließen'});delay.addEventListener('change',controls);$('scan').addEventListener('click',()=>{autoStartSuppressed=false;void scan(false)});$('start').addEventListener('click',()=>{autoStartSuppressed=false;void start()});$('stop').addEventListener('click',()=>{autoStartSuppressed=true;void stop()});$('freeze').addEventListener('click',beginCountdown);$('cancel').addEventListener('click',()=>{cancelCountdown();say('Countdown abgebrochen. Livebild läuft weiter.')});$('resume').addEventListener('click',resume);
+$('camera-settings').addEventListener('click',()=>{const e=$('advanced-camera');e.hidden=!e.hidden;buttonLabel('camera-settings',e.hidden?'Kamera einstellen':'Schließen')});delay.addEventListener('change',controls);$('scan').addEventListener('click',()=>{autoStartSuppressed=false;void scan(false)});$('start').addEventListener('click',()=>{autoStartSuppressed=false;void start()});$('stop').addEventListener('click',()=>{autoStartSuppressed=true;void stop()});$('freeze').addEventListener('click',beginCountdown);$('cancel').addEventListener('click',()=>{cancelCountdown();say('Countdown abgebrochen. Livebild läuft weiter.')});$('resume').addEventListener('click',resume);
 window.addEventListener('resize',()=>{if(frozen)updateStickerBox()});
 sdk.on('camera.stopped',()=>{if(frozen)return;autoStartSuppressed=true;void stop(false);say('Kamera über die MuPiBox-Leiste ausgeschaltet. Zum erneuten Starten auf Kamera starten tippen.')});sdk.on('lifecycle.pause',()=>{if(frozen)return;void stop()});window.addEventListener('pagehide',()=>void stop());setMode('stickers');void scan(true);
 // Leave through the SDK; a frozen, unsaved photo requires confirmation.
