@@ -99,3 +99,11 @@ Drei historische `#shelf .books`-Deklarationen `left:10%!important;right:10%!imp
 ## Gerätetest bestätigt – 2026-11-09
 
 Der Nutzer hat das aktuelle CI-Testpaket auf der MuPiBox mit **10,1-Zoll-Monitor** installiert und bestätigt: **funktioniert**. Die vorherigen CSS-Bereinigungen einschließlich Commit `635b013` sind damit auf dem aktuellen Bildschirm praktisch getestet. Die GitHub-Actions-Prüfungen waren ebenfalls grün. Tests auf **5 und 7 Zoll** folgen später; deren Darstellung ist noch nicht bestätigt.
+
+
+## Fünfte Bereinigung – Commit `0da41d2` (2026-11-09)
+
+Zwei durch die spätere 0.2.17-Gestaltung mit gleicher Spezifität und `!important` überschriebene Regeln aus 0.2.14 entfernt: das alte Hintergrundbild `buchladen-leere-regale.jpg` und das alte `#shelf .books`-Inset. Andere 0.2.14-Regeln bleiben erhalten, insbesondere die bildbezogenen Regeln.
+
+- Weitere 169 Zeichen entfernt; kumulativ **1461 Zeichen**.
+- Noch **nicht** auf der MuPiBox getestet. Vor weiteren Änderungen den neuesten grünen CI-Lauf und dessen Paket auf 10,1 Zoll prüfen.
