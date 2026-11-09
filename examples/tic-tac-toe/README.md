@@ -52,3 +52,22 @@ und das dazugehörige Raster-Icon unter `assets/icon.png` abgelegt.
 
 Beim Test ohne MuPiBox-Host liefert der Zurück-Button lediglich das sichere
 SDK-Ereignis `preview.exit` statt den Browser ungefragt zu schließen.
+
+
+## Transparentes Spielfeld vor dem MuPiBox-Theme (v0.2.4)
+
+Die App nutzt weiterhin `display.background: system`. Die komplette
+HTML-Seite (inkl. `html`, `body`, `.screen`) bleibt transparent. Auch
+der großflächige Bereich `.info` hinter den Einstellungen hat jetzt
+**keinen eigenen Hintergrund** mehr. Die neun Felder sind statt deckend
+nur noch leicht dunkelblau getönt (27 % Deckkraft) und gerahmt. So bleibt
+das vom Host gerenderte Theme-Wallpaper selbst durch die Spielfelder
+sichtbar. Die Einzelbedienelemente Modusauswahl, Zurück und Neue Runde
+bleiben zwecks Kontrast und Bedienbarkeit eigenständig gestaltet.
+
+Technisch wichtig: Das MuPiBox-NG-Hostrelease muss den Theme-Hintergrund
+auch **im sandboxed Browser-Frame** rendern (NG Alpha 41 und neuer). Die
+App kann die Host-Komposition nicht selbst erzwingen; eine nominell
+transparente HTML-Seite kann in älteren WebEngine-Versionen sonst
+schwarz erscheinen. Keine zusätzliche Netzwerkberechtigung und keine
+Änderung der Sandbox erforderlich.

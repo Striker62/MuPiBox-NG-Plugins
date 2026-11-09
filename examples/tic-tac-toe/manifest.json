@@ -2,12 +2,12 @@
   "apiVersion": "1",
   "id": "community.tictactoe",
   "name": "MuPi Kreuz & Kreis",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "runtime": "web",
   "entry": "index.html",
   "icon": "assets/icon.png",
   "author": "MuPiBox-NG Community",
-  "description": "MuPi Kreuz & Kreis in sieben Boxsprachen, mit 2 Spielern oder MuPi-KI in leicht, normal und schwer.",
+  "description": "Kreuz & Kreis mit transparentem Spielhintergrund für das MuPiBox-Theme, 2-Spieler-Modus und drei KI-Stärken.",
   "permissions": [
     "storage",
     "controller"
