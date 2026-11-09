@@ -102,8 +102,10 @@ Die Aktionen für Größe, Fertig/Entfernen, Rückgängig, Speichern und Neues F
 bleiben außerhalb der scrollenden Auswahl sichtbar. Die Kategorien bleiben
 bildbasiert; alle bestehenden PNG-Import- und Bearbeitungsfunktionen bleiben
 erhalten. Layout und Bedienung wurden in einer Browser-Vorschau mit simuliertem
-Host bei 800 × 480 geprüft. Ein Test der Darstellung und Touchbedienung auf der
-MuPiBox steht für diese Version noch aus.
+Host bei 800 × 480 geprüft. Anschließend hat der Anwender Version 0.5.5 auf
+MuPiBox NG Alpha 41 vollständig getestet und bestätigt: neue Oberfläche und
+Touchbedienung, Kameraaufnahme, SMB-Accessoires, Bearbeitung, Speichern,
+Galerie und Rücknavigation einschließlich des Schutzes ungespeicherter Fotos.
 
 ## Zurück zur MuPiBox (ab 0.5.4)
 
