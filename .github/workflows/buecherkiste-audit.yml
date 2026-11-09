@@ -118,6 +118,25 @@ jobs:
           except BadZipFile as exc:
               raise SystemExit(f'Invalid package ZIP: {exc}')
           print(f'Package SHA256: {hashlib.sha256(package.read_bytes()).hexdigest()}')
+      - name: Install ClamAV antivirus scanner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clamav clamav-freshclam
+          sudo systemctl stop clamav-freshclam.service || true
+          sudo freshclam
+
+      - name: Antivirus scan package and extracted contents
+        run: |
+          mkdir -p dist/buecherkiste-scan
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          with ZipFile('dist/buecherkiste-ci.mupiapp') as archive:
+              archive.extractall('dist/buecherkiste-scan')
+          PY
+          clamscan --version
+          clamscan --infected --scan-archive=yes dist/buecherkiste-ci.mupiapp
+          clamscan --recursive --infected dist/buecherkiste-scan
+
       - name: Upload Buecherkiste test package
         uses: actions/upload-artifact@v4
         with:
