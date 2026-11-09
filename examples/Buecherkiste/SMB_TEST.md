@@ -64,3 +64,6 @@ Buchordner mit book.json werden direkt unter CommunityApps/community.buecherkist
 
 Henne und Adler erhält eine zusätzliche letzte Seite (11 / 11) mit Textautorin, Illustrator, Übersetzung, Quelle und Lizenz. Die Angaben werden aus book.json gelesen und als reiner Text angezeigt. Dies gilt auch für SMB-Kopien, sofern dort die vorhandenen Angaben author und license enthalten sind. Es muss keine zusätzliche Bilddatei kopiert werden. Bücher ohne diese Angaben, insbesondere Ole, bekommen keine zusätzliche Seite. Vorwärts und rückwärts zwischen Seite 10 und 11, Zoom und Rückkehr ins Regal auf der MuPiBox prüfen.
 
+## Eigener Zurück-Pfeil ab 0.2.23
+
+Oben links ist ein kleiner Zurück-Pfeil im Regal und im geöffneten Buch sichtbar. Er ruft MuPiBoxSDK.exit() auf und führt zur MuPiBox zurück. Der Regal-Button unten links bleibt für die Rückkehr aus dem Buch ins Bücherregal erhalten. Im Manifest ist display.showBackButton auf false gesetzt; der native Zurück-Button samt App-Titel soll ausgeblendet werden. Gespeicherte Darstellungseinstellungen in der MuPiBox können diese Vorgabe übersteuern. Falls der native Button nach dem Update weiterhin sichtbar ist, unter Darstellung und Integration die entsprechende Einstellung prüfen. Es werden keine neuen Berechtigungen angefordert. In einer eigenständigen Browser-Vorschau kann das SDK die MuPiBox nicht schließen.

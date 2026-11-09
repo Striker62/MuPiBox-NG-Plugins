@@ -310,5 +310,16 @@ function changeShelfPage(direction){const pages=Math.max(1,Math.ceil(shelfEntrie
 let touchStart=null,lastShelfSwipe=0;
 shelf.addEventListener('touchstart',e=>{if(e.touches.length===1)touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY}},{passive:true});
 shelf.addEventListener('touchend',e=>{if(!touchStart||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-touchStart.x,dy=e.changedTouches[0].clientY-touchStart.y;touchStart=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.4){lastShelfSwipe=Date.now();changeShelfPage(dx<0?1:-1)}},{passive:true});
+$('app-exit').onclick=async()=>{
+ const button=$('app-exit');
+ if(button.disabled)return;
+ button.disabled=true;
+ try{
+  const sdk=window.MuPiBoxSDK;
+  if(typeof sdk?.exit!=='function')throw Error('MuPiBox-SDK nicht verfügbar');
+  await sdk.exit();
+ }catch(e){console.warn('Rückkehr zur MuPiBox fehlgeschlagen:',e)}
+ finally{button.disabled=false}
+};
 loadShelf();
 $('back').onclick=()=>{releasePage();$('page').removeAttribute('src');$('henne-image').removeAttribute('src');$('backdrop').style.backgroundImage='none';reader.hidden=true;shelf.hidden=false;loadShelf()};function turn(d){let total=getTotal();let n=Math.max(1,Math.min(total,current+d));if(n!==current){current=n;show()}}$('prev').onclick=()=>turn(-1);$('next').onclick=()=>turn(1);$('zoom').onclick=()=>zoom(!zoomed);window.addEventListener('resize',()=>{requestAnimationFrame(fitHenneText);if(!shelf.hidden)renderShelf()});if(window.ResizeObserver){new ResizeObserver(()=>requestAnimationFrame(fitHenneText)).observe($('viewport'));}if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>requestAnimationFrame(fitHenneText));document.addEventListener('keydown',e=>{if(reader.hidden){if(e.key==='ArrowRight')changeShelfPage(1);if(e.key==='ArrowLeft')changeShelfPage(-1);return;}if(e.key==='ArrowRight')turn(1);if(e.key==='ArrowLeft')turn(-1);if(e.key==='Escape')$('back').click()})})();

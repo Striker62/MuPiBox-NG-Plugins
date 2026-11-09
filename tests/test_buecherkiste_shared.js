@@ -68,6 +68,17 @@ test('SMB books append with separate identities and titles may repeat',async()=>
  assert.ok(!h.urls.has(h.get('page').src));
  h.events.pagehide();assert.equal(h.urls.size,0);
 });
+test('own back button requests SDK exit from shelf and reader and allows retry after failure',async()=>{
+ const h=setup();await tick();await tick();let exits=0;
+ h.window.MuPiBoxSDK.exit=async()=>{exits++};
+ await h.get('app-exit').onclick();assert.equal(exits,1);
+ await h.app.open('smb:ole');await tick();
+ await h.get('app-exit').onclick();assert.equal(exits,2);
+ h.window.MuPiBoxSDK.exit=async()=>{throw Error('Host unavailable')};
+ await h.get('app-exit').onclick();assert.equal(h.get('app-exit').disabled,false);
+ h.window.MuPiBoxSDK.exit=async()=>{exits++};
+ await h.get('app-exit').onclick();assert.equal(exits,3);
+});
 test('Henne attribution is the eleventh page for bundled and SMB copies; Ole stays at sixteen',async()=>{
  const h=setup('attribution');await tick();await tick();
  for(const key of ['henne-und-adler','smb:henne-und-adler1']){

@@ -297,3 +297,8 @@
 .attribution-card .attribution-heading{font-weight:bold;margin-bottom:1em;}
 #reader.zoomed .attribution-card{font-size:clamp(18px,3vw,30px);}
 @media(max-width:540px){#attribution-page{padding:12px 54px 66px;}}
+
+/* App-owned exit control, independent of the reader's return-to-shelf button. */
+#app-exit{position:fixed;top:6px;left:6px;z-index:20;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid #ffffff55;border-radius:12px;background:#0d182780;color:#fff;font-size:34px;line-height:1;text-shadow:0 1px 2px #111;}
+#app-exit:focus-visible{outline:3px solid #fff;outline-offset:2px;}
+#app-exit:disabled{opacity:.5;}
