@@ -157,3 +157,7 @@ Entfernt wurde die doppelte Altregel `#shelf .books .book-slot .book{touch-actio
 ### Gerätetest der neunten Bereinigung – 2026-11-09
 
 Der Nutzer bestätigt nach dem erneuten Test auf der MuPiBox: **„immer noch allles ok und funktioniert“**. Die neunte Bereinigung (`5e09c53`) ist damit auf dem aktuell verwendeten 10,1-Zoll-Monitor erfolgreich getestet. Die Tests für 5 und 7 Zoll stehen noch aus.
+
+## Zehnte Bereinigung – Commit `39fddc0` (2026-11-09)
+
+Entfernt wurde die ältere Covergrößenregel `#shelf .books .book-slot .book img{max-height:82%!important;max-width:74%!important;}` aus 0.2.15. Die späteren 0.2.17-Regeln bestimmen die Maße weiterhin (einschließlich der Medienabfragen). **86 Zeichen** entfernt; kumulativ **2135 Zeichen**. Noch nicht auf der MuPiBox getestet; 5- und 7-Zoll-Tests weiterhin ausstehend.
