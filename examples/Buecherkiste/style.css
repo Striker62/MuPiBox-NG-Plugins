@@ -229,7 +229,7 @@
 #shelf .books{inset:clamp(38px,12vh,54px) 14% 29px!important;}
 #shelf .books::before,#shelf .books::after{height:12px!important;background:linear-gradient(#f7c98c 0%,#bb763a 36%,#7a3d1c 78%,#3d2114 100%)!important;box-shadow:0 6px 8px #160d09aa!important;}
 #shelf .books .book-slot .book img{max-height:86%!important;max-width:74%!important;}
-@media(max-width:540px){#shelf .books{left:10%!important;right:10%!important;}#shelf .books .book-slot .book img{max-width:74%!important;}}
+@media(max-width:540px){#shelf .books .book-slot .book img{max-width:74%!important;}}
 
 /* 0.2.15: Dekorative Regale im Hintergrund, keine doppelten CSS-Bretter. */
 
@@ -238,7 +238,7 @@
 #shelf .books .book-slot{padding-bottom:0!important;}
 #shelf .books .book-slot .book{padding:0 4px 0!important;}
 #shelf .books .book-slot .book img{max-height:82%!important;max-width:74%!important;}
-@media(max-width:540px){#shelf .books{left:10%!important;right:10%!important;}}
+
 
 /* 0.2.16 – statischer, scharfer Buchladen; dynamische Cover als Overlay */
 #shelf{background-image:url("buchladen-leere-regale.jpg")!important;background-size:100% 100%!important;}
@@ -247,7 +247,7 @@
 #shelf .books .book-slot .book::after{display:none!important;}
 #shelf .books .book-slot .book img{filter:none!important;backdrop-filter:none!important;}
 #shelf .shelf-header{background:transparent!important;box-shadow:none!important;}
-@media(max-width:540px){#shelf .books{left:10%!important;right:10%!important;}}
+
 
 
 /* 0.2.17 – exakt das vom Nutzer gewählte Hintergrundbild; keine zusätzlichen Bretter */
