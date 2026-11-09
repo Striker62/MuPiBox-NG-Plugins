@@ -70,6 +70,8 @@ Host-Berechtigung veröffentlicht und installiert sein.**
 
 Details, Sicherheitsgrenzen und Beispiele: [Manifest-Dokumentation](docs/manifest-v1.md#shared-smb-folders-for-owner-managed-app-content-host-development).
 
+**Ablageregel:** `CommunityApps/` bleibt an der Wurzel leer. Eigene Bücher liegen getrennt als `CommunityApps/<tatsächliche App-ID>/books/<buch-id>/` (jeweils mit eigener `book.json`), Foto-Accessoires im eigenen FotoSpaß-Ordner; zwei Bücher mit unterschiedlichen Ordnernamen kollidieren nicht. Apps können die Dateien nur mit `shared-assets` lesen und nicht über SMB schreiben. Dass der Ordner in der Freigabe leer ist, ist zunächst normal; die Host-Funktion ist noch als Entwicklung gekennzeichnet. **[Verbindliche Ablage- und Sicherheitsregeln](docs/shared-assets-policy.md)** beschreiben außerdem, was der Host noch technisch prüfen muss.
+
 ## App-Hintergrund und Bilder für die Kategorien (NG alpha.34+)
 
 Die Auswahl **„Hintergrund aus der App (HTML/CSS)“** im NG-Admin legt
