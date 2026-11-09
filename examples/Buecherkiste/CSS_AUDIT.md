@@ -53,3 +53,12 @@ Eine einfache Gegenprobe der Selektorbezeichner gegen `index.html` und `app.js` 
 4. Für dynamische Zustände Regal / Buch / Zoom / Henne auf dem Zielgerät testen.
 
 **Status:** Analyse erweitert; keine Änderungen an `style.css`, `app.js` oder `index.html`. Die automatische GitHub-Action prüft Syntax und Paketierung, aber noch keine vollständige CSS-Nutzungsabdeckung.
+
+
+## Erste Bereinigung – Commit `4a99fea` (2026-11-09)
+
+- Aus `style.css` entfernt: die beiden veralteten Selektoren `#book` und `#book img` (insgesamt 297 Zeichen).
+- Begründung: Das aktuelle `index.html` besitzt kein Element mit `id="book"`; die Regal-Buttons werden in `app.js` mit `className='book'` erzeugt.
+- **Unverändert:** Alle aktuellen `.book`- und `.book-slot`-Regeln, Media-Queries, Zoom- und Buchrücken-Effekte.
+- **Noch ausstehend:** CI-Ergebnis kontrollieren, visuelle Prüfung auf 800×480, vollständige Konsolidierung der mehrfachen Regal-Overrides.
+- Dies ist eine erste risikoarme Teilbereinigung, **noch keine vollständige Regal-CSS-Konsolidierung**.
