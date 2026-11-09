@@ -123,3 +123,10 @@ Alte Größenbegrenzungen für `#shelf .books .book-slot .book img` aus 0.2.14 e
 ## Gerätetest nach sechster Bereinigung – 2026-11-09
 
 Nach Ergänzung der Paketintegritätsprüfung im GitHub-Workflow (Commit `1607106`) konnte der Nutzer das neue Testartefakt ohne Firefox-Blockierung herunterladen und bestätigte auf dem **10,1-Zoll-Monitor**: **„funktionier alles“**. Damit ist die sechste CSS-Bereinigung (Commit `2721a5c`) auf diesem Gerät praktisch bestätigt. Der vorherige Firefox-Alarm ist damit nicht technisch als Fehlalarm bewiesen; die zusätzlichen CI-Prüfungen ersetzen keinen Malware-Scan. Tests auf 5 und 7 Zoll bleiben ausstehend.
+
+## Siebte Bereinigung – Commit `c4ee41f` (2026-11-09)
+
+Die alte `background`-Kurzschreibweise aus Version 0.2.12 (`buchladen-szene.svg`) in `#shelf` wurde entfernt. Die spätere 0.2.17-Definition überschreibt dieselbe Eigenschaft mit `!important`; `padding`, `position` und `overflow` aus dem alten Block bleiben erhalten.
+
+- Weitere **86 Zeichen** entfernt, kumulativ **1719 Zeichen**.
+- GitHub-CI und Gerätetest für diesen Stand stehen noch aus; keine Aussage über erfolgreiche visuelle Prüfung auf 10,1 Zoll oder 5/7 Zoll.
