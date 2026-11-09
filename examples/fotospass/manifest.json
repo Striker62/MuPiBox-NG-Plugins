@@ -2,18 +2,23 @@
   "apiVersion": "1",
   "id": "community.fotospass",
   "name": "FotoSpaß",
-  "description": "FotoSpaß mit Kamera, Malen, Accessoires, Speichern und Galerie mit Einzelbild-Löschfunktion.",
+  "description": "FotoSpaß mit bildbasierten Kategorien und zusätzlichen PNG-Accessoires aus dem eigenen SMB-Ordner.",
   "author": "Striker62",
-  "version": "0.4.2",
+  "version": "0.5.5",
   "runtime": "web",
   "entry": "index.html",
   "permissions": [
     "camera",
-    "photo-save"
+    "photo-save",
+    "shared-assets"
   ],
   "display": {
     "orientation": "landscape",
     "minWidth": 800,
-    "minHeight": 480
-  }
+    "minHeight": 480,
+    "showBackButton": false
+  },
+  "sharedDirectories": [
+    "accessoires"
+  ]
 }
