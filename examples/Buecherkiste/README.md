@@ -128,11 +128,11 @@ Der Bücherkiste-Audit auf GitHub prüft außerdem CSS-Struktur, Paketintegritä
 Dateitypen und die Grenze von 25 MB und führt einen ClamAV-Virenscan aus.
 Den Gerätetest beschreibt [SMB_TEST.md](SMB_TEST.md).
 
-Die zusätzlichen SMB-Bücher und die Urheberseite wurden vom Anwender auf der
-MuPiBox bestätigt. Entwicklungsreferenz ist ein Raspberry Pi 4 mit 10,1-Zoll-
-Display. Displaytests mit 5 und 7 Zoll sowie der abschließende Gerätetest der
-Navigation aus Version 0.2.24 sind noch offen. Simulierte SDK-Tests ersetzen
-keinen Touchscreen-Test.
+Die zusätzlichen SMB-Bücher, die Urheberseite und die Navigation aus Version
+0.2.24 (Buch → Regal → MuPiBox, ohne MuPiBox-Pfeil im Buch) wurden vom Anwender
+auf der MuPiBox bestätigt. Entwicklungsreferenz ist ein Raspberry Pi 4 mit
+10,1-Zoll-Display. Displaytests mit 5 und 7 Zoll sind noch offen. Simulierte
+SDK-Tests ersetzen keinen Touchscreen-Test.
 
 ## Veröffentlichung
 
