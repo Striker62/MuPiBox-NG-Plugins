@@ -22,7 +22,7 @@ class Markup(HTMLParser):
 
 class ThemeIntegrationTests(unittest.TestCase):
     def test_native_back_theme_and_game_only_layout(self):
-        for slug, version in (("four-in-a-row", "0.1.2"), ("tic-tac-toe", "0.2.2")):
+        for slug, version in (("four-in-a-row", "0.1.3"), ("tic-tac-toe", "0.2.3")):
             with self.subTest(slug=slug):
                 directory = ROOT / "examples" / slug
                 manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
@@ -49,6 +49,35 @@ class ThemeIntegrationTests(unittest.TestCase):
                 js = (directory / "web/app.js").read_text(encoding="utf-8")
                 self.assertIn("sdk.exit()", js)
                 self.assertIn("exit.addEventListener", js)
+
+    def test_all_four_games_use_fullscreen_and_their_own_back_button(self):
+        for slug in ("tic-tac-toe", "four-in-a-row", "chess", "crumbworm"):
+            with self.subTest(slug=slug):
+                directory = ROOT / "examples" / slug
+                manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
+                self.assertEqual(manifest["display"]["background"], "system")
+                self.assertFalse(manifest["display"]["showBackButton"])
+                self.assertFalse(manifest["display"]["showSystemInfo"])
+                self.assertTrue(manifest["display"]["fullScreen"])
+                html = (directory / "web/index.html").read_text(encoding="utf-8")
+                self.assertIn('id="exit"', html)
+                self.assertNotIn('<header class="mupibox-', html)
+                js = (directory / "web/app.js").read_text(encoding="utf-8")
+                self.assertIn("sdk.exit()", js)
+
+    def test_crumbworm_cover_is_landscape_and_packaged(self):
+        import struct
+        directory = ROOT / "examples" / "crumbworm"
+        manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["cover"], "cover.jpg")
+        cover = directory / "web" / manifest["cover"]
+        self.assertTrue(cover.is_file())
+        raw = cover.read_bytes()
+        self.assertEqual(raw[:2], b"\xff\xd8")
+        self.assertGreater(len(raw), 5000)
+        # JPEG is a verified raster cover in the self-contained package.
+        self.assertTrue((directory / "art" / "cover.svg").is_file())
+
 
 
 if __name__ == "__main__":

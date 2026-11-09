@@ -11,6 +11,8 @@
   const bestText = document.getElementById('best');
   const exit = document.getElementById('exit');
   let locale = null, best = 0, level = 'normal', ticker = null, pausedByHost = false;
+  let design = 'garden';
+  const themeToggle = document.getElementById('theme-toggle');
   let exiting = false;
   let pointerStart = null;
   const t = (key,args) => locale ? locale.t(key,args) : key;
@@ -72,7 +74,63 @@
     }
     paint(engine.snapshot());
   }
+  // All graphics are generated offline on the existing 600x400 canvas.
+  // Thin cyan/red grid edges and a luminous alternating body create a
+  // recognisable sci-fi neon look without large GPU filters or new assets.
+  function paintNeon(state) {
+    const w=canvas.width,h=canvas.height;
+    ctx.fillStyle='#03091f';ctx.fillRect(0,0,w,h);
+    ctx.lineWidth=1;
+    for (let x=0;x<=rules.WIDTH;x++) {
+      ctx.strokeStyle=x%4===0?'#1c5aab':'#11335c';
+      ctx.beginPath();ctx.moveTo(x*cell+.5,0);ctx.lineTo(x*cell+.5,h);ctx.stroke();
+    }
+    for (let y=0;y<=rules.HEIGHT;y++) {
+      ctx.strokeStyle=y%4===0?'#a82256':'#462048';
+      ctx.beginPath();ctx.moveTo(0,y*cell+.5);ctx.lineTo(w,y*cell+.5);ctx.stroke();
+    }
+    ctx.lineWidth=3;ctx.strokeStyle='#fb3569';ctx.strokeRect(3,3,w-6,h-6);
+    if(state.food){
+      const fx=(state.food.position%rules.WIDTH)*cell+cell/2;
+      const fy=Math.floor(state.food.position/rules.WIDTH)*cell+cell/2;
+      ctx.beginPath();ctx.arc(fx,fy,cell*.44,0,2*Math.PI);
+      ctx.fillStyle=state.food.gold?'#fff3a0':'#fe416a';ctx.fill();
+      ctx.lineWidth=3;ctx.strokeStyle='#67e7ff';ctx.stroke();
+      ctx.beginPath();ctx.arc(fx,fy,cell*.15,0,2*Math.PI);
+      ctx.fillStyle='#fff';ctx.fill();
+    }
+    for(let i=state.body.length-1;i>=0;i--){
+      const pos=state.body[i],x=(pos%rules.WIDTH)*cell,y=Math.floor(pos/rules.WIDTH)*cell;
+      const head=i===0;
+      ctx.fillStyle=head?'#dfffff':i%2?'#1169d1':'#d22859';
+      ctx.fillRect(x+3,y+3,cell-6,cell-6);
+      ctx.strokeStyle=head?'#52eaff':i%2?'#56d8ff':'#ff7191';
+      ctx.lineWidth=3;ctx.strokeRect(x+3,y+3,cell-6,cell-6);
+      if(head){
+        let dx=0,dy=0;
+        if(state.direction==='up')dy=-4;
+        if(state.direction==='down')dy=4;
+        if(state.direction==='left')dx=-4;
+        if(state.direction==='right')dx=4;
+        ctx.fillStyle='#101b49';
+        for(const ex of [-5,5]){ctx.fillRect(x+cell/2+ex+dx-2,y+cell/2-2+dy,4,4);}
+      }
+    }
+  }
+  function applyDesign(value,save) {
+    design=value==='neon'?'neon':'garden';
+    screen.dataset.design=design;
+    themeToggle.textContent=design==='neon'?'GARTEN':'NEON';
+    themeToggle.setAttribute('aria-pressed',String(design==='neon'));
+    themeToggle.setAttribute('aria-label',design==='neon'?'Zum Garten-Design wechseln':'Zum Neon-Design wechseln');
+    if(save) void sdk.storage.set('design',design).catch(()=>{});
+    paint(engine.snapshot());
+  }
+  themeToggle.addEventListener('click',()=>applyDesign(design==='garden'?'neon':'garden',true));
+
   function paint(state) {
+    if (design === 'neon') paintNeon(state);
+    else {
     const w = canvas.width, h = canvas.height;
     ctx.fillStyle = '#102d32';
     ctx.fillRect(0,0,w,h);
@@ -117,6 +175,7 @@
         ctx.strokeStyle='#245b4b';ctx.lineWidth=1.5;ctx.beginPath();
         ctx.arc(x+ex,y+ey+2,5,.1,Math.PI-.1);ctx.stroke();
       }
+    }
     }
     points.textContent=String(state.points);
     bestText.textContent=String(best);
@@ -212,6 +271,8 @@
     try {
       const saved = await sdk.storage.get('best');
       if (Number.isSafeInteger(saved) && saved>=0) best=saved;
+      const storedDesign = await sdk.storage.get('design');
+      if (storedDesign === 'garden' || storedDesign === 'neon') applyDesign(storedDesign,false);
       const storedLevel = await sdk.storage.get('speed');
       if (Object.prototype.hasOwnProperty.call(delays, storedLevel)) level=storedLevel;
     } catch (_) { /* Browser preview can lack storage. */ }

@@ -2,7 +2,7 @@
   "apiVersion": "1",
   "id": "community.tictactoe",
   "name": "MuPi Kreuz & Kreis",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "runtime": "web",
   "entry": "index.html",
   "icon": "assets/icon.png",

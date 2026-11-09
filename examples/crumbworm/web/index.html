@@ -10,13 +10,12 @@
 </head>
 <body>
   <main class="screen touch-mode">
-    <!-- Native MuPiBox bars are hidden: this back arrow is the only exit control. -->
+    <!-- Native MuPiBox status/navigation bars are hidden; themed in-game exit only. -->
     <button id="exit" class="back-button" type="button"
             data-i18n-aria="wormBack" aria-label="Zurück zur MuPiBox">
       <span aria-hidden="true">←</span>
     </button>
-    <nav class="touch-controls" role="group" aria-label="Touch-Steuerung">
-      <!-- Vertical controls directly LEFT of the board, up above down. -->
+    <nav class="vertical-controls" role="group" aria-label="Hoch und runter">
       <button class="direction direction-up" data-direction="up"
               data-i18n-aria="directionUp" aria-label="Nach oben" type="button">
         <span aria-hidden="true">▲</span>
@@ -25,25 +24,30 @@
               data-i18n-aria="directionDown" aria-label="Nach unten" type="button">
         <span aria-hidden="true">▼</span>
       </button>
-      <!-- Left/right are paired BELOW the vertical controls. -->
-      <button class="direction direction-left" data-direction="left"
-              data-i18n-aria="directionLeft" aria-label="Nach links" type="button">
-        <span aria-hidden="true">◀</span>
-      </button>
-      <button class="direction direction-right" data-direction="right"
-              data-i18n-aria="directionRight" aria-label="Nach rechts" type="button">
-        <span aria-hidden="true">▶</span>
-      </button>
     </nav>
     <section class="play-area" aria-label="MuPi Krümelwurm">
-      <div class="scoreboard">
-        <div><span data-i18n="wormScore">Punkte</span><strong id="points">0</strong></div>
-        <div><span data-i18n="wormBest">Rekord</span><strong id="best">0</strong></div>
-      </div>
       <div class="garden">
         <canvas id="garden" width="600" height="400" role="img"
                 data-i18n-aria="gardenBoard" aria-label="Garten-Spielfeld"></canvas>
+        <div class="scoreboard">
+          <div><span data-i18n="wormScore">Punkte</span><strong id="points">0</strong></div>
+          <div><span data-i18n="wormBest">Rekord</span><strong id="best">0</strong></div>
+        </div>
         <p id="status" class="status" aria-live="polite"></p>
+      </div>
+      <div class="action-bar">
+        <button id="theme-toggle" class="theme-toggle" type="button"
+                aria-label="Design wechseln" aria-pressed="false">NEON</button>
+        <nav class="horizontal-controls" role="group" aria-label="Links und rechts">
+          <button class="direction direction-left" data-direction="left"
+                  data-i18n-aria="directionLeft" aria-label="Nach links" type="button">
+            <span aria-hidden="true">◀</span>
+          </button>
+          <button class="direction direction-right" data-direction="right"
+                  data-i18n-aria="directionRight" aria-label="Nach rechts" type="button">
+            <span aria-hidden="true">▶</span>
+          </button>
+        </nav>
       </div>
     </section>
   </main>

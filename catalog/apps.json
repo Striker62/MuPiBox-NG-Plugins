@@ -7,10 +7,10 @@
       "description": "Kreuz & Kreis: 2 Spieler oder MuPi-KI (leicht, normal, schwer), 7 Boxsprachen, Touch/Controller.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.2",
-      "releaseTag": "v0.1.0-preview.11",
+      "version": "0.2.3",
+      "releaseTag": "v0.1.0-preview.13",
       "asset": "mupi-kreuz-kreis.mupiapp",
-      "sha256": "b5a18329f0b555aebf8c30689bd70be3c16efedaa77817f55f3d29837c466278",
+      "sha256": "132b39f5a1f5f7776d81e56848eaa0be36c2c555b6ee4dcb139d9e631cf71ba6",
       "permissions": [
         "storage",
         "controller"
@@ -22,10 +22,10 @@
       "description": "Eigenständiges 7x6-Reihenspiel für 2 Spieler oder gegen MuPi (3 KI-Stufen), 7 Sprachen.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.1.2",
-      "releaseTag": "v0.1.0-preview.11",
+      "version": "0.1.3",
+      "releaseTag": "v0.1.0-preview.13",
       "asset": "four-in-a-row.mupiapp",
-      "sha256": "82c24c621287ebd214fae989873383c42fe12f9f0a0f454548828d70ae7332bd",
+      "sha256": "fd19d9f333c542a0602e051925b2fefadd8e37178d68a4776634129fd8b84a0c",
       "permissions": [
         "storage",
         "controller"
@@ -34,13 +34,13 @@
     {
       "id": "community.mupi-kruemelwurm",
       "name": "MuPi Krümelwurm",
-      "description": "Vollbild-Wurmspiel mit Theme-Hintergrund, eigener Zurück-Taste und Touch-Pfeilen direkt links am Spielfeld; Rekord, 3 Geschwindigkeiten und 7 Boxsprachen.",
+      "description": "Garten- und rot-blaues Neon-Grid-Design, Zwei-Hand-Touchsteuerung, eigener Zurück-Button, optimiertes Cover und Vollbild.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.1.1",
-      "releaseTag": "v0.1.0-preview.12",
+      "version": "0.2.0",
+      "releaseTag": "v0.1.0-preview.13",
       "asset": "crumbworm.mupiapp",
-      "sha256": "6137b0d144f40c9bfbe99e29e192191d82fb4b3504a217ba711d5c593dc46119",
+      "sha256": "ec8a9759ee14f4d63b6327b22638d408c752f57c264f5b9c8638a79caddfb247",
       "permissions": [
         "storage",
         "controller"
@@ -52,10 +52,10 @@
       "description": "Offline-Schach für 2 Spieler oder gegen MuPi (4 KI-Stufen), inklusive Zugzeit, Durchschnittszeit und optionalem Limit pro Zug. Theme-Hintergrund und eigene Schach-Cover-Kachel.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.1.0",
-      "releaseTag": "v0.1.0-preview.10",
+      "version": "0.1.1",
+      "releaseTag": "v0.1.0-preview.13",
       "asset": "mupi-chess.mupiapp",
-      "sha256": "5b3698c0dbe1ee4884158e764989b94f025741acd70830f2a149c619e1c557db",
+      "sha256": "9dd34077c46583becb889a5c4d2e6e1956080fd2ccd6f5ca28a46c568b56415a",
       "permissions": [
         "controller"
       ]

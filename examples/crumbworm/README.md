@@ -70,3 +70,26 @@ node --test tests/test_crumbworm.js tests/test_crumbworm_ui.js tests/test_board_
 python3 tools/build_crumbworm.py
 python3 tools/mupiapp.py validate dist/crumbworm.mupiapp
 ```
+
+
+## Vollbild und Zwei-Hand-Bedienung (v0.2.0)
+
+- Host-Leiste im Paket vollständig deaktiviert: `showBackButton:false`,
+  `showSystemInfo:false`, `fullScreen:true`; stattdessen linker eigener
+  Exit-Button über das erlaubte `MuPiBoxSDK.exit()`. WICHTIG: Alte
+  Admin-Darstellungsüberschreibungen werden durch App-Updates bewusst nicht
+  zurückgesetzt; ggf. auf bestehenden Boxen dort anpassen.
+- Touch auf 800×480: **Hoch/Runter** links *neben* der Leinwand,
+  **Links/Rechts** unter der Leinwand *rechtsbündig*. Die zwei Steuergruppen
+  sind voneinander getrennt und lassen sich beidhändig bedienen.
+- Punktestand/Rekord liegen als kompaktes HUD direkt im Spielfeld statt in
+  einer zusätzlichen Kopfzeile; das nutzbare Spielfeld bleibt so groß wie möglich.
+- Unten links schaltet **NEON / GARTEN** die Darstellung. Der Gartenlook ist
+  identisch zur bisherigen Version; der neue, komplett lokal gezeichnete
+  Neon-Look hat dunkelblaues Raster, rot-blaue Leuchtkonturen und einen
+  kantigen Wurm. Einmal gewählte Darstellung wird per `sdk.storage`
+  app-lokal gespeichert, ohne Telemetrie/Netzzugriff.
+- Die Spielregeln, Touch-Swipes, Controller und Geschwindigkeit bleiben gleich.
+
+Regression: `node --test tests/test_crumbworm*.js` plus die
+Packaging-/Manifest- und Vollbildintegrationstests.

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="625" viewBox="0 0 800 625">
+<defs>
+<radialGradient id="space" cx=".50" cy=".44" r=".79"><stop stop-color="#083d4c"/><stop offset=".58" stop-color="#061b32"/><stop offset="1" stop-color="#020711"/></radialGradient>
+<radialGradient id="body" cx=".29" cy=".21" r=".84"><stop stop-color="#e5ff70"/><stop offset=".4" stop-color="#72df35"/><stop offset="1" stop-color="#238e44"/></radialGradient>
+<radialGradient id="head" cx=".36" cy=".26" r=".8"><stop stop-color="#eaff98"/><stop offset=".35" stop-color="#88ef32"/><stop offset=".85" stop-color="#2bb647"/><stop offset="1" stop-color="#138a49"/></radialGradient>
+<radialGradient id="crumb" cx=".31" cy=".29" r=".7"><stop stop-color="#fffaca"/><stop offset=".4" stop-color="#ffcf49"/><stop offset="1" stop-color="#e88624"/></radialGradient>
+<linearGradient id="border" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5cff91"/><stop offset=".43" stop-color="#34dcff"/><stop offset=".72" stop-color="#dd3977"/><stop offset="1" stop-color="#55e2ff"/></linearGradient>
+<filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="8"/></filter>
+<filter id="soft" x="-35%" y="-35%" width="170%" height="170%"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<rect width="800" height="625" fill="url(#space)"/>
+<g opacity=".32" stroke-width="2">
+<path stroke="#0f78b5" d="M0 144H800M0 207H800M0 270H800M0 333H800M0 396H800M0 459H800M0 522H800M0 585H800"/>
+<path stroke="#0d719b" d="M30 0V625M104 0V625M178 0V625M252 0V625M326 0V625M400 0V625M474 0V625M548 0V625M622 0V625M696 0V625M770 0V625"/>
+</g>
+<path d="M15 18L785 18L785 607L15 607Z" fill="none" stroke="url(#border)" stroke-width="11" opacity=".5" filter="url(#glow)"/>
+<rect x="12" y="12" width="776" height="601" rx="35" fill="none" stroke="url(#border)" stroke-width="8"/>
+<path d="M37 156H763" stroke="#57cfff" stroke-width="4" opacity=".5"/>
+<text x="400" y="77" text-anchor="middle" font-size="39" font-weight="bold" font-family="DejaVu Sans, sans-serif" fill="#aafadc">MuPi</text>
+<text x="400" y="145" text-anchor="middle" font-size="65" font-weight="bold" font-family="DejaVu Sans, sans-serif" stroke="#114838" stroke-width="8" paint-order="stroke" fill="#caff8b">Krümelwurm</text>
+<!-- glowing green segmented worm -->
+<g filter="url(#soft)" opacity=".55" fill="#75ff59">
+<circle cx="200" cy="385" r="65"/><circle cx="268" cy="369" r="67"/><circle cx="340" cy="354" r="69"/><circle cx="413" cy="343" r="72"/><circle cx="504" cy="342" r="85"/>
+</g>
+<g stroke="#1a7038" stroke-width="5">
+<circle cx="187" cy="388" r="61" fill="url(#body)"/>
+<circle cx="257" cy="369" r="64" fill="url(#body)"/>
+<circle cx="332" cy="354" r="68" fill="url(#body)"/>
+<circle cx="409" cy="342" r="74" fill="url(#body)"/>
+<circle cx="512" cy="342" r="89" fill="url(#head)"/>
+</g>
+<g fill="#f9ffeb">
+<ellipse cx="491" cy="318" rx="22" ry="29"/>
+<ellipse cx="546" cy="314" rx="23" ry="30"/>
+</g>
+<g fill="#091b32"><ellipse cx="497" cy="326" rx="10" ry="17"/><ellipse cx="552" cy="320" rx="11" ry="18"/></g>
+<g fill="#fff"><circle cx="494" cy="319" r="5"/><circle cx="548" cy="314" r="5"/></g>
+<ellipse cx="474" cy="359" rx="11" ry="6" fill="#ff7677" opacity=".44"/>
+<ellipse cx="563" cy="354" rx="10" ry="6" fill="#ff7677" opacity=".44"/>
+<path d="M490 368Q526 417 563 367Q535 380 490 368" fill="#142c2b" stroke="#1c6046" stroke-width="3"/>
+<path d="M510 392Q525 384 544 392" stroke="#ff647c" stroke-width="9" stroke-linecap="round"/>
+<!-- crumbs -->
+<g fill="url(#crumb)" stroke="#fff1a0" stroke-width="3">
+<circle cx="125" cy="501" r="25"/><circle cx="635" cy="474" r="30"/><circle cx="347" cy="527" r="22"/>
+</g>
+<g fill="#fff5ba" opacity=".9"><circle cx="119" cy="493" r="7"/><circle cx="624" cy="464" r="9"/><circle cx="341" cy="523" r="6"/></g>
+<!-- red/blue neon streak for second game skin -->
+<path d="M40 553H277" stroke="#e73871" stroke-width="6" opacity=".8"/>
+<path d="M520 553H757" stroke="#30b6ff" stroke-width="6" opacity=".85"/>
+</svg>

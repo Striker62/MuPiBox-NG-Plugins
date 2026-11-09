@@ -2,12 +2,12 @@
   "apiVersion": "1",
   "id": "community.mupi-kruemelwurm",
   "name": "MuPi Krümelwurm",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.svg",
   "author": "MuPiBox-NG Community",
-  "description": "Vollbild-Wurmspiel mit Theme-Hintergrund, eigener Zurück-Taste, Touch-Pfeilen und Controller-Steuerung.",
+  "description": "Vollbild-Wurmspiel im Garten- oder rot-blauen Neon-Grid-Design; Zwei-Hand-Touchsteuerung und eigener Zurück-Button.",
   "permissions": [
     "storage",
     "controller"
@@ -20,5 +20,6 @@
     "showSystemInfo": false,
     "fullScreen": true,
     "background": "system"
-  }
+  },
+  "cover": "cover.jpg"
 }

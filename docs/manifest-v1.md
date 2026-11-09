@@ -207,3 +207,16 @@ Apps and to matching existing user-configured Home categories. Admin
 category overrides are respected. Avoid external URLs, network requests,
 dynamic code evaluation, raw host filesystem paths or developer-specific
 NG implementation dependencies.
+
+
+### Vollbild-Spiele und eigenes Navigationsdesign
+
+Für Games mit eigener, gut erreichbarer Zurück-Schaltfläche empfehlen wir
+`display.showBackButton=false`, `display.showSystemInfo=false`,
+`display.fullScreen=true` und `display.background="system"`. Die
+App muss `html/body` und den äußeren Container transparent halten, damit
+das ausgewählte MuPiBox-Wallpaper sichtbar bleiben kann. Nur Spielfelder,
+Buttons und Ableseflächen werden deckend gezeichnet. Bei einem eigenständigen
+Vollbildspiel *muss* die App einen funktionierenden, sichtbaren Exit-Button
+(`MuPiBoxSDK.exit()`) vorsehen; die Host-Navigationsoption bleibt weiterhin
+pro App konfigurierbar. Frühere Admin-Überschreibungen gelten vor dem Manifest.
