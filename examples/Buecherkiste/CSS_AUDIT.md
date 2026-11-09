@@ -149,3 +149,7 @@ Für den nächsten Test wurde in `style.css` die Hintergrunddatei von `buchladen
 ## Gerätetest – achte CSS-Bereinigung und neuer Bibliothekshintergrund (2026-11-09)
 
 Nach Umbenennung des hochgeladenen Hintergrundbildes zu `bibliothek.png` und Anpassung der CSS-Referenz (Commit `711737b`) bestätigt der Nutzer für die MuPiBox auf dem 10,1-Zoll-Monitor: **„das bild passt und alles andere sieht gut aus und funktioniert“**. Damit sind sowohl die achte CSS-Bereinigung (`b492409`) als auch der neue Bibliothekshintergrund praktisch bestätigt. Die zuvor fehlgeschlagenen Paketläufe betrafen den nicht unterstützten Dateinamen mit Umlaut/Leerzeichen; das Problem wurde durch den einfachen Dateinamen behoben. Tests auf 5 und 7 Zoll stehen weiterhin aus.
+
+## Neunte Bereinigung – Commit `5e09c53` (2026-11-09)
+
+Entfernt wurde die doppelte Altregel `#shelf .books .book-slot .book{touch-action:pan-y;}` aus dem Abschnitt 0.2.13. Die identische Deklaration bleibt im 0.2.17-Block erhalten. **52 Zeichen** entfernt, kumulativ **2049 Zeichen**. Der aktuelle Bibliothekshintergrund bleibt unverändert. Gerätetest für diesen Stand steht noch aus; 5- und 7-Zoll-Tests ebenfalls.
