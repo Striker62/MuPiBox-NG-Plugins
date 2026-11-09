@@ -20,7 +20,7 @@ function validSharedInfo(info){
  if(!safeImage(info.cover)||!safePattern(info.imagePattern))throw Error('Ungültiger Bildpfad');
  if(info.layout!==undefined&&!['full-page','image-and-text'].includes(info.layout))throw Error('Ungültiges Layout');
  if(info.text!==undefined&&(typeof info.text!=='string'||!/^text\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.json$/.test(info.text)||info.text.includes('..')))throw Error('Ungültiger Textpfad');
- return {title:info.title,cover:info.cover,imagePattern:info.imagePattern,layout:info.layout||'full-page',text:info.text,pageCount:1};
+ return {title:info.title,cover:info.cover,imagePattern:info.imagePattern,layout:info.layout||'full-page',text:info.text,pageCount:1,attribution:attributionInfo(info)};
 }
 async function readSharedJSON(path){
  const blob=await shared().read(path);
@@ -108,7 +108,29 @@ async function scanSharedPages(which){
  pageFiles[which]=result;bookInfo[which].pageCount=result.length;
 }
 
-function getTotal(){return pageFiles[book].length||Math.max(1,Number(bookInfo[book].pageCount)||1)}
+function getImageTotal(which){return pageFiles[which].length||Math.max(1,Number(bookInfo[which].pageCount)||1)}
+function getTotal(){return getBookTotal(book)}
+function attributionInfo(info){
+ const text=value=>typeof value==='string'?value.trim().slice(0,500):'';
+ const fields={author:text(info.author),illustrator:text(info.illustrator),translator:text(info.translator),license:text(info.license),source:text(info.source),licenseURL:text(info.license_url)};
+ return fields.author&&fields.license?fields:null;
+}
+function isAttributionPage(){return Boolean(bookInfo[book].attribution)&&current===getImageTotal(book)+1}
+function renderAttribution(){
+ const panel=$('attribution-page'),info=bookInfo[book],credits=info.attribution;
+ panel.replaceChildren();
+ const card=document.createElement('article');card.className='attribution-card';
+ const heading=document.createElement('h2');heading.textContent=info.title;card.appendChild(heading);
+ const sub=document.createElement('p');sub.className='attribution-heading';sub.textContent='Urheber und Lizenz';card.appendChild(sub);
+ for(const [label,value] of [['Text',credits.author],['Illustrationen',credits.illustrator],['Deutsche Übersetzung',credits.translator],['Lizenz',credits.license],['Quelle',credits.source],['Lizenzadresse',credits.licenseURL]]){
+  if(!value)continue;
+  const line=document.createElement('p'),name=document.createElement('strong'),content=document.createElement('span');
+  name.textContent=label+': ';content.textContent=value;line.appendChild(name);line.appendChild(content);card.appendChild(line);
+ }
+ panel.appendChild(card);panel.hidden=false;
+ $('page').hidden=true;$('page').removeAttribute('src');$('henne-page').hidden=true;$('henne-image').removeAttribute('src');$('credits').hidden=true;$('backdrop').style.backgroundImage='none';
+}
+
 function getImagePath(which,page){
  const info=bookInfo[which],folder=bookFolder[which];
  const pattern=info.imagePattern||'images/{page:02d}.jpg';
@@ -120,6 +142,7 @@ async function loadBookInfo(which){
   const response=await fetch('books/'+bookFolder[which]+'/book.json?ts='+Date.now(),{cache:'no-store'});
   if(!response.ok)throw new Error('HTTP '+response.status);
   const info=await response.json();
+  bookInfo[which].attribution=attributionInfo(info);
   // pageCount is optional: available image files determine the real number of pages.
   if(typeof info.title==='string'&&info.title)bookInfo[which].title=info.title;
   if(typeof info.layout==='string')bookInfo[which].layout=info.layout;
@@ -132,7 +155,7 @@ function updateShelfCount(which){
  const el=null;
  // Die Regalansicht zeigt bewusst keine Seitenzahl.
 }
-function getBookTotal(which){return pageFiles[which].length||Math.max(1,Number(bookInfo[which].pageCount)||1)}
+function getBookTotal(which){return getImageTotal(which)+(bookInfo[which].attribution?1:0)}
 // Probe file existence without decoding the image. Try common image formats.
 // Stop after two consecutive missing page numbers; keep Pi 4 requests bounded.
 async function existsImage(url){
@@ -190,6 +213,8 @@ function fitHenneText(){
 }
 function show(){
  releasePage();
+ if(isAttributionPage()){renderPage('');return}
+ $('attribution-page').hidden=true;
  if(sharedBooks[book]){
   const generation=pageRender,which=book,page=current;
   $('page').removeAttribute('src');$('henne-image').removeAttribute('src');$('backdrop').style.backgroundImage='none';
@@ -200,7 +225,8 @@ function show(){
   }).catch(e=>{if(generation===pageRender)console.warn('SMB-Seite nicht geladen:',e)});
  }else renderPage(pagePath(book,current));
 }
-function renderPage(resolved){let total=getTotal();if(bookInfo[book].layout!=='image-and-text'){let src=resolved;if(src)$('page').src=src;else $('page').removeAttribute('src');$('page').hidden=false;$('henne-page').hidden=true;$('backdrop').style.backgroundImage=src?'url("'+src+'")':'none';$('credits').hidden=true;}else{$('page').hidden=true;$('henne-page').hidden=false;if(resolved)$('henne-image').src=resolved;else $('henne-image').removeAttribute('src');$('henne-image').onload=()=>requestAnimationFrame(fitHenneText);$('henne-text').innerHTML='';const textInner=document.createElement('div');textInner.id='henne-text-inner';textInner.textContent=(bookTexts[book]||(sharedBooks[book]?[]:henText))[current-1]||'';$('henne-text').appendChild(textInner);$('credits').hidden=book!=='henne';requestAnimationFrame(fitHenneText);}$('counter').textContent=current+' / '+total;$('prev').disabled=current===1;$('next').disabled=current===total;viewport.scrollTop=0;viewport.scrollLeft=0;if(bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}function zoom(on){zoomed=on;viewport.classList.toggle('zoom',on);reader.classList.toggle('zoomed',on);$('zoom').textContent=on?'⊟ Ganz':'⌕ Zoom';viewport.scrollTop=0;viewport.scrollLeft=0;if(!on&&bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}async function open(which){++shelfLoad;book=which;current=1;shelf.hidden=true;reader.hidden=false;reader.classList.toggle('henne',bookInfo[book].layout==='image-and-text');$('reader-title').textContent=bookInfo[which].title;zoom(false);show();try{await loadBookInfo(which);await scanPages(which)}catch(e){console.warn('Buch nicht vollständig geladen:',which,e)}if(book!==which||reader.hidden)return;$('reader-title').textContent=bookInfo[which].title;show()}
+function renderPage(resolved){let total=getTotal();if(isAttributionPage()){renderAttribution();updatePageControls();return}if(bookInfo[book].layout!=='image-and-text'){let src=resolved;if(src)$('page').src=src;else $('page').removeAttribute('src');$('page').hidden=false;$('henne-page').hidden=true;$('backdrop').style.backgroundImage=src?'url("'+src+'")':'none';$('credits').hidden=true;}else{$('page').hidden=true;$('henne-page').hidden=false;if(resolved)$('henne-image').src=resolved;else $('henne-image').removeAttribute('src');$('henne-image').onload=()=>requestAnimationFrame(fitHenneText);$('henne-text').innerHTML='';const textInner=document.createElement('div');textInner.id='henne-text-inner';textInner.textContent=(bookTexts[book]||(sharedBooks[book]?[]:henText))[current-1]||'';$('henne-text').appendChild(textInner);$('credits').hidden=book!=='henne';requestAnimationFrame(fitHenneText);}updatePageControls()}
+function updatePageControls(){const total=getTotal();$('counter').textContent=current+' / '+total;$('prev').disabled=current===1;$('next').disabled=current===total;viewport.scrollTop=0;viewport.scrollLeft=0;if(bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}function zoom(on){zoomed=on;viewport.classList.toggle('zoom',on);reader.classList.toggle('zoomed',on);$('zoom').textContent=on?'⊟ Ganz':'⌕ Zoom';viewport.scrollTop=0;viewport.scrollLeft=0;if(!on&&bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}async function open(which){++shelfLoad;book=which;current=1;shelf.hidden=true;reader.hidden=false;reader.classList.toggle('henne',bookInfo[book].layout==='image-and-text');$('reader-title').textContent=bookInfo[which].title;zoom(false);show();try{await loadBookInfo(which);await scanPages(which)}catch(e){console.warn('Buch nicht vollständig geladen:',which,e)}if(book!==which||reader.hidden)return;$('reader-title').textContent=bookInfo[which].title;show()}
 async function loadShelf(){
  const generation=++shelfLoad;
  const holder=document.querySelector('#shelf .books');
@@ -225,7 +251,7 @@ async function loadShelf(){
   for(const entry of entries.filter(Boolean)){
    const {folder,info,cover}=entry;
    bookFolder[folder]=folder;
-   bookInfo[folder]={title:info.title,pageCount:1,imagePattern:info.imagePattern||'images/{page:02d}.jpg',layout:info.layout||'full-page'};
+   bookInfo[folder]={title:info.title,pageCount:1,imagePattern:info.imagePattern||'images/{page:02d}.jpg',layout:info.layout||'full-page',attribution:attributionInfo(info)};
    pageFiles[folder]=[];
    shelfEntries.push({folder,title:info.title,cover});
   }

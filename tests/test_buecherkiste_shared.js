@@ -11,7 +11,8 @@ function setup(mode='ok'){
  function element(){return {hidden:false,children:[],style:{setProperty(){},backgroundImage:''},classList:{toggle(){}},addEventListener(){},setAttribute(k,v){this[k]=v},removeAttribute(k){delete this[k]},appendChild(c){this.children.push(c)},replaceChildren(){this.children=[]},isConnected:true}}
  function get(id){if(!nodes.has(id))nodes.set(id,element());return nodes.get(id)}
  get('reader').hidden=true;
- const info={title:'Gleicher Titel',cover:'images/01.jpg',imagePattern:'images/{page:02d}.jpg',layout:'full-page'};
+ const appRoot=path.join(__dirname,'../examples/Buecherkiste');
+ const info=mode==='attribution'?JSON.parse(fs.readFileSync(path.join(appRoot,'books/henne-und-adler/book.json'),'utf8')):{title:'Gleicher Titel',cover:'images/01.jpg',imagePattern:'images/{page:02d}.jpg',layout:'full-page'};
  const shared={
   async read(p){calls.push(p);if(mode==='denied')throw Error('Permission denied');
    if(p==='books/index.json'){
@@ -31,13 +32,20 @@ function setup(mode='ok'){
     const correctBase=mode==='root-books'?p==='':p==='books';
     return {entries:discover&&correctBase?['ole','henne-und-adler1'].map(name=>({name,isDir:true})).concat([{name:'../escape',isDir:true},{name:'not-a-book',isDir:false}]):[],truncated:false};
    }
-   return {entries:['01.jpg','02.jpg','03.png'].map(name=>({name,isDir:false})),truncated:false};
+   const imageNames=mode==='attribution'?fs.readdirSync(path.join(appRoot,'books/henne-und-adler/images')):['01.jpg','02.jpg','03.png'];
+   return {entries:imageNames.map(name=>({name,isDir:false})),truncated:false};
   }
  };
  const context={Blob,Uint8Array,console:{warn(){}},URL:{createObjectURL(){const u='blob:'+ ++next;urls.add(u);return u},revokeObjectURL(u){urls.delete(u);revoked.push(u)}},
   window:{innerWidth:800,innerHeight:480,MuPiBoxSDK:mode==='absent'?undefined:{shared},addEventListener(n,f){events[n]=f}},
   document:{getElementById:get,querySelector:get,createElement:element,documentElement:element(),addEventListener(){}},
-  requestAnimationFrame(){},fetch:async p=>({ok:true,json:async()=>p.startsWith('books/index')?{books:['ole']}:{...info}})};
+  requestAnimationFrame(){},fetch:async p=>{
+   if(mode==='attribution'){
+    const file=path.join(appRoot,p.split('?')[0]);
+    return {ok:fs.existsSync(file),json:async()=>JSON.parse(fs.readFileSync(file,'utf8'))};
+   }
+   return {ok:true,json:async()=>p.startsWith('books/index')?{books:['ole']}:{...info}};
+  }};
  // Expose lexical app functions only in this test VM, without changing shipped code.
  const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={loadShelf,loadSharedShelf,scanPages,open,show,turn,validSharedInfo,sharedImage,releaseCovers,releasePage,renderShelf,bookInfo,pageFiles,bookTexts,sharedBooks,get entries(){return shelfEntries},get current(){return current}};})();`);
  vm.runInNewContext(exposed,context);
@@ -59,6 +67,27 @@ test('SMB books append with separate identities and titles may repeat',async()=>
  h.get('back').onclick();await tick();await tick();
  assert.ok(!h.urls.has(h.get('page').src));
  h.events.pagehide();assert.equal(h.urls.size,0);
+});
+test('Henne attribution is the eleventh page for bundled and SMB copies; Ole stays at sixteen',async()=>{
+ const h=setup('attribution');await tick();await tick();
+ for(const key of ['henne-und-adler','smb:henne-und-adler1']){
+  await h.app.open(key);await tick();
+  assert.equal(h.get('counter').textContent,'1 / 11');
+  h.app.turn(9);h.app.turn(1);await tick();
+  assert.equal(h.get('counter').textContent,'11 / 11');
+  assert.equal(h.get('attribution-page').hidden,false);
+  assert.equal(h.get('page').hidden,true);assert.equal(h.get('henne-page').hidden,true);
+  assert.equal(h.get('next').disabled,true);
+  const card=h.get('attribution-page').children[0];
+  const text=card.children.flatMap(node=>node.children.length?node.children.map(c=>c.textContent):[node.textContent]).join(' ');
+  for(const value of ['Ann Nduku','Wiehan de Jager','Anna Westpfahl','CC BY 3.0','https://creativecommons.org/licenses/by/3.0/'])assert.ok(text.includes(value));
+  if(key.startsWith('smb:'))assert.ok(!h.calls.some(p=>p.endsWith('/12.jpg')));
+  h.app.turn(-1);await tick();
+  assert.equal(h.get('counter').textContent,'10 / 11');assert.equal(h.get('attribution-page').hidden,true);
+  assert.equal(h.get('henne-page').hidden,false);
+ }
+ await h.app.open('ole');await tick();assert.equal(h.get('counter').textContent,'1 / 16');
+ h.app.turn(100);assert.equal(h.get('counter').textContent,'16 / 16');assert.equal(h.get('attribution-page').hidden,true);
 });
 for(const mode of ['denied','absent','unsafe'])test(mode+' preserves bundled shelf',async()=>{
  const h=setup(mode);await tick();await tick();assert.equal(h.app.entries.length,1);

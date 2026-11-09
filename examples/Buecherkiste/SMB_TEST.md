@@ -59,3 +59,8 @@ simulierter Test ersetzt nicht den Test auf dem MuPiBox-Touchscreen.
 ## Automatische Ordnererkennung ab 0.2.21
 
 Buchordner mit book.json werden direkt unter CommunityApps/community.buecherkiste/ und unter dessen books/-Ordner erkannt. Eine index.json ist nicht erforderlich. Pro SMB-Bereich werden insgesamt maximal 60 Buchordner berücksichtigt; es erfolgt keine rekursive Suche. Gleichnamige Ordner an beiden Orten bleiben getrennte Bücher. Zum Aktualisieren die App neu starten oder aus einem Buch ins Regal zurückkehren.
+
+## Urheberseite ab 0.2.22
+
+Henne und Adler erhält eine zusätzliche letzte Seite (11 / 11) mit Textautorin, Illustrator, Übersetzung, Quelle und Lizenz. Die Angaben werden aus book.json gelesen und als reiner Text angezeigt. Dies gilt auch für SMB-Kopien, sofern dort die vorhandenen Angaben author und license enthalten sind. Es muss keine zusätzliche Bilddatei kopiert werden. Bücher ohne diese Angaben, insbesondere Ole, bekommen keine zusätzliche Seite. Vorwärts und rückwärts zwischen Seite 10 und 11, Zoom und Rückkehr ins Regal auf der MuPiBox prüfen.
+
