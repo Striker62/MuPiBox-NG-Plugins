@@ -107,3 +107,7 @@ Zwei durch die spätere 0.2.17-Gestaltung mit gleicher Spezifität und `!importa
 
 - Weitere 169 Zeichen entfernt; kumulativ **1461 Zeichen**.
 - Noch **nicht** auf der MuPiBox getestet. Vor weiteren Änderungen den neuesten grünen CI-Lauf und dessen Paket auf 10,1 Zoll prüfen.
+
+## Gerätetest nach fünfter Bereinigung – 2026-11-09
+
+Der Nutzer hat das Paket aus dem richtigen Bücherkiste-Workflow auf dem aktuellen **10,1-Zoll-Monitor** geprüft und meldet: **„sieht gut aus“**. Die fünfte CSS-Bereinigung (Commit `0da41d2`) gilt damit für diese Anzeige als visuell bestätigt. 5- und 7-Zoll-Darstellung bleiben ungetestet.
