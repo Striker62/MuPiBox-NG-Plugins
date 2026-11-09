@@ -84,3 +84,14 @@ Drei historische `#shelf .books`-Deklarationen `left:10%!important;right:10%!imp
 - Kumulierte Reduktion seit Beginn: 849 Zeichen.
 - CSS-Bereinigung **noch nicht vollständig**; weitere historische Overrides benötigen eine Prüfung der tatsächlichen Kaskade.
 - Nach diesem Commit sind CI und Sichtprüfung auf dem Zielgerät erneut erforderlich.
+
+
+## Vierte Bereinigung – Commit `635b013` (2026-11-09)
+
+- Veralteten `inset:12% 14% 15%!important`-Block aus 0.2.15 entfernt.
+- In 0.2.16 die später durch 0.2.17 überschriebenen Regeln für Hintergrundbild, Regal-Inset, dekorative Pseudoelemente, Header und `z-index` entfernt.
+- `filter:none!important` und `backdrop-filter:none!important` für Buchcover erhalten.
+- Weitere 443 Zeichen entfernt; insgesamt seit Beginn **1292 Zeichen** weniger CSS.
+- Die aktuelle 0.2.17/0.2.19-Darstellung und responsive Regeln sind nicht absichtlich geändert worden.
+- **Offen:** GitHub-CI-Lauf und Sichtprüfung auf der MuPiBox für diesen Commit. Das erfolgreiche Testergebnis des vorherigen Pakets deckt diese Änderung noch nicht ab.
+- Responsive Zielvorgabe: dynamische Darstellung für 5, 7 und 10,1 Zoll; Größen sind keine festen Pixelauflösungen.
