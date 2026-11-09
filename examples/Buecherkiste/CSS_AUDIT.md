@@ -74,3 +74,13 @@ Fünf frühere, wortgleich später erneut definierte CSS-Regeln entfernt:
 - `#shelf .books .book-slot .book span` mit `display:none!important`
 
 340 Zeichen weniger CSS. Die späteren gleichlautenden Definitionen wurden beibehalten. Dies ist **nur die konservative Entfernung identischer Duplikate**, noch keine umfassende Konsolidierung der historischen Regalregeln. Laufzeit-/Screenshot-Vergleich und CI-Status sind noch nicht bestätigt.
+
+
+## Dritte Bereinigung – Commit `d62eaa4` (2026-11-09)
+
+Drei historische `#shelf .books`-Deklarationen `left:10%!important;right:10%!important` in `@media(max-width:540px)` entfernt. Die aktuell spätere `0.2.17`-Regel definiert für dieselbe Bildschirmbreite `inset:13% 11% 10%!important`, wodurch die älteren horizontalen 10-%-Abstände überschrieben werden. Andere Regeln in den betreffenden Media-Queries blieben erhalten.
+
+- Reduktion: 212 Zeichen CSS.
+- Kumulierte Reduktion seit Beginn: 849 Zeichen.
+- CSS-Bereinigung **noch nicht vollständig**; weitere historische Overrides benötigen eine Prüfung der tatsächlichen Kaskade.
+- Nach diesem Commit sind CI und Sichtprüfung auf dem Zielgerät erneut erforderlich.
