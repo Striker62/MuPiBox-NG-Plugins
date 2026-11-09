@@ -220,7 +220,6 @@
 @media(max-height:315px){#shelf .books::before{display:none!important;}#shelf .books .book-slot .book img{max-height:88%!important;}}
 
 /* 0.2.13: fixierter Hintergrund, Regale und Bücher passen sich der Anzeige an */
-#shelf .books .book-slot .book{touch-action:pan-y;}
 #shelf .books .book-slot .book img{user-select:none;-webkit-user-drag:none;}
 @media(max-width:540px){#shelf .books .book-slot .book img{max-height:89%!important;}}
 
