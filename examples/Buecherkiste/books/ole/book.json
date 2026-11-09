@@ -1,8 +1,8 @@
 {
   "id": "ole",
   "title": "Ole und der verschwundene Knopf",
-  "cover": "images/01.png",
-  "imagePattern": "images/{page:02d}.png",
+  "cover": "images/01.jpg",
+  "imagePattern": "images/{page:02d}.jpg",
   "firstPage": 1,
   "pageCount": 16,
   "layout": "full-page",
