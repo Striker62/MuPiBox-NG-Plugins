@@ -7,7 +7,9 @@
   "version": "0.2.19",
   "runtime": "web",
   "entry": "index.html",
-  "permissions": [],
+  "permissions": [
+    "shared-assets"
+  ],
   "display": {
     "orientation": "landscape",
     "minWidth": 320,
