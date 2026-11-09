@@ -239,7 +239,7 @@
 
 
 /* 0.2.17 – exakt das vom Nutzer gewählte Hintergrundbild; keine zusätzlichen Bretter */
-#shelf{padding:0!important;background:#6e4229 url("Fröhlicher Pauli Maulwurf in der Bibliothek.png") center center/100% 100% no-repeat!important;}
+#shelf{padding:0!important;background:#6e4229 url("bibliothek.png") center center/100% 100% no-repeat!important;}
 #shelf .shelf-header{background:transparent!important;box-shadow:none!important;pointer-events:none;}
 #shelf .shelf-header h1{visibility:hidden!important;}
 #shelf .books{
