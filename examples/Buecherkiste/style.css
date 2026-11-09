@@ -224,9 +224,6 @@
 #shelf .books .book-slot .book img{user-select:none;-webkit-user-drag:none;}
 @media(max-width:540px){#shelf .books .book-slot .book img{max-height:89%!important;}}
 
-/* 0.2.14: Buchladen mit leeren Stellflächen, echte Buchcover bleiben dynamisch */
-#shelf .books::before,#shelf .books::after{height:12px!important;background:linear-gradient(#f7c98c 0%,#bb763a 36%,#7a3d1c 78%,#3d2114 100%)!important;box-shadow:0 6px 8px #160d09aa!important;}
-
 /* 0.2.15: Dekorative Regale im Hintergrund, keine doppelten CSS-Bretter. */
 
 
