@@ -34,13 +34,13 @@
     {
       "id": "community.mupi-kruemelwurm",
       "name": "MuPi Krümelwurm",
-      "description": "Garten- und rot-blaues Neon-Grid-Design, Zwei-Hand-Touchsteuerung, eigener Zurück-Button, optimiertes Cover und Vollbild.",
+      "description": "Krümelwurm mit weiß-blauem Tron-Neon, Gartenmodus, vier speicherbaren Tempostufen und beidhändiger Vollbild-Touchsteuerung.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.2.0",
-      "releaseTag": "v0.1.0-preview.13",
+      "version": "0.2.1",
+      "releaseTag": "v0.1.0-preview.15",
       "asset": "crumbworm.mupiapp",
-      "sha256": "ec8a9759ee14f4d63b6327b22638d408c752f57c264f5b9c8638a79caddfb247",
+      "sha256": "4b512369dc8ac2f027a8202dcc827e61f1404a6fb1f2961ee1387f82077c8116",
       "permissions": [
         "storage",
         "controller"
