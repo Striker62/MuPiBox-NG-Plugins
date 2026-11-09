@@ -62,3 +62,15 @@ Eine einfache Gegenprobe der Selektorbezeichner gegen `index.html` und `app.js` 
 - **Unverändert:** Alle aktuellen `.book`- und `.book-slot`-Regeln, Media-Queries, Zoom- und Buchrücken-Effekte.
 - **Noch ausstehend:** CI-Ergebnis kontrollieren, visuelle Prüfung auf 800×480, vollständige Konsolidierung der mehrfachen Regal-Overrides.
 - Dies ist eine erste risikoarme Teilbereinigung, **noch keine vollständige Regal-CSS-Konsolidierung**.
+
+
+## Zweite Bereinigung – Commit `95230c7` (2026-11-09)
+
+Fünf frühere, wortgleich später erneut definierte CSS-Regeln entfernt:
+- `#shelf` mit `buchladen-leere-regale.jpg`-Hintergrundangaben
+- `#shelf .books::before,#shelf .books::after` mit `display:none!important`
+- `#shelf .books::-webkit-scrollbar` mit `display:none`
+- `#shelf .books .book-slot .book::after` mit `display:none!important`
+- `#shelf .books .book-slot .book span` mit `display:none!important`
+
+340 Zeichen weniger CSS. Die späteren gleichlautenden Definitionen wurden beibehalten. Dies ist **nur die konservative Entfernung identischer Duplikate**, noch keine umfassende Konsolidierung der historischen Regalregeln. Laufzeit-/Screenshot-Vergleich und CI-Status sind noch nicht bestätigt.
