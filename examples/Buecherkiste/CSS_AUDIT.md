@@ -153,3 +153,7 @@ Nach Umbenennung des hochgeladenen Hintergrundbildes zu `bibliothek.png` und Anp
 ## Neunte Bereinigung – Commit `5e09c53` (2026-11-09)
 
 Entfernt wurde die doppelte Altregel `#shelf .books .book-slot .book{touch-action:pan-y;}` aus dem Abschnitt 0.2.13. Die identische Deklaration bleibt im 0.2.17-Block erhalten. **52 Zeichen** entfernt, kumulativ **2049 Zeichen**. Der aktuelle Bibliothekshintergrund bleibt unverändert. Gerätetest für diesen Stand steht noch aus; 5- und 7-Zoll-Tests ebenfalls.
+
+### Gerätetest der neunten Bereinigung – 2026-11-09
+
+Der Nutzer bestätigt nach dem erneuten Test auf der MuPiBox: **„immer noch allles ok und funktioniert“**. Die neunte Bereinigung (`5e09c53`) ist damit auf dem aktuell verwendeten 10,1-Zoll-Monitor erfolgreich getestet. Die Tests für 5 und 7 Zoll stehen noch aus.
