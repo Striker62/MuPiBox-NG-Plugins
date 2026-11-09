@@ -27,3 +27,29 @@ Quellen: `examples/Buecherkiste/style.css` (304 Zeilen, ca. 22,6 KB, ca. 203 Reg
 3. CSS in separatem Commit konsolidieren, ohne die Darstellung zu ändern.
 4. Auf MuPiBox bei 800×480 testen: Regal, beide Bücher, Blättern, Zoom, kleine Viewports.
 5. Erst nach Freigabe mit `main` zusammenführen.
+
+
+## Vertiefte statische Bestandsaufnahme (2026-11-09)
+
+Eine zusätzliche automatisierte Auswertung der aktuellen `style.css` hat **187 einfache Selektor-/Deklarationsblöcke** erfasst (verschachtelte Media-Queries und kompakt geschriebene Regeln begrenzen die Genauigkeit). Die folgenden Werte sind *Vorkommen*, nicht nachgewiesene Fehler:
+
+| Selektor | Vorkommen |
+| --- | ---: |
+| `#shelf .books` | 19 |
+| `#shelf` | 12 |
+| `#shelf .books .book-slot .book img` | 12 |
+| `#shelf .books .book` | 7 |
+| `#shelf .books .book span` | 6 |
+| `#shelf .books .book img` | 5 |
+| `#shelf .books .book::before` | 5 |
+| `#reader.henne:not(.zoomed) #henne-text` | 4 |
+
+Eine einfache Gegenprobe der Selektorbezeichner gegen `index.html` und `app.js` lieferte **keine sicher nachgewiesenen verwaisten Regeln**. Dieses Ergebnis ist ausdrücklich *kein Beweis*, dass alle Regeln verwendet werden: HTML wird zur Laufzeit erzeugt und die Auswertung ist kein vollständiger CSS-Parser.
+
+**Konkrete nächste manuelle Prüfung:**
+1. Frühere Einzelbuch-Darstellung `#book` gegen die aktuell erzeugten DOM-Elemente prüfen.
+2. Die Regal-Regeln nach Basiskaskade und jeder `@media`-Bedingung getrennt zusammenführen.
+3. `!important`-Regeln und CSS-Variablen für Buchrücken nur nach optischem Vergleich ändern.
+4. Für dynamische Zustände Regal / Buch / Zoom / Henne auf dem Zielgerät testen.
+
+**Status:** Analyse erweitert; keine Änderungen an `style.css`, `app.js` oder `index.html`. Die automatische GitHub-Action prüft Syntax und Paketierung, aber noch keine vollständige CSS-Nutzungsabdeckung.
