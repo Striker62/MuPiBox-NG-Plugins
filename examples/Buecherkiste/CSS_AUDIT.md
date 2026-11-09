@@ -111,3 +111,11 @@ Zwei durch die spätere 0.2.17-Gestaltung mit gleicher Spezifität und `!importa
 ## Gerätetest nach fünfter Bereinigung – 2026-11-09
 
 Der Nutzer hat das Paket aus dem richtigen Bücherkiste-Workflow auf dem aktuellen **10,1-Zoll-Monitor** geprüft und meldet: **„sieht gut aus“**. Die fünfte CSS-Bereinigung (Commit `0da41d2`) gilt damit für diese Anzeige als visuell bestätigt. 5- und 7-Zoll-Darstellung bleiben ungetestet.
+
+
+## Sechste Bereinigung – Commit `2721a5c` (2026-11-09)
+
+Alte Größenbegrenzungen für `#shelf .books .book-slot .book img` aus 0.2.14 entfernt, einschließlich der damaligen `max-width:540px`-Sonderregel. Die späteren gleich spezifischen `!important`-Regeln aus 0.2.15 und 0.2.17 überschreiben diese Werte; die aktuelle 0.2.17-Regel setzt `max-height:79%`, `max-width:74%` und bei maximal 540 px Breite `max-width:79%`.
+
+- Weitere **172 Zeichen** entfernt; insgesamt **1633 Zeichen** seit Beginn.
+- GitHub-CI und Gerätetest für diesen Commit noch nicht bestätigt. Auf dem 10,1-Zoll-Monitor prüfen; 5 und 7 Zoll bleiben als spätere Testziele bestehen.
