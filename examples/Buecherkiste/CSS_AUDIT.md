@@ -95,3 +95,7 @@ Drei historische `#shelf .books`-Deklarationen `left:10%!important;right:10%!imp
 - Die aktuelle 0.2.17/0.2.19-Darstellung und responsive Regeln sind nicht absichtlich geändert worden.
 - **Offen:** GitHub-CI-Lauf und Sichtprüfung auf der MuPiBox für diesen Commit. Das erfolgreiche Testergebnis des vorherigen Pakets deckt diese Änderung noch nicht ab.
 - Responsive Zielvorgabe: dynamische Darstellung für 5, 7 und 10,1 Zoll; Größen sind keine festen Pixelauflösungen.
+
+## Gerätetest bestätigt – 2026-11-09
+
+Der Nutzer hat das aktuelle CI-Testpaket auf der MuPiBox mit **10,1-Zoll-Monitor** installiert und bestätigt: **funktioniert**. Die vorherigen CSS-Bereinigungen einschließlich Commit `635b013` sind damit auf dem aktuellen Bildschirm praktisch getestet. Die GitHub-Actions-Prüfungen waren ebenfalls grün. Tests auf **5 und 7 Zoll** folgen später; deren Darstellung ist noch nicht bestätigt.
