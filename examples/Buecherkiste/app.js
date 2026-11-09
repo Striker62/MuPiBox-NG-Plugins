@@ -46,16 +46,32 @@ window.addEventListener('pagehide',()=>{++shelfLoad;releasePage();releaseCovers(
 async function loadSharedShelf(generation){
  if(typeof shared()?.read!=='function'||typeof shared()?.list!=='function')return;
  try{
-  const data=await readSharedJSON('books/index.json');
-  if(!Array.isArray(data?.books))throw Error('books muss ein Array sein');
-  const folders=[...new Set(data.books.filter(n=>typeof n==='string'&&/^[a-zA-Z0-9_-]{1,80}$/.test(n)))].slice(0,60);
-  const entries=[];
-  // Sequential metadata reads keep bridge load bounded on the Raspberry Pi.
-  for(const folder of folders){
+  const folders=new Map(),validFolder=n=>typeof n==='string'&&/^[a-zA-Z0-9_-]{1,80}$/.test(n);
+  const add=(base,name)=>{if(validFolder(name)&&folders.size<60)folders.set(base+name,{path:base+name,key:(base?'smb:':'smb-root:')+name})};
+  // The index is optional. Also discover books in books/ and directly in the
+  // app's shared area; never descend recursively or leave the SDK namespace.
+  try{
+   const data=await readSharedJSON('books/index.json');
+   if(!Array.isArray(data?.books))throw Error('books muss ein Array sein');
+   for(const name of data.books)add('books/',name);
+  }catch(e){console.warn('Optionale SMB-Bücherliste nicht verfügbar:',e)}
+  for(const base of ['books/','']){
    if(generation!==shelfLoad)return;
    try{
-    const info=validSharedInfo(await readSharedJSON('books/'+folder+'/book.json'));
-    entries.push({folder:'smb:'+folder,sourceFolder:folder,title:info.title,cover:info.cover,info});
+    const listing=await shared().list(base?'books':'');
+    for(const entry of listing.entries){
+     if(entry?.isDir===true&&(base||entry.name!=='books'))add(base,entry.name);
+    }
+    if(listing.truncated)console.warn('SMB-Buchverzeichnis wurde gekürzt');
+   }catch(e){console.warn('SMB-Buchverzeichnis nicht verfügbar:',base,e)}
+  }
+  const entries=[];
+  // Sequential metadata reads keep bridge load bounded on the Raspberry Pi.
+  for(const {path:folder,key} of folders.values()){
+   if(generation!==shelfLoad)return;
+   try{
+    const info=validSharedInfo(await readSharedJSON(folder+'/book.json'));
+    entries.push({folder:key,sourceFolder:folder,title:info.title,cover:info.cover,info});
    }catch(e){console.warn('SMB-Buch übersprungen:',folder,e)}
   }
   if(generation!==shelfLoad||!reader.hidden)return;
@@ -71,22 +87,22 @@ async function loadSharedShelf(generation){
 async function loadSharedBook(which){
  const folder=sharedBooks[which],info=bookInfo[which];
  if(info.text){try{
-  const data=await readSharedJSON('books/'+folder+'/'+info.text);
+  const data=await readSharedJSON(folder+'/'+info.text);
   if(Array.isArray(data?.pages))bookTexts[which]=data.pages.slice(0,MAX_PAGES).map(p=>typeof p==='string'?p:typeof p?.text==='string'?p.text:'');
  }catch(e){console.warn('SMB-Buchtext nicht geladen:',e)}}
 }
 async function scanSharedPages(which){
  const folder=sharedBooks[which];
- const listing=await shared().list('books/'+folder+'/images');
+ const listing=await shared().list(folder+'/images');
  if(listing.truncated)throw Error('Bildverzeichnis ist zu groß');
  const names=new Set(listing.entries.filter(e=>!e.isDir&&typeof e.name==='string').map(e=>'images/'+e.name));
  const result=[];let misses=0;
  for(let p=1;p<=MAX_PAGES&&misses<2;p++){
-  const original=getImagePath(which,p),relative=original.slice(('books/'+folder+'/').length);
+  const original=getImagePath(which,p),relative=original.slice((folder+'/').length);
   const root=relative.replace(/\.(jpe?g|png)$/i,'');
   const candidates=[relative,...(root!==relative?['jpg','jpeg','png','JPG','JPEG','PNG'].map(ext=>root+'.'+ext):[])];
   const found=candidates.find(path=>safeImage(path)&&names.has(path));
-  if(found){result.push('books/'+folder+'/'+found);misses=0}else misses++;
+  if(found){result.push(folder+'/'+found);misses=0}else misses++;
  }
  if(!result.length)throw Error('Keine SMB-Buchseiten gefunden');
  pageFiles[which]=result;bookInfo[which].pageCount=result.length;
@@ -96,7 +112,7 @@ function getTotal(){return pageFiles[book].length||Math.max(1,Number(bookInfo[bo
 function getImagePath(which,page){
  const info=bookInfo[which],folder=bookFolder[which];
  const pattern=info.imagePattern||'images/{page:02d}.jpg';
- return 'books/'+folder+'/'+pattern.replace(/\{(page|page_plus_one)(?::0?(\d+)d)?\}/g,(_,kind,width)=>String(page+(kind==='page_plus_one'?1:0)).padStart(Number(width)||1,'0'));
+ return (sharedBooks[which]||'books/'+folder)+'/'+pattern.replace(/\{(page|page_plus_one)(?::0?(\d+)d)?\}/g,(_,kind,width)=>String(page+(kind==='page_plus_one'?1:0)).padStart(Number(width)||1,'0'));
 }
 async function loadBookInfo(which){
  if(sharedBooks[which])return loadSharedBook(which);
@@ -240,7 +256,7 @@ function renderShelf(){
   const entry=slice[i];
   if(entry){
    const btn=document.createElement('button');btn.className='book';btn.type='button';btn.setAttribute('aria-label',entry.title);btn.title=entry.title;
-   const img=document.createElement('img');if(!sharedBooks[entry.folder])img.src='books/'+entry.folder+'/'+entry.cover;else sharedImage('books/'+sharedBooks[entry.folder]+'/'+entry.cover).then(url=>{if(generation!==coverRender){URL.revokeObjectURL(url);return}coverURLs.add(url);img.src=url}).catch(e=>console.warn('SMB-Cover nicht geladen:',e));img.alt=entry.title;img.loading='eager';
+   const img=document.createElement('img');if(!sharedBooks[entry.folder])img.src='books/'+entry.folder+'/'+entry.cover;else sharedImage(sharedBooks[entry.folder]+'/'+entry.cover).then(url=>{if(generation!==coverRender){URL.revokeObjectURL(url);return}coverURLs.add(url);img.src=url}).catch(e=>console.warn('SMB-Cover nicht geladen:',e));img.alt=entry.title;img.loading='eager';
    // 0.2.19: Buchruecken exakt an die sichtbare Covergroesse anpassen.
    // Keine feste Hoehe, keine braunen Streifen ueber/unter dem Buch.
    const spineColors=['#c82132','#1974d2','#23944e','#8a4bb9','#d9a31a','#008fae'];

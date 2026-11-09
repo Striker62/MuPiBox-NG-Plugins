@@ -14,13 +14,25 @@ function setup(mode='ok'){
  const info={title:'Gleicher Titel',cover:'images/01.jpg',imagePattern:'images/{page:02d}.jpg',layout:'full-page'};
  const shared={
   async read(p){calls.push(p);if(mode==='denied')throw Error('Permission denied');
-   if(p==='books/index.json')return new Blob([JSON.stringify({books:['ole','henne-und-adler1','../escape','constructor']})]);
+   if(p==='books/index.json'){
+    if(['no-index','root-books'].includes(mode))throw Error('File missing');
+    if(mode==='broken-index')return new Blob(['{broken']);
+    return new Blob([JSON.stringify({books:['ole','henne-und-adler1','../escape','constructor']})]);
+   }
    if(p.endsWith('book.json'))return new Blob([JSON.stringify(mode==='unsafe'?{...info,imagePattern:'../secret.jpg'}:info)]);
    if(p.endsWith('pages.json'))return new Blob([JSON.stringify({pages:[{text:'<script>content</script>'}]})]);
    if(mode==='bad-image')return new Blob(['<svg onload="alert(1)">']);
    return new Blob([new Uint8Array([255,216,255,0])]);
   },
-  async list(p){calls.push(p);return {entries:['01.jpg','02.jpg','03.png'].map(name=>({name,isDir:false})),truncated:false}}
+  async list(p){
+   calls.push(p);if(mode==='denied')throw Error('Permission denied');
+   if(p==='books'||p===''){
+    const discover=['no-index','broken-index','root-books','duplicates'].includes(mode);
+    const correctBase=mode==='root-books'?p==='':p==='books';
+    return {entries:discover&&correctBase?['ole','henne-und-adler1'].map(name=>({name,isDir:true})).concat([{name:'../escape',isDir:true},{name:'not-a-book',isDir:false}]):[],truncated:false};
+   }
+   return {entries:['01.jpg','02.jpg','03.png'].map(name=>({name,isDir:false})),truncated:false};
+  }
  };
  const context={Blob,Uint8Array,console:{warn(){}},URL:{createObjectURL(){const u='blob:'+ ++next;urls.add(u);return u},revokeObjectURL(u){urls.delete(u);revoked.push(u)}},
   window:{innerWidth:800,innerHeight:480,MuPiBoxSDK:mode==='absent'?undefined:{shared},addEventListener(n,f){events[n]=f}},
@@ -64,5 +76,17 @@ test('outdated cover and page requests release their URLs',async()=>{
  assert.equal(h.urls.size,3);
  h.app.show();h.app.releasePage();h.app.releaseCovers();await tick();
  assert.equal(h.urls.size,0);
+});
+for(const mode of ['no-index','broken-index','root-books','duplicates'])test(mode+' discovers directories without losing bundled books',async()=>{
+ const h=setup(mode);await tick();await tick();
+ assert.equal(h.app.entries.length,mode==='broken-index'||mode==='no-index'||mode==='root-books'?3:4);
+ const key=mode==='root-books'?'smb-root:ole':'smb:ole';
+ assert.equal(h.app.entries.filter(e=>e.folder===key).length,1);
+ assert.ok(!h.calls.some(p=>p.includes('..')));
+ await h.app.open(key);await tick();
+ assert.equal(h.app.pageFiles[key].length,3);
+ assert.ok(h.calls.includes((mode==='root-books'?'':'books/')+'ole/images/01.jpg'));
+ assert.ok(h.get('page').src.startsWith('blob:'));
+ h.events.pagehide();assert.equal(h.urls.size,0);
 });
 

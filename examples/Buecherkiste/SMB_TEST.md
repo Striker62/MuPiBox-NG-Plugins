@@ -1,4 +1,4 @@
-# Bücherkiste 0.2.20: zusätzliche SMB-Bücher
+# Bücherkiste 0.2.21: zusätzliche SMB-Bücher
 
 Die eingebauten Bücher bleiben erhalten. SMB-Bücher werden zusätzlich geladen,
 auch bei gleichen Titeln, Ordnernamen oder Buch-IDs. Darstellung und CSS bleiben
@@ -7,11 +7,11 @@ ein Hintergrund-Watcher ist in diesem ersten Schritt nicht aktiviert.
 
 ## MuPiBox-Test
 
-1. Das Paket `buecherkiste-0.2.20-smb.mupiapp` im Bereich Community-Apps als
+1. Das Paket `buecherkiste-0.2.21-smb.mupiapp` im Bereich Community-Apps als
    Update installieren. Die App-ID bleibt `community.buecherkiste`.
 2. Die bestehende Berechtigung `shared-assets` am lokalen Touchscreen freigeben.
    Es werden keine weiteren Berechtigungen angefordert.
-3. Unter `Q:\CommunityApps\community.buecherkiste\books\index.json` muss stehen:
+3. Optional kann unter `Q:\CommunityApps\community.buecherkiste\books\index.json` stehen:
 
    ```json
    {"books":["ole1","henne-und-adler1"]}
@@ -26,7 +26,7 @@ ein Hintergrund-Watcher ist in diesem ersten Schritt nicht aktiviert.
 6. Beide Ole-Bücher bis Seite 16 durchblättern; beide Henne-Bücher inklusive
    Text prüfen. Vorwärts, rückwärts, Zoom und Rückkehr ins Regal testen.
 7. Testweise nur die SMB-`index.json` umbenennen und ins Regal zurückkehren:
-   die zwei eingebauten Bücher müssen weiterhin funktionieren. Anschließend
+   die eingebauten und automatisch erkannten SMB-Bücher müssen weiterhin funktionieren. Anschließend
    die Datei zurückbenennen und erneut ins Regal wechseln.
 8. Einen ungültigen SMB-Buchordner in die Liste aufnehmen: andere Bücher
    müssen weiterhin erscheinen. Den Eintrag nach dem Test entfernen.
@@ -55,3 +55,7 @@ Berechtigung, ungültige Metadaten, Rasterbildsignaturen, Seitenwechsel und
 Objekt-URL-Lebensdauer mit simuliertem Host. Der Audit-Workflow führt diese
 Tests sowie Paketvalidierung, Größenprüfung und ClamAV aus. Ein erfolgreicher
 simulierter Test ersetzt nicht den Test auf dem MuPiBox-Touchscreen.
+
+## Automatische Ordnererkennung ab 0.2.21
+
+Buchordner mit book.json werden direkt unter CommunityApps/community.buecherkiste/ und unter dessen books/-Ordner erkannt. Eine index.json ist nicht erforderlich. Pro SMB-Bereich werden insgesamt maximal 60 Buchordner berücksichtigt; es erfolgt keine rekursive Suche. Gleichnamige Ordner an beiden Orten bleiben getrennte Bücher. Zum Aktualisieren die App neu starten oder aus einem Buch ins Regal zurückkehren.
