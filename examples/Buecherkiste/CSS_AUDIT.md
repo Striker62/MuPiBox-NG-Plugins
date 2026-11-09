@@ -119,3 +119,7 @@ Alte Größenbegrenzungen für `#shelf .books .book-slot .book img` aus 0.2.14 e
 
 - Weitere **172 Zeichen** entfernt; insgesamt **1633 Zeichen** seit Beginn.
 - GitHub-CI und Gerätetest für diesen Commit noch nicht bestätigt. Auf dem 10,1-Zoll-Monitor prüfen; 5 und 7 Zoll bleiben als spätere Testziele bestehen.
+
+## Gerätetest nach sechster Bereinigung – 2026-11-09
+
+Nach Ergänzung der Paketintegritätsprüfung im GitHub-Workflow (Commit `1607106`) konnte der Nutzer das neue Testartefakt ohne Firefox-Blockierung herunterladen und bestätigte auf dem **10,1-Zoll-Monitor**: **„funktionier alles“**. Damit ist die sechste CSS-Bereinigung (Commit `2721a5c`) auf diesem Gerät praktisch bestätigt. Der vorherige Firefox-Alarm ist damit nicht technisch als Fehlalarm bewiesen; die zusätzlichen CI-Prüfungen ersetzen keinen Malware-Scan. Tests auf 5 und 7 Zoll bleiben ausstehend.
