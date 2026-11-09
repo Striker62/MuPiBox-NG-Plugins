@@ -132,7 +132,7 @@ Read `GETTING_STARTED.en.md` and `CONTRIBUTING.md`; fork the public repository, 
 - These calls do not provide global Gallery or printer access. Do not copy photos to network services or print them without a separate explicit user action and host capability.
 
 
-## Owner-managed SMB content (host development)
+## Owner-managed SMB content (NG alpha.40+)
 
 Apps such as Bücherkiste and FotoSpaß may request **`shared-assets`** to read
 their own area in the pre-existing MuPiBox share:

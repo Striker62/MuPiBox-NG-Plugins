@@ -1,6 +1,6 @@
 # Regeln für SMB-Inhalte von Community-Apps (Shared Assets)
 
-**Status:** Verbindliche Ablage- und Entwicklerkonvention für neue Inhalte. Die bereits dokumentierte Host-API `shared-assets` ist in Entwicklung; zusätzliche Prüfungen/Quoten in diesem Dokument sind ausdrücklich als **noch umzusetzen** gekennzeichnet. Diese Regeln ändern weder die aktuellen SMB-Rechte noch eine bestehende Installation.
+**Status:** Verbindliche Ablage- und Entwicklerkonvention. NG **0.2.0-alpha.40** setzt die App-seitige Unterordner-Allowlist, validierte Manifest-Angaben und die sichere automatische Verzeichnisanlage um. Samba-seitige Beschränkungen der *Besitzer-Schreibrechte*, Quoten und ein möglicher Upload-Dateimanager sind weiterhin **nicht implementiert**. Vorhandene Besitzerdateien werden nicht verschoben oder gelöscht.
 
 ## Wozu dient `CommunityApps`?
 
@@ -35,7 +35,7 @@ Der Ordner der bestehenden MuPiBox-SMB-Freigabe ist **ausschließlich für vom G
 
 Jedes Buch bekommt **einen eigenen Ordner**. Für neue Buchordner empfehlen wir kurze, eindeutige, stabile Namen mit Kleinbuchstaben, Ziffern und Bindestrichen (z. B. `mein-buch-1`). Groß-/Kleinschreibung nicht zum Unterscheiden zweier Bücher verwenden. Ein Import darf gleichnamige vorhandene Bücher **nicht stillschweigend überschreiben**. Das konkrete Format von `book.json` ist durch die jeweilige Bücherkiste-App zu definieren; ein Ordner allein garantiert noch keinen erfolgreichen Import.
 
-Der gezeigte Pfad ist eine **Zielkonvention**; erst eine NG-Version mit funktionsfähigem `shared-assets`-Host und eine App mit der passenden Berechtigung können ihn tatsächlich auslesen.
+Die Pfade funktionieren mit NG **Alpha 40 oder neuer** und einer App, die `shared-assets` explizit anfordert. Der NG-Host legt erlaubte Verzeichnisse beim App-Installieren/Reaktivieren/Backend-Start automatisch an. Die Bücherkiste **0.2.20** (Community Apps Preview 14) unterstützt den SMB-Import; alte Bücherkiste-Pakete lesen nur ihre gebündelten Bücher.
 
 ## Wer darf dort schreiben?
 
@@ -55,12 +55,12 @@ Der gezeigte Pfad ist eine **Zielkonvention**; erst eine NG-Version mit funktion
 - Jede App, die `shared-assets` nutzt, muss im Repo/Handbuch ihre **konkreten erlaubten Pfade, Dateitypen, Mindeststruktur, Größenempfehlungen, Import-Regeln und die verwendete Manifest-ID** dokumentieren; die App muss bei nicht unterstütztem Host verständlich reagieren.
 - Buchinhalte bleiben Eigentum/Verantwortung des Besitzers; die lokale Ablage bedeutet **keine Veröffentlichung oder automatische Weitergabe** an die Community.
 
-## Noch technisch im NG-Host abzusichern (kein vorhandenes Feature behaupten)
+## Implementiert (NG Alpha 40) und weiterhin offen
 
-- Sichtbare, **installations- und manifestgebundene Zuordnung** `App-ID → erlaubte Unterverzeichnisse/Dateitypen`; keine automatisch freigegebenen beliebigen Root-Verzeichnisse.
-- Wenn ein Upload/Dateimanager angeboten wird: nur deklarierte Verzeichnisse, Typ- und Größenprüfung, Schutz vor Überschreiben, klare Fehlermeldungen.
-- Einstellbare Gesamtquoten bzw. Warnschwellen **pro App-Ordner**, Zählung von Dateien und optional Scan verwaister/unbekannter App-Verzeichnisse; bestehende Dateien nicht selbsttätig löschen.
-- Sicherheits- und Regressionstests für Pfadausbrüche, Symlinks, Namenskollisionen und Host-Versionen ohne `shared-assets`.
-- Wenn SMB-Schreibzugriff selbst stärker eingeschränkt werden soll, ist ein gesondertes **Samba-Rechte-/Uploadkonzept** erforderlich, da reguläre Besitzer manuell Dateien über SMB bereitstellen können sollen.
+- **Implementiert:** App-ID und durch `sharedDirectories` erlaubte Unterverzeichnisse sind manifestgebunden; verfügbare Dateiendungen weiterhin durch eine globale Host-Allowlist begrenzt. Eine strengere, app-spezifische Dateitypdeklaration ist noch offen.
+- **Weiterhin offen:** Falls ein Upload/Dateimanager angeboten wird: nur deklarierte Verzeichnisse, Typ- und Größenprüfung, Schutz vor Überschreiben, klare Fehlermeldungen.
+- **Weiterhin offen:** Einstellbare Gesamtquoten bzw. Warnschwellen **pro App-Ordner**, Zählung von Dateien und optional Scan verwaister/unbekannter App-Verzeichnisse; bestehende Dateien nicht selbsttätig löschen.
+- **Implementiert:** Host-Regressionstests für Pfadausbrüche, Symlinks und fehlende Berechtigungen; Hardwaretests und die Prüfung von Benutzer-Dateinamenskollisionen bleiben offen.
+- **Weiterhin offen:** Wenn SMB-Schreibzugriff selbst stärker eingeschränkt werden soll, ist ein gesondertes **Samba-Rechte-/Uploadkonzept** erforderlich, da reguläre Besitzer manuell Dateien über SMB bereitstellen können sollen.
 
 Siehe auch [Manifest-/SDK-Vertrag](manifest-v1.md#shared-smb-folders-for-owner-managed-app-content-host-development) und [Entwickleranleitung](../GETTING_STARTED.en.md#import-owner-provided-books-and-accessories-over-smb-host-development).

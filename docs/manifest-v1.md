@@ -110,7 +110,7 @@ These are **additional fields in a complete manifest**, not a standalone valid m
 
 Declaring a directory never publishes pictures automatically. An owner must separately enable **„Gespeicherte Fotos in Galerie anzeigen“** for that app in the Admin UI. Once enabled, its photos can become visible to other clients of the box's Gallery. This is independent of the private app storage API and can be revoked.
 
-## Shared SMB folders for owner-managed app content (host development)
+## Shared SMB folders for owner-managed app content (NG alpha.40+)
 
 With the explicitly approved `shared-assets` permission, a local touchscreen
 app can read only its own folder within the existing MuPiBox SMB share:
@@ -164,7 +164,7 @@ execute scripts; treat text and book metadata as content only.
 **Required storage convention for new integrations:** Place no files directly in `CommunityApps/`; use the actual stable `<manifest.id>` and only app-documented subfolders. For a book app, each book belongs to its own `books/<book-id>/` directory. The per-app namespace is enforced for app reads, but the SMB owner's own writes are **not** restricted by this API. See the [shared-assets policy](shared-assets-policy.md) for naming, collisions, file types, and host hardening TODOs.
 
 
-### App-specific SMB directories (NG host update)
+### App-specific SMB directories (NG alpha.40+)
 
 A new app using the local, owner-managed SMB import should declare the
 **exact allowed subfolders** alongside its permission. This is an excerpt
