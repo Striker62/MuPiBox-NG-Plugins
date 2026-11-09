@@ -22,7 +22,7 @@ class Markup(HTMLParser):
 
 class ThemeIntegrationTests(unittest.TestCase):
     def test_native_back_theme_and_game_only_layout(self):
-        for slug, version in (("four-in-a-row", "0.1.3"), ("tic-tac-toe", "0.2.4")):
+        for slug, version in (("four-in-a-row", "0.1.4"), ("tic-tac-toe", "0.2.5")):
             with self.subTest(slug=slug):
                 directory = ROOT / "examples" / slug
                 manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))

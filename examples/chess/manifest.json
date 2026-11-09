@@ -2,13 +2,13 @@
   "apiVersion": "1",
   "id": "community.mupi-chess",
   "name": "MuPi Schach",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "runtime": "web",
   "entry": "index.html",
-  "icon": "icon.svg",
-  "cover": "cover.png",
+  "icon": "icon.png",
+  "cover": "cover.jpg",
   "author": "MuPiBox Community",
-  "description": "Offline-Schach zu zweit oder gegen MuPi in vier Stärken, mit Zugzeit, Durchschnitt und optionaler Zugzeitbegrenzung.",
+  "description": "Offline-Schach zu zweit oder gegen MuPi in vier Stärken, mit Zugzeit, Durchschnitt und optionaler Zugzeitbegrenzung. Mit neuem MuPi-Axolotl-Cover.",
   "permissions": [
     "controller"
   ],
