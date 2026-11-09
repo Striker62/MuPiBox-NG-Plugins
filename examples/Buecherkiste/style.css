@@ -77,7 +77,7 @@
   scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;
 }
-#shelf .books::-webkit-scrollbar{display:none}
+
 #shelf .books .book{
   flex:0 0 calc((100% - 28px)/3);width:calc((100% - 28px)/3);
   min-width:0;max-width:none;height:100%;min-height:0;
@@ -209,10 +209,10 @@
 #shelf .books::after{bottom:0}
 #shelf .books .book-slot{position:relative;min-height:0;min-width:0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;z-index:1;}
 #shelf .books .book-slot .book{position:relative;display:flex!important;align-items:flex-end!important;justify-content:center!important;flex:none!important;width:100%!important;height:100%!important;min-width:0!important;max-width:none!important;min-height:0!important;margin:0!important;padding:8px 4px 4px!important;background:none!important;border:0!important;box-shadow:none!important;overflow:visible!important;}
-#shelf .books .book-slot .book::after{display:none!important;}
+
 #shelf .books .book-slot .book::before{content:"";position:absolute;top:auto;bottom:5px;left:calc(50% - min(6.4vw,47px));width:10px;height:min(67%,145px);border-radius:3px 0 0 3px;background:linear-gradient(90deg,#3d2a27,#b07c4c,#e4ba82);transform:skewY(-10deg);box-shadow:-2px 3px 4px #1e160f88;z-index:0;}
 #shelf .books .book-slot .book img{position:relative;z-index:1;display:block!important;flex:none!important;max-width:78%!important;width:auto!important;height:auto!important;max-height:92%!important;min-height:0!important;object-fit:contain!important;border-radius:2px 4px 4px 1px;box-shadow:3px 2px 0 #e8d9b5,6px 4px 0 #8c6c51,8px 6px 10px #160d0b99;transform:perspective(550px) rotateY(-7deg);}
-#shelf .books .book-slot .book span{display:none!important;}
+
 #shelf .shelf-pager{position:absolute;bottom:1px;left:0;right:0;height:22px;display:flex;justify-content:center;align-items:center;gap:9px;z-index:3;}
 #shelf .pager-dot{display:block;width:13px;height:13px;padding:0;border:1px solid #fff9;border-radius:50%;background:#7a5545cc;box-shadow:0 1px 4px #0008;}
 #shelf .pager-dot.active{background:#fff;}
@@ -232,9 +232,9 @@
 @media(max-width:540px){#shelf .books{left:10%!important;right:10%!important;}#shelf .books .book-slot .book img{max-width:74%!important;}}
 
 /* 0.2.15: Dekorative Regale im Hintergrund, keine doppelten CSS-Bretter. */
-#shelf{background-image:url("buchladen-leere-regale.jpg")!important;background-size:100% 100%!important;}
+
 #shelf .books{inset:12% 14% 15%!important;}
-#shelf .books::before,#shelf .books::after{display:none!important;}
+
 #shelf .books .book-slot{padding-bottom:0!important;}
 #shelf .books .book-slot .book{padding:0 4px 0!important;}
 #shelf .books .book-slot .book img{max-height:82%!important;max-width:74%!important;}
