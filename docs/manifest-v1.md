@@ -160,6 +160,8 @@ operating-system files or arbitrary SMB mounts is granted. Files placed in
 the SMB share are user-provided/untrusted: do not interpret SVGs as HTML or
 execute scripts; treat text and book metadata as content only.
 
+**Required storage convention for new integrations:** Place no files directly in `CommunityApps/`; use the actual stable `<manifest.id>` and only app-documented subfolders. For a book app, each book belongs to its own `books/<book-id>/` directory. The per-app namespace is enforced for app reads, but the SMB owner's own writes are **not** restricted by this API. See the [shared-assets policy](shared-assets-policy.md) for naming, collisions, file types, and host hardening TODOs.
+
 
 ## App wallpaper versus native menu tile image (NG 0.2.0-alpha.34+)
 
