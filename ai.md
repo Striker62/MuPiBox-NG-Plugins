@@ -146,6 +146,8 @@ reject this permission. Any newly requested permission requires user approval.
 - Follow [the shared SMB content policy](docs/shared-assets-policy.md): `CommunityApps/` is a namespace root, never a free-form data dump. Only place owner-provided data in `CommunityApps/<actual manifest.id>/<documented-subdir>/`; for books use separate `books/<book-id>/` subfolders. Do not promise quotas or Samba ACL restrictions that the host does not currently enforce. Document every supported subdirectory, accepted file type and conflict behavior before shipping a new app.
 
 
+- New apps requesting shared SMB content must declare `sharedDirectories` (up to 8 safe non-overlapping paths) in their manifest; the host rejects access to undeclared directories. See [the manifest contract](docs/manifest-v1.md#app-specific-smb-directories-ng-host-update).
+
 ## IMPORTANT: App wallpaper vs. category/Home card art (NG alpha.34+)
 
 These surfaces are separate. **Do not confuse them.**

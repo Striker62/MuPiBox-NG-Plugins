@@ -1,6 +1,6 @@
 # Bücherkiste für MuPiBox-NG
 
-Version **0.2.24** · Community-App · Web-Runtime · App-ID `community.buecherkiste`
+Version **0.2.25** · Community-App · Web-Runtime · App-ID `community.buecherkiste`
 
 Die Bücherkiste zeigt Bilderbücher in einer illustrierten Buchhandlung. Bücher
 lassen sich per Touch öffnen, durchblättern und vergrößern. Die zwei eingebauten
@@ -67,7 +67,10 @@ CommunityApps/
 
 Bei einem als `Q:` eingebundenen Laufwerk lautet der Buchpfad beispielsweise
 `Q:\CommunityApps\community.buecherkiste\books\mein-buch\`.
-Buchordner direkt unter `community.buecherkiste/` werden ebenfalls erkannt.
+Das Manifest deklariert `sharedDirectories: ["books"]`; gelesen wird nur unter
+diesem Ordner. Falls Bücher bisher direkt unter `community.buecherkiste/`
+liegen, muss der Besitzer sie vor dem Update in dessen `books/`-Unterordner
+verschieben. Die App verschiebt oder löscht keine Dateien.
 Es erfolgt keine rekursive Suche. Ordnernamen bestehen aus Buchstaben, Ziffern,
 Unterstrichen und Bindestrichen (maximal 80 Zeichen).
 
@@ -139,6 +142,11 @@ Die zusätzlichen SMB-Bücher, die Urheberseite und die Navigation aus Version
 auf der MuPiBox bestätigt. Entwicklungsreferenz ist ein Raspberry Pi 4 mit
 10,1-Zoll-Display. Displaytests mit 5 und 7 Zoll sind noch offen. Simulierte
 SDK-Tests ersetzen keinen Touchscreen-Test.
+
+Version 0.2.25 übernimmt die explizite SMB-Verzeichnisfreigabe aus dem aktuellen
+Upstream und beschränkt den Import auf `books/`. Dieser Integrationsstand muss
+auf der MuPiBox noch einmal getestet werden; die Gerätebestätigung oben bezieht
+sich auf Version 0.2.24.
 
 ## Veröffentlichung
 

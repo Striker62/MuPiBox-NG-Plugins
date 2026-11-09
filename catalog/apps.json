@@ -108,14 +108,16 @@
     {
       "id": "community.buecherkiste",
       "name": "Bücherkiste",
-      "description": "Bücherkiste (Testversion): Offline-Bilderbuch-Regal mit Buchseiten, Zoom und zwei Beispielbüchern. Eigene Bücher im Plugin-Verzeichnis vor einem Update sichern.",
+      "description": "Bücherkiste 0.2.20: zwei enthaltene Bilderbücher plus eigene updatefeste Bücher aus der SMB-Freigabe; lokale Leseansicht mit Seiten und Zoom.",
       "category": "learning",
       "author": "MuPiBox Community",
-      "version": "0.2.19",
-      "releaseTag": "v0.1.0-preview.9",
+      "version": "0.2.20",
+      "releaseTag": "v0.1.0-preview.14",
       "asset": "buecherkiste.mupiapp",
-      "sha256": "eb2946fb09cecda2829b9f1d67ed2704c447d1df9aad3ad22ad93c0593a9d4a5",
-      "permissions": []
+      "sha256": "936a9b47f5bea9c3bdcfd12fe50524969c9cbaf177c85e944352fa785a4dbe70",
+      "permissions": [
+        "shared-assets"
+      ]
     }
   ]
 }

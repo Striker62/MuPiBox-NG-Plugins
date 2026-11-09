@@ -47,11 +47,12 @@ Example manifest:
 | `runtime` | Only `"web"` for v1; Go must be compiled to WASM |
 | `entry`, `icon` | Relative paths inside the package, no absolute paths or `..` |
 | `cover` | Optional raster home-tile image (PNG/JPG/JPEG/WebP) relative to the package root; not the app background |
-| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save, `shared-assets`` (`network` is not supported by the current host) |
+| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `shared-assets` (`network` is not supported by the current host) |
 | `networkHosts` | Explicit hostname allowlist **required** when requesting `network` |
 | `category` | Preferred native menu location: `games`, `creative`, `learning`, `tools`, or `other` (defaults to `games`) |
 | `display` | Preferred orientation, minimum size and optional native MuPiBox chrome settings |
 | `galleryDirectories` | Optional, scoped album directory declarations; requires `photo-save` |
+| `sharedDirectories` | Optional explicit SMB directory allowlist; requires `shared-assets`; max 8 paths |
 
 **Compatibility:** An app supporting API `1` must not assume later additions or the presence of a physical controller. A host must reject unsupported API versions and unknown permission names, and may deny any requested privilege.
 
@@ -162,6 +163,36 @@ execute scripts; treat text and book metadata as content only.
 
 **Required storage convention for new integrations:** Place no files directly in `CommunityApps/`; use the actual stable `<manifest.id>` and only app-documented subfolders. For a book app, each book belongs to its own `books/<book-id>/` directory. The per-app namespace is enforced for app reads, but the SMB owner's own writes are **not** restricted by this API. See the [shared-assets policy](shared-assets-policy.md) for naming, collisions, file types, and host hardening TODOs.
 
+
+### App-specific SMB directories (NG host update)
+
+A new app using the local, owner-managed SMB import should declare the
+**exact allowed subfolders** alongside its permission. This is an excerpt
+from the manifest, not a complete manifest:
+
+```json
+{
+  "permissions": ["shared-assets"],
+  "sharedDirectories": ["books"]
+}
+```
+
+For example the installed app with ID `community.buecherkiste` may read
+`CommunityApps/community.buecherkiste/books/buch-1/book.json` and other
+files under `books/` only. Other folders are invisible or denied.
+Valid paths have up to six slash-separated components containing only
+ASCII letters, digits, underscores and hyphens; max 120 characters.
+Duplicates, case-folded collisions, and overlapping parent/child paths
+are rejected. Empty declarations on apps other than legacy
+`community.buecherkiste` and `community.fotospass` yield no
+folder access. Legacy Bücherkiste/Fotospaß IDs are scoped to
+`books` / `accessoires` for compatibility, but new
+versions should declare their folders. No application-side write API exists.
+
+This **does not constrain the owner's own SMB write account**: owners can
+still place files manually, but the host only returns contents under allowed
+folders. For SMB/ACL changes, quotas and cleanup policy see
+[the shared assets storage rules](shared-assets-policy.md).
 
 ## App wallpaper versus native menu tile image (NG 0.2.0-alpha.34+)
 

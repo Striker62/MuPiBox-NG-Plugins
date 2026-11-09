@@ -151,6 +151,16 @@
           }
         }
       }
+    },
+    "sharedDirectories": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "maxLength": 120,
+        "pattern": "^[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+){0,5}$"
+      }
     }
   },
   "allOf": [
@@ -191,6 +201,22 @@
           "permissions": {
             "contains": {
               "const": "photo-save"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "sharedDirectories"
+        ]
+      },
+      "then": {
+        "properties": {
+          "permissions": {
+            "contains": {
+              "const": "shared-assets"
             }
           }
         }

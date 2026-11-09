@@ -47,24 +47,20 @@ async function loadSharedShelf(generation){
  if(typeof shared()?.read!=='function'||typeof shared()?.list!=='function')return;
  try{
   const folders=new Map(),validFolder=n=>typeof n==='string'&&/^[a-zA-Z0-9_-]{1,80}$/.test(n);
-  const add=(base,name)=>{if(validFolder(name)&&folders.size<60)folders.set(base+name,{path:base+name,key:(base?'smb:':'smb-root:')+name})};
-  // The index is optional. Also discover books in books/ and directly in the
-  // app's shared area; never descend recursively or leave the SDK namespace.
+  const add=name=>{if(validFolder(name)&&folders.size<60)folders.set(name,{path:'books/'+name,key:'smb:'+name})};
+  // The optional index controls ordering; discovery stays inside the books/
+  // directory declared by sharedDirectories in the manifest.
   try{
    const data=await readSharedJSON('books/index.json');
    if(!Array.isArray(data?.books))throw Error('books muss ein Array sein');
-   for(const name of data.books)add('books/',name);
+   for(const name of data.books)add(name);
   }catch(e){console.warn('Optionale SMB-Bücherliste nicht verfügbar:',e)}
-  for(const base of ['books/','']){
-   if(generation!==shelfLoad)return;
-   try{
-    const listing=await shared().list(base?'books':'');
-    for(const entry of listing.entries){
-     if(entry?.isDir===true&&(base||entry.name!=='books'))add(base,entry.name);
-    }
-    if(listing.truncated)console.warn('SMB-Buchverzeichnis wurde gekürzt');
-   }catch(e){console.warn('SMB-Buchverzeichnis nicht verfügbar:',base,e)}
-  }
+  if(generation!==shelfLoad)return;
+  try{
+   const listing=await shared().list('books');
+   for(const entry of listing.entries){if(entry?.isDir===true)add(entry.name)}
+   if(listing.truncated)console.warn('SMB-Buchverzeichnis wurde gekürzt');
+  }catch(e){console.warn('SMB-Buchverzeichnis nicht verfügbar:',e)}
   const entries=[];
   // Sequential metadata reads keep bridge load bounded on the Raspberry Pi.
   for(const {path:folder,key} of folders.values()){
@@ -99,8 +95,8 @@ async function scanSharedPages(which){
  const result=[];let misses=0;
  for(let p=1;p<=MAX_PAGES&&misses<2;p++){
   const original=getImagePath(which,p),relative=original.slice((folder+'/').length);
-  const root=relative.replace(/\.(jpe?g|png)$/i,'');
-  const candidates=[relative,...(root!==relative?['jpg','jpeg','png','JPG','JPEG','PNG'].map(ext=>root+'.'+ext):[])];
+  const root=relative.replace(/\.(jpe?g|png|webp|gif)$/i,'');
+  const candidates=[relative,...(root!==relative?['jpg','jpeg','png','webp','gif','JPG','JPEG','PNG','WEBP','GIF'].map(ext=>root+'.'+ext):[])];
   const found=candidates.find(path=>safeImage(path)&&names.has(path));
   if(found){result.push(folder+'/'+found);misses=0}else misses++;
  }

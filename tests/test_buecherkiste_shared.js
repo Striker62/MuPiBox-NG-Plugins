@@ -120,7 +120,7 @@ test('outdated cover and page requests release their URLs',async()=>{
  h.app.show();h.app.releasePage();h.app.releaseCovers();await tick();
  assert.equal(h.urls.size,0);
 });
-for(const mode of ['no-index','broken-index','root-books','duplicates'])test(mode+' discovers directories without losing bundled books',async()=>{
+for(const mode of ['no-index','broken-index','duplicates'])test(mode+' discovers directories without losing bundled books',async()=>{
  const h=setup(mode);await tick();await tick();
  assert.equal(h.app.entries.length,mode==='broken-index'||mode==='no-index'||mode==='root-books'?3:4);
  const key=mode==='root-books'?'smb-root:ole':'smb:ole';
@@ -131,4 +131,12 @@ for(const mode of ['no-index','broken-index','root-books','duplicates'])test(mod
  assert.ok(h.calls.includes((mode==='root-books'?'':'books/')+'ole/images/01.jpg'));
  assert.ok(h.get('page').src.startsWith('blob:'));
  h.events.pagehide();assert.equal(h.urls.size,0);
+});
+test('only the manifest-declared books directory is accessed',async()=>{
+ const manifest=JSON.parse(fs.readFileSync(path.join(__dirname,'../examples/Buecherkiste/manifest.json'),'utf8'));
+ assert.deepEqual(manifest.sharedDirectories,['books']);
+ const h=setup('root-books');await tick();await tick();
+ assert.equal(h.app.entries.length,1);
+ assert.ok(h.calls.includes('books'));
+ assert.ok(h.calls.every(p=>p==='books'||p.startsWith('books/')));
 });
