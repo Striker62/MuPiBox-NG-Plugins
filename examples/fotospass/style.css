@@ -57,3 +57,33 @@ footer{height:10px;font-size:8px}
 /* 0.4.2: Speichern und neues Foto nebeneinander */
 .photo-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px;width:100%;flex:none}
 .photo-actions button{min-width:0;width:100%;min-height:34px;padding:3px 2px;font-size:11px;white-space:nowrap}
+
+/* 0.4.4: Aufnahmeoberflaeche statt Kameratest-Bedienfeld */
+#advanced-camera[hidden]{display:none!important}
+#advanced-camera:not([hidden]){display:flex;flex-direction:column;gap:5px}
+#camera-panel{padding-top:40px}
+#camera-state{font-size:14px;font-weight:700;text-align:center;border-radius:8px;padding:7px 4px;background:#34465d;color:#fff}
+#camera-state[data-kind="on"]{background:#136343}
+#camera-state[data-kind="error"]{background:#8d3542}
+#camera-settings{font-size:11px;min-height:26px;opacity:.8}
+
+/* 0.4.5: App-Titel mittig, Kamerastatus weiterhin rechts */
+header { position: relative; justify-content: flex-end; }
+header strong {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 55%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+header #status { position: relative; z-index: 1; max-width: 24%; text-align: right; }
+
+/* FotoSpaß 0.5.0: bildbasierte Kategorien ohne Text */
+.accessory-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.accessory-grid button{height:58px;min-height:58px;padding:3px;display:flex;align-items:center;justify-content:center}
+.accessory-grid img{width:100%;height:48px;object-fit:contain}
+#accessory-back{width:100%;min-height:32px;height:32px;font-size:23px;line-height:1;padding:0}
+@media(max-height:440px){.accessory-grid button{height:46px;min-height:46px}.accessory-grid img{height:38px}}
