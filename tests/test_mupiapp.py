@@ -142,6 +142,26 @@ class PackageTests(unittest.TestCase):
         with self.assertRaises(PackageError):
             validate_manifest(self.manifest, {"index.html"})
 
+    def test_shared_directories_validate_and_reject_overlap(self):
+        self.manifest["permissions"] = ["shared-assets"]
+        self.manifest["sharedDirectories"] = ["books", "accessoires/baerte"]
+        self.assertEqual(validate_manifest(self.manifest, {"index.html"})["sharedDirectories"], ["books", "accessoires/baerte"])
+        (self.source / "manifest.json").write_text(json.dumps(self.manifest))
+        self.assertEqual(pack(self.source, self.output)["sharedDirectories"], ["books", "accessoires/baerte"])
+        for bad in ("../secret", "/books", "books/../x", "books//x", ".hidden", "my books", "a/b/c/d/e/f/g"):
+            with self.subTest(path=bad):
+                self.manifest["sharedDirectories"] = [bad]
+                with self.assertRaises(PackageError):
+                    validate_manifest(self.manifest, {"index.html"})
+        for invalid in (["books", "books/other"], ["Books", "books"], ["books", "books"]):
+            self.manifest["sharedDirectories"] = invalid
+            with self.assertRaises(PackageError):
+                validate_manifest(self.manifest, {"index.html"})
+        self.manifest["sharedDirectories"] = ["books"]
+        self.manifest["permissions"] = []
+        with self.assertRaisesRegex(PackageError, "shared-assets"):
+            validate_manifest(self.manifest, {"index.html"})
+
     def test_gallery_registration_requires_scope_and_permission(self):
         self.manifest["galleryDirectories"] = [{"path": "photos"}]
         with self.assertRaisesRegex(PackageError, "photo-save"):

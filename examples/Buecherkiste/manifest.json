@@ -2,15 +2,20 @@
   "apiVersion": "1",
   "id": "community.buecherkiste",
   "name": "Bücherkiste",
-  "description": "Bücherkiste: farbige Buchrücken exakt in Coverhöhe; übrige Darstellung unverändert",
+  "description": "Bücherkiste mit updatefestem SMB-Import eigener Bücher und integrierten Beispielbüchern",
   "author": "MuPiBox Community",
-  "version": "0.2.19",
+  "version": "0.2.20",
   "runtime": "web",
   "entry": "index.html",
-  "permissions": [],
+  "permissions": [
+    "shared-assets"
+  ],
   "display": {
     "orientation": "landscape",
     "minWidth": 320,
     "minHeight": 240
-  }
+  },
+  "sharedDirectories": [
+    "books"
+  ]
 }

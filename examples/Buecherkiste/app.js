@@ -4,6 +4,57 @@ const bookInfo={ole:{pageCount:15,title:'Ole und der verschwundene Knopf',imageP
 const bookFolder={ole:'ole',henne:'henne-und-adler'};const bookTexts={};
 const pageFiles={ole:[],henne:[]};const MAX_PAGES=200;
 
+// SMB imports are user-managed, read-only and intentionally separate from
+// bundled books. No SMB file is ever overwritten or deleted by this app.
+const sharedSDK=window.MuPiBoxSDK && window.MuPiBoxSDK.shared;
+const externalBookIDs=new Set(),externalBookInfo=new Map();
+const sharedImages=new Map();
+const safeImage=/^images\/[a-zA-Z0-9_.-]+\.(?:png|jpg|jpeg|webp)$/i;
+const safeBookFolder=/^[a-zA-Z0-9_-]{1,80}$/;
+async function sharedImageURL(file) {
+ if(!sharedSDK || !/^books\/[a-zA-Z0-9_-]+\/images\/[a-zA-Z0-9_.-]+\.(?:png|jpg|jpeg|webp)$/i.test(file))
+  throw Error('Ungültiger Bildpfad');
+ if(sharedImages.has(file)){
+  const old=sharedImages.get(file);sharedImages.delete(file);sharedImages.set(file,old);return old;
+ }
+ const blob=await sharedSDK.read(file);
+ if(!blob || !/^image\/(?:jpeg|png|webp)$/.test(blob.type))throw Error('Ungültiges Bildformat');
+ const url=URL.createObjectURL(blob);
+ sharedImages.set(file,url);
+ // Cap memory on a Raspberry Pi; older object URLs are not needed when
+ // navigating forward. Recently used covers and reader pages remain cached.
+ while(sharedImages.size>28){const first=sharedImages.keys().next().value;URL.revokeObjectURL(sharedImages.get(first));sharedImages.delete(first);}
+ return url;
+}
+async function loadExternalBooks(){
+ if(!sharedSDK)return [];
+ try {
+  const listing=await sharedSDK.list('books');
+  if(!listing || !Array.isArray(listing.entries))return [];
+  const folders=listing.entries.filter(e=>e && e.isDir && safeBookFolder.test(e.name)).slice(0,60);
+  const entries=await Promise.all(folders.map(async item=>{
+   try {
+    const blob=await sharedSDK.read('books/'+item.name+'/book.json');
+    const info=JSON.parse(await blob.text());
+    if(!info || typeof info.title!=='string'||!info.title.trim()||info.title.length>160)throw Error('Titel fehlt');
+    const cover=typeof info.cover==='string'&&safeImage.test(info.cover)?info.cover:'images/01.jpg';
+    const imagePattern=typeof info.imagePattern==='string' &&
+      /^images\/[a-zA-Z0-9_{}:.\/-]+$/.test(info.imagePattern) && !info.imagePattern.includes('..')
+      ?info.imagePattern:'images/{page:02d}.jpg';
+    const layout=info.layout==='image-and-text'?'image-and-text':'full-page';
+    const key='shared:'+item.name;
+    externalBookIDs.add(key);
+    externalBookInfo.set(key,{...info,title:info.title.trim(),imagePattern,layout});
+    bookFolder[key]=item.name;
+    bookInfo[key]={title:info.title.trim(),pageCount:1,imagePattern,layout};
+    pageFiles[key]=[];
+    return {key,folder:item.name,title:info.title.trim(),cover,shared:true};
+   }catch(e){console.warn('SMB-Buch übersprungen',item.name,e);return null;}
+  }));
+  return entries.filter(Boolean);
+ }catch(error){console.info('SMB-Bücher derzeit nicht verfügbar',error);return [];}
+}
+
 function getTotal(){return pageFiles[book].length||Math.max(1,Number(bookInfo[book].pageCount)||1)}
 function getImagePath(which,page){
  const info=bookInfo[which],folder=bookFolder[which];
@@ -11,6 +62,18 @@ function getImagePath(which,page){
  return 'books/'+folder+'/'+pattern.replace(/\{(page|page_plus_one)(?::0?(\d+)d)?\}/g,(_,kind,width)=>String(page+(kind==='page_plus_one'?1:0)).padStart(Number(width)||1,'0'));
 }
 async function loadBookInfo(which){
+ if(externalBookIDs.has(which)){
+  const info=externalBookInfo.get(which);
+  if(info && typeof info.text==='string'&&/^text\/[a-zA-Z0-9_.-]+\.json$/.test(info.text)){
+   try{
+    const blob=await sharedSDK.read('books/'+bookFolder[which]+'/'+info.text);
+    const value=JSON.parse(await blob.text());
+    if(Array.isArray(value.pages))bookTexts[which]=value.pages.slice(0,MAX_PAGES).map(p=>typeof p==='string'?p:(p&&typeof p.text==='string'?p.text:''));
+   }catch(e){console.warn('SMB-Buchtext nicht geladen',e);}
+  }
+  updateShelfCount(which);
+  return;
+ }
  try{
   const response=await fetch('books/'+bookFolder[which]+'/book.json?ts='+Date.now(),{cache:'no-store'});
   if(!response.ok)throw new Error('HTTP '+response.status);
@@ -38,6 +101,25 @@ async function existsImage(url){
  }catch(e){console.warn('Bildprüfung fehlgeschlagen',url,e);return false;}
 }
 async function scanPages(which){
+ if(externalBookIDs.has(which)){
+  try{
+   const folder=bookFolder[which],listing=await sharedSDK.list('books/'+folder+'/images');
+   const names=new Set(listing.entries.filter(e=>!e.isDir&&/^[a-zA-Z0-9_.-]+\.(?:png|jpg|jpeg|webp)$/i.test(e.name)).map(e=>e.name));
+   const found=[];
+   let misses=0;
+   for(let page=1;page<=MAX_PAGES && misses<2;page++){
+    const nominal=getImagePath(which,page);
+    const filename=nominal.split('/').pop();
+    const basename=filename.replace(/\.(?:jpe?g|png|webp)$/i,'');
+    const candidates=[filename,basename+'.jpg',basename+'.jpeg',basename+'.png',basename+'.webp'];
+    const match=candidates.find(x=>names.has(x));
+    if(match){found.push('books/'+folder+'/images/'+match);misses=0;}else misses++;
+   }
+   if(found.length){pageFiles[which]=found;bookInfo[which].pageCount=found.length;}
+   else console.warn('SMB-Buch ohne lesbare Seiten',which);
+  }catch(e){console.warn('SMB-Seiten nicht ermittelt',which,e);}
+  return;
+ }
  const result=[],base=bookInfo[which].imagePattern||'images/{page:02d}.jpg';
  let misses=0;
  for(let p=1;p<=MAX_PAGES&&misses<2;p++){
@@ -82,7 +164,41 @@ function fitHenneText(){
     inner.style.fontSize=Math.max(8,parseFloat(inner.style.fontSize)-0.5).toFixed(2)+'px';
   }
 }
-const imageUrl=n=>pagePath(book,n);function show(){let total=getTotal();if(bookInfo[book].layout!=='image-and-text'){let src=pagePath(book,current);$('page').src=src;$('page').hidden=false;$('henne-page').hidden=true;$('backdrop').style.backgroundImage='url("'+src+'")';$('credits').hidden=true;}else{$('page').hidden=true;$('henne-page').hidden=false;$('henne-image').src=imageUrl(current);$('henne-image').onload=()=>requestAnimationFrame(fitHenneText);$('henne-text').innerHTML='';const textInner=document.createElement('div');textInner.id='henne-text-inner';textInner.textContent=(bookTexts[book]||henText)[current-1]||'';$('henne-text').appendChild(textInner);$('credits').hidden=book!=='henne';requestAnimationFrame(fitHenneText);}$('counter').textContent=current+' / '+total;$('prev').disabled=current===1;$('next').disabled=current===total;viewport.scrollTop=0;viewport.scrollLeft=0;if(bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}function zoom(on){zoomed=on;viewport.classList.toggle('zoom',on);reader.classList.toggle('zoomed',on);$('zoom').textContent=on?'⊟ Ganz':'⌕ Zoom';viewport.scrollTop=0;viewport.scrollLeft=0;if(!on&&bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}async function open(which){book=which;current=1;shelf.hidden=true;reader.hidden=false;reader.classList.toggle('henne',bookInfo[book].layout==='image-and-text');$('reader-title').textContent=bookInfo[which].title;zoom(false);show();await loadBookInfo(which);await scanPages(which);if(book!==which||reader.hidden)return;$('reader-title').textContent=bookInfo[which].title;show()}
+const imageUrl=n=>pagePath(book,n);
+function show(){
+ const which=book,p=current,total=getTotal(),isShared=externalBookIDs.has(which);
+ const image=pagePath(which,p);
+ const accept=()=>which===book&&p===current&&!reader.hidden;
+ if(bookInfo[which].layout!=='image-and-text'){
+  $('page').hidden=false;$('henne-page').hidden=true;$('credits').hidden=true;
+  if(!isShared){$('page').src=image;$('backdrop').style.backgroundImage='url("'+image+'")';}
+  else {
+   $('page').removeAttribute('src');$('backdrop').style.backgroundImage='none';
+   sharedImageURL(image).then(url=>{if(accept()){$('page').src=url;$('backdrop').style.backgroundImage='url("'+url+'")';}}).catch(e=>console.warn('SMB-Seite nicht geladen',e));
+  }
+ }else{
+  $('page').hidden=true;$('henne-page').hidden=false;
+  if(!isShared){$('henne-image').src=image;}
+  else{
+   $('henne-image').removeAttribute('src');
+   sharedImageURL(image).then(url=>{if(accept())$('henne-image').src=url;}).catch(e=>console.warn('SMB-Illustration nicht geladen',e));
+  }
+  $('henne-image').onload=()=>requestAnimationFrame(fitHenneText);
+  $('henne-text').replaceChildren();
+  const inner=document.createElement('div');inner.id='henne-text-inner';
+  inner.textContent=(bookTexts[which]|| (which==='henne'?henText:[]))[p-1]||'';
+  $('henne-text').appendChild(inner);
+  $('credits').hidden=which!=='henne';
+  requestAnimationFrame(fitHenneText);
+ }
+ $('counter').textContent=p+' / '+total;
+ $('prev').disabled=p===1;$('next').disabled=p===total;
+ viewport.scrollTop=0;viewport.scrollLeft=0;
+ if(bookInfo[which].layout==='image-and-text')requestAnimationFrame(fitHenneText);
+}
+function zoom(on){zoomed=on;viewport.classList.toggle('zoom',on);reader.classList.toggle('zoomed',on);$('zoom').textContent=on?'⊟ Ganz':'⌕ Zoom';viewport.scrollTop=0;viewport.scrollLeft=0;if(!on&&bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}
+async function open(which){book=which;current=1;shelf.hidden=true;reader.hidden=false;reader.classList.toggle('henne',bookInfo[book].layout==='image-and-text');$('reader-title').textContent=bookInfo[which].title;zoom(false);show();await loadBookInfo(which);await scanPages(which);if(book!==which||reader.hidden)return;$('reader-title').textContent=bookInfo[which].title;show()}
+
 async function loadShelf(){
  const holder=document.querySelector('#shelf .books');
  try{
@@ -109,6 +225,8 @@ async function loadShelf(){
    pageFiles[folder]=[];
    shelfEntries.push({folder,title:info.title,cover});
   }
+  // SMB books are appended, never overwrite bundled book IDs or assets.
+  shelfEntries.push(...await loadExternalBooks());
   if(!shelfEntries.length)throw Error('Keine gültigen Bücher gefunden');
   shelfPage=Math.min(shelfPage,Math.ceil(shelfEntries.length/booksPerPage())-1);
   renderShelf();
@@ -134,7 +252,9 @@ function renderShelf(){
   const entry=slice[i];
   if(entry){
    const btn=document.createElement('button');btn.className='book';btn.type='button';btn.setAttribute('aria-label',entry.title);btn.title=entry.title;
-   const img=document.createElement('img');img.src='books/'+entry.folder+'/'+entry.cover;img.alt=entry.title;img.loading='eager';
+   const img=document.createElement('img');img.alt=entry.title;img.loading='eager';
+   if(!entry.shared)img.src='books/'+entry.folder+'/'+entry.cover;
+   else sharedImageURL('books/'+entry.folder+'/'+entry.cover).then(url=>{if(img.isConnected)img.src=url;}).catch(e=>console.warn('SMB-Cover fehlt',e));
    // 0.2.19: Buchruecken exakt an die sichtbare Covergroesse anpassen.
    // Keine feste Hoehe, keine braunen Streifen ueber/unter dem Buch.
    const spineColors=['#c82132','#1974d2','#23944e','#8a4bb9','#d9a31a','#008fae'];
@@ -148,7 +268,7 @@ function renderShelf(){
      btn.style.setProperty('--spine-height',img.offsetHeight+'px');
    };
    img.addEventListener('load',()=>requestAnimationFrame(fitSpine),{once:true});
-   btn.appendChild(img);btn.onclick=()=>{if(Date.now()-lastShelfSwipe>350)open(entry.folder)};slot.appendChild(btn);
+   btn.appendChild(img);btn.onclick=()=>{if(Date.now()-lastShelfSwipe>350)open(entry.key||entry.folder)};slot.appendChild(btn);
    requestAnimationFrame(fitSpine);
   }
   holder.appendChild(slot);
