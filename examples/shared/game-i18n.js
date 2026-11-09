@@ -33,6 +33,7 @@
       directionRight:"Rechts",
       gardenBoard:"Garten-Spielfeld",
       wormSpeed:"Geschwindigkeit",
+      wormSpeedEasy:"Langsam", wormSpeedNormal:"Normal", wormSpeedHard:"Schnell", wormSpeedTurbo:"Turbo",
       cell:'Feld {number}', column:'Spalte {number}', free:'frei', occupied:'belegt'
     },
     en: {
@@ -64,6 +65,7 @@
       directionRight:"Right",
       gardenBoard:"Garden playfield",
       wormSpeed:"Speed",
+      wormSpeedEasy:"Slow", wormSpeedNormal:"Normal", wormSpeedHard:"Fast", wormSpeedTurbo:"Turbo",
       cell:'Square {number}', column:'Column {number}', free:'empty', occupied:'occupied'
     },
     fr: {
@@ -95,6 +97,7 @@
       directionRight:"Droite",
       gardenBoard:"Terrain de jeu du jardin",
       wormSpeed:"Vitesse",
+      wormSpeedEasy:"Lent", wormSpeedNormal:"Normal", wormSpeedHard:"Rapide", wormSpeedTurbo:"Turbo",
       cell:'Case {number}', column:'Colonne {number}', free:'libre', occupied:'occupée'
     },
     es: {
@@ -126,6 +129,7 @@
       directionRight:"Derecha",
       gardenBoard:"Tablero del jardín",
       wormSpeed:"Velocidad",
+      wormSpeedEasy:"Lento", wormSpeedNormal:"Normal", wormSpeedHard:"Rápido", wormSpeedTurbo:"Turbo",
       cell:'Casilla {number}', column:'Columna {number}', free:'libre', occupied:'ocupada'
     },
     it: {
@@ -157,6 +161,7 @@
       directionRight:"Destra",
       gardenBoard:"Campo di gioco del giardino",
       wormSpeed:"Velocità",
+      wormSpeedEasy:"Lento", wormSpeedNormal:"Normale", wormSpeedHard:"Veloce", wormSpeedTurbo:"Turbo",
       cell:'Casella {number}', column:'Colonna {number}', free:'libera', occupied:'occupata'
     },
     nl: {
@@ -188,6 +193,7 @@
       directionRight:"Rechts",
       gardenBoard:"Speelveld in de tuin",
       wormSpeed:"Snelheid",
+      wormSpeedEasy:"Langzaam", wormSpeedNormal:"Normaal", wormSpeedHard:"Snel", wormSpeedTurbo:"Turbo",
       cell:'Vak {number}', column:'Kolom {number}', free:'leeg', occupied:'bezet'
     },
     sv: {
@@ -219,6 +225,7 @@
       directionRight:"Höger",
       gardenBoard:"Trädgårdens spelplan",
       wormSpeed:"Hastighet",
+      wormSpeedEasy:"Långsam", wormSpeedNormal:"Normal", wormSpeedHard:"Snabb", wormSpeedTurbo:"Turbo",
       cell:'Ruta {number}', column:'Kolumn {number}', free:'ledig', occupied:'upptagen'
     }
   };

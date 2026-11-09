@@ -38,6 +38,15 @@
       <div class="action-bar">
         <button id="theme-toggle" class="theme-toggle" type="button"
                 aria-label="Design wechseln" aria-pressed="false">NEON</button>
+        <label class="speed-control" for="speed-select">
+          <span data-i18n="wormSpeed">Tempo</span>
+          <select id="speed-select" data-i18n-aria="wormSpeed" aria-label="Tempo">
+            <option value="easy" data-i18n="wormSpeedEasy">Langsam</option>
+            <option value="normal" data-i18n="wormSpeedNormal" selected>Normal</option>
+            <option value="hard" data-i18n="wormSpeedHard">Schnell</option>
+            <option value="turbo" data-i18n="wormSpeedTurbo">Turbo</option>
+          </select>
+        </label>
         <nav class="horizontal-controls" role="group" aria-label="Links und rechts">
           <button class="direction direction-left" data-direction="left"
                   data-i18n-aria="directionLeft" aria-label="Nach links" type="button">
