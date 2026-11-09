@@ -5,10 +5,12 @@ on:
     branches: [dev/buecherkiste-aufraeumen]
     paths:
       - 'examples/Buecherkiste/**'
+      - 'tests/test_buecherkiste_shared.js'
       - '.github/workflows/buecherkiste-audit.yml'
   pull_request:
     paths:
       - 'examples/Buecherkiste/**'
+      - 'tests/test_buecherkiste_shared.js'
       - '.github/workflows/buecherkiste-audit.yml'
 permissions:
   contents: read
@@ -22,6 +24,8 @@ jobs:
           python-version: '3.13'
       - name: Check JavaScript syntax
         run: node --check examples/Buecherkiste/app.js
+      - name: Test additional SMB books and SDK
+        run: node --test tests/test_buecherkiste_shared.js tests/test_sdk_shared.js
       - name: Check CSS brace and comment structure
         shell: python
         run: |
@@ -65,7 +69,7 @@ jobs:
           print('CSS structure: OK')
       - name: Build and validate Buecherkiste package
         run: |
-          python3 tools/mupiapp.py pack examples/Buecherkiste dist/buecherkiste-ci.mupiapp --exclude README.md --exclude CSS_AUDIT.md
+          python3 tools/mupiapp.py pack examples/Buecherkiste dist/buecherkiste-ci.mupiapp --exclude README.md --exclude CSS_AUDIT.md --exclude SMB_TEST.md
           python3 tools/mupiapp.py validate dist/buecherkiste-ci.mupiapp
       - name: Inspect package integrity and file types
         shell: python
@@ -77,6 +81,8 @@ jobs:
           import stat
 
           package = Path('dist/buecherkiste-ci.mupiapp')
+          if package.stat().st_size >= 25_000_000:
+              raise SystemExit('Buecherkiste package must stay below 25 MB')
           allowed = {'.html', '.css', '.js', '.json', '.jpg', '.jpeg', '.png',
                      '.svg', '.webp', '.gif', '.txt', '.md', '.woff', '.woff2',
                      '.ttf', '.otf', '.mp3', '.ogg', '.wav', '.pdf'}
