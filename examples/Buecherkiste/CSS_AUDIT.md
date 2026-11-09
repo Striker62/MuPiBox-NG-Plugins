@@ -130,3 +130,7 @@ Die alte `background`-Kurzschreibweise aus Version 0.2.12 (`buchladen-szene.svg`
 
 - Weitere **86 Zeichen** entfernt, kumulativ **1719 Zeichen**.
 - GitHub-CI und Gerätetest für diesen Stand stehen noch aus; keine Aussage über erfolgreiche visuelle Prüfung auf 10,1 Zoll oder 5/7 Zoll.
+
+### Gerätetest der siebten Bereinigung – 2026-11-09
+
+Nutzer bestätigt nach Installation des Testpakets auf der MuPiBox mit 10,1-Zoll-Monitor: „auch ok funktioniert“. Siebte Bereinigung (`c4ee41f`) damit auf diesem Gerät visuell und funktional bestätigt. 5- und 7-Zoll-Tests weiterhin offen.
