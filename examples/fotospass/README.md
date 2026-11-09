@@ -88,7 +88,27 @@ Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginv
 
 ## Version
 
-0.5.3 (SMB-Testversion, Gerätetest noch offen)
+0.5.4 (Testversion mit eigenem Zurück-Pfeil)
+
+## Zurück zur MuPiBox (ab 0.5.4)
+
+Der kleine Pfeil oben links führt über `MuPiBoxSDK.exit()` zur MuPiBox zurück.
+Ein laufender Countdown wird abgebrochen und die Kamera vor dem Verlassen
+gestoppt. Bei einem aufgenommenen, noch nicht gespeicherten Foto fragt die App:
+**„Foto verwerfen und zurück zur MuPiBox?“**. Mit **Weiter bearbeiten** bleibt
+das Foto erhalten. Bereits gespeicherte Fotos werden durch Verlassen oder
+Verwerfen eines Bearbeitungsstands nicht gelöscht. Während des Speicherns ist
+der Pfeil deaktiviert; spätere Änderungen erfordern erneut eine Bestätigung.
+
+Das Manifest setzt `display.showBackButton` auf `false`, um den nativen
+Zurück-Button samt Titel auszublenden. Gespeicherte MuPiBox-App-Einstellungen
+können diese Vorgabe übersteuern; nötigenfalls den nativen Button dort
+ausschalten. Die unabhängige Kamera-Freigabe und der Sicherheits-Stopp der
+MuPiBox bleiben unter Kontrolle des Hosts.
+
+SMB-Import, Platzierung, Skalierung und Mitspeichern aus Version 0.5.3 wurden
+vom Anwender auf MuPiBox NG Alpha 41 bestätigt. Die neue Navigation aus 0.5.4
+muss auf dem Gerät noch geprüft werden.
 
 ## Prüfungen und Gerätetest
 
