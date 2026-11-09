@@ -1,0 +1,68 @@
+name: Buecherkiste code audit
+on:
+  push:
+    branches: [dev/buecherkiste-aufraeumen]
+    paths:
+      - 'examples/Buecherkiste/**'
+      - '.github/workflows/buecherkiste-audit.yml'
+  pull_request:
+    paths:
+      - 'examples/Buecherkiste/**'
+      - '.github/workflows/buecherkiste-audit.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check JavaScript syntax
+        run: node --check examples/Buecherkiste/app.js
+      - name: Check CSS brace and comment structure
+        shell: python
+        run: |
+          from pathlib import Path
+          s = Path('examples/Buecherkiste/style.css').read_text(encoding='utf-8')
+          depth = 0
+          quote = None
+          comment = False
+          escape = False
+          i = 0
+          while i < len(s):
+              c = s[i]
+              n = s[i+1] if i+1 < len(s) else ''
+              if comment:
+                  if c == '*' and n == '/':
+                      comment = False
+                      i += 2
+                      continue
+              elif quote:
+                  if escape:
+                      escape = False
+                  elif c == '\\':
+                      escape = True
+                  elif c == quote:
+                      quote = None
+              elif c == '/' and n == '*':
+                  comment = True
+                  i += 2
+                  continue
+              elif c in ('"', "'"):
+                  quote = c
+              elif c == '{':
+                  depth += 1
+              elif c == '}':
+                  depth -= 1
+                  if depth < 0:
+                      raise SystemExit('CSS: unexpected closing brace')
+              i += 1
+          if comment or quote or depth:
+              raise SystemExit(f'CSS incomplete: comment={comment}, quote={quote}, brace_depth={depth}')
+          print('CSS structure: OK')
+      - name: Build and validate Buecherkiste package
+        run: |
+          python3 tools/mupiapp.py pack examples/Buecherkiste dist/buecherkiste-ci.mupiapp --exclude README.md --exclude CSS_AUDIT.md
+          python3 tools/mupiapp.py validate dist/buecherkiste-ci.mupiapp
