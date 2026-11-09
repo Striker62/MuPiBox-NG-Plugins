@@ -108,13 +108,13 @@
     {
       "id": "community.buecherkiste",
       "name": "Bücherkiste",
-      "description": "Bücherkiste 0.2.20: zwei enthaltene Bilderbücher plus eigene updatefeste Bücher aus der SMB-Freigabe; lokale Leseansicht mit Seiten und Zoom.",
+      "description": "Bücherkiste 0.2.25: Bilderbuchregal mit 16 Ole-Seiten, Quellenangaben und sicheren zusätzlichen SMB-Büchern unter CommunityApps/community.buecherkiste/books/.",
       "category": "learning",
       "author": "MuPiBox Community",
-      "version": "0.2.20",
-      "releaseTag": "v0.1.0-preview.14",
+      "version": "0.2.25",
+      "releaseTag": "v0.1.0-preview.17",
       "asset": "buecherkiste.mupiapp",
-      "sha256": "936a9b47f5bea9c3bdcfd12fe50524969c9cbaf177c85e944352fa785a4dbe70",
+      "sha256": "a33cbbd4961d2c2cf0638ed51c84014e80eb883965aae4c44c9917dd0ca9f07e",
       "permissions": [
         "shared-assets"
       ]
