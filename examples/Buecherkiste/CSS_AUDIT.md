@@ -165,3 +165,21 @@ Entfernt wurde die ältere Covergrößenregel `#shelf .books .book-slot .book im
 ### Gerätetest der zehnten Bereinigung – 2026-11-09
 
 Der Nutzer bestätigt nach dem Test der zehnten CSS-Bereinigung (`39fddc0`) auf der MuPiBox: **„ok sieht gut aus und funktioniert“**. Coverdarstellung und Funktion auf dem aktuell verwendeten 10,1-Zoll-Monitor damit bestätigt. Kumulativ 2135 Zeichen CSS entfernt. Tests auf 5 und 7 Zoll bleiben offen.
+
+## Vertiefte Kaskadenprüfung nach zehn bestätigten Bereinigungen – 2026-11-09
+
+**Ausgangslage:** Zehn schrittweise CSS-Bereinigungen, kumulativ 2135 Zeichen entfernt, auf dem 10,1-Zoll-Gerät vom Nutzer bestätigt. Für diese Prüfung wurden **keine weiteren App-Dateien geändert**.
+
+### Geprüfte verbleibende Bereiche
+
+- **Regal und Hintergrund:** Die historische Abfolge 0.2.8 bis 0.2.19 enthält weiterhin zahlreiche Regeln mit gleicher Spezifität. Die aktuelle Regalposition und das Hintergrundbild `bibliothek.png` liegen in den späten 0.2.17-Regeln. Frühere Definitionen nicht pauschal entfernen: einzelne Eigenschaften wie `position`, `flex`, `z-index` und `pointer-events` können weiterhin wirken.
+- **Buchrücken:** Die 0.2.19-Regel für `#shelf .books .book-slot .book::before` nutzt `--spine-left`, `--spine-height`, `--spine-bottom` und `--spine-color`. Sie ist funktional und muss erhalten bleiben.
+- **Responsive Darstellung:** `@media(max-width:540px)`, `@media(max-width:680px)` und `@media(max-height:315px)` können gleichzeitig greifen. Eine scheinbar überflüssige Deklaration darf erst nach Abgleich der gesamten Kaskade und der kleineren Viewports entfernt werden.
+- **Henne-und-Adler-Leser:** Regeln für `#reader.henne:not(.zoomed)`, `#henne-page`, `#henne-image`, `#henne-text` und `#henne-text-inner` bilden gemeinsam das Text-/Bildlayout. Alte Werte können in Zoom- oder Nicht-Zoom-Zuständen relevant sein; vorerst nicht zusammenfassen.
+- **Navigation und Zoom:** `#viewport.zoom`, `#reader.zoomed`, `#controls` und `[hidden]`-Selektoren bleiben geschützt.
+
+### Konkrete nächste Maßnahme
+
+Vor einer größeren Zusammenführung der 0.2.8–0.2.19-Regalregeln zunächst einen **zustands- und viewportbezogenen CSS-Kaskadenvergleich** durchführen (Regal, Ole-Leser, Henne-Leser, Zoom; normale und schmale/kurze Viewports). Anschließend nur einzelne nachweislich wirkungslose Deklarationen in kleinen Commits entfernen. Die zehnte Bereinigung ist auf 10,1 Zoll bestätigt; 5 und 7 Zoll sind noch nicht getestet.
+
+**Ergebnis:** Kein weiterer Regelblock wird allein aufgrund seines Alters als sicher entfernbar eingestuft. Die Untersuchung ist eine statische Codeprüfung und kein vollständiger Browser-Kaskadentest.
