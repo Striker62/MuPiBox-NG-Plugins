@@ -143,6 +143,7 @@ receive an 8-MiB-capped Blob, or `sdk.shared.watch(folder, cb)` to poll every
 internal HTTP routes, dynamic code execution or hidden network requests.
 The SDK requires a host that supports `shared-assets`; older alpha versions
 reject this permission. Any newly requested permission requires user approval.
+- Follow [the shared SMB content policy](docs/shared-assets-policy.md): `CommunityApps/` is a namespace root, never a free-form data dump. Only place owner-provided data in `CommunityApps/<actual manifest.id>/<documented-subdir>/`; for books use separate `books/<book-id>/` subfolders. Do not promise quotas or Samba ACL restrictions that the host does not currently enforce. Document every supported subdirectory, accepted file type and conflict behavior before shipping a new app.
 
 
 ## IMPORTANT: App wallpaper vs. category/Home card art (NG alpha.34+)
