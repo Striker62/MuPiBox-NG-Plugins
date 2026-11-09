@@ -1,5 +1,6 @@
 name: Buecherkiste code audit
 on:
+  workflow_dispatch:
   push:
     branches: [dev/buecherkiste-aufraeumen]
     paths:
@@ -66,3 +67,9 @@ jobs:
         run: |
           python3 tools/mupiapp.py pack examples/Buecherkiste dist/buecherkiste-ci.mupiapp --exclude README.md --exclude CSS_AUDIT.md
           python3 tools/mupiapp.py validate dist/buecherkiste-ci.mupiapp
+      - name: Upload Buecherkiste test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: buecherkiste-css-test
+          path: dist/buecherkiste-ci.mupiapp
+          if-no-files-found: error
