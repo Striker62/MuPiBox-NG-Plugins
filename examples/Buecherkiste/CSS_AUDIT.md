@@ -145,3 +145,7 @@ Entfernt wurde der vollständige alte 0.2.14-Dekorationsblock für `#shelf .book
 ## Neuer Bibliothekshintergrund – Teststand 2026-11-09
 
 Für den nächsten Test wurde in `style.css` die Hintergrunddatei von `buchladen-original.jpg` auf die bereits vom Nutzer in den Branch hochgeladene Datei `Fröhlicher Pauli Maulwurf in der Bibliothek.png` umgestellt (Commit `f80b9c4`). Die ursprüngliche JPG-Datei bleibt im Repository. Dies ist ein noch nicht auf dem Gerät getesteter Stand, zusammen mit der achten CSS-Bereinigung (`b492409`).
+
+## Gerätetest – achte CSS-Bereinigung und neuer Bibliothekshintergrund (2026-11-09)
+
+Nach Umbenennung des hochgeladenen Hintergrundbildes zu `bibliothek.png` und Anpassung der CSS-Referenz (Commit `711737b`) bestätigt der Nutzer für die MuPiBox auf dem 10,1-Zoll-Monitor: **„das bild passt und alles andere sieht gut aus und funktioniert“**. Damit sind sowohl die achte CSS-Bereinigung (`b492409`) als auch der neue Bibliothekshintergrund praktisch bestätigt. Die zuvor fehlgeschlagenen Paketläufe betrafen den nicht unterstützten Dateinamen mit Umlaut/Leerzeichen; das Problem wurde durch den einfachen Dateinamen behoben. Tests auf 5 und 7 Zoll stehen weiterhin aus.
