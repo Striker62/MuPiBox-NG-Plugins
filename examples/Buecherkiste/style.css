@@ -201,7 +201,7 @@
 
 
 /* 0.2.12: feste Buchhandlung und zwei feste Regalbretter; nur Bücher wechseln */
-#shelf{padding:0!important;position:relative;overflow:hidden;background:#754b31 url("buchladen-szene.svg") center center/cover no-repeat!important;}
+#shelf{padding:0!important;position:relative;overflow:hidden;}
 #shelf .shelf-header{height:clamp(38px,12vh,54px);background:linear-gradient(#1163a0,#064a7e);box-shadow:0 3px 8px #24180c88;z-index:5;}
 #shelf .books{--header-h:clamp(38px,12vh,54px);position:absolute;inset:var(--header-h) 6% 23px;display:grid!important;grid-template-columns:repeat(var(--shelf-cols,3),minmax(0,1fr))!important;grid-template-rows:repeat(var(--shelf-rows,2),minmax(0,1fr))!important;grid-auto-rows:auto!important;gap:0 2.5%!important;height:auto!important;width:auto!important;padding:0!important;margin:0!important;overflow:hidden!important;align-content:stretch!important;}
 #shelf .books::before,#shelf .books::after{content:"";position:absolute;left:0;right:0;height:12px;border-radius:3px;background:linear-gradient(#f4c081 0%,#c08349 30%,#88522c 70%,#4e2b19 100%);box-shadow:0 5px 7px #21130799;z-index:0;pointer-events:none;}
