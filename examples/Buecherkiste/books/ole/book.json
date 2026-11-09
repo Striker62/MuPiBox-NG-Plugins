@@ -4,6 +4,7 @@
   "cover": "images/01.jpg",
   "imagePattern": "images/{page:02d}.jpg",
   "firstPage": 1,
+  "pageCount": 16,
   "layout": "full-page",
   "tts": "tts/pages.json"
 }

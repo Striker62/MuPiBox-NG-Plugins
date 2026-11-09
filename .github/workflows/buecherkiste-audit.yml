@@ -1,0 +1,151 @@
+name: Buecherkiste code audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, dev/buecherkiste-aufraeumen, 'feature/buecherkiste-*']
+    paths:
+      - 'examples/Buecherkiste/**'
+      - 'tests/test_buecherkiste_shared.js'
+      - '.github/workflows/buecherkiste-audit.yml'
+  pull_request:
+    paths:
+      - 'examples/Buecherkiste/**'
+      - 'tests/test_buecherkiste_shared.js'
+      - '.github/workflows/buecherkiste-audit.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check JavaScript syntax
+        run: node --check examples/Buecherkiste/app.js
+      - name: Test additional SMB books and SDK
+        run: node --test tests/test_buecherkiste_shared.js tests/test_sdk_shared.js
+      - name: Check CSS brace and comment structure
+        shell: python
+        run: |
+          from pathlib import Path
+          s = Path('examples/Buecherkiste/style.css').read_text(encoding='utf-8')
+          depth = 0
+          quote = None
+          comment = False
+          escape = False
+          i = 0
+          while i < len(s):
+              c = s[i]
+              n = s[i+1] if i+1 < len(s) else ''
+              if comment:
+                  if c == '*' and n == '/':
+                      comment = False
+                      i += 2
+                      continue
+              elif quote:
+                  if escape:
+                      escape = False
+                  elif c == '\\':
+                      escape = True
+                  elif c == quote:
+                      quote = None
+              elif c == '/' and n == '*':
+                  comment = True
+                  i += 2
+                  continue
+              elif c in ('"', "'"):
+                  quote = c
+              elif c == '{':
+                  depth += 1
+              elif c == '}':
+                  depth -= 1
+                  if depth < 0:
+                      raise SystemExit('CSS: unexpected closing brace')
+              i += 1
+          if comment or quote or depth:
+              raise SystemExit(f'CSS incomplete: comment={comment}, quote={quote}, brace_depth={depth}')
+          print('CSS structure: OK')
+      - name: Build and validate Buecherkiste package
+        run: |
+          python3 tools/mupiapp.py pack examples/Buecherkiste dist/buecherkiste-ci.mupiapp --exclude README.md
+          python3 tools/mupiapp.py validate dist/buecherkiste-ci.mupiapp
+      - name: Inspect package integrity and file types
+        shell: python
+        run: |
+          from pathlib import Path
+          from zipfile import ZipFile, BadZipFile
+          import hashlib
+          import json
+          import stat
+
+          package = Path('dist/buecherkiste-ci.mupiapp')
+          if package.stat().st_size >= 25_000_000:
+              raise SystemExit('Buecherkiste package must stay below 25 MB')
+          allowed = {'.html', '.css', '.js', '.json', '.jpg', '.jpeg', '.png',
+                     '.svg', '.webp', '.gif', '.txt', '.md', '.woff', '.woff2',
+                     '.ttf', '.otf', '.mp3', '.ogg', '.wav', '.pdf'}
+          forbidden = {'.exe', '.dll', '.bat', '.cmd', '.ps1', '.vbs', '.scr',
+                       '.com', '.msi', '.sh', '.so', '.py', '.php', '.jar'}
+          try:
+              with ZipFile(package) as archive:
+                  if archive.testzip() is not None:
+                      raise SystemExit('Package ZIP CRC check failed')
+                  entries = [i for i in archive.infolist() if not i.is_dir()]
+                  if not entries:
+                      raise SystemExit('Package has no files')
+                  names = set()
+                  for info in entries:
+                      name = info.filename
+                      path = Path(name)
+                      if (name.startswith('/') or '\\' in name or
+                              '..' in path.parts or name in names):
+                          raise SystemExit(f'Unsafe or duplicate ZIP path: {name}')
+                      names.add(name)
+                      if stat.S_ISLNK(info.external_attr >> 16):
+                          raise SystemExit(f'Symlink not allowed: {name}')
+                      suffix = path.suffix.lower()
+                      if suffix in forbidden or suffix not in allowed:
+                          raise SystemExit(f'Unexpected file type: {name}')
+                  if 'manifest.json' not in names or 'index.html' not in names:
+                      raise SystemExit('Missing required app files')
+                  manifest = json.loads(archive.read('manifest.json'))
+                  if manifest.get('id') != 'community.buecherkiste':
+                      raise SystemExit('Unexpected app identifier')
+                  if manifest.get('runtime') != 'web':
+                      raise SystemExit('Unexpected app runtime')
+                  if manifest.get('permissions') != ['shared-assets']:
+                      raise SystemExit('Unexpected app permissions')
+                  for name in sorted(names):
+                      digest = hashlib.sha256(archive.read(name)).hexdigest()
+                      print(f'{digest}  {name}')
+                  print(f'Validated {len(entries)} package files')
+          except BadZipFile as exc:
+              raise SystemExit(f'Invalid package ZIP: {exc}')
+          print(f'Package SHA256: {hashlib.sha256(package.read_bytes()).hexdigest()}')
+      - name: Install ClamAV antivirus scanner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clamav clamav-freshclam
+          sudo systemctl stop clamav-freshclam.service || true
+          sudo freshclam
+
+      - name: Antivirus scan package and extracted contents
+        run: |
+          mkdir -p dist/buecherkiste-scan
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          with ZipFile('dist/buecherkiste-ci.mupiapp') as archive:
+              archive.extractall('dist/buecherkiste-scan')
+          PY
+          clamscan --version
+          clamscan --infected --scan-archive=yes dist/buecherkiste-ci.mupiapp
+          clamscan --recursive --infected dist/buecherkiste-scan
+
+      - name: Upload Buecherkiste test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: buecherkiste-css-test
+          path: dist/buecherkiste-ci.mupiapp
+          if-no-files-found: error
