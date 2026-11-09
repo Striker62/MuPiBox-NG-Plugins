@@ -43,9 +43,11 @@ Stand: 2026-11-09. Diese Datei ist eine Übergabehilfe für neue Entwicklungs-Ch
 Der eigenständige Flask-/Music-Assistant-Webplayer ist nicht automatisch Teil dieses Plugin-Repositories. Seine Versionen und Änderungen getrennt verwalten.
 
 
-## Display-Vorgabe (ergänzt 2026-11-09)
-- Aktuell genutzter MuPiBox-Bildschirm: **10,1 Zoll**.
-- Zusätzlich verfügbarer Testbildschirm: **5 Zoll**; wird bei Bedarf angeschlossen.
-- Neue und überarbeitete Community-Apps nach Möglichkeit auf beiden Größen gut bedienbar gestalten, insbesondere Touch-Ziele, Texte, Cover, Navigation und flexible Layouts.
-- **Die Auflösungen beider Bildschirme sind noch nicht bestätigt.** Zollgröße nicht mit Pixelauflösung gleichsetzen; nach Ermittlung beide tatsächlichen Auflösungen testen.
-- Performance-Budget der MuPiBox auf Raspberry Pi 4 beachten; keine unnötigen Animationen oder rechenintensiven Effekte.
+## Display-Vorgabe (aktualisiert 2026-11-09)
+- **Grundprinzip: responsiv und auflösungsunabhängig**, keine Bindung an einzelne Pixelauflösungen oder Zollgrößen.
+- Aktueller Bildschirm: **10,1 Zoll**; vorhandener Testbildschirm: **5 Zoll**. **7 Zoll** als zusätzliche Zielgröße für die Layout- und Bedienbarkeitsprüfung einbeziehen (kein vorhandener 7-Zoll-Testmonitor bestätigt).
+- Flexible CSS-Layouts, relative Größen und sinnvolle Breakpoints nach verfügbarem Platz; sowohl Breite als auch Höhe berücksichtigen.
+- Touch-Ziele, Text, Navigation und Cover auch auf kleineren Anzeigen nutzbar halten; Bilder ohne Verzerrung.
+- Die tatsächlichen Auflösungen sind noch nicht bestätigt. Auf mehreren Viewportgrößen testen, zusätzlich auf dem realen 5-Zoll-Monitor, wenn angeschlossen.
+- Leistung des Raspberry Pi 4 schonen: CSS statt aufwendiger Animationen oder unnötiger JavaScript-Neuberechnungen.
+- Bestehende optische Darstellung nicht ohne Vergleich verändern; responsive Umstellungen gesondert testen.
