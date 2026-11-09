@@ -233,20 +233,15 @@
 
 /* 0.2.15: Dekorative Regale im Hintergrund, keine doppelten CSS-Bretter. */
 
-#shelf .books{inset:12% 14% 15%!important;}
+
 
 #shelf .books .book-slot{padding-bottom:0!important;}
 #shelf .books .book-slot .book{padding:0 4px 0!important;}
 #shelf .books .book-slot .book img{max-height:82%!important;max-width:74%!important;}
 
 
-/* 0.2.16 – statischer, scharfer Buchladen; dynamische Cover als Overlay */
-#shelf{background-image:url("buchladen-leere-regale.jpg")!important;background-size:100% 100%!important;}
-#shelf .books{inset:12% 14% 15%!important;z-index:2;}
-#shelf .books::before,#shelf .books::after{display:none!important;}
-#shelf .books .book-slot .book::after{display:none!important;}
+/* 0.2.16 – beibehaltene Bildfilter-Korrektur */
 #shelf .books .book-slot .book img{filter:none!important;backdrop-filter:none!important;}
-#shelf .shelf-header{background:transparent!important;box-shadow:none!important;}
 
 
 
