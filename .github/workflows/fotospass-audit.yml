@@ -1,0 +1,76 @@
+name: FotoSpass code audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, 'dev/fotospass-*']
+    paths:
+      - 'examples/fotospass/**'
+      - 'tests/test_fotospass_shared.js'
+      - 'tests/test_catalog.py'
+      - '.github/workflows/fotospass-audit.yml'
+  pull_request:
+    paths:
+      - 'examples/fotospass/**'
+      - 'tests/test_fotospass_shared.js'
+      - 'tests/test_catalog.py'
+      - '.github/workflows/fotospass-audit.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check JavaScript and official SDK
+        run: |
+          node --check examples/fotospass/app.js
+          node --check examples/fotospass/mupibox-sdk.js
+          python3 -c "from pathlib import Path; assert Path('examples/fotospass/mupibox-sdk.js').read_bytes() == Path('sdk/mupibox-sdk.js').read_bytes()"
+      - name: Test SMB accessories, photo saving and SDK
+        run: |
+          node --test tests/test_fotospass_shared.js tests/test_sdk_shared.js tests/test_sdk_photos.js tests/test_sdk_camera_volume.js
+          python3 -m unittest discover -s tests -p test_catalog.py -v
+      - name: Build and validate FotoSpass package
+        run: |
+          python3 tools/mupiapp.py pack examples/fotospass dist/fotospass-0.5.3.mupiapp --exclude README.md
+          python3 tools/mupiapp.py validate dist/fotospass-0.5.3.mupiapp
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          from zipfile import ZipFile
+          package = Path('dist/fotospass-0.5.3.mupiapp')
+          if package.stat().st_size >= 25_000_000:
+              raise SystemExit('Package must stay below 25 MB')
+          with ZipFile(package) as archive:
+              assert archive.testzip() is None
+              manifest = json.loads(archive.read('manifest.json'))
+              assert manifest['id'] == 'community.fotospass'
+              assert manifest['permissions'] == ['camera', 'photo-save', 'shared-assets']
+              assert manifest['sharedDirectories'] == ['accessoires']
+          print('SHA256:', hashlib.sha256(package.read_bytes()).hexdigest())
+          PY
+      - name: Install ClamAV antivirus scanner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clamav clamav-freshclam
+          sudo systemctl stop clamav-freshclam.service || true
+          sudo freshclam
+      - name: Antivirus scan package and contents
+        run: |
+          mkdir -p dist/fotospass-scan
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          with ZipFile('dist/fotospass-0.5.3.mupiapp') as archive:
+              archive.extractall('dist/fotospass-scan')
+          PY
+          clamscan --infected --scan-archive=yes dist/fotospass-0.5.3.mupiapp
+          clamscan --recursive --infected dist/fotospass-scan
+      - name: Upload FotoSpass test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: fotospass-smb-test
+          path: dist/fotospass-0.5.3.mupiapp
+          if-no-files-found: error

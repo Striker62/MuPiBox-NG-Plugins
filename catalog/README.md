@@ -24,6 +24,13 @@ On new versions, upload the vetted artifact as an official Release asset, then u
 
 The catalog only lists **curated official copies** of apps; do not link arbitrary third-party URLs because this would bypass the host's download allowlist.
 
+Source examples may be newer than published releases and request different
+supported permissions. The catalog must continue to describe the published
+package, not unreleased source. CI requires the same app ID and a source version
+no older than the release; matching versions must match name and permissions.
+The installer still checks published bytes against the catalog and asks for
+approval of newly requested permissions when a new release is installed.
+
 ## Camera-capable catalog apps
 
 A catalog entry with the `camera` permission must explain why it needs an attached USB/V4L2 camera. Admin approval at installation does **not** turn the camera on: the trusted local touchscreen asks for explicit session consent each time. A red Stop indicator is always visible. Camera apps are local-only; media is not uploaded or persisted by the host. For the experimental `official.webcam-preview` app, device capture has not been validated with physical hardware on Box 85.

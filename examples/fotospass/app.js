@@ -27,6 +27,91 @@ accessoryImages["party-hat"]="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAA
 let active=false,frozen=false,busy=false,timer=null,epoch=0,painting=false,counting=false,countTimer=null,countValue=5;
 let saving=false, autoStartSuppressed=false, autoStarting=false, lastCameraId='';
 let color=colors[0],size=5,eraser=false,history=[],items=[],selected=null,nextId=1,mode='stickers',drag=null,undoBusy=false;
+// Owner-provided PNGs are read only from the declared accessoires directory.
+const builtInCategoryTypes=new Map(categories.map(c=>[c.id,[...c.types]]));
+const sharedAccessories=new Map(),accessoryCache=new Map(),accessoryLoads=new Map();
+const savingAccessoryTypes=new Set();
+let accessoryRefresh=null,accessoriesClosed=false;
+const MAX_ACCESSORY_BYTES=2*1024*1024,MAX_ACCESSORY_PIXELS=1024;
+function safeAccessoryName(name){return typeof name==='string'&&name.length<=100&&/^[\p{L}\p{N}_ -]+\.png$/iu.test(name)&&!name.startsWith(' ')}
+function accessoryLabel(type){return sharedAccessories.get(type)?.label||type.replaceAll('-',' ')}
+function accessoryHeight(item,width=photo.width,height=photo.height){return item.aspect?item.width*width/height/item.aspect:item.width*100/160}
+function releaseUnusedAccessories(){
+ const category=categories.find(c=>c.id===accessoryCategory);
+ const keep=new Set([...(category?.types||[]),...items.map(x=>x.type),...savingAccessoryTypes]);
+ for(const [type,entry] of accessoryCache){if(!keep.has(type)){URL.revokeObjectURL(entry.url);accessoryCache.delete(type)}}
+}
+async function accessorySource(type){
+ if(!sharedAccessories.has(type)){
+  if(!Object.hasOwn(accessoryImages,type))throw Error('Unbekanntes Accessoire');
+  return accessoryImages[type];
+ }
+ if(accessoriesClosed)throw Error('App geschlossen');
+ if(accessoryCache.has(type))return accessoryCache.get(type).url;
+ if(accessoryLoads.has(type))return accessoryLoads.get(type);
+ const pending=(async()=>{
+  const entry=sharedAccessories.get(type),blob=await sdk.shared.read(entry.path);
+  if(!(blob instanceof Blob)||blob.size<33||blob.size>MAX_ACCESSORY_BYTES)throw Error('PNG muss kleiner als 2 MiB sein');
+  const header=new Uint8Array(await blob.slice(0,33).arrayBuffer());
+  if(![137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82].every((v,i)=>header[i]===v))throw Error('Keine gültige PNG-Datei');
+  const view=new DataView(header.buffer),width=view.getUint32(16),height=view.getUint32(20);
+  if(!width||!height||width>MAX_ACCESSORY_PIXELS||height>MAX_ACCESSORY_PIXELS)throw Error('PNG darf höchstens 1024 × 1024 Pixel haben');
+  if(accessoriesClosed)throw Error('App geschlossen');
+  const url=URL.createObjectURL(new Blob([blob],{type:'image/png'}));
+  try{
+   await new Promise((resolve,reject)=>{const image=new Image();image.onload=resolve;image.onerror=()=>reject(Error('PNG nicht lesbar'));image.src=url});
+   if(accessoriesClosed)throw Error('App geschlossen');
+   releaseUnusedAccessories();
+   const used=[...accessoryCache.values()].reduce((sum,image)=>sum+image.bytes,0);
+   if(accessoryCache.size>=32||used+blob.size>16*1024*1024)throw Error('Accessoire-Speicher voll; bitte ein neues Foto beginnen');
+   entry.width=width;entry.height=height;
+   accessoryCache.set(type,{url,bytes:blob.size});
+   return url;
+  }catch(e){URL.revokeObjectURL(url);throw e}
+ })();
+ accessoryLoads.set(type,pending);
+ try{return await pending}finally{accessoryLoads.delete(type)}
+}
+function setAccessoryImage(image,type,button=null){
+ if(button&&sharedAccessories.has(type))button.disabled=true;
+ void accessorySource(type).then(url=>{
+  if(image.isConnected){image.src=url;if(button)button.disabled=false}
+  releaseUnusedAccessories();
+ }).catch(e=>{if(button)button.disabled=true;console.warn('Accessoire nicht geladen:',type,e)});
+}
+async function loadSharedAccessories(){
+ if(accessoryRefresh)return accessoryRefresh;
+ if(typeof sdk.shared?.list!=='function'||typeof sdk.shared?.read!=='function'||accessoriesClosed)return;
+ accessoryRefresh=(async()=>{
+  const found=new Map();
+  for(const category of categories){
+   if(accessoriesClosed)return;
+   const types=[];
+   try{
+    const listing=await sdk.shared.list('accessoires/'+category.id);
+    const names=[...new Set(listing.entries.filter(e=>e?.isDir===false&&safeAccessoryName(e.name)).map(e=>e.name))].sort((a,b)=>a.localeCompare(b,'de')).slice(0,12);
+    for(const name of names){
+     const type='shared:'+category.id+':'+name;
+     const previous=sharedAccessories.get(type);
+     sharedAccessories.set(type,previous||{path:'accessoires/'+category.id+'/'+name,label:name.replace(/\.png$/i,'').replaceAll('_',' ')});
+     types.push(type);
+    }
+    if(listing.truncated)console.warn('Accessoire-Verzeichnis wurde gekürzt:',category.id);
+   }catch(e){console.warn('SMB-Accessoires nicht verfügbar:',category.id,e)}
+   found.set(category.id,types);
+  }
+  if(accessoriesClosed)return;
+  for(const category of categories)category.types=[...builtInCategoryTypes.get(category.id),...found.get(category.id)];
+  renderAccessoryMenu();
+ })();
+ try{await accessoryRefresh}finally{accessoryRefresh=null}
+}
+window.addEventListener('pagehide',()=>{
+ accessoriesClosed=true;
+ for(const entry of accessoryCache.values())URL.revokeObjectURL(entry.url);
+ accessoryCache.clear();
+});
+
 const say=s=>{$('message').textContent=s};
 function controls(){
  $('freeze').textContent='📷 Foto machen ('+delay.value+' Sek.)';delay.disabled=counting;
@@ -67,8 +152,20 @@ function draw(e){if(!painting||!frozen||mode!=='paint')return;e.preventDefault()
 canvas.addEventListener('pointerdown',e=>{if(!frozen||mode!=='paint')return;e.preventDefault();saveHistory();painting=true;canvas.setPointerCapture(e.pointerId);const p=point(e);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.strokeStyle=color;ctx.globalCompositeOperation=eraser?'destination-out':'source-over';ctx.lineWidth=size;ctx.lineCap='round';ctx.lineTo(p.x+.01,p.y+.01);ctx.stroke()});
 canvas.addEventListener('pointermove',draw);for(const ev of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(ev,()=>{painting=false;ctx.beginPath();ctx.globalCompositeOperation='source-over'});
 function setMode(m){mode=m;$('tab-stickers').classList.toggle('chosen',m==='stickers');$('tab-paint').classList.toggle('chosen',m==='paint');$('sticker-tools').hidden=m!=='stickers';$('paint-tools').hidden=m!=='paint';canvas.classList.toggle('passthrough',m==='stickers');canvas.classList.toggle('drawable',m==='paint');stickersBox.style.pointerEvents=m==='stickers'?'auto':'none';for(const el of stickersBox.children)el.style.pointerEvents=m==='stickers'?'auto':'none'}
-function renderStickers(){stickersBox.replaceChildren();for(const item of items){const el=document.createElement('img');el.src=accessoryImages[item.type];el.alt=item.type;el.draggable=false;el.className='sticker'+(selected===item.id?' selected':'');el.dataset.id=String(item.id);el.style.left=item.x+'%';el.style.top=item.y+'%';el.style.width=item.width+'%';el.style.height=(item.width*100/160)+'%';el.style.pointerEvents=mode==='stickers'?'auto':'none';el.addEventListener('pointerdown',stickerDown);stickersBox.append(el)}}
-function addSticker(type){if(!frozen)return;saveHistory();const id=nextId++;items.push({id,type,x:50,y:43,width:type==='moustache'?25:36});selected=id;renderStickers();controls();say('Mit dem Finger verschieben, mit + / − Größe ändern.')}
+function renderStickers(){stickersBox.replaceChildren();for(const item of items){const el=document.createElement('img');setAccessoryImage(el,item.type);el.alt=accessoryLabel(item.type);el.draggable=false;el.className='sticker'+(selected===item.id?' selected':'');el.dataset.id=String(item.id);el.style.left=item.x+'%';el.style.top=item.y+'%';el.style.width=item.width+'%';el.style.height=accessoryHeight(item)+'%';el.style.pointerEvents=mode==='stickers'?'auto':'none';el.addEventListener('pointerdown',stickerDown);stickersBox.append(el)}}
+async function addSticker(type){
+ if(!frozen)return;
+ const photoEpoch=epoch;
+ try{
+  if(sharedAccessories.has(type))await accessorySource(type);
+  if(!frozen||photoEpoch!==epoch)return;
+  saveHistory();
+  const id=nextId++,source=sharedAccessories.get(type);
+  items.push({id,type,x:50,y:43,width:type==='moustache'?25:36,...(source?{aspect:source.width/source.height}:{})});
+  selected=id;renderStickers();controls();say('Mit dem Finger verschieben, mit + / − Größe ändern.');
+ }catch(e){say('Accessoire nicht verfügbar: '+e.message)}
+}
+
 function stickerDown(e){if(mode!=='stickers')return;e.preventDefault();e.stopPropagation();const id=Number(e.currentTarget.dataset.id);selected=id;const item=items.find(x=>x.id===id);if(!item)return;saveHistory();drag={id,pointer:e.pointerId,startX:e.clientX,startY:e.clientY,x:item.x,y:item.y};e.currentTarget.setPointerCapture(e.pointerId);renderSelection();controls()}
 function renderSelection(){for(const el of stickersBox.children)el.classList.toggle('selected',Number(el.dataset.id)===selected)}
 stickersBox.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.pointer||mode!=='stickers')return;e.preventDefault();const b=stickersBox.getBoundingClientRect(),item=items.find(x=>x.id===drag.id);if(!item||!b.width||!b.height)return;item.x=Math.max(0,Math.min(100,drag.x+(e.clientX-drag.startX)/b.width*100));item.y=Math.max(0,Math.min(100,drag.y+(e.clientY-drag.startY)/b.height*100));const el=Array.from(stickersBox.children).find(x=>Number(x.dataset.id)===item.id);if(el){el.style.left=item.x+'%';el.style.top=item.y+'%'}});
@@ -85,20 +182,22 @@ function renderAccessoryMenu(){
  for(const option of options){
   const isCategory=!selectedCategory;
   const type=isCategory?option.icon:option;
-  const label=isCategory?option.label:option.replaceAll('-',' ');
+  const label=isCategory?option.label:accessoryLabel(option);
   const b=document.createElement('button'),im=document.createElement('img');
   b.type='button';b.setAttribute('aria-label',label);b.title=label;
-  im.src=accessoryImages[type];im.alt='';
+  setAccessoryImage(im,type,b);im.alt='';
   b.append(im);
   b.addEventListener('click',()=>{
    if(isCategory){accessoryCategory=option.id;renderAccessoryMenu()}
-   else addSticker(type);
+   else void addSticker(type);
   });
   grid.append(b);
  }
+ releaseUnusedAccessories();
 }
 $('accessory-back').addEventListener('click',()=>{accessoryCategory=null;renderAccessoryMenu()});
 renderAccessoryMenu();
+void loadSharedAccessories();
 for(const c of colors){const b=document.createElement('button');b.className='swatch'+(c===color?' chosen':'');b.style.backgroundColor=c;b.title='Farbe '+c;b.setAttribute('aria-label','Farbe '+c);b.addEventListener('click',()=>{color=c;eraser=false;document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('chosen'));b.classList.add('chosen');$('eraser').classList.remove('chosen')});$('colors').append(b)}
 document.querySelectorAll('[data-size]').forEach(b=>b.addEventListener('click',()=>{size=Number(b.dataset.size);document.querySelectorAll('[data-size]').forEach(x=>x.classList.remove('chosen'));b.classList.add('chosen')}));
 $('eraser').addEventListener('click',()=>{eraser=!eraser;$('eraser').classList.toggle('chosen',eraser)});
@@ -109,11 +208,11 @@ $('undo').addEventListener('click',()=>{
  finally{undoBusy=false;controls()}
 });
 $('clear').addEventListener('click',()=>{if(!frozen)return;saveHistory();ctx.clearRect(0,0,canvas.width,canvas.height);items=[];selected=null;renderStickers();controls()});
-$('tab-stickers').addEventListener('click',()=>setMode('stickers'));$('tab-paint').addEventListener('click',()=>setMode('paint'));
+$('tab-stickers').addEventListener('click',()=>{setMode('stickers');void loadSharedAccessories()});$('tab-paint').addEventListener('click',()=>setMode('paint'));
 $('smaller').addEventListener('click',()=>resizeSticker(.85));$('larger').addEventListener('click',()=>resizeSticker(1.18));$('remove-sticker').addEventListener('click',removeSticker);$('finish-sticker').addEventListener('click',finishSticker);
 
 // Zusammengesetztes Foto: Hintergrund, Zeichnungen und Accessoires ohne Auswahlrahmen.
-function loadAccessory(type){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('Accessoire konnte nicht geladen werden: '+type));im.src=accessoryImages[type]})}
+async function loadAccessory(type){const source=await accessorySource(type);return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('Accessoire konnte nicht geladen werden: '+type));im.src=source})}
 async function savePhoto(){
  if(!frozen||saving)return;
  saving=true;controls();say('Fertiges Foto wird gespeichert …');
@@ -122,10 +221,12 @@ async function savePhoto(){
   const out=document.createElement('canvas');out.width=photo.width;out.height=photo.height;
   const c=out.getContext('2d');c.drawImage(photo,0,0);c.drawImage(canvas,0,0);
   // Sticker liegen im Editor in einer Prozent-Box; die Darstellung ist auf 160:100 normiert.
-  for(const item of items){
+  const snapshot=items.map(item=>({...item}));
+  for(const item of snapshot)savingAccessoryTypes.add(item.type);
+  for(const item of snapshot){
    const im=await loadAccessory(item.type);
    const w=out.width*item.width/100;
-   const h=out.height*(item.width/160);
+   const h=out.height*accessoryHeight(item,out.width,out.height)/100;
    const x=out.width*item.x/100-w/2;
    const y=out.height*item.y/100-h/2;
    c.drawImage(im,x,y,w,h);
@@ -134,7 +235,7 @@ async function savePhoto(){
   const result=await sdk.photos.save(blob);
   say('✓ Foto gespeichert!'+(result?.id?' ID: '+result.id:''));
  }catch(e){say('Speichern fehlgeschlagen: '+(e?.message||String(e)))}
- finally{saving=false;controls()}
+ finally{savingAccessoryTypes.clear();releaseUnusedAccessories();saving=false;controls()}
 }
 $('save-photo').addEventListener('click',()=>void savePhoto());
 

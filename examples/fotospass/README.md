@@ -12,6 +12,65 @@ FotoSpaß ist ein kindgerechtes Fotobox-Plugin für MuPiBox-NG.
 - Fertige Fotos über die MuPiBox-Foto-API speichern
 - Galerie mit Vorschaubildern und Großansicht
 - Einzelne Fotos mit Sicherheitsabfrage löschen
+- Bestehende bildbasierte Kategorien: Bärte, Tiere, Fantasie, Brillen und Hüte
+- Eigene PNG-Accessoires zusätzlich über SMB laden und im Foto mitspeichern
+
+## Eigene Accessoires (ab 0.5.3)
+
+Ausgangspunkt ist das vom Anwender bereitgestellte, funktionierende Paket
+`FotoSpass-0.5.2.mupiapp`. Kategorien, Darstellung und Kamerabedienung werden
+beibehalten. Die verkürzte SDK-Datei dieses Pakets wird durch das offizielle
+SDK aus `sdk/mupibox-sdk.js` ersetzt.
+
+Für den SMB-Zugriff nennt die aktuelle SDK-Dokumentation **MuPiBox NG
+0.2.0-alpha.40 oder neuer** als Voraussetzung. Die App fordert zusätzlich
+`shared-assets` an und deklariert `sharedDirectories: ["accessoires"]`.
+Die Berechtigung muss bei Installation bzw. Update bestätigt werden.
+Der Zugriff ist ausschließlich lesend und nur auf dem lokalen Touchscreen
+verfügbar; die entfernte Admin-Vorschau lädt keine SMB-Accessoires.
+
+Unter der vorhandenen SMB-Freigabe gilt diese Struktur:
+
+```text
+CommunityApps/
+  community.fotospass/
+    accessoires/
+      baerte/
+        vollbart.png
+      tiere/
+        katzenohren.png
+      fantasie/
+        zauberhut.png
+      brillen/
+        meine-brille.png
+      huete/
+        sommerhut.png
+```
+
+Die Ordner ergänzen die bereits vorhandenen Kategorien. Beispiel unter Windows:
+`Q:\CommunityApps\community.fotospass\accessoires\brillen\meine-brille.png`.
+Es wird nicht rekursiv gesucht und keine `index.json` benötigt.
+Eingebaute Accessoires bleiben immer erhalten; auch eine eigene `glasses.png`
+ersetzt die eingebaute Brille nicht. Fehlende Ordner oder eine verweigerte
+Freigabe blockieren die eingebauten Accessoires nicht.
+
+Unterstützt werden **PNG-Dateien**, empfohlen mit transparentem Hintergrund und
+etwa 512 × 512 Pixeln. Grenzen: maximal 1024 Pixel je Bildseite, 2 MiB pro Datei,
+12 eigene Dateien je Kategorie (bis zu 60 insgesamt). Dateinamen dürfen
+Buchstaben einschließlich Umlauten, Ziffern, Leerzeichen, Unterstriche und
+Bindestriche enthalten; Dateiendung `.png` bzw. `.PNG`, maximal 100 Zeichen.
+Versteckte Dateien, Pfadbestandteile, SVG und andere Bildformate werden ignoriert.
+Die Dateinamen dienen als Bezeichnung für Hilfetexte und Bedienhilfen; die
+Bildauswahl bleibt wie bisher ohne sichtbare Textbeschriftung.
+
+Beim App-Start und beim erneuten Öffnen des Reiters **Accessoires** wird die
+Dateiliste aktualisiert. Bilder werden erst bei Bedarf eingelesen und geprüft.
+Bereits geladene Bilder bleiben während der Bearbeitung verfügbar; geänderte
+Bilddateien werden nach einem App-Neustart neu gelesen. Eigene PNGs behalten
+beim Platzieren und Speichern ihr Seitenverhältnis und ihre Transparenz.
+Der Bildcache ist auf 32 PNGs und zusammen 16 MiB begrenzt; nicht mehr benötigte
+Bildadressen und beim Schließen auch noch ausstehende Ladevorgänge werden
+bereinigt. Diese App-Grenzen sind keine Quote für den SMB-Speicher des Besitzers.
 
 ## Hardware
 
@@ -29,7 +88,32 @@ Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginv
 
 ## Version
 
-0.4.2
+0.5.3 (SMB-Testversion, Gerätetest noch offen)
+
+## Prüfungen und Gerätetest
+
+```sh
+node --test tests/test_fotospass_shared.js tests/test_sdk_shared.js tests/test_sdk_photos.js tests/test_sdk_camera_volume.js
+python3 tools/mupiapp.py validate dist/fotospass.mupiapp
+```
+
+Der FotoSpaß-Audit prüft Code und SDK, baut das Paket und scannt es sowie seinen
+Inhalt mit ClamAV. Die automatischen Tests verwenden einen simulierten Host;
+Kamera, Touchbedienung und PNG-Darstellung auf der MuPiBox müssen separat
+getestet werden:
+
+1. Update installieren und `shared-assets` bestätigen.
+2. Ein transparentes PNG unter `accessoires/brillen/` ablegen.
+3. Ein Foto aufnehmen; die eigene Brille muss zusätzlich in **Brillen** erscheinen.
+4. Brille platzieren, skalieren, rückgängig machen und mit Malen kombinieren.
+5. Foto speichern und in der Galerie prüfen: Position, Seitenverhältnis und
+   Transparenz müssen erhalten bleiben.
+6. Die eingebauten Accessoires, ein neues Foto und das Löschen mit Bestätigung
+   wie bisher prüfen. Ohne SMB-Freigabe müssen die eingebauten weiter funktionieren.
+
+Der offizielle Katalog bleibt auf das veröffentlichte Paket festgelegt.
+Eine spätere Veröffentlichung erfordert einen passenden neuen Release-Eintrag;
+dieser Entwicklungsbranch ändert `catalog/apps.json` nicht.
 
 ## Geplante Erweiterung
 
