@@ -109,7 +109,7 @@ jobs:
                       raise SystemExit('Unexpected app identifier')
                   if manifest.get('runtime') != 'web':
                       raise SystemExit('Unexpected app runtime')
-                  if manifest.get('permissions') != []:
+                  if manifest.get('permissions') != ['shared-assets']:
                       raise SystemExit('Unexpected app permissions')
                   for name in sorted(names):
                       digest = hashlib.sha256(archive.read(name)).hexdigest()
