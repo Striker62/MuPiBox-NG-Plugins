@@ -4,13 +4,13 @@
     {
       "id": "community.tictactoe",
       "name": "MuPi Kreuz & Kreis",
-      "description": "Kreuz & Kreis: 2 Spieler oder MuPi-KI (leicht, normal, schwer), 7 Boxsprachen, Touch/Controller.",
+      "description": "Kreuz & Kreis mit transparenten Feldern und Einstellungsbereich: das gewählte MuPiBox-Theme bleibt sichtbar.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.3",
-      "releaseTag": "v0.1.0-preview.13",
+      "version": "0.2.4",
+      "releaseTag": "v0.1.0-preview.16",
       "asset": "mupi-kreuz-kreis.mupiapp",
-      "sha256": "132b39f5a1f5f7776d81e56848eaa0be36c2c555b6ee4dcb139d9e631cf71ba6",
+      "sha256": "4b66289a1c5f5add0cbfc5ed8cfd3468f9a7f11d4d3cfdc38e1b368b9b6a8d41",
       "permissions": [
         "storage",
         "controller"
