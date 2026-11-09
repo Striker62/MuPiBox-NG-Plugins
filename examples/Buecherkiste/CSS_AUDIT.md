@@ -141,3 +141,7 @@ Entfernt wurde der vollständige alte 0.2.14-Dekorationsblock für `#shelf .book
 
 - **278 Zeichen** entfernt; kumulativ **1997 Zeichen**.
 - GitHub-CI und Sichttest für diese Änderung stehen noch aus; 5- und 7-Zoll-Tests ebenfalls.
+
+## Neuer Bibliothekshintergrund – Teststand 2026-11-09
+
+Für den nächsten Test wurde in `style.css` die Hintergrunddatei von `buchladen-original.jpg` auf die bereits vom Nutzer in den Branch hochgeladene Datei `Fröhlicher Pauli Maulwurf in der Bibliothek.png` umgestellt (Commit `f80b9c4`). Die ursprüngliche JPG-Datei bleibt im Repository. Dies ist ein noch nicht auf dem Gerät getesteter Stand, zusammen mit der achten CSS-Bereinigung (`b492409`).
