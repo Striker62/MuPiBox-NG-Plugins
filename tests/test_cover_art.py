@@ -11,7 +11,7 @@ APPS = (
     ("crumbworm", "cover.jpg", "icon.png", "0.2.2"),
     ("chess", "cover.jpg", "icon.png", "0.1.2"),
     ("klang-memory", "cover.jpg", "icon.png", "0.1.3"),
-    ("Buecherkiste", "cover-large.jpg", "icon-large.png", "0.2.27"),
+    ("Buecherkiste", "cover-axolotl-v028.jpg", "icon-axolotl-v028.png", "0.2.28"),
     ("fotospass", "cover.jpg", "icon.png", "0.5.6"),
 )
 
@@ -47,7 +47,7 @@ class CoverArtTests(unittest.TestCase):
                 asset_dir = directory/"web" if app in ("chess", "crumbworm") else directory
                 cover_bytes = (asset_dir/cover).read_bytes()
                 icon_bytes = (asset_dir/icon).read_bytes()
-                self.assertEqual(jpeg_dimensions(cover_bytes), (416,325))
+                self.assertEqual(jpeg_dimensions(cover_bytes), (832,650) if app == "Buecherkiste" else (416,325))
                 self.assertGreater(len(cover_bytes), 20000)
                 self.assertTrue(icon_bytes.startswith(b"\x89PNG\r\n\x1a\n"))
                 self.assertEqual(struct.unpack(">II", icon_bytes[16:24]), (192,192))

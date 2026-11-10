@@ -1,8 +1,14 @@
 # Bücherkiste für MuPiBox-NG
 
-Version **0.2.27** · Community-App · Web-Runtime · App-ID `community.buecherkiste`
+Version **0.2.28** · Community-App · Web-Runtime · App-ID `community.buecherkiste`
 
-Ab Version 0.2.27 verwenden Kachel und Icon das vergrößerte MuPi-Axolotl-Motiv (`cover-large.jpg` / `icon-large.png`), damit Schrift und MuPi auf dem Touch-Display deutlicher zu erkennen sind. Die neuen Dateinamen vermeiden veraltete Qt-Bildcache-Einträge.
+Ab Version 0.2.28 verwendet die Kachel die neue Illustration mit großem
+orangefarbenem MuPi-Axolotl und aufgeschlagenem blauem Zauberbuch
+(`cover-axolotl-v028.jpg`, **832 × 650 Pixel**), mit eigenem
+`icon-axolotl-v028.png` (**192 × 192 Pixel**). Das Titelbanner ist auch
+im Coverflow vollständig erhalten; die quadratische Icon-Darstellung
+verzichtet auf das Abschneiden des Titels. Die neuen Dateinamen verhindern
+veraltete Bildcaches beim Upgrade von 0.2.27.
 
 Die Bücherkiste zeigt Bilderbücher in einer illustrierten Buchhandlung. Bücher
 lassen sich per Touch öffnen, durchblättern und vergrößern. Die zwei eingebauten
