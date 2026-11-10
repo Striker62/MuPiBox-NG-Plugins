@@ -4,7 +4,7 @@
   "name": "Bücherkiste",
   "description": "Bücherkiste mit zusätzlichen Büchern aus dem eigenen SMB-Ordner",
   "author": "MuPiBox Community",
-  "version": "0.2.26",
+  "version": "0.2.27",
   "runtime": "web",
   "entry": "index.html",
   "permissions": [
@@ -19,6 +19,6 @@
     "minHeight": 240,
     "showBackButton": false
   },
-  "cover": "cover.jpg",
-  "icon": "icon.png"
+  "cover": "cover-large.jpg",
+  "icon": "icon-large.png"
 }
