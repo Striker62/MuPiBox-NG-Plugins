@@ -31,13 +31,30 @@ test('only back and four touch direction controls remain', () => {
   assert.match(js, /sdk\.exit\(\)/);
 });
 
-test('directions are vertically beside the field with left and right below', () => {
-  assert.match(css, /\.direction-up\{grid-column:1 \/ 3;grid-row:1;justify-self:end\}/);
-  assert.match(css, /\.direction-down\{grid-column:1 \/ 3;grid-row:2;justify-self:end\}/);
-  assert.match(css, /\.direction-left\{grid-column:1;grid-row:3\}/);
-  assert.match(css, /\.direction-right\{grid-column:2;grid-row:3\}/);
-  assert.match(css, /grid-template-columns:clamp\(118px,22vw,176px\) minmax\(0,1fr\)/);
+test('two-handed control placement fits 800x480: up/down left, left/right bottom-right', () => {
+  assert.match(html, /class="vertical-controls"/);
+  assert.match(html, /class="horizontal-controls"/);
+  assert.match(html, /class="action-bar"/);
+  assert.match(css, /grid-template-columns:78px minmax\(0,1fr\)/);
+  assert.match(css, /\.vertical-controls\{[^}]*flex-direction:column/);
+  assert.match(css, /\.horizontal-controls\{[^}]*justify-content:flex-end/);
   assert.match(css, /\.garden\{[^}]*aspect-ratio:3\/2/);
+  assert.ok(html.indexOf('class="garden"')<html.indexOf('class="horizontal-controls"'));
+  assert.match(css, /\.scoreboard\{[^}]*position:absolute/);
+  assert.doesNotMatch(html, /<header|class="touch-controls"/);
+});
+
+test('garden and neon red/blue are selectable, persistent, and fully offline', () => {
+  assert.match(html, /id="theme-toggle"/);
+  assert.match(css, /\.screen\[data-design="neon"\] \.garden/);
+  assert.match(js, /function paintNeon\(state\)/);
+  assert.match(js, /design === 'neon'/);
+  assert.match(js, /sdk\.storage\.set\('design',design\)/);
+  assert.match(js, /sdk\.storage\.get\('design'\)/);
+  assert.match(js, /themeToggle\.addEventListener\('click'/);
+  assert.match(css, /#03091f/);
+  assert.match(js, /#ff4b6e/);
+  assert.match(js, /#55dfff/);
 });
 
 test('touch directions start and restart without additional buttons', () => {
@@ -46,4 +63,40 @@ test('touch directions start and restart without additional buttons', () => {
   assert.match(js, /if \(state\.phase === 'paused'\) \{ engine\.start\(\); clock\(\); \}/);
   assert.match(js, /if \(event\.pointerType === 'touch'\) screen\.classList\.remove\('controller-mode'\)/);
   assert.match(js, /screen\.classList\.add\('controller-mode'\)/);
+});
+
+test('the app supplies landscape cover art rather than defaulting to its vector icon', () => {
+  const cover=path.join(APP,'web/cover.jpg');
+  const bytes=fs.readFileSync(cover);
+  assert.equal(manifest.cover,'cover.jpg');
+  assert.equal(bytes[0],0xff);
+  assert.equal(bytes[1],0xd8);
+  assert.ok(bytes.length>5000);
+});
+
+test('neon worm stays electric cyan/white without red body segments', () => {
+  const render = js.match(/function paintNeon\(state\) \{([\s\S]*?)\n  \}\n  function applyDesign/);
+  assert.ok(render, 'neon renderer must exist');
+  assert.match(render[1], /ctx\.shadowColor = '#22dfff'/);
+  assert.match(render[1], /ctx\.shadowBlur = head \? 15/);
+  assert.match(render[1], /head \? '#eaffff' : \(i % 2 \? '#19b7fa' : '#55dfff'\)/);
+  assert.match(render[1], /#ff4b6e/);
+  assert.doesNotMatch(render[1], /#d22859|#ff7191/);
+  assert.match(render[1], /ctx\.restore\(\)/);
+});
+
+test('four on-screen speed steps preserve old speeds and add Turbo', () => {
+  assert.match(html, /id="speed-select"/);
+  assert.match(html, /data-i18n="wormSpeed"/);
+  for (const speed of ['easy','normal','hard','turbo'])
+    assert.match(html, new RegExp('<option value="'+speed+'"'));
+  assert.match(js, /const delays = Object\.freeze\(\{easy:230,normal:150,hard:95,turbo:70\}\)/);
+  assert.match(js, /speedSelect\.addEventListener\('change'/);
+  assert.match(js, /speedSelect\.value = value/);
+  assert.match(js, /sdk\.storage\.set\('speed', value\)/);
+  assert.match(js, /sdk\.storage\.get\('speed'\)/);
+  assert.match(js, /speedSelect\.value = level/);
+  assert.match(js, /event\.code === 'Digit4'/);
+  assert.match(css, /\.speed-control select\{[^}]*height:44px/);
+  assert.match(css, /\.screen\[data-design="neon"\] \.speed-control select/);
 });

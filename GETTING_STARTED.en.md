@@ -153,7 +153,7 @@ operations are intentionally unavailable. The webcam's camera consent dialog
 still governs starting a camera.
 
 
-## Import owner-provided books and accessories over SMB (host development)
+## Import owner-provided books and accessories over SMB (NG alpha.40+)
 
 The **`shared-assets`** manifest permission is optional and must be approved
 again when an installed app adds it. This is distinct from `storage` and
@@ -196,7 +196,7 @@ and supports JSON/text, pictures/SVG, audio and PDF only. Treat files as
 untrusted data, especially SVG; do not inject SVG source as executable HTML.
 There is no direct NAS mount access, no arbitrary filesystem listing, no
 SMB credentials and no network upload. Admin browser previews cannot use
-this capability. The host update must be installed first.
+this capability. NG 0.2.0-alpha.40 or newer must be installed first. Approved app-specific directories are created on install or backend start; owner content is never removed.
 
 
 ## Custom app background and menu/category images (NG alpha.34+)

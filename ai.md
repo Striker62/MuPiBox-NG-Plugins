@@ -132,7 +132,7 @@ Read `GETTING_STARTED.en.md` and `CONTRIBUTING.md`; fork the public repository, 
 - These calls do not provide global Gallery or printer access. Do not copy photos to network services or print them without a separate explicit user action and host capability.
 
 
-## Owner-managed SMB content (host development)
+## Owner-managed SMB content (NG alpha.40+)
 
 Apps such as Bücherkiste and FotoSpaß may request **`shared-assets`** to read
 their own area in the pre-existing MuPiBox share:
@@ -143,7 +143,10 @@ receive an 8-MiB-capped Blob, or `sdk.shared.watch(folder, cb)` to poll every
 internal HTTP routes, dynamic code execution or hidden network requests.
 The SDK requires a host that supports `shared-assets`; older alpha versions
 reject this permission. Any newly requested permission requires user approval.
+- Follow [the shared SMB content policy](docs/shared-assets-policy.md): `CommunityApps/` is a namespace root, never a free-form data dump. Only place owner-provided data in `CommunityApps/<actual manifest.id>/<documented-subdir>/`; for books use separate `books/<book-id>/` subfolders. Do not promise quotas or Samba ACL restrictions that the host does not currently enforce. Document every supported subdirectory, accepted file type and conflict behavior before shipping a new app.
 
+
+- New apps requesting shared SMB content must declare `sharedDirectories` (up to 8 safe non-overlapping paths) in their manifest; the host rejects access to undeclared directories. See [the manifest contract](docs/manifest-v1.md#app-specific-smb-directories-ng-host-update).
 
 ## IMPORTANT: App wallpaper vs. category/Home card art (NG alpha.34+)
 

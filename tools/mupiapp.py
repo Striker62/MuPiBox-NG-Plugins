@@ -30,7 +30,7 @@ ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save",
 ALLOWED_FIELDS = {
     "apiVersion", "id", "name", "version", "runtime", "entry", "icon", "cover",
     "description", "author", "permissions", "networkHosts", "display",
-    "category", "galleryDirectories",
+    "category", "galleryDirectories", "sharedDirectories",
 }
 APP_ID = re.compile(r"^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$")
 SEMVER = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
@@ -130,6 +130,22 @@ def validate_manifest(data: object, files: set[str]) -> dict:
             seen_gallery_paths.add(path)
             if "name" in directory and (not isinstance(directory["name"], str) or len(directory["name"]) > 100):
                 raise PackageError("invalid gallery directory name")
+    shared_directories = data.get("sharedDirectories")
+    if shared_directories is not None:
+        if not isinstance(shared_directories, list) or len(shared_directories) > 8:
+            raise PackageError("sharedDirectories must contain at most 8 entries")
+        if "shared-assets" not in perms:
+            raise PackageError("sharedDirectories requires shared-assets permission")
+        validated: list[str] = []
+        for directory in shared_directories:
+            if (not isinstance(directory, str) or len(directory) > 120
+                    or not re.fullmatch(r"[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+){0,5}", directory)):
+                raise PackageError("unsafe shared directory path")
+            folded = directory.casefold()
+            if any(folded == existing or folded.startswith(existing + "/")
+                   or existing.startswith(folded + "/") for existing in validated):
+                raise PackageError("duplicate or overlapping shared directories")
+            validated.append(folded)
     display = data.get("display")
     if display is not None:
         if not isinstance(display, dict) or set(display) - {"orientation", "minWidth", "minHeight", "showBackButton", "showSystemInfo", "fullScreen", "background"}:

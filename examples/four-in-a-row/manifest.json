@@ -2,7 +2,7 @@
   "apiVersion": "1",
   "id": "community.mupi-four-in-a-row",
   "name": "MuPi 4er-Reihe",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "runtime": "web",
   "entry": "index.html",
   "icon": "assets/icon.png",

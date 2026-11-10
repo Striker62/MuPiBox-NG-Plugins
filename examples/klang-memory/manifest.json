@@ -2,9 +2,9 @@
   "apiVersion": "1",
   "id": "official.klang-memory",
   "name": "Klang-Memory",
-  "description": "Ausgelagerte Testversion des MuPiBox-Klang-Memorys; das integrierte QML-Spiel bleibt unverändert.",
+  "description": "Klang-Memory mit Soundkarten, Audioausgabe und neuem MuPi-Axolotl-Cover.",
   "author": "MuPiBox Team",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "runtime": "web",
   "entry": "index.html",
   "permissions": [
@@ -16,5 +16,8 @@
     "orientation": "landscape",
     "minWidth": 800,
     "minHeight": 480
-  }
+  },
+  "cover": "cover.jpg",
+  "icon": "icon.png",
+  "category": "games"
 }

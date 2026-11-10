@@ -4,13 +4,13 @@
     {
       "id": "community.tictactoe",
       "name": "MuPi Kreuz & Kreis",
-      "description": "Kreuz & Kreis: 2 Spieler oder MuPi-KI (leicht, normal, schwer), 7 Boxsprachen, Touch/Controller.",
+      "description": "Kreuz & Kreis mit transparentem Spielhintergrund für das MuPiBox-Theme, 2-Spieler-Modus und drei KI-Stärken. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "games",
-      "author": "MuPiBox Community",
-      "version": "0.2.2",
-      "releaseTag": "v0.1.0-preview.11",
+      "author": "MuPiBox-NG Community",
+      "version": "0.2.5",
+      "releaseTag": "v0.1.0-preview.18",
       "asset": "mupi-kreuz-kreis.mupiapp",
-      "sha256": "b5a18329f0b555aebf8c30689bd70be3c16efedaa77817f55f3d29837c466278",
+      "sha256": "7d3587d591f0ee65fc388eb53450e1b45bd82b0ceb250b39f3d82d00c400939d",
       "permissions": [
         "storage",
         "controller"
@@ -19,13 +19,13 @@
     {
       "id": "community.mupi-four-in-a-row",
       "name": "MuPi 4er-Reihe",
-      "description": "Eigenständiges 7x6-Reihenspiel für 2 Spieler oder gegen MuPi (3 KI-Stufen), 7 Sprachen.",
+      "description": "Eigenständiges Vierer-Reihe-Spiel mit 2-Spieler-Modus oder MuPi-KI in drei Stufen. Sieben Sprachen. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.1.2",
-      "releaseTag": "v0.1.0-preview.11",
+      "version": "0.1.4",
+      "releaseTag": "v0.1.0-preview.18",
       "asset": "four-in-a-row.mupiapp",
-      "sha256": "82c24c621287ebd214fae989873383c42fe12f9f0a0f454548828d70ae7332bd",
+      "sha256": "c48a23ac58416a88d4302e515d395bbb32c2cc697d3e31222a09b7e1083d3024",
       "permissions": [
         "storage",
         "controller"
@@ -34,13 +34,13 @@
     {
       "id": "community.mupi-kruemelwurm",
       "name": "MuPi Krümelwurm",
-      "description": "Vollbild-Wurmspiel mit Theme-Hintergrund, eigener Zurück-Taste und Touch-Pfeilen direkt links am Spielfeld; Rekord, 3 Geschwindigkeiten und 7 Boxsprachen.",
+      "description": "Vollbild-Wurmspiel mit weiß-blauem Tron-Neon, Garten-Design, vier speicherbaren Tempostufen und Zwei-Hand-Touchsteuerung. Mit neuem MuPi-Axolotl-Cover. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.1.1",
-      "releaseTag": "v0.1.0-preview.12",
+      "version": "0.2.2",
+      "releaseTag": "v0.1.0-preview.18",
       "asset": "crumbworm.mupiapp",
-      "sha256": "6137b0d144f40c9bfbe99e29e192191d82fb4b3504a217ba711d5c593dc46119",
+      "sha256": "d8b019e2a8d2b8ca757bca3b906d3c61d56759285f2adbb82e74bc8530bfb03c",
       "permissions": [
         "storage",
         "controller"
@@ -49,13 +49,13 @@
     {
       "id": "community.mupi-chess",
       "name": "MuPi Schach",
-      "description": "Offline-Schach für 2 Spieler oder gegen MuPi (4 KI-Stufen), inklusive Zugzeit, Durchschnittszeit und optionalem Limit pro Zug. Theme-Hintergrund und eigene Schach-Cover-Kachel.",
+      "description": "Offline-Schach zu zweit oder gegen MuPi in vier Stärken, mit Zugzeit, Durchschnitt und optionaler Zugzeitbegrenzung. Mit neuem MuPi-Axolotl-Cover. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.1.0",
-      "releaseTag": "v0.1.0-preview.10",
+      "version": "0.1.2",
+      "releaseTag": "v0.1.0-preview.18",
       "asset": "mupi-chess.mupiapp",
-      "sha256": "5b3698c0dbe1ee4884158e764989b94f025741acd70830f2a149c619e1c557db",
+      "sha256": "cb50c008311e290f21605c4991962585a1ae48e2c4278208a76a7f9f58065e01",
       "permissions": [
         "controller"
       ]
@@ -63,13 +63,13 @@
     {
       "id": "official.klang-memory",
       "name": "Klang-Memory",
-      "description": "Sound Memory with a saved volume slider, native MuPiBox audio and persistent best score (NG alpha.23+).",
+      "description": "Klang-Memory mit Soundkarten, Audioausgabe und neuem MuPi-Axolotl-Cover. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "games",
       "author": "MuPiBox Team",
-      "version": "0.1.2",
-      "releaseTag": "v0.1.0-preview.5",
+      "version": "0.1.3",
+      "releaseTag": "v0.1.0-preview.18",
       "asset": "klang-memory.mupiapp",
-      "sha256": "b2bd20d59a5aa2df2ebdcfdb2b814fd98e43c9e43747419af135d7f5d230dba2",
+      "sha256": "b1996a67ce6ae0570cc0c2da131579b618605aff0f3c6d67502baf1aad12e4b2",
       "permissions": [
         "storage",
         "controller",
@@ -93,29 +93,32 @@
     {
       "id": "community.fotospass",
       "name": "FotoSpaß",
-      "description": "Offline-Fotobox mit USB-Kamera, Countdown, Malen, Accessoires und einer lokalen Fotogalerie. Bilder bleiben auf der Box.",
+      "description": "FotoSpaß mit bildbasierten Kategorien und zusätzlichen PNG-Accessoires aus dem eigenen SMB-Ordner. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "creative",
       "author": "Striker62",
-      "version": "0.4.2",
-      "releaseTag": "v0.1.0-preview.8",
+      "version": "0.5.6",
+      "releaseTag": "v0.1.0-preview.18",
       "asset": "fotospass.mupiapp",
-      "sha256": "8ca0bb8da912fa23e7e0453075e1f9bbbfdccf164b332c93e884ac8a6fae3fd3",
+      "sha256": "542f29d9496c369d83a2d845c807a643bc21e252597c762e57a3728d0d2c11db",
       "permissions": [
         "camera",
-        "photo-save"
+        "photo-save",
+        "shared-assets"
       ]
     },
     {
       "id": "community.buecherkiste",
       "name": "Bücherkiste",
-      "description": "Bücherkiste (Testversion): Offline-Bilderbuch-Regal mit Buchseiten, Zoom und zwei Beispielbüchern. Eigene Bücher im Plugin-Verzeichnis vor einem Update sichern.",
+      "description": "Bücherkiste mit zusätzlichen SMB-Büchern und neuem großem MuPi-Axolotl-Cover mit blauem Zauberbuch.",
       "category": "learning",
       "author": "MuPiBox Community",
-      "version": "0.2.19",
-      "releaseTag": "v0.1.0-preview.9",
+      "version": "0.2.28",
+      "releaseTag": "v0.1.0-preview.20",
       "asset": "buecherkiste.mupiapp",
-      "sha256": "eb2946fb09cecda2829b9f1d67ed2704c447d1df9aad3ad22ad93c0593a9d4a5",
-      "permissions": []
+      "sha256": "1249428b313c9c4041641dd229f8447e8ec715f5bd49669ef1aa79776f65d938",
+      "permissions": [
+        "shared-assets"
+      ]
     }
   ]
 }

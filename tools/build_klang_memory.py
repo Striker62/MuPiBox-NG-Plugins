@@ -13,7 +13,7 @@ def main():
     if STAGING.exists():
         shutil.rmtree(STAGING)
     STAGING.mkdir(parents=True)
-    for name in ("manifest.json", "index.html", "app.js", "style.css"):
+    for name in ("manifest.json", "index.html", "app.js", "style.css", "cover.jpg", "icon.png"):
         shutil.copy2(SOURCE / name, STAGING / name)
     shutil.copy2(ROOT / "sdk" / "mupibox-sdk.js", STAGING / "mupibox-sdk.js")
     return pack(STAGING, OUTPUT)

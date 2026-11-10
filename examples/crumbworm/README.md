@@ -70,3 +70,52 @@ node --test tests/test_crumbworm.js tests/test_crumbworm_ui.js tests/test_board_
 python3 tools/build_crumbworm.py
 python3 tools/mupiapp.py validate dist/crumbworm.mupiapp
 ```
+
+
+## Vollbild und Zwei-Hand-Bedienung (v0.2.0)
+
+- Host-Leiste im Paket vollständig deaktiviert: `showBackButton:false`,
+  `showSystemInfo:false`, `fullScreen:true`; stattdessen linker eigener
+  Exit-Button über das erlaubte `MuPiBoxSDK.exit()`. WICHTIG: Alte
+  Admin-Darstellungsüberschreibungen werden durch App-Updates bewusst nicht
+  zurückgesetzt; ggf. auf bestehenden Boxen dort anpassen.
+- Touch auf 800×480: **Hoch/Runter** links *neben* der Leinwand,
+  **Links/Rechts** unter der Leinwand *rechtsbündig*. Die zwei Steuergruppen
+  sind voneinander getrennt und lassen sich beidhändig bedienen.
+- Punktestand/Rekord liegen als kompaktes HUD direkt im Spielfeld statt in
+  einer zusätzlichen Kopfzeile; das nutzbare Spielfeld bleibt so groß wie möglich.
+- Unten links schaltet **NEON / GARTEN** die Darstellung. Der Gartenlook ist
+  identisch zur bisherigen Version; der neue, komplett lokal gezeichnete
+  Neon-Look hat dunkelblaues Raster, rot-blaue Leuchtkonturen und einen
+  kantigen Wurm. Einmal gewählte Darstellung wird per `sdk.storage`
+  app-lokal gespeichert, ohne Telemetrie/Netzzugriff.
+- Die Spielregeln, Touch-Swipes, Controller und Geschwindigkeit bleiben gleich.
+
+Regression: `node --test tests/test_crumbworm*.js` plus die
+Packaging-/Manifest- und Vollbildintegrationstests.
+
+
+## Lichtarena / Geschwindigkeitsstufen (v0.2.1)
+
+Der zweite Skin zeichnet den Wurm vollständig in **elektrischem Blau,
+Cyan und Weiß**. Kopf und Körper haben einen begrenzten Canvas-Glow und
+helle Konturen, während die Futterkrümel rot-magenta bzw. goldgelb
+leuchten. Das Raster behält rote Akzente; die klassische Gartengrafik
+bleibt unverändert. Die Effekte sind rein lokal und benötigen keine
+Netzwerk- oder neuen Medienberechtigungen. Canvas-Schatten werden vor
+allen Spielfeld- und Farbarbeiten mit `save()/restore()` zurückgesetzt,
+damit der Gartenmodus nicht unbeabsichtigt nachleuchtet.
+
+Neben dem Designschalter gibt es nun einen Touch-Selector **Tempo**.
+Die Stufen sind **Langsam** (230 ms), **Normal** (150 ms), **Schnell**
+(95 ms) und **Turbo** (70 ms) pro Zug. Bestehende gespeicherte Werte
+`easy`, `normal`, `hard` bleiben gültig, `turbo` kommt neu hinzu.
+Eine Änderung während der Partie stellt die Ticker-Rate sofort um,
+bleibt bei erneutem App-Start über `sdk.storage` gespeichert und
+gilt gleichermaßen für Garten und Neon. Die Tastenkürzel 1/2/3/4
+bleiben ohne Touch nutzbar; die Optionen und Beschriftungen sind in
+allen sieben unterstützten Sprachen lokalisiert.
+
+Die Positionen der Zwei-Hand-Steuerung und die 800×480-Vollbildansicht
+bleiben erhalten. Der Ausstieg bleibt innerhalb der App über den
+eigenen Zurück-Button möglich.
