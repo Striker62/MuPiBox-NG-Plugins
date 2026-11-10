@@ -117,3 +117,5 @@ footer{grid-area:3/1/4/3;align-self:center;text-align:center;font-size:9px;line-
 .sticker-controls .button-label{display:none;}
 .sticker-controls button svg{width:21px;height:21px;}
 @media(min-height:600px){.sticker-controls button{height:44px;min-height:44px;}}
+
+.sticker-controls .control-symbol{font-family:Arial,sans-serif;font-size:25px;line-height:1;}
