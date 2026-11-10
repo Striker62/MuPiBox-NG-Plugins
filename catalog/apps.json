@@ -109,13 +109,13 @@
     {
       "id": "community.buecherkiste",
       "name": "Bücherkiste",
-      "description": "Bücherkiste mit zusätzlichen Büchern aus dem eigenen SMB-Ordner. MuPi-Axolotl-Cover für den Coverflow.",
+      "description": "Bücherkiste mit zusätzlichen Büchern aus dem eigenen SMB-Ordner und größerem MuPi-Axolotl-Cover für die Touch-Kachel.",
       "category": "learning",
       "author": "MuPiBox Community",
-      "version": "0.2.26",
-      "releaseTag": "v0.1.0-preview.18",
+      "version": "0.2.27",
+      "releaseTag": "v0.1.0-preview.19",
       "asset": "buecherkiste.mupiapp",
-      "sha256": "9d456fe7c3acd8ab875f190fff37e45f1a057a9d7dfb9c554ad328d3799ec84f",
+      "sha256": "ed37bff97c22a353ac1cd194700747d6f23c67b0f2f38642881d451bbf95e19d",
       "permissions": [
         "shared-assets"
       ]
