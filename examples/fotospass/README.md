@@ -160,11 +160,11 @@ Direkter Fotodruck, beispielsweise über einen Canon SELPHY CP1500. Dafür wird 
 
 Der Countdown verdunkelt die Kameravorschau nicht mehr. Zahl und Hinweis
 liegen ohne deckenden Hintergrund über dem Bild; ein Textschatten hält sie lesbar.
-Der Countdown mit echter Kamera muss auf der MuPiBox noch geprüft werden.
+Der Anwender hat den transparenten Countdown mit echter Kamera auf der MuPiBox bestätigt.
 
 ## Korrektur 0.5.7
 
 Die Accessoire-Schaltflächen verwenden einfache Zeichen für Vergrößern (+),
 Fertig (Häkchen) und Entfernen (×), um die fehlerhafte Symbolanzeige auf der
 MuPiBox zu vermeiden. Der transparente Countdown aus 0.5.6 ist enthalten.
-Die Darstellung auf dem Gerät muss noch bestätigt werden.
+Der Anwender hat die korrekte Darstellung auf der MuPiBox bestätigt.

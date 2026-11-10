@@ -93,3 +93,29 @@ python3 tools/mupiapp.py validate dist/crumbworm.mupiapp
 
 Regression: `node --test tests/test_crumbworm*.js` plus die
 Packaging-/Manifest- und Vollbildintegrationstests.
+
+
+## Lichtarena / Geschwindigkeitsstufen (v0.2.1)
+
+Der zweite Skin zeichnet den Wurm vollständig in **elektrischem Blau,
+Cyan und Weiß**. Kopf und Körper haben einen begrenzten Canvas-Glow und
+helle Konturen, während die Futterkrümel rot-magenta bzw. goldgelb
+leuchten. Das Raster behält rote Akzente; die klassische Gartengrafik
+bleibt unverändert. Die Effekte sind rein lokal und benötigen keine
+Netzwerk- oder neuen Medienberechtigungen. Canvas-Schatten werden vor
+allen Spielfeld- und Farbarbeiten mit `save()/restore()` zurückgesetzt,
+damit der Gartenmodus nicht unbeabsichtigt nachleuchtet.
+
+Neben dem Designschalter gibt es nun einen Touch-Selector **Tempo**.
+Die Stufen sind **Langsam** (230 ms), **Normal** (150 ms), **Schnell**
+(95 ms) und **Turbo** (70 ms) pro Zug. Bestehende gespeicherte Werte
+`easy`, `normal`, `hard` bleiben gültig, `turbo` kommt neu hinzu.
+Eine Änderung während der Partie stellt die Ticker-Rate sofort um,
+bleibt bei erneutem App-Start über `sdk.storage` gespeichert und
+gilt gleichermaßen für Garten und Neon. Die Tastenkürzel 1/2/3/4
+bleiben ohne Touch nutzbar; die Optionen und Beschriftungen sind in
+allen sieben unterstützten Sprachen lokalisiert.
+
+Die Positionen der Zwei-Hand-Steuerung und die 800×480-Vollbildansicht
+bleiben erhalten. Der Ausstieg bleibt innerhalb der App über den
+eigenen Zurück-Button möglich.

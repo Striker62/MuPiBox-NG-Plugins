@@ -22,7 +22,7 @@ class Markup(HTMLParser):
 
 class ThemeIntegrationTests(unittest.TestCase):
     def test_native_back_theme_and_game_only_layout(self):
-        for slug, version in (("four-in-a-row", "0.1.3"), ("tic-tac-toe", "0.2.3")):
+        for slug, version in (("four-in-a-row", "0.1.4"), ("tic-tac-toe", "0.2.5")):
             with self.subTest(slug=slug):
                 directory = ROOT / "examples" / slug
                 manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
@@ -49,6 +49,18 @@ class ThemeIntegrationTests(unittest.TestCase):
                 js = (directory / "web/app.js").read_text(encoding="utf-8")
                 self.assertIn("sdk.exit()", js)
                 self.assertIn("exit.addEventListener", js)
+
+    def test_tic_tac_toe_board_and_menu_reveal_wallpaper(self):
+        directory = ROOT / "examples" / "tic-tac-toe"
+        css = (directory / "web/style.css").read_text(encoding="utf-8")
+        # The outer page and large settings block must never paint a solid
+        # layer over the selected MuPiBox theme. Board cells retain a subtle
+        # touch target with visible wallpaper passing underneath.
+        self.assertRegex(css, r"\.info\s*\{[^}]*background:\s*transparent\s*;")
+        self.assertRegex(css, r"\.board button\s*\{[^}]*background:\s*rgba\(13, 39, 67, \.27\)")
+        self.assertRegex(css, r"\.board button:not\(:disabled\):active\s*\{[^}]*background:\s*rgba\(")
+        self.assertIn("text-shadow:", css)
+        self.assertNotIn("background:#1b3757", css)
 
     def test_all_four_games_use_fullscreen_and_their_own_back_button(self):
         for slug in ("tic-tac-toe", "four-in-a-row", "chess", "crumbworm"):

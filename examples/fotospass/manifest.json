@@ -20,5 +20,7 @@
   },
   "sharedDirectories": [
     "accessoires"
-  ]
+  ],
+  "cover": "cover.jpg",
+  "icon": "icon.png"
 }

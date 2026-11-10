@@ -13,10 +13,12 @@
   let locale = null, best = 0, level = 'normal', ticker = null, pausedByHost = false;
   let design = 'garden';
   const themeToggle = document.getElementById('theme-toggle');
+  const speedSelect = document.getElementById('speed-select');
   let exiting = false;
   let pointerStart = null;
   const t = (key,args) => locale ? locale.t(key,args) : key;
-  const delays = Object.freeze({easy:230,normal:150,hard:95});
+  // Keep stored easy/normal/hard preferences compatible with older versions.
+  const delays = Object.freeze({easy:230,normal:150,hard:95,turbo:70});
   const cell = canvas.width / rules.WIDTH;
 
   function stopClock() {
@@ -56,6 +58,7 @@
   function setSpeed(value) {
     if (!Object.prototype.hasOwnProperty.call(delays, value)) return;
     level = value;
+    speedSelect.value = value;
     void sdk.storage.set('speed', value).catch(() => {});
     if (engine.snapshot().phase === 'playing') clock();
   }
@@ -74,48 +77,97 @@
     }
     paint(engine.snapshot());
   }
-  // All graphics are generated offline on the existing 600x400 canvas.
-  // Thin cyan/red grid edges and a luminous alternating body create a
-  // recognisable sci-fi neon look without large GPU filters or new assets.
+  // Original, offline 600x400 canvas art: electric cyan/white lightcycle
+  // worm on a dark blue arena with restrained red grid accents. Canvas glow
+  // is intentionally bounded: Raspberry Pi 4/5 software GPU paths must keep
+  // the 70ms Turbo interval playable even with a long worm.
   function paintNeon(state) {
-    const w=canvas.width,h=canvas.height;
-    ctx.fillStyle='#03091f';ctx.fillRect(0,0,w,h);
-    ctx.lineWidth=1;
-    for (let x=0;x<=rules.WIDTH;x++) {
-      ctx.strokeStyle=x%4===0?'#1c5aab':'#11335c';
-      ctx.beginPath();ctx.moveTo(x*cell+.5,0);ctx.lineTo(x*cell+.5,h);ctx.stroke();
+    const w = canvas.width, h = canvas.height;
+    ctx.save();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#030a20';
+    ctx.fillRect(0, 0, w, h);
+
+    // An illuminated circuit grid: fine blue wires + red lane markers.
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= rules.WIDTH; x++) {
+      ctx.strokeStyle = x % 4 === 0 ? '#216cbb' : '#17385f';
+      ctx.beginPath();
+      ctx.moveTo(x * cell + .5, 0);
+      ctx.lineTo(x * cell + .5, h);
+      ctx.stroke();
     }
-    for (let y=0;y<=rules.HEIGHT;y++) {
-      ctx.strokeStyle=y%4===0?'#a82256':'#462048';
-      ctx.beginPath();ctx.moveTo(0,y*cell+.5);ctx.lineTo(w,y*cell+.5);ctx.stroke();
+    for (let y = 0; y <= rules.HEIGHT; y++) {
+      ctx.strokeStyle = y % 4 === 0 ? '#a62e66' : '#194b82';
+      ctx.beginPath();
+      ctx.moveTo(0, y * cell + .5);
+      ctx.lineTo(w, y * cell + .5);
+      ctx.stroke();
     }
-    ctx.lineWidth=3;ctx.strokeStyle='#fb3569';ctx.strokeRect(3,3,w-6,h-6);
-    if(state.food){
-      const fx=(state.food.position%rules.WIDTH)*cell+cell/2;
-      const fy=Math.floor(state.food.position/rules.WIDTH)*cell+cell/2;
-      ctx.beginPath();ctx.arc(fx,fy,cell*.44,0,2*Math.PI);
-      ctx.fillStyle=state.food.gold?'#fff3a0':'#fe416a';ctx.fill();
-      ctx.lineWidth=3;ctx.strokeStyle='#67e7ff';ctx.stroke();
-      ctx.beginPath();ctx.arc(fx,fy,cell*.15,0,2*Math.PI);
-      ctx.fillStyle='#fff';ctx.fill();
+
+    // Dark playing surface, with a thin two-tone light rail on its edge.
+    ctx.strokeStyle = '#ff477c';
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(2, 2, w - 4, h - 4);
+    ctx.strokeStyle = '#34ddff';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(6, 6, w - 12, h - 12);
+
+    if (state.food) {
+      const fx = (state.food.position % rules.WIDTH) * cell + cell / 2;
+      const fy = Math.floor(state.food.position / rules.WIDTH) * cell + cell / 2;
+      ctx.shadowColor = state.food.gold ? '#ffca4e' : '#ff366d';
+      ctx.shadowBlur = 13;
+      ctx.fillStyle = state.food.gold ? '#ffe984' : '#ff4b6e';
+      ctx.beginPath();
+      ctx.arc(fx, fy, cell * (state.food.gold ? .37 : .32), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#fff4ca';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(fx, fy, cell * .11, 0, Math.PI * 2);
+      ctx.fill();
     }
-    for(let i=state.body.length-1;i>=0;i--){
-      const pos=state.body[i],x=(pos%rules.WIDTH)*cell,y=Math.floor(pos/rules.WIDTH)*cell;
-      const head=i===0;
-      ctx.fillStyle=head?'#dfffff':i%2?'#1169d1':'#d22859';
-      ctx.fillRect(x+3,y+3,cell-6,cell-6);
-      ctx.strokeStyle=head?'#52eaff':i%2?'#56d8ff':'#ff7191';
-      ctx.lineWidth=3;ctx.strokeRect(x+3,y+3,cell-6,cell-6);
-      if(head){
-        let dx=0,dy=0;
-        if(state.direction==='up')dy=-4;
-        if(state.direction==='down')dy=4;
-        if(state.direction==='left')dx=-4;
-        if(state.direction==='right')dx=4;
-        ctx.fillStyle='#101b49';
-        for(const ex of [-5,5]){ctx.fillRect(x+cell/2+ex+dx-2,y+cell/2-2+dy,4,4);}
+
+    // Neon body: all segments stay cyan/electric blue (no red body pieces).
+    // Outer glow is painted once per segment; tiny light cores preserve
+    // readability even when the worm overlaps a bright part of the grid.
+    for (let i = state.body.length - 1; i >= 0; i--) {
+      const pos = state.body[i];
+      const x = (pos % rules.WIDTH) * cell;
+      const y = Math.floor(pos / rules.WIDTH) * cell;
+      const head = i === 0;
+      const pad = 3;
+      const size = cell - 2 * pad;
+      ctx.shadowColor = '#22dfff';
+      ctx.shadowBlur = head ? 15 : Math.min(9, 5 + (state.body.length - i) / 8);
+      ctx.fillStyle = head ? '#eaffff' : (i % 2 ? '#19b7fa' : '#55dfff');
+      ctx.fillRect(x + pad, y + pad, size, size);
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = head ? '#ffffff' : '#acf9ff';
+      ctx.lineWidth = head ? 2.5 : 1.5;
+      ctx.strokeRect(x + pad + 1, y + pad + 1, size - 2, size - 2);
+      if (head) {
+        // White center, forward-facing cyan visor; keep direction legible.
+        let vx = 0, vy = 0;
+        if (state.direction === 'up') vy = -4;
+        if (state.direction === 'down') vy = 4;
+        if (state.direction === 'left') vx = -4;
+        if (state.direction === 'right') vx = 4;
+        ctx.fillStyle = '#0c4f8b';
+        for (const eyeX of [-5, 5])
+          ctx.fillRect(x + cell / 2 + eyeX + vx - 2, y + cell / 2 - 2 + vy, 4, 4);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x + cell / 2 - 3 + vx, y + cell / 2 + 5 + vy, 6, 2);
+      } else {
+        ctx.fillStyle = 'rgba(234,255,255,.7)';
+        ctx.fillRect(x + 8, y + 8, cell - 16, 3);
       }
     }
+    ctx.restore();
   }
   function applyDesign(value,save) {
     design=value==='neon'?'neon':'garden';
@@ -127,6 +179,7 @@
     paint(engine.snapshot());
   }
   themeToggle.addEventListener('click',()=>applyDesign(design==='garden'?'neon':'garden',true));
+  speedSelect.addEventListener('change', () => setSpeed(speedSelect.value));
 
   function paint(state) {
     if (design === 'neon') paintNeon(state);
@@ -244,6 +297,7 @@
     else if (event.code === 'Digit1') setSpeed('easy');
     else if (event.code === 'Digit2') setSpeed('normal');
     else if (event.code === 'Digit3') setSpeed('hard');
+    else if (event.code === 'Digit4') setSpeed('turbo');
     else if (event.code === 'Escape' || event.code === 'Backspace') leave();
   });
   sdk.on('input', ({button,action}) => {
@@ -274,7 +328,10 @@
       const storedDesign = await sdk.storage.get('design');
       if (storedDesign === 'garden' || storedDesign === 'neon') applyDesign(storedDesign,false);
       const storedLevel = await sdk.storage.get('speed');
-      if (Object.prototype.hasOwnProperty.call(delays, storedLevel)) level=storedLevel;
+      if (Object.prototype.hasOwnProperty.call(delays, storedLevel)) {
+        level = storedLevel;
+        speedSelect.value = level;
+      }
     } catch (_) { /* Browser preview can lack storage. */ }
     paint(engine.snapshot());
   })().catch(error => {
