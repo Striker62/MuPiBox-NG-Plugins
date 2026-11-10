@@ -109,13 +109,13 @@
     {
       "id": "community.buecherkiste",
       "name": "Bücherkiste",
-      "description": "Bücherkiste mit zusätzlichen Büchern aus dem eigenen SMB-Ordner und größerem MuPi-Axolotl-Cover für die Touch-Kachel.",
+      "description": "Bücherkiste mit zusätzlichen SMB-Büchern und neuem großem MuPi-Axolotl-Cover mit blauem Zauberbuch.",
       "category": "learning",
       "author": "MuPiBox Community",
-      "version": "0.2.27",
-      "releaseTag": "v0.1.0-preview.19",
+      "version": "0.2.28",
+      "releaseTag": "v0.1.0-preview.20",
       "asset": "buecherkiste.mupiapp",
-      "sha256": "ed37bff97c22a353ac1cd194700747d6f23c67b0f2f38642881d451bbf95e19d",
+      "sha256": "1249428b313c9c4041641dd229f8447e8ec715f5bd49669ef1aa79776f65d938",
       "permissions": [
         "shared-assets"
       ]
