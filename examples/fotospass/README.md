@@ -155,3 +155,9 @@ dieser Entwicklungsbranch ändert `catalog/apps.json` nicht.
 ## Geplante Erweiterung
 
 Direkter Fotodruck, beispielsweise über einen Canon SELPHY CP1500. Dafür wird eine geeignete Druckschnittstelle in MuPiBox-NG benötigt.
+
+## Korrektur 0.5.6
+
+Der Countdown verdunkelt die Kameravorschau nicht mehr. Zahl und Hinweis
+liegen ohne deckenden Hintergrund über dem Bild; ein Textschatten hält sie lesbar.
+Der Countdown mit echter Kamera muss auf der MuPiBox noch geprüft werden.

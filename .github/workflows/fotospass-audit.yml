@@ -35,13 +35,13 @@ jobs:
           python3 -m unittest discover -s tests -p test_catalog.py -v
       - name: Build and validate FotoSpass package
         run: |
-          python3 tools/mupiapp.py pack examples/fotospass dist/fotospass-0.5.5.mupiapp --exclude README.md
-          python3 tools/mupiapp.py validate dist/fotospass-0.5.5.mupiapp
+          python3 tools/mupiapp.py pack examples/fotospass dist/fotospass-0.5.6.mupiapp --exclude README.md
+          python3 tools/mupiapp.py validate dist/fotospass-0.5.6.mupiapp
           python3 - <<'PY'
           import hashlib, json
           from pathlib import Path
           from zipfile import ZipFile
-          package = Path('dist/fotospass-0.5.5.mupiapp')
+          package = Path('dist/fotospass-0.5.6.mupiapp')
           if package.stat().st_size >= 25_000_000:
               raise SystemExit('Package must stay below 25 MB')
           with ZipFile(package) as archive:
@@ -63,14 +63,14 @@ jobs:
           mkdir -p dist/fotospass-scan
           python3 - <<'PY'
           from zipfile import ZipFile
-          with ZipFile('dist/fotospass-0.5.5.mupiapp') as archive:
+          with ZipFile('dist/fotospass-0.5.6.mupiapp') as archive:
               archive.extractall('dist/fotospass-scan')
           PY
-          clamscan --infected --scan-archive=yes dist/fotospass-0.5.5.mupiapp
+          clamscan --infected --scan-archive=yes dist/fotospass-0.5.6.mupiapp
           clamscan --recursive --infected dist/fotospass-scan
       - name: Upload FotoSpass test package
         uses: actions/upload-artifact@v4
         with:
           name: fotospass-smb-test
-          path: dist/fotospass-0.5.5.mupiapp
+          path: dist/fotospass-0.5.6.mupiapp
           if-no-files-found: error
