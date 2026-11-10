@@ -12,7 +12,7 @@ APPS = (
     ("chess", "cover.jpg", "icon.png", "0.1.2"),
     ("klang-memory", "cover.jpg", "icon.png", "0.1.3"),
     ("Buecherkiste", "cover.jpg", "icon.png", "0.2.26"),
-    ("fotospass", "cover.jpg", "icon.png", "0.5.6"),
+    ("fotospass", "cover.jpg", "icon.png", "0.5.7"),
 )
 
 def jpeg_dimensions(data):
