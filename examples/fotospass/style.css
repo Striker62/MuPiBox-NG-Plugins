@@ -31,8 +31,8 @@ button.chosen:not(.swatch){background:var(--teal);border-color:var(--teal);color
 .stage #placeholder{position:relative;z-index:1;margin-top:80px;max-width:85%;padding:12px 18px;text-align:center;background:#fff9;border-radius:14px;font-size:16px;font-weight:bold;color:#416f68}
 #mode{position:absolute;top:10px;left:10px;z-index:8;display:flex;align-items:center;gap:6px;pointer-events:none;background:#fffc;color:var(--ink);padding:6px 10px;border-radius:20px;font-size:11px;font-weight:bold;box-shadow:0 2px 6px #234c5010}
 #mode::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--coral)}
-#countdown{position:absolute;inset:0;z-index:9;background:#164d50bd;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:white;font-size:24px;font-weight:bold;pointer-events:none}
-#count-number{display:flex;align-items:center;justify-content:center;width:min(34vh,170px);height:min(34vh,170px);border-radius:50%;background:var(--yellow);color:var(--ink);font-size:min(28vh,130px);line-height:1;box-shadow:7px 8px 0 #103e4955}
+#countdown{position:absolute;inset:0;z-index:9;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:white;font-size:24px;font-weight:bold;text-shadow:0 2px 4px #000,0 0 10px #000;pointer-events:none}
+#count-number{display:flex;align-items:center;justify-content:center;width:min(34vh,170px);height:min(34vh,170px);background:transparent;color:white;font-size:min(28vh,130px);line-height:1}
 aside{display:flex;flex-direction:column;min-width:0;min-height:0;gap:7px;padding:8px;background:#fffdf7d9;border:1px solid #fff;border-radius:22px;box-shadow:0 3px 0 #e4dbca}
 #camera-panel,#edit-panel{display:flex;flex-direction:column;gap:7px;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#9bc6b8 transparent;padding:1px 2px 3px}
 #camera-panel{justify-content:center}
@@ -117,3 +117,5 @@ footer{grid-area:3/1/4/3;align-self:center;text-align:center;font-size:9px;line-
 .sticker-controls .button-label{display:none;}
 .sticker-controls button svg{width:21px;height:21px;}
 @media(min-height:600px){.sticker-controls button{height:44px;min-height:44px;}}
+
+.sticker-controls .control-symbol{font-family:Arial,sans-serif;font-size:25px;line-height:1;}
