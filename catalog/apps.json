@@ -96,10 +96,10 @@
       "description": "FotoSpaß mit bildbasierten Kategorien und zusätzlichen PNG-Accessoires aus dem eigenen SMB-Ordner. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "creative",
       "author": "Striker62",
-      "version": "0.5.6",
-      "releaseTag": "v0.1.0-preview.18",
+      "version": "0.5.7",
+      "releaseTag": "v0.1.0-preview.21",
       "asset": "fotospass.mupiapp",
-      "sha256": "542f29d9496c369d83a2d845c807a643bc21e252597c762e57a3728d0d2c11db",
+      "sha256": "fb888b45c3ba683a080becc122801e41395e56e69bdce27a4c435f1d2f9e9302",
       "permissions": [
         "camera",
         "photo-save",
