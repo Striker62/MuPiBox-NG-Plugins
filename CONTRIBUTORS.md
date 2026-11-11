@@ -5,6 +5,7 @@ Dieses Verzeichnis dokumentiert freiwillige Beiträge aus der MuPiBox-NG-Communi
 | Eingereicht | GitHub-Benutzer | Beitrag | Pull Request | Version |
 | --- | --- | --- | --- | --- |
 | 2026-11-06 | [@Striker62](https://github.com/Striker62) | **FotoSpaß**: USB-Kamera, Countdown, Malen/Accessoires, lokale Foto-Speicherung und Galerie mit Einzelbild-Löschung | [#4](https://github.com/splitti/MuPiBox-NG-Plugins/pull/4) | 0.4.2 |
+| 2026-11-08 | [@Striker62](https://github.com/Striker62) | **Bücherkiste**: interaktives Kinderbücherregal, Bilderbuch-Reader und Erweiterung um eigene Bücher (inkl. SMB-Unterstützung) | [#8](https://github.com/splitti/MuPiBox-NG-Plugins/pull/8), [#12](https://github.com/splitti/MuPiBox-NG-Plugins/pull/12) | 0.2.19 → 0.2.25 |
 
 ## Sicherheit und Aufnahme
 
