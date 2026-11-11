@@ -1,0 +1,38 @@
+name: Publish FotoSpass 0.5.7 (one-time)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-fotospass-057.yml'
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Validate sources and build reproducible release asset
+        run: |
+          node --check examples/fotospass/app.js
+          python3 -m unittest discover -s tests -p test_catalog.py -v
+          python3 tools/mupiapp.py pack examples/fotospass dist/fotospass.mupiapp --exclude README.md
+          python3 tools/mupiapp.py validate dist/fotospass.mupiapp
+          printf '%s  %s\n' 'fb888b45c3ba683a080becc122801e41395e56e69bdce27a4c435f1d2f9e9302' 'dist/fotospass.mupiapp' | sha256sum --check
+          python3 - <<'PY'
+          import json,zipfile
+          with zipfile.ZipFile('dist/fotospass.mupiapp') as z:
+              m=json.loads(z.read('manifest.json'))
+          assert m['id']=='community.fotospass' and m['version']=='0.5.7'
+          assert m['permissions']==['camera','photo-save','shared-assets']
+          assert m['sharedDirectories']==['accessoires']
+          PY
+      - name: Publish official pinned GitHub release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v0.1.0-preview.21 dist/fotospass.mupiapp --target "$GITHUB_SHA" --title 'MuPiBox-NG Plugins Preview 21: FotoSpaß 0.5.7' --notes 'FotoSpaß 0.5.7: transparenter Countdown, korrigierte Accessoire-Symbole. Geprüft über PR #14 und konfliktbereinigten Integrations-PR #17. Die Berechtigungen bleiben unverändert.'
