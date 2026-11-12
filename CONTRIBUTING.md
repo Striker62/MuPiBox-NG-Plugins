@@ -7,6 +7,7 @@ Thanks for helping make the independent MuPiBox-NG plugin ecosystem accessible.
 3. Add tests for behavior and security-related changes (`python3 -m unittest discover -s tests -v`, `cd examples/tic-tac-toe && go test ./game`).
 4. Do not add copyrighted MuPiBox-NG core source, proprietary artwork, secrets, tokens or device configuration.
 5. Apps do not have to live in this repo. Publish independent apps in your own repositories and distribute `.mupiapp` releases.
+6. For new community apps and substantive app contributions, add or update the contributor credit in [CONTRIBUTORS.md](CONTRIBUTORS.md) with the public GitHub username, app, associated pull request(s) and contributed version(s). Maintainers should check this before merging; do not add private contact details.
 
 A browser-only plugin host is available starting with MuPiBox-NG **0.2.0-alpha.18**; native Pi touch integration, full audio focus and a signed app catalog are not available yet. Do not claim compatibility with older NG versions. See [the English guide](GETTING_STARTED.en.md) and [AI instructions](ai.md) for PR preparation.
 
