@@ -303,3 +303,8 @@
 #app-exit:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 #app-exit:disabled{opacity:.5;}
 #app-exit[hidden]{display:none!important;}
+
+/* 0.2.29: a single read-aloud action, using the host's configured TTS voice. */
+#reader #controls .bottom-center{bottom:12px;left:50%;transform:translateX(-50%);z-index:5;min-height:48px;font-size:16px;white-space:nowrap;}
+#reader #controls #read-aloud[hidden]{display:none!important;}
+@media(max-width:680px){#reader #controls .bottom-center{bottom:6px;min-height:44px;font-size:14px;}}

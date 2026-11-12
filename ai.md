@@ -73,6 +73,20 @@ Available v1 operations: `host.context`, `storage.get`, `storage.set`, `audio.no
 11. Never claim that a browser preview proves device UI, audio focus, touch rotation, child controls, signed catalog or complete sandbox security. Report precisely what was tested.
 12. Keep PRs small, reviewable and scoped; do not push compiled binaries into source history unless explicitly needed and license-compliant.
 
+## Text-to-Speech aus Community-Apps
+
+Anstelle einer eigenen Sprachengine oder Auswahl von Stimmen nutzt
+`await sdk.tts.status()` die auf der Box aktivierte TTS-Konfiguration. Mit
+`await sdk.tts.speak(text)` können Apps auf bewusste Benutzeraktion hin
+bis zu 600 Unicode-Zeichen über die vorhandene MuPiBox-Sprachpipeline
+vorlesen. Beide Aufrufe brauchen die `audio`-Berechtigung.
+
+Vorlesen funktioniert nur, wenn TTS im Admin-Interface bereits aktiviert
+und konfiguriert ist. Die App erhält weder Zugangsdaten noch Zugriff auf
+Stimmen-/Anbieterwechsel. Ein Aufruf bestätigt nur den Wiedergabestart,
+nicht das Ende der Sprachausgabe. Auf älteren Hosts muss die Funktion
+optional bleiben, Browser-Previews dürfen sie nicht vortäuschen.
+
 ## USB camera and volume APIs (NG alpha.23+, Developer Preview)
 
 - A webcam requires the new `camera` manifest permission, explicit approval on installation **and** a separate per-session click on the trusted host's **Kamera erlauben** button. Only the local touchscreen can activate a webcam; the remote Admin preview cannot. Capture is 320×240 still-JPEG previews at around one frame per second, **not** unrestricted streaming. No microphone or external network APIs exist.

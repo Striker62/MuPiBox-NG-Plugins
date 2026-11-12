@@ -253,3 +253,30 @@ Buttons und Ableseflächen werden deckend gezeichnet. Bei einem eigenständigen
 Vollbildspiel *muss* die App einen funktionierenden, sichtbaren Exit-Button
 (`MuPiBoxSDK.exit()`) vorsehen; die Host-Navigationsoption bleibt weiterhin
 pro App konfigurierbar. Frühere Admin-Überschreibungen gelten vor dem Manifest.
+
+## Text-to-Speech über das Host-SDK
+
+Die Freigabe `audio` schließt auch die Sprachausgabe über den **bestehenden**
+TTS-Dienst der MuPiBox ein. Die Eltern wählen Sprache, Anbieter und Stimme
+wie bisher unter **Admin → Text-to-Speech**. Community-Apps dürfen diese
+Einstellungen nicht verändern und bekommen keine API-Schlüssel.
+
+```js
+const sdk = window.MuPiBoxSDK;
+const tts = await sdk.tts.status(); // {enabled, available, language}
+if (tts.available) {
+  await sdk.tts.speak('Diese Buchseite wird vorgelesen.');
+}
+```
+
+`speak(text)` akzeptiert 1–600 Unicode-Zeichen pro Aufruf. Ein Aufruf liest
+nur den übergebenen Text, nutzt die globale Stimme und die vorhandene
+Audio-Unterbrechungs-/Fortsetzungslogik. Es gibt eine Rate-Limitierung,
+eine aktive Syntheseanfrage pro App und keine beliebige Stimmenauswahl.
+Der Aufruf bestätigt, dass die Audioausgabe gestartet wurde, **nicht** das
+Ende des gesprochenen Textes. Der lokale Browser-Vorschaumodus kann keine
+Host-Sprachausgabe simulieren; Apps sollten `status().available` beachten.
+
+Eine App benötigt für `tts.status()` und `tts.speak()` die `audio`-
+Berechtigung. Ältere Hosts ohne diese SDK-Erweiterung werden weiterhin
+unterstützt, solange Apps die Funktion optional verwenden.

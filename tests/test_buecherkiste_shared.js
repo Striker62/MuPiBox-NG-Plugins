@@ -7,12 +7,12 @@ const path=require('node:path');
 const source=fs.readFileSync(path.join(__dirname,'../examples/Buecherkiste/app.js'),'utf8');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function setup(mode='ok'){
- const nodes=new Map(),calls=[],urls=new Set(),revoked=[],events={};let next=0;
+ const nodes=new Map(),calls=[],urls=new Set(),revoked=[],events={},spoken=[];let next=0;
  function element(){return {hidden:false,children:[],style:{setProperty(){},backgroundImage:''},classList:{toggle(){}},addEventListener(){},setAttribute(k,v){this[k]=v},removeAttribute(k){delete this[k]},appendChild(c){this.children.push(c)},replaceChildren(){this.children=[]},isConnected:true}}
  function get(id){if(!nodes.has(id))nodes.set(id,element());return nodes.get(id)}
  get('reader').hidden=true;
  const appRoot=path.join(__dirname,'../examples/Buecherkiste');
- const info=mode==='attribution'?JSON.parse(fs.readFileSync(path.join(appRoot,'books/henne-und-adler/book.json'),'utf8')):{title:'Gleicher Titel',cover:'images/01.jpg',imagePattern:'images/{page:02d}.jpg',layout:'full-page'};
+ const info=mode==='attribution'?JSON.parse(fs.readFileSync(path.join(appRoot,'books/henne-und-adler/book.json'),'utf8')):{title:'Gleicher Titel',cover:'images/01.jpg',imagePattern:'images/{page:02d}.jpg',layout:'full-page',...(mode==='smb-speech'?{tts:'tts/pages.json'}:{})};
  const shared={
   async read(p){calls.push(p);if(mode==='denied')throw Error('Permission denied');
    if(p==='books/index.json'){
@@ -37,10 +37,10 @@ function setup(mode='ok'){
   }
  };
  const context={Blob,Uint8Array,console:{warn(){}},URL:{createObjectURL(){const u='blob:'+ ++next;urls.add(u);return u},revokeObjectURL(u){urls.delete(u);revoked.push(u)}},
-  window:{innerWidth:800,innerHeight:480,MuPiBoxSDK:mode==='absent'?undefined:{shared},addEventListener(n,f){events[n]=f}},
+  window:{innerWidth:800,innerHeight:480,MuPiBoxSDK:mode==='absent'?undefined:{shared,tts:{status:async()=>({available:mode==='speech'||mode==='smb-speech'}),speak:async(text)=>{spoken.push(text);return{speaking:true}}}},addEventListener(n,f){events[n]=f}},
   document:{getElementById:get,querySelector:get,createElement:element,documentElement:element(),addEventListener(){}},
   requestAnimationFrame(){},fetch:async p=>{
-   if(mode==='attribution'){
+   if(mode==='attribution'||mode==='speech'){
     const file=path.join(appRoot,p.split('?')[0]);
     return {ok:fs.existsSync(file),json:async()=>JSON.parse(fs.readFileSync(file,'utf8'))};
    }
@@ -49,7 +49,7 @@ function setup(mode='ok'){
  // Expose lexical app functions only in this test VM, without changing shipped code.
  const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={loadShelf,loadSharedShelf,scanPages,open,show,turn,validSharedInfo,sharedImage,releaseCovers,releasePage,renderShelf,bookInfo,pageFiles,bookTexts,sharedBooks,get entries(){return shelfEntries},get current(){return current}};})();`);
  vm.runInNewContext(exposed,context);
- return {...context,app:context.app,get,calls,urls,revoked,events};
+ return {...context,app:context.app,get,calls,urls,revoked,events,spoken};
 }
 test('SMB books append with separate identities and titles may repeat',async()=>{
  const h=setup();await tick();await tick();
@@ -139,4 +139,35 @@ test('only the manifest-declared books directory is accessed',async()=>{
  assert.equal(h.app.entries.length,1);
  assert.ok(h.calls.includes('books'));
  assert.ok(h.calls.every(p=>p==='books'||p.startsWith('books/')));
+});
+
+test('Bücherkiste reads existing per-page TTS texts and hides the button on credits',async()=>{
+ const h=setup('speech');await tick();await tick();
+ await h.app.open('ole');await tick();await tick();
+ assert.equal(h.get('read-aloud').hidden,false);
+ await h.get('read-aloud').onclick();
+ assert.match(h.spoken[0],/Ole und der verschwundene Knopf/);
+ h.app.turn(1);await tick();
+ await h.get('read-aloud').onclick();
+ assert.notEqual(h.spoken[0],h.spoken[1]);
+ await h.app.open('henne');await tick();await tick();
+ assert.equal(h.get('read-aloud').hidden,false);
+ await h.get('read-aloud').onclick();
+ assert.match(h.spoken[2],/Henne und ein Adler/);
+ h.app.turn(10);await tick();
+ assert.equal(h.get('attribution-page').hidden,false);
+ assert.equal(h.get('read-aloud').hidden,true);
+});
+
+test('SMB books can provide their own TTS JSON without granting file or voice control',async()=>{
+ const h=setup('smb-speech');await tick();await tick();
+ await h.app.open('smb:ole');await tick();await tick();
+ assert.equal(h.get('read-aloud').hidden,false);
+ await h.get('read-aloud').onclick();
+ assert.equal(h.spoken[0],'<script>content</script>'); // spoken as text; not rendered as HTML
+ assert.ok(h.calls.includes('books/ole/tts/pages.json'));
+ assert.throws(()=>h.app.validSharedInfo({
+  title:'Unsicher',cover:'images/01.jpg',imagePattern:'images/{page:02d}.jpg',
+  tts:'tts/../../secret.json'
+ }));
 });

@@ -1,6 +1,6 @@
 # Bücherkiste für MuPiBox-NG
 
-Version **0.2.28** · Community-App · Web-Runtime · App-ID `community.buecherkiste`
+Version **0.2.29** · Community-App · Web-Runtime · App-ID `community.buecherkiste`
 
 Ab Version 0.2.28 verwendet die Kachel die neue Illustration mit großem
 orangefarbenem MuPi-Axolotl und aufgeschlagenem blauem Zauberbuch
@@ -15,11 +15,34 @@ lassen sich per Touch öffnen, durchblättern und vergrößern. Die zwei eingeba
 Bücher funktionieren offline und bleiben unabhängig von zusätzlichen SMB-Büchern
 erhalten.
 
+## TTS-Vorlesen (ab 0.2.29)
+
+Die Bücherkiste nutzt die **bereits im MuPiBox-NG-Admin unter Text-to-Speech**
+gewählte Sprache und Stimme. Eine separate Stimmenauswahl, Geschwindigkeits-
+oder Tonhöhensteuerung in der App ist nicht vorgesehen. Ist TTS deaktiviert
+oder nicht verfügbar, wird der Vorlesen-Knopf ausgeblendet.
+
+Beim Öffnen einer Buchseite erscheint **▶ Vorlesen**, sofern für diese Seite
+Vorlesetext vorhanden ist. Ein Klick liest **nur die aktuelle Seite** vor.
+Bereits vorhandene `tts/pages.json`-Dateien für Ole sowie Henne und Adler
+werden verwendet. Bei Henne kann alternativ der sichtbare Text der Seite
+vorgelesen werden. Ein laufendes Hörbuch wird über die bestehende MuPiBox-
+Sprachausgabe unterbrochen und anschließend fortgesetzt; es entsteht keine
+separate Audioausgabe im Browser. Automatisches Weiterblättern und eine
+App-eigene Stopp-Funktion gehören nicht zu dieser ersten Integration.
+
+Beim Plugin-Update ist zusätzlich zur bisherigen SMB-Freigabe die bestehende
+**`audio`-Berechtigung** zu bestätigen. Das ist auch die Berechtigung für
+andere Soundausgaben von Community-Apps; TTS braucht keine neuen Zugangsdaten
+und keine zweite Admin-Einstellung. Voraussetzung ist eine NG-Version mit
+`MuPiBoxSDK.tts.status()` und `.speak()`.
+
 ## Funktionen
 
 - Responsive Buchhandlung mit farbigen Buchrücken und mehreren Regalseiten.
 - Regalseiten per Wischen, Pfeiltasten oder Seitenpunkten wechseln.
 - Buchseiten vorwärts/rückwärts blättern, Seitenanzeige und Zoom.
+- Vorlesen der jeweils aktuellen Seite mit der in NG konfigurierten TTS-Stimme.
 - Vollseitenformat (`full-page`) oder Bild mit getrenntem Text (`image-and-text`).
 - Zusätzliche Bücher aus dem eigenen SMB-Bereich, auch mit gleichen Titeln.
 - Automatische Erkennung von Buchordnern; eine SMB-`index.json` ist optional.
@@ -31,9 +54,9 @@ erhalten.
 ## Installation und Navigation
 
 1. Das `.mupiapp`-Paket über die Community-App-Verwaltung installieren.
-2. Die Berechtigung `shared-assets` für zusätzliche Bücher am lokalen
-   MuPiBox-Touchscreen erlauben. Sie gewährt ausschließlich lesenden Zugriff
-   auf den eigenen App-Bereich.
+2. Die Berechtigungen `shared-assets` (SMB-Inhalte) und `audio` (TTS) am lokalen
+   MuPiBox-Touchscreen erlauben. `shared-assets` gewährt ausschließlich lesenden
+   Zugriff auf den eigenen App-Bereich; `audio` gestattet die TTS-Ausgabe.
 3. Die Bücherkiste direkt auf der MuPiBox starten.
 
 Voraussetzung für SMB ist eine MuPiBox-NG-Version mit Unterstützung für
@@ -55,7 +78,7 @@ In einer eigenständigen Browser-Vorschau kann der SDK-Pfeil keine MuPiBox beend
   Lizenz: [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
   Diese Lizenz gilt für dieses Buch, nicht automatisch für andere App-Inhalte.
 
-TTS-Dateien sind vorhanden, eine Sprachausgabe ist nicht implementiert.
+Die vorhandenen TTS-Texte werden über das MuPiBox-NG-SDK vorgelesen.
 
 ## Eigene Bücher über SMB hinzufügen
 
@@ -91,9 +114,16 @@ Beispiel für `book.json`:
   "cover": "images/01.jpg",
   "imagePattern": "images/{page:02d}.jpg",
   "firstPage": 1,
-  "layout": "full-page"
+  "layout": "full-page",
+  "tts": "tts/pages.json"
 }
 ```
+
+`tts/pages.json` ist optional und enthält `{"pages":[{"text":"Gesprochener
+Text für Seite 1"},{"text":"Text für Seite 2"}]}`. Ein Buch ohne
+Vorlesetexte bleibt vollständig nutzbar, zeigt aber keinen Vorlesen-Knopf.
+Pro Seite werden höchstens 600 Zeichen vorgelesen; längere Texte sollten
+bei der Bucherstellung auf mehrere Seiten aufgeteilt werden.
 
 Die Erkennung verwendet den Ordnerpfad; gleiche Titel oder IDs ersetzen keine
 anderen Bücher. Für das Layout `image-and-text` kann zusätzlich
