@@ -109,15 +109,16 @@
     {
       "id": "community.buecherkiste",
       "name": "Bücherkiste",
-      "description": "Bücherkiste mit zusätzlichen SMB-Büchern und neuem großem MuPi-Axolotl-Cover mit blauem Zauberbuch.",
+      "description": "Bücherkiste mit Vorlesen über die MuPiBox-TTS-Stimme und zusätzlichen SMB-Büchern.",
       "category": "learning",
       "author": "MuPiBox Community",
-      "version": "0.2.28",
-      "releaseTag": "v0.1.0-preview.20",
+      "version": "0.2.29",
+      "releaseTag": "v0.1.0-preview.22",
       "asset": "buecherkiste.mupiapp",
-      "sha256": "1249428b313c9c4041641dd229f8447e8ec715f5bd49669ef1aa79776f65d938",
+      "sha256": "f2182ea599dff9e0fd57d9945179d8b25afc14e4b714ce9f13fdf683694807aa",
       "permissions": [
-        "shared-assets"
+        "shared-assets",
+        "audio"
       ]
     }
   ]
