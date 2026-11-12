@@ -2,6 +2,7 @@
 let shelfEntries=[],shelfPage=0,shelfCols=3,shelfRows=2;
 const bookInfo=Object.assign(Object.create(null),{ole:{pageCount:15,title:'Ole und der verschwundene Knopf',imagePattern:'images/{page:02d}.jpg',layout:'full-page'},henne:{pageCount:10,title:'Henne und Adler',imagePattern:'images/{page_plus_one:02d}.jpg',layout:'image-and-text'}});
 const bookFolder=Object.assign(Object.create(null),{ole:'ole',henne:'henne-und-adler'});const bookTexts=Object.create(null);
+const bookSpeech=Object.create(null);let speechAvailable=false;
 const pageFiles=Object.assign(Object.create(null),{ole:[],henne:[]});const MAX_PAGES=200;
 
 // SMB files remain content: no raw SMB/HTTP routes and no executable image formats.
@@ -20,7 +21,12 @@ function validSharedInfo(info){
  if(!safeImage(info.cover)||!safePattern(info.imagePattern))throw Error('Ungültiger Bildpfad');
  if(info.layout!==undefined&&!['full-page','image-and-text'].includes(info.layout))throw Error('Ungültiges Layout');
  if(info.text!==undefined&&(typeof info.text!=='string'||!/^text\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.json$/.test(info.text)||info.text.includes('..')))throw Error('Ungültiger Textpfad');
- return {title:info.title,cover:info.cover,imagePattern:info.imagePattern,layout:info.layout||'full-page',text:info.text,pageCount:1,attribution:attributionInfo(info)};
+ if(info.tts!==undefined&&(typeof info.tts!=='string'||!/^tts\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.json$/.test(info.tts)||info.tts.includes('..')))throw Error('Ungültiger TTS-Pfad');
+ return {title:info.title,cover:info.cover,imagePattern:info.imagePattern,layout:info.layout||'full-page',text:info.text,tts:info.tts,pageCount:1,attribution:attributionInfo(info)};
+}
+function speechLines(data){
+ if(!Array.isArray(data?.pages))return [];
+ return data.pages.slice(0,MAX_PAGES).map(p=>typeof p==='string'?p:typeof p?.text==='string'?p.text:'');
 }
 async function readSharedJSON(path){
  const blob=await shared().read(path);
@@ -43,6 +49,30 @@ async function sharedImage(path){
 function releasePage(){++pageRender;if(pageObjectURL){URL.revokeObjectURL(pageObjectURL);pageObjectURL=null}}
 function releaseCovers(){++coverRender;for(const url of coverURLs)URL.revokeObjectURL(url);coverURLs.clear()}
 window.addEventListener('pagehide',()=>{++shelfLoad;releasePage();releaseCovers()});
+function pageSpeechText(){
+ if(reader.hidden||isAttributionPage())return '';
+ const lines=bookSpeech[book]||[];
+ const fallback=bookInfo[book].layout==='image-and-text'?(bookTexts[book]||(!sharedBooks[book]&&book==='henne'?henText:[])):[];
+ return String(lines[current-1]||fallback[current-1]||'').trim();
+}
+function updateSpeakControl(){
+ const button=$('read-aloud'),text=pageSpeechText();
+ button.hidden=!speechAvailable||!text||Array.from(text).length>600;
+}
+async function refreshSpeechAvailability(){
+ try{speechAvailable=(await window.MuPiBoxSDK?.tts?.status())?.available===true}
+ catch(e){speechAvailable=false}
+ updateSpeakControl();
+}
+async function readPageAloud(){
+ const button=$('read-aloud'),text=pageSpeechText();
+ if(button.hidden||button.disabled||!text)return;
+ button.disabled=true;
+ try{await window.MuPiBoxSDK.tts.speak(text)}
+ catch(e){console.warn('Vorlesen nicht verfügbar:',e);button.title='Vorlesen derzeit nicht verfügbar'}
+ finally{button.disabled=false}
+}
+
 async function loadSharedShelf(generation){
  if(typeof shared()?.read!=='function'||typeof shared()?.list!=='function')return;
  try{
@@ -74,7 +104,7 @@ async function loadSharedShelf(generation){
   for(const entry of entries){
    const key=entry.folder;
    sharedBooks[key]=entry.sourceFolder;bookFolder[key]=entry.sourceFolder;
-   bookInfo[key]=entry.info;pageFiles[key]=[];delete bookTexts[key];
+   bookInfo[key]=entry.info;pageFiles[key]=[];delete bookTexts[key];delete bookSpeech[key];
    shelfEntries.push(entry);
   }
   renderShelf();
@@ -82,6 +112,9 @@ async function loadSharedShelf(generation){
 }
 async function loadSharedBook(which){
  const folder=sharedBooks[which],info=bookInfo[which];
+ if(info.tts){try{bookSpeech[which]=speechLines(await readSharedJSON(folder+'/'+info.tts))}
+ catch(e){console.warn('SMB-Vorlesetext nicht geladen:',e);delete bookSpeech[which]}}
+
  if(info.text){try{
   const data=await readSharedJSON(folder+'/'+info.text);
   if(Array.isArray(data?.pages))bookTexts[which]=data.pages.slice(0,MAX_PAGES).map(p=>typeof p==='string'?p:typeof p?.text==='string'?p.text:'');
@@ -143,6 +176,7 @@ async function loadBookInfo(which){
   if(typeof info.title==='string'&&info.title)bookInfo[which].title=info.title;
   if(typeof info.layout==='string')bookInfo[which].layout=info.layout;
   if(typeof info.text==='string'&&/^text\/[a-zA-Z0-9_.-]+\.json$/.test(info.text)){try{const tr=await fetch('books/'+bookFolder[which]+'/'+info.text+'?ts='+Date.now(),{cache:'no-store'});if(tr.ok){const td=await tr.json();if(Array.isArray(td.pages))bookTexts[which]=td.pages.map(p=>typeof p==='string'?p:(p.text||''));}}catch(e){console.warn('Buchtext nicht geladen',which,e)}}
+  if(typeof info.tts==='string'&&/^tts\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.json$/.test(info.tts)&&!info.tts.includes('..')){try{const tr=await fetch('books/'+bookFolder[which]+'/'+info.tts+'?ts='+Date.now(),{cache:'no-store'});if(tr.ok)bookSpeech[which]=speechLines(await tr.json())}catch(e){console.warn('Vorlesetext nicht geladen',which,e)}}
   if(typeof info.imagePattern==='string'&&/^images\/[a-zA-Z0-9_{}:.\/-]+$/.test(info.imagePattern)&&!info.imagePattern.includes('..'))bookInfo[which].imagePattern=info.imagePattern;
  }catch(err){console.warn('Buchinformationen nicht geladen:',which,err)}
  updateShelfCount(which);
@@ -222,7 +256,7 @@ function show(){
  }else renderPage(pagePath(book,current));
 }
 function renderPage(resolved){let total=getTotal();if(isAttributionPage()){renderAttribution();updatePageControls();return}if(bookInfo[book].layout!=='image-and-text'){let src=resolved;if(src)$('page').src=src;else $('page').removeAttribute('src');$('page').hidden=false;$('henne-page').hidden=true;$('backdrop').style.backgroundImage=src?'url("'+src+'")':'none';$('credits').hidden=true;}else{$('page').hidden=true;$('henne-page').hidden=false;if(resolved)$('henne-image').src=resolved;else $('henne-image').removeAttribute('src');$('henne-image').onload=()=>requestAnimationFrame(fitHenneText);$('henne-text').innerHTML='';const textInner=document.createElement('div');textInner.id='henne-text-inner';textInner.textContent=(bookTexts[book]||(sharedBooks[book]?[]:henText))[current-1]||'';$('henne-text').appendChild(textInner);$('credits').hidden=book!=='henne';requestAnimationFrame(fitHenneText);}updatePageControls()}
-function updatePageControls(){const total=getTotal();$('counter').textContent=current+' / '+total;$('prev').disabled=current===1;$('next').disabled=current===total;viewport.scrollTop=0;viewport.scrollLeft=0;if(bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}function zoom(on){zoomed=on;viewport.classList.toggle('zoom',on);reader.classList.toggle('zoomed',on);$('zoom').textContent=on?'⊟ Ganz':'⌕ Zoom';viewport.scrollTop=0;viewport.scrollLeft=0;if(!on&&bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}async function open(which){++shelfLoad;book=which;current=1;shelf.hidden=true;reader.hidden=false;$('app-exit').hidden=true;reader.classList.toggle('henne',bookInfo[book].layout==='image-and-text');$('reader-title').textContent=bookInfo[which].title;zoom(false);show();try{await loadBookInfo(which);await scanPages(which)}catch(e){console.warn('Buch nicht vollständig geladen:',which,e)}if(book!==which||reader.hidden)return;$('reader-title').textContent=bookInfo[which].title;show()}
+function updatePageControls(){const total=getTotal();$('counter').textContent=current+' / '+total;$('prev').disabled=current===1;$('next').disabled=current===total;viewport.scrollTop=0;viewport.scrollLeft=0;if(bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText);updateSpeakControl()}function zoom(on){zoomed=on;viewport.classList.toggle('zoom',on);reader.classList.toggle('zoomed',on);$('zoom').textContent=on?'⊟ Ganz':'⌕ Zoom';viewport.scrollTop=0;viewport.scrollLeft=0;if(!on&&bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}async function open(which){void refreshSpeechAvailability();++shelfLoad;book=which;current=1;shelf.hidden=true;reader.hidden=false;$('app-exit').hidden=true;reader.classList.toggle('henne',bookInfo[book].layout==='image-and-text');$('reader-title').textContent=bookInfo[which].title;zoom(false);show();try{await loadBookInfo(which);await scanPages(which)}catch(e){console.warn('Buch nicht vollständig geladen:',which,e)}if(book!==which||reader.hidden)return;$('reader-title').textContent=bookInfo[which].title;show()}
 async function loadShelf(){
  const generation=++shelfLoad;
  const holder=document.querySelector('#shelf .books');
@@ -317,5 +351,6 @@ $('app-exit').onclick=async()=>{
  }catch(e){console.warn('Rückkehr zur MuPiBox fehlgeschlagen:',e)}
  finally{button.disabled=false}
 };
-loadShelf();
+loadShelf();void refreshSpeechAvailability();
+$('read-aloud').onclick=readPageAloud;
 $('back').onclick=()=>{releasePage();$('page').removeAttribute('src');$('henne-image').removeAttribute('src');$('backdrop').style.backgroundImage='none';reader.hidden=true;shelf.hidden=false;$('app-exit').hidden=false;loadShelf()};function turn(d){let total=getTotal();let n=Math.max(1,Math.min(total,current+d));if(n!==current){current=n;show()}}$('prev').onclick=()=>turn(-1);$('next').onclick=()=>turn(1);$('zoom').onclick=()=>zoom(!zoomed);window.addEventListener('resize',()=>{requestAnimationFrame(fitHenneText);if(!shelf.hidden)renderShelf()});if(window.ResizeObserver){new ResizeObserver(()=>requestAnimationFrame(fitHenneText)).observe($('viewport'));}if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>requestAnimationFrame(fitHenneText));document.addEventListener('keydown',e=>{if(reader.hidden){if(e.key==='ArrowRight')changeShelfPage(1);if(e.key==='ArrowLeft')changeShelfPage(-1);return;}if(e.key==='ArrowRight')turn(1);if(e.key==='ArrowLeft')turn(-1);if(e.key==='Escape')$('back').click()})})();

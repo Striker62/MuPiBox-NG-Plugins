@@ -102,6 +102,23 @@
     }
   });
 
+  // Speech uses the owner's existing Admin > TTS configuration. Applications
+  // never select a provider or receive credentials. An approved "audio"
+  // permission is required, just as for native note playback.
+  const tts = Object.freeze({
+    async status() {
+      if (!bridge) return {enabled: false, available: false, language: global.navigator.language || 'de'};
+      const result = await invoke('tts.status', {});
+      return {enabled: result?.enabled === true, available: result?.available === true,
+        language: typeof result?.language === 'string' ? result.language : ''};
+    },
+    async speak(text) {
+      if (typeof text !== 'string' || !text.trim() || Array.from(text).length > 600 || text.includes('\0'))
+        throw new TypeError('speech text must contain 1..600 characters and no NUL');
+      return invoke('tts.speak', {text: text.trim()});
+    }
+  });
+
   // Host webcam capability: the trusted on-device runner asks the parent
   // (via a real user-facing button) to confirm each camera session. The
   // plugin never receives a device path or native video handle and cannot
@@ -216,6 +233,7 @@
     on,
     storage,
     audio,
+    tts,
     camera,
     photos,
     shared,
