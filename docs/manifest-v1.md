@@ -47,7 +47,7 @@ Example manifest:
 | `runtime` | Only `"web"` for v1; Go must be compiled to WASM |
 | `entry`, `icon` | Relative paths inside the package, no absolute paths or `..` |
 | `cover` | Optional raster home-tile image (PNG/JPG/JPEG/WebP) relative to the package root; not the app background |
-| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `shared-assets` (`network` is not supported by the current host) |
+| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `shared-assets`, `links`, `homeassistant` (`network` is not supported by the current host) |
 | `networkHosts` | Explicit hostname allowlist **required** when requesting `network` |
 | `category` | Preferred native menu location: `games`, `creative`, `learning`, `tools`, or `other` (defaults to `games`) |
 | `display` | Preferred orientation, minimum size and optional native MuPiBox chrome settings |
@@ -280,3 +280,23 @@ Host-Sprachausgabe simulieren; Apps sollten `status().available` beachten.
 Eine App benötigt für `tts.status()` und `tts.speak()` die `audio`-
 Berechtigung. Ältere Hosts ohne diese SDK-Erweiterung werden weiterhin
 unterstützt, solange Apps die Funktion optional verwenden.
+
+
+## Optional host integration capabilities (NG community-suite preview)
+
+`links` grants `sdk.links.list()` and requests to
+`sdk.links.open(url)`. Only administrator-approved URLs are ever listed.
+The open method currently fails closed (HTTP 501), since the external browser
+requires a separate fully intercepted Qt WebEngine profile. This permission
+does **not** grant `network` access to the plugin iframe.
+
+`homeassistant` grants `sdk.homeassistant.list()` and
+`sdk.homeassistant.command(entityId, action)`. The NG host uses its own
+configured HA connection; apps cannot read or configure the access token.
+Only administrator-approved `light.*`, `switch.*`, `scene.*` entities
+and individually approved `turn_on`/`turn_off` operations are allowed.
+The integration defaults to disabled and requires a LAN HA address.
+
+Existing `storage` still limits each JSON value to 64 KiB; the updated
+host expands the per-app budget to 32 MiB / 512 keys. Future large binary
+media projects require separate file storage.

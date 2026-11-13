@@ -1,0 +1,27 @@
+{
+  "apiVersion": "1",
+  "id": "community.mupi-beatbox",
+  "name": "MuPis BeatBox",
+  "description": "16-Step-Loopbox mit vier Spuren, Instrumenten und speicherbaren Patterns (Audio-Preview: eine Note pro Schritt).",
+  "author": "MuPiBox Community",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "cover": "cover.png",
+  "permissions": [
+    "storage",
+    "controller",
+    "audio"
+  ],
+  "category": "creative",
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "app"
+  }
+}

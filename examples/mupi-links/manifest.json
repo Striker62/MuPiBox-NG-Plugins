@@ -1,0 +1,26 @@
+{
+  "apiVersion": "1",
+  "id": "community.mupi-links",
+  "name": "MuPi Links",
+  "description": "Vom Host freigegebene Favoritenliste f\u00fcr einen zuk\u00fcnftigen separaten, gesch\u00fctzten Browser.",
+  "author": "MuPiBox Community",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "cover": "cover.png",
+  "permissions": [
+    "controller",
+    "links"
+  ],
+  "category": "tools",
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "app"
+  }
+}
