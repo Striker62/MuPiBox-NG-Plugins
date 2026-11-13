@@ -4,7 +4,8 @@ const sdk=window.MuPiBoxSDK;
 const names=["Kick","Snare","Bass","Melodie"],notes=["C4","D4","G4","B4"];
 const instruments=["musicbox","piano","epiano","glockenspiel","xylophone","marimba","harp"];
 const patterns=Array.from({length:4},()=>Array(16).fill(false));
-const selectors=[];let playing=false,step=0,selected=0,timer=null,volume=50;
+const selectors=[],pitchSelectors=[];
+const pitches=["C4","D4","E4","F4","G4","A4","B4","C5"];let playing=false,step=0,selected=0,timer=null,volume=50;
 const $=id=>document.getElementById(id), cells=[];
 function render(){
  const holder=$("tracks");holder.textContent="";cells.length=0;
@@ -14,7 +15,10 @@ function render(){
  const sel=document.createElement("select");sel.setAttribute("aria-label",names[r]+" Instrument");
  instruments.forEach(i=>{const o=document.createElement("option");o.value=i;o.textContent=i;sel.appendChild(o)});
  sel.value=["musicbox","marimba","piano","glockenspiel"][r];selectors.push(sel);
- row.append(label,sel);const entry=[];
+ const pitch=document.createElement("select");pitch.setAttribute("aria-label",names[r]+" Tonhöhe");
+ pitches.forEach(n=>{const o=document.createElement("option");o.value=n;o.textContent=n;pitch.append(o)});
+ pitch.value=notes[r];pitchSelectors.push(pitch);
+ row.append(label,sel,pitch);const entry=[];
  pattern.forEach((on,c)=>{
  const b=document.createElement("button");b.className="step"+(on?" on":"");b.type="button";b.setAttribute("aria-label",names[r]+" Schritt "+(c+1));b.setAttribute("aria-pressed",on);
  b.textContent=on?"●":"·";b.onclick=()=>{selected=r*16+c;toggle(r,c)};
@@ -35,10 +39,10 @@ function setStatus(msg){$("status").textContent=msg;}
 async function tick(){
  if(!playing)return;
  update();
- // The current host has an explicit 75ms note rate limit. A single
- // prioritised voice per sixteenth step avoids flooding it.
- const r=patterns.findIndex(p=>p[step]);
- if(r>=0)try{await sdk.audio.playNote(notes[r],volume,selectors[r].value,{relative:true})}
+ // Batch all active tracks into one bounded host audio call; the host
+ // validates all voices and enforces its normal rate and volume restrictions.
+ const active=patterns.flatMap((pattern,r)=>pattern[step]?[{note:pitchSelectors[r].value,instrument:selectors[r].value}]:[]);
+ if(active.length)try{await sdk.audio.playChord(active,volume,{relative:true})}
  catch(e){setStatus("Audio nicht verfügbar: "+String(e.message||e));}
  step=(step+1)%16;update();
 }
@@ -53,8 +57,8 @@ $("preset").onclick=()=>{
  update();setStatus("Beispielbeat geladen.");
 };
 $("clear").onclick=()=>{patterns.forEach(p=>p.fill(false));update();setStatus("Alle Spuren geleert.")};
-$("save").onclick=async()=>{try{await sdk.storage.set("beatbox.project.v1",{patterns,bpm:+$("bpm").value,instruments:selectors.map(s=>s.value)});setStatus("Pattern gespeichert.")}catch(e){setStatus("Speichern: "+e.message)}};
-$("load").onclick=async()=>{try{const v=await sdk.storage.get("beatbox.project.v1");if(!v||!Array.isArray(v.patterns)||v.patterns.length!==4)throw Error("Kein Projekt gefunden");v.patterns.forEach((p,r)=>{if(Array.isArray(p)&&p.length===16)patterns[r]=p.map(Boolean)});if(Number.isInteger(v.bpm))$("bpm").value=Math.max(60,Math.min(140,v.bpm));$("bpm").dispatchEvent(new Event("input"));v.instruments?.forEach((n,r)=>{if(selectors[r]&&instruments.includes(n))selectors[r].value=n});update();setStatus("Projekt geladen.")}catch(e){setStatus("Laden: "+e.message)}};
+$("save").onclick=async()=>{try{await sdk.storage.set("beatbox.project.v1",{patterns,bpm:+$("bpm").value,instruments:selectors.map(s=>s.value),notes:pitchSelectors.map(s=>s.value)});setStatus("Pattern gespeichert.")}catch(e){setStatus("Speichern: "+e.message)}};
+$("load").onclick=async()=>{try{const v=await sdk.storage.get("beatbox.project.v1");if(!v||!Array.isArray(v.patterns)||v.patterns.length!==4)throw Error("Kein Projekt gefunden");v.patterns.forEach((p,r)=>{if(Array.isArray(p)&&p.length===16)patterns[r]=p.map(Boolean)});if(Number.isInteger(v.bpm))$("bpm").value=Math.max(60,Math.min(140,v.bpm));$("bpm").dispatchEvent(new Event("input"));v.instruments?.forEach((n,r)=>{if(selectors[r]&&instruments.includes(n))selectors[r].value=n});v.notes?.forEach((n,r)=>{if(pitchSelectors[r]&&pitches.includes(n))pitchSelectors[r].value=n});update();setStatus("Projekt geladen.")}catch(e){setStatus("Laden: "+e.message)}};
 $("exit").onclick=()=>{stop();sdk.exit()};
 sdk.on("lifecycle.pause",stop);
 sdk.on("input",({button,action})=>{if(action!=="press")return;

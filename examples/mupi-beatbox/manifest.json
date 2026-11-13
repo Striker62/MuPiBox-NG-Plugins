@@ -2,7 +2,7 @@
   "apiVersion": "1",
   "id": "community.mupi-beatbox",
   "name": "MuPis BeatBox",
-  "description": "16-Step-Loopbox mit vier Spuren, Instrumenten und speicherbaren Patterns (Audio-Preview: eine Note pro Schritt).",
+  "description": "16-Step-Loopbox mit vier Spuren, Instrumenten und speicherbaren Patterns (Audio-Preview: bis vier Stimmen pro Schritt).",
   "author": "MuPiBox Community",
   "version": "0.1.0",
   "runtime": "web",

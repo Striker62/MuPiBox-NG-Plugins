@@ -17,16 +17,17 @@ Apps are not automatically entered into the official catalog.
 
 | App | App ID | Working preview | Missing before release |
 | --- | --- | --- | --- |
-| MuPis BeatBox | `community.mupi-beatbox` | 4 tracks, 16 steps, adjustable tempo, seven host instruments, project save/load, controller | polyphonic timing, audio focus, sample packs, song export |
+| MuPis BeatBox | `community.mupi-beatbox` | 4 tracks, 16 steps, adjustable tempo, selectable C4–C5 pitches, up to four simultaneous voices through new host chord API, project save/load, controller | polyphonic timing, audio focus, sample packs, song export |
 | MuPi Soundquiz | `community.mupi-soundquiz` | Instrument quiz using seven host voices, best-score storage | sound packs, levels, translation, hardware audio tests |
 | MuPis Rhythm Game | `community.mupi-rhythm` | Four falling lanes, touch/controller hits, combo, original practice chart, high score | actual synchronized backing track, holds/swipes, chart import, calibration |
 | MuPi Links | `community.mupi-links` | Host-managed URL whitelist/favorites are listed | external browsing DISABLED until an intercepted isolated browser is built |
 | MuPi Home Assistant | `community.mupi-homeassistant` | Child-scoped approved entity state and narrow on/off actions | live subscriptions, broader safe entity types, HA hardware tests |
 
-All games target landscape 800 × 480. The host note API currently supports
+All games target landscape 800 × 480. The host note and bounded chord APIs support
 C4–C5, seven synth instruments and a rate limit of 75 ms between requests
-per app. The BeatBox deliberately triggers at most one note per step, because
-the existing note API is **not** a polyphonic clock or a DAW. Rhythm Game uses
+per app. The NG host branch now includes a bounded `audio.chord` call (up to four
+voices per step in one request), which is appropriate for the initial BeatBox.
+This is still **not** a sample-accurate clock, DAW or sample player. Rhythm Game uses
 an original simple practice pattern, not licensed soundtrack material.
 Chromium WebAudio does not currently have a guaranteed route to the MuPiBox
 appliance's PipeWire stream; a reliable synchronized music engine remains a

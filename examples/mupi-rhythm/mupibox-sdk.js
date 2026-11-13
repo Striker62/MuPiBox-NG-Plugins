@@ -99,6 +99,22 @@
       oscillator.connect(gain); gain.connect(previewAudioContext.destination);
       oscillator.start(now); oscillator.stop(now + .31);
       return true;
+    },
+    async playChord(notes, volume = 30, options = {}) {
+      const instruments = ['musicbox', 'piano', 'epiano', 'glockenspiel', 'xylophone', 'marimba', 'harp'];
+      if (!Array.isArray(notes) || notes.length < 1 || notes.length > 4 ||
+          notes.some(n => !n || typeof n.note !== 'string' ||
+            !/^[A-G](?:#)?[45]$/.test(n.note) || !instruments.includes(n.instrument))) {
+        throw new TypeError('chord needs 1..4 valid note/instrument objects');
+      }
+      if (!Number.isInteger(volume) || volume < 0 || volume > 100 ||
+          options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.relative !== undefined && typeof options.relative !== 'boolean')) {
+        throw new TypeError('invalid chord volume/options');
+      }
+      if (bridge) return invoke('audio.chord', {notes, volume, relative: options.relative === true});
+      // Browser-only preview is not the native PipeWire mixing guarantee.
+      return Promise.all(notes.map(n => audio.playNote(n.note, volume, n.instrument, options)));
     }
   });
 

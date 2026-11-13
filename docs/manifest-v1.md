@@ -300,3 +300,13 @@ The integration defaults to disabled and requires a LAN HA address.
 Existing `storage` still limits each JSON value to 64 KiB; the updated
 host expands the per-app budget to 32 MiB / 512 keys. Future large binary
 media projects require separate file storage.
+
+
+### Bounded polyphonic preview
+
+An upgraded NG host implements `sdk.audio.playChord(notes, volume,
+{relative:true})` where `notes` is an array of 1–4
+`{note:"C4",instrument:"piano"}` values. The same `audio` permission,
+device volume ceiling, parental controls and 75ms per-app call rate limit
+apply as with `playNote`. It does not accept raw audio samples or arbitrary
+note ranges and is not a sample-accurate song sequencer.
