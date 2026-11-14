@@ -120,6 +120,124 @@
         "shared-assets",
         "audio"
       ]
+    },
+    {
+      "id": "community.mupi-beatbox",
+      "name": "MuPis BeatBox",
+      "description": "16-Step-Loopbox mit vier Spuren, Instrumenten und speicherbaren Patterns (Audio-Preview: bis vier Stimmen pro Schritt). Die Mehrstimmigkeit benötigt MuPiBox NG ab Alpha 54.",
+      "category": "creative",
+      "author": "MuPiBox Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.23",
+      "asset": "mupi-beatbox.mupiapp",
+      "sha256": "40847ba8cb780c5dcdc10ffc70ca3bfe9dde5d681d556e18981ee1de00696a12",
+      "permissions": [
+        "storage",
+        "controller",
+        "audio"
+      ]
+    },
+    {
+      "id": "community.mupi-soundquiz",
+      "name": "MuPi Soundquiz",
+      "description": "Instrumente nach Gehör erkennen, mit lokalen Klängen und Highscore.",
+      "category": "learning",
+      "author": "MuPiBox Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.23",
+      "asset": "mupi-soundquiz.mupiapp",
+      "sha256": "fb0af6f8f40a33fe2fd5ef08cd3397f6d50ec2ede8fdf9a48dd5ffd862d487ee",
+      "permissions": [
+        "storage",
+        "controller",
+        "audio"
+      ]
+    },
+    {
+      "id": "community.mupi-rhythm",
+      "name": "MuPis Rhythm Game",
+      "description": "Rhythmusspiel mit vier Touch-Spuren, Controller, eigenen Synthesizer-Melodien und Punktewertung. Frühe Vorschau mit eigenem Übungspattern, noch ohne fertige Songs.",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.23",
+      "asset": "mupi-rhythm.mupiapp",
+      "sha256": "54c5c323394a2adb8763a69e659e162ee9ec03b4f3835f24e25b742980726d83",
+      "permissions": [
+        "storage",
+        "controller",
+        "audio"
+      ]
+    },
+    {
+      "id": "community.mupi-muehle",
+      "name": "MuPi Mühlenmeister",
+      "description": "Neunermühle: zu zweit lokal oder gegen KI in drei Stufen",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.23",
+      "asset": "mupi-muehle.mupiapp",
+      "sha256": "b104f625ff5fdb66ab4c2e7ee05bec5af14465d5527d23118339b8fb88ad0c35",
+      "permissions": [
+        "controller"
+      ]
+    },
+    {
+      "id": "community.mupi-reversi",
+      "name": "MuPi Reversi Arena",
+      "description": "Reversi 8x8: zu zweit lokal oder gegen KI in drei Stufen",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.23",
+      "asset": "mupi-reversi.mupiapp",
+      "sha256": "3d51b9ec9213fd6e14441a82bf1383ec0af75f68ab3d2c4c98761a0ffb37a381",
+      "permissions": [
+        "controller"
+      ]
+    },
+    {
+      "id": "community.mupi-dame",
+      "name": "MuPi Dame-Duell",
+      "description": "Dame 8x8: zu zweit lokal oder gegen KI in drei Stufen",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.23",
+      "asset": "mupi-dame.mupiapp",
+      "sha256": "1bb7eafe22a6059d323b1ef6f6526759a4c31f490bfc14a012a6ac726d6adf5f",
+      "permissions": [
+        "controller"
+      ]
+    },
+    {
+      "id": "community.mupi-wuerfelrennen",
+      "name": "MuPis Würfelrennen",
+      "description": "Eigenständiges Ludo-Würfelspiel für zwei bis vier Menschen oder KI-Spieler",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.23",
+      "asset": "mupi-wuerfelrennen.mupiapp",
+      "sha256": "6a15fbf9031e33249bb723cafbc97b3017dacd046375fe27d2f24e87a52025a7",
+      "permissions": [
+        "controller"
+      ]
+    },
+    {
+      "id": "community.mupi-wikingerduell",
+      "name": "MuPis Wikingerduell",
+      "description": "Kubb-Wurfspiel: zwei Teams lokal oder gegen MuPi in drei KI-Stufen. Eigene Kubb-Spielsimulation mit 2-4-6-Wurffolge. Vereinfachte digitale Kubb-Wurfvariante, kein Turnier-Regelwerk.",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.23",
+      "asset": "mupi-wikingerduell.mupiapp",
+      "sha256": "eb44ca67c146effc5636fbafc3b64178b33b30fa577fef00eb8807795b27a069",
+      "permissions": [
+        "controller"
+      ]
     }
   ]
 }
