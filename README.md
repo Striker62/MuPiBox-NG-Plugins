@@ -8,22 +8,24 @@ Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SD
 
 ## Neue Community-App-Vorschauen (November 2026)
 
-Fünf eigenständige Prototypen liegen unter `examples/mupi-*`:
+Neun eigenständige Prototypen liegen unter `examples/mupi-*`:
 **MuPis BeatBox**, **MuPi Soundquiz**, **MuPis Rhythm Game**,
-**MuPi Links** und **MuPi Home Assistant**. Sie werden bewusst **nicht**
+**MuPi Links**, **MuPi Home Assistant**, **MuPi Mühlenmeister**,
+**MuPi Reversi Arena**, **MuPi Dame-Duell** und **MuPis Würfelrennen**. Sie werden bewusst **nicht**
 automatisch in den offiziellen App-Katalog aufgenommen.
 
 ```bash
 python3 tools/build_community_suite.py
 # Pakete: dist/community-preview/*.mupiapp
 python3 -m unittest discover -s tests -v
+node --test tests/community_board_games.test.cjs
 ```
 
 Die beiden Integrationsapps erfordern einen aktualisierten Host mit den neuen
 Berechtigungen `links` bzw. `homeassistant`. Die externe Browser-Navigation
 ist bis zur Umsetzung der nativen Netzwerkanfrage-Filterung absichtlich
-deaktiviert. Details und weitere Spiele-Kandidaten:
-[Community Suite Roadmap](docs/community-suite-roadmap.md).
+deaktiviert. Details, Brettspiel-Regelvarianten und Lizenzprüfung:
+[Community Suite Lizenz-Audit](docs/community-suite-license-audit.md), [Community Suite Roadmap](docs/community-suite-roadmap.md).
 
 ## Für Entwickler
 

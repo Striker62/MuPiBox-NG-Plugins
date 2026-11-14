@@ -1,5 +1,6 @@
 """Offline developer tests for the new five-inch community app previews."""
 import json
+import zipfile
 import shutil
 import subprocess
 import tempfile
@@ -17,6 +18,10 @@ APPS={
  "mupi-rhythm":("games",{"storage","controller","audio"}),
  "mupi-links":("tools",{"controller","links"}),
  "mupi-homeassistant":("tools",{"controller","homeassistant"}),
+ "mupi-muehle":("games",{"controller"}),
+ "mupi-reversi":("games",{"controller"}),
+ "mupi-dame":("games",{"controller"}),
+ "mupi-wuerfelrennen":("games",{"controller"}),
 }
 class CommunitySuiteTests(unittest.TestCase):
  def test_all_preview_packages_are_offline_and_valid(self):
@@ -35,9 +40,12 @@ class CommunitySuiteTests(unittest.TestCase):
      target=Path(td)/slug
      shutil.copytree(folder,target)
      shutil.copyfile(ROOT/"sdk"/"mupibox-sdk.js",target/"mupibox-sdk.js")
+     shutil.copyfile(ROOT/"LICENSE",target/"LICENSE.txt")
      out=Path(td)/(slug+".mupiapp")
      self.assertEqual(pack(target,out)["id"],meta["id"])
      self.assertEqual(validate_package(out)["version"],"0.1.0")
+     with zipfile.ZipFile(out) as z:
+      self.assertEqual(z.read("LICENSE.txt"), (ROOT/"LICENSE").read_bytes())
  def test_scripts_parse(self):
   if shutil.which("node") is None:self.skipTest("node unavailable")
   for slug in APPS:

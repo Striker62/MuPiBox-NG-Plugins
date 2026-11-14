@@ -1,6 +1,6 @@
 # Community Suite 2026 — MuPi Links, Home Assistant and creative games
 
-Status: **developer previews**, not curated releases. All five prototypes are
+Status: **developer previews**, not curated releases. All nine prototypes are
 independent web packages using the public SDK; none requires privileged plugins,
 third-party JavaScript downloads or copying MuPiBox-NG private source.
 
@@ -12,6 +12,33 @@ into each package. Test packages must only be installed on a compatible NG
 developer instance. The NG host must know the new optional `links` and
 `homeassistant` capabilities before those two plugins can be installed.
 Apps are not automatically entered into the official catalog.
+
+## Four independently authored board games (preview)
+
+All four are original code and generated SVG/PNG assets. No third-party
+engine or publisher artwork is bundled. 800×480, touch and controller.
+
+| App | Players | Computer |
+| --- | --- | --- |
+| MuPi Mühlenmeister | Two local | Easy random / medium tactical / hard defensive threat lookahead |
+| MuPi Reversi Arena | Two local | Easy random / medium positional / hard minimax |
+| MuPi Dame-Duell | Two local | Easy random / medium greedy / hard shallow minimax |
+| MuPis Würfelrennen | Two to four participants; configurable number of humans | Remaining participants AI with easy/medium/hard strategy |
+
+Mühlenmeister uses 9 stones per player, placing, sliding, 3-stone flying,
+the capture-of-nonmill-stone priority, and a 100-no-mill-moves draw.
+Reversi is standard 8×8 with pass turns when no legal moves remain.
+Dame-Duell intentionally selects a documented **8×8 variant**: forward men,
+mandatory captures, full multiple-jump sequences, long-moving kings,
+immediate promotion ending a turn and no majority-capture obligation.
+This must not be marketed as the only standard for German/international
+draughts. Würfelrennen is a wholly original visual rendering of general
+Ludo/Pachisi-like rules: six to leave home, exact private home lane,
+captures on the ring, extra roll on six following a valid move. A six
+with **no** legal move passes the turn. Avoid the protected Schmidt
+trademark and any associated artwork, trade dress or rulebook text.
+
+See [legal review](community-suite-license-audit.md).
 
 ## Current prototype scope
 
