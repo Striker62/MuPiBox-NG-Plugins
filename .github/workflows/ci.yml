@@ -19,7 +19,7 @@ jobs:
         run: python3 -m unittest discover -s tests -v
       - name: Test new Community Suite board engines
         run: |
-          node --test tests/community_board_games.test.cjs tests/community_kubb.test.cjs
+          node --test tests/community_board_games.test.cjs tests/community_hnefatafl_rhythm.test.cjs
           python3 tools/build_community_suite.py
       - name: Test Go game engine
         working-directory: examples/tic-tac-toe

@@ -22,7 +22,7 @@ APPS={
  "mupi-reversi":("games",{"controller"}),
  "mupi-dame":("games",{"controller"}),
  "mupi-wuerfelrennen":("games",{"controller"}),
- "mupi-wikingerduell":("games",{"controller"}),
+ "mupi-hnefatafl":("games",{"controller"}),
 }
 class CommunitySuiteTests(unittest.TestCase):
  def test_all_preview_packages_are_offline_and_valid(self):
@@ -44,7 +44,7 @@ class CommunitySuiteTests(unittest.TestCase):
      shutil.copyfile(ROOT/"LICENSE",target/"LICENSE.txt")
      out=Path(td)/(slug+".mupiapp")
      self.assertEqual(pack(target,out)["id"],meta["id"])
-     self.assertEqual(validate_package(out)["version"],"0.1.0")
+     self.assertEqual(validate_package(out)["version"],meta["version"])
      with zipfile.ZipFile(out) as z:
       self.assertEqual(z.read("LICENSE.txt"), (ROOT/"LICENSE").read_bytes())
  def test_scripts_parse(self):

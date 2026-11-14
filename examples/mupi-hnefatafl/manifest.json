@@ -1,8 +1,8 @@
 {
   "apiVersion": "1",
-  "id": "community.mupi-wikingerduell",
-  "name": "MuPis Wikingerduell",
-  "description": "Kubb-Wurfspiel: zwei Teams lokal oder gegen MuPi in drei KI-Stufen. Eigene Kubb-Spielsimulation mit 2-4-6-Wurffolge.",
+  "id": "community.mupi-hnefatafl",
+  "name": "MuPi Hnefatafl",
+  "description": "Wikinger-Brettspiel auf 11×11 Feldern: König zur Ecke führen oder einkesseln. Zwei Menschen lokal oder gegen MuPi in drei KI-Stufen. Fetlar-inspirierte Grundregeln.",
   "author": "MuPiBox Community",
   "version": "0.1.0",
   "runtime": "web",

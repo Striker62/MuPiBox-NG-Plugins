@@ -44,78 +44,147 @@ const DiceRace=(()=>{
 })();
 if(typeof module!=="undefined")module.exports=DiceRace;
 if(typeof document!=="undefined")(()=>{
- const sdk=window.MuPiBoxSDK,$=id=>document.getElementById(id);
- const toolbar=document.querySelector(".toolbar"),mode=$("mode");
- mode.parentElement.innerHTML='<label>Mitspieler <select id="playercount"><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label><label>Menschen <select id="human"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label><label>KI <select id="difficulty"><option value="easy">Leicht</option><option value="medium">Mittel</option><option value="hard">Schwer</option></select></label>';
- const board=$("board");board.style.background="#142c44";
- const SVG="http://www.w3.org/2000/svg",svg=document.createElementNS(SVG,"svg");svg.setAttribute("viewBox","0 0 420 420");board.append(svg);
- const controls=$("controls"),dice=document.createElement("div");dice.id="dice";
- const roll=document.createElement("button");roll.textContent="Würfeln";roll.className="primary";controls.append(roll);
- const pieceBox=document.createElement("div");pieceBox.className="row";controls.append(pieceBox);
- $("score").before(dice);
- let b,players,human,turn,die=0,ended=false,epoch=0,selectedPiece=0;
- const coords=i=>{const a=i*2*Math.PI/52-Math.PI/2;return [210+170*Math.cos(a),210+170*Math.sin(a)]};
- const finish=(p,i)=>{const a=p*Math.PI/2-Math.PI/2;const r=132-i*22;return [210+r*Math.cos(a),210+r*Math.sin(a)]};
- const base=(p,i)=>{const angle=p*Math.PI/2-Math.PI/4;const x=210+93*Math.cos(angle),y=210+93*Math.sin(angle);return [x+((i%2)*2-1)*15,y+(Math.floor(i/2)*2-1)*15]};
- const elem=(tag,attrs)=>{const el=document.createElementNS(SVG,tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);return el};
- const active=()=>players===2?[0,2]:players===3?[0,1,2]:[0,1,2,3];
- const isHuman=()=>active().indexOf(turn)<human;
- function status(s){$("status").textContent=s}
- function loc(p,k){const v=b[p][k];return v<0?base(p,k):v<52?coords((DiceRace.starts[p]+v)%52):finish(p,v-52);}
- function draw(){
-  svg.replaceChildren();svg.append(elem("circle",{cx:210,cy:210,r:185,fill:"#1c3851",stroke:"#5f85a4","stroke-width":3}));
-  for(let i=0;i<52;i++){const [x,y]=coords(i),owner=DiceRace.starts.indexOf(i);svg.append(elem("circle",{cx:x,cy:y,r:10,fill:owner>=0?DiceRace.palette[owner]:"#325670",stroke:"#8aabc7","stroke-width":1.3}));}
-  for(const p of active()){
-   const angle=p*Math.PI/2-Math.PI/2, [xx,yy]=finish(p,3);
-   svg.append(elem("line",{x1:210,y1:210,x2:xx,y2:yy,stroke:DiceRace.palette[p],"stroke-width":3,opacity:".6"}));
-   for(let j=0;j<4;j++){let [x,y]=finish(p,j);svg.append(elem("circle",{cx:x,cy:y,r:11,fill:DiceRace.palette[p],opacity:".48",stroke:"#eee","stroke-width":1}));}
-   for(let j=0;j<4;j++){let [x,y]=base(p,j);svg.append(elem("circle",{cx:x,cy:y,r:14,fill:"#12273c",stroke:DiceRace.palette[p],"stroke-width":2,opacity:".75"}));}
+"use strict";
+const sdk=window.MuPiBoxSDK,$=id=>document.getElementById(id),NS="http://www.w3.org/2000/svg";
+const board=$("board"),svg=document.createElementNS(NS,"svg");
+svg.setAttribute("viewBox","0 0 442 442");svg.setAttribute("aria-label","Großes Würfelrennen-Brett");board.append(svg);
+const staticLayer=document.createElementNS(NS,"g"),highlightLayer=document.createElementNS(NS,"g"),pieceLayer=document.createElementNS(NS,"g");
+svg.append(staticLayer,highlightLayer,pieceLayer);
+const WIDTH=442,CELL=30.4,OFFSET=23,SPACE=13;
+const names=DiceRace.names,faces=["⚀","⚁","⚂","⚃","⚄","⚅"],cache={};
+const pos=i=>{
+ let r,c;
+ if(i<14){r=0;c=i;}
+ else if(i<27){r=i-13;c=13;}
+ else if(i<40){r=13;c=39-i;}
+ else{r=52-i;c=0;}
+ return [OFFSET+c*CELL,OFFSET+r*CELL];
+};
+const corners=[[0,0],[13,0],[13,13],[0,13]];
+const lane=(p,j)=>{
+ const [x,y]=corners[p];
+ const xx=x===0?1:-1,yy=y===0?1:-1,delta=122+j*16;
+ return [OFFSET+x*CELL+xx*delta,OFFSET+y*CELL+yy*delta];
+};
+const base=(p,j)=>{
+ const [x,y]=corners[p];
+ const xx=x===0?1:-1,yy=y===0?1:-1;
+ return [OFFSET+x*CELL+xx*(54+(j%2)*30),OFFSET+y*CELL+yy*(54+Math.floor(j/2)*30)];
+};
+const S=(tag,attrs={})=>{const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));return e;};
+for(let i=0;i<52;i++){
+ const [x,y]=pos(i),owner=DiceRace.starts.indexOf(i);
+ const r=S("rect",{x:x-14.8,y:y-14.8,width:29.6,height:29.6,rx:5,fill:owner>=0?DiceRace.palette[owner]:i%2?"#366587":"#295271",stroke:"#89aec5","stroke-width":1.3});
+ staticLayer.append(r);
+}
+for(let p=0;p<4;p++){
+ for(let j=0;j<4;j++){
+  const [x,y]=lane(p,j);
+  staticLayer.append(S("rect",{x:x-14,y:y-14,width:28,height:28,rx:6,fill:DiceRace.palette[p],opacity:.53,stroke:"#fff","stroke-width":1.3}));
+  const [bx,by]=base(p,j);
+  staticLayer.append(S("circle",{cx:bx,cy:by,r:15.5,fill:"#10263b",stroke:DiceRace.palette[p],"stroke-width":2.2,opacity:.88}));
+ }
+}
+staticLayer.append(S("circle",{cx:WIDTH/2,cy:WIDTH/2,r:25,fill:"#183b55",stroke:"#b6d8c9","stroke-width":3}));
+const centerLabel=S("text",{x:WIDTH/2,y:WIDTH/2+6,"text-anchor":"middle","font-size":22,fill:"#ffe4ab","font-weight":"bold"});
+centerLabel.textContent="MuPi";staticLayer.append(centerLabel);
+let b,players=4,human=1,turn=0,die=0,ended=false,epoch=0,selectedPiece=0,aiTimer=0,selectedNodes=[];
+const active=()=>players===2?[0,2]:players===3?[0,1,2]:[0,1,2,3];
+const isHuman=()=>active().indexOf(turn)<human;
+const locate=(p,k)=>{
+ const v=b[p][k];return v<0?base(p,k):v<52?pos((DiceRace.starts[p]+v)%52):lane(p,v-52);
+};
+const nodes={};for(let p=0;p<4;p++)for(let k=0;k<4;k++){
+ const g=S("g");g.style.cursor="pointer";g.addEventListener("click",()=>select(k,p));
+ const c=S("circle",{cx:0,cy:0,r:14.3,fill:DiceRace.palette[p],stroke:"#10263c","stroke-width":2.7});
+ const tx=S("text",{x:0,y:5,"text-anchor":"middle","font-size":14,"font-weight":"bold",fill:"#092438","pointer-events":"none"});tx.textContent=k+1;
+ const area=S("circle",{cx:0,cy:0,r:19,fill:"transparent"});
+ g.append(c,tx,area);pieceLayer.append(g);nodes[p+"-"+k]={g,c};
+}
+const pieceButtons=Array.from({length:4},(_,k)=>{
+ const e=document.createElement("button");e.textContent=k+1;e.addEventListener("click",()=>select(k,turn));$("pieces").append(e);return e;
+});
+function status(msg){$("status").textContent=msg;}
+function render(){
+ const currentMoves=die?DiceRace.possible(b,turn,die):[];
+ const playable=new Set(currentMoves.map(m=>m.piece));
+ highlightLayer.replaceChildren();
+ for(const p of active())for(let k=0;k<4;k++){
+  const e=nodes[p+"-"+k],v=b[p][k];const [x,y]=locate(p,k);
+  e.g.setAttribute("transform","translate("+x+" "+y+")");
+  const show=p===turn&&k===selectedPiece;
+  e.c.setAttribute("stroke",show?"#ffffff":"#10263c");
+  e.c.setAttribute("stroke-width",show?4.6:2.7);
+  e.c.setAttribute("r",show?15.4:14.3);
+  e.g.style.display="block";
+  if(p===turn&&playable.has(k)&&isHuman()){
+   highlightLayer.append(S("circle",{cx:x,cy:y,r:20.2,fill:"none",stroke:"#fff3ad","stroke-width":3,opacity:.72,"pointer-events":"none"}));
   }
-  for(const p of active())for(let k=0;k<4;k++){
-   let [x,y]=loc(p,k);
-   // A small offset lets opposite pieces at the same track coordinate remain visible.
-   const occupying=b[p][k]>=0&&b[p][k]<52?b.flatMap((row,q)=>row.map((v,j)=>({q,j,v}))).filter(o=>o.q!==p&&o.v>=0&&o.v<52&&(DiceRace.starts[o.q]+o.v)%52===(DiceRace.starts[p]+b[p][k])%52):[];
-   if(occupying.length){x+=p%2?6:-6;y+=p%2?-6:6;}
-   const circle=elem("circle",{cx:x,cy:y,r:13,fill:DiceRace.palette[p],stroke:p===turn&&k===selectedPiece?"#fff":"#0e253b","stroke-width":p===turn&&k===selectedPiece?4:2});
-   circle.style.cursor="pointer";circle.addEventListener("click",()=>select(k));svg.append(circle);
-   const txt=elem("text",{x,y:y+4,"text-anchor":"middle","font-size":"12","font-weight":"bold",fill:"#10253d"});txt.textContent=k+1;txt.style.pointerEvents="none";svg.append(txt);
-  }
-  $("turn").textContent=ended?"Ziel!":DiceRace.names[turn]+" "+(isHuman()?"(Mensch)":"(MuPi)");
-  $("score").textContent=active().map(p=>DiceRace.names[p]+": "+b[p].filter(v=>v>=52).length+"/4").join(" · ");
-  dice.textContent=die?"Würfel: "+die:"";
-  roll.disabled=ended||!isHuman()||die>0;
-  pieceBox.replaceChildren();
-  const possibilities=die?DiceRace.possible(b,turn,die):[];
-  for(let k=0;k<4;k++){const button=document.createElement("button");button.textContent="Stein "+(k+1);button.className=(selectedPiece===k?"active":"");button.disabled=ended||!isHuman()||!possibilities.some(m=>m.piece===k);
-   button.onclick=()=>select(k);pieceBox.append(button);}
-  $("hint").textContent="Start: Würfeln · Pfeile: Stein wählen · A: Ziehen. Sechs gibt einen Extrawurf. Alle 4 Steine in die farbige Zielreihe bringen.";
  }
- function next(){die=0;const a=active(),i=a.indexOf(turn);turn=a[(i+1)%a.length];draw();computer();}
- function select(k){selectedPiece=k;if(ended||!isHuman()||!die){draw();return;}
-  const m=DiceRace.possible(b,turn,die).find(m=>m.piece===k);if(!m){status("Dieser Stein kann mit "+die+" nicht ziehen.");draw();return;}
-  execute(m);
+ for(let p=0;p<4;p++)if(!active().includes(p))for(let k=0;k<4;k++)nodes[p+"-"+k].g.style.display="none";
+ $("turn").textContent=ended?names[turn]+" gewinnt!":names[turn]+" · "+(isHuman()?"DU BIST DRAN":"MuPi DENKT");
+ $("score").textContent=active().map(p=>names[p]+" "+b[p].filter(v=>v>=52).length+"/4").join("  ·  ");
+ $("dice").textContent=die?faces[die-1]:"⚄";
+ $("roll").disabled=ended||!isHuman()||die>0;
+ for(let k=0;k<4;k++){
+  const btn=pieceButtons[k];btn.disabled=ended||!isHuman()||!playable.has(k);
+  btn.classList.toggle("active",selectedPiece===k);
  }
- function execute(m){b=DiceRace.apply(b,turn,m);const face=die;status(DiceRace.names[turn]+" zieht Stein "+(m.piece+1)+(m.captured.length?" und wirft jemanden zurück!":""));
-  if(b[turn].every(v=>v>=52)){ended=true;status(DiceRace.names[turn]+" gewinnt!");die=0;draw();return;}
-  if(face===6){die=0;draw();computer();}else next();
+}
+function finishMove(m){
+ b=DiceRace.apply(b,turn,m);
+ const face=die;
+ status(names[turn]+" zieht Stein "+(m.piece+1)+(m.captured.length?" – rausgeworfen!":""));
+ if(b[turn].every(v=>v>=52)){ended=true;die=0;status(names[turn]+" GEWINNT!");render();return;}
+ if(face===6){die=0;render();computer();}else next();
+}
+function select(k,p=turn){
+ selectedPiece=k;if(p!==turn||ended||!isHuman()||!die){render();return;}
+ const m=DiceRace.possible(b,turn,die).find(m=>m.piece===k);
+ if(!m){status("Figur "+(k+1)+" kann mit "+die+" nicht ziehen.");render();return;}
+ finishMove(m);
+}
+function next(){
+ die=0;const list=active();turn=list[(list.indexOf(turn)+1)%list.length];
+ render();computer();
+}
+function rolled(){
+ if(ended||die)return;
+ die=1+Math.floor(Math.random()*6);
+ const ms=DiceRace.possible(b,turn,die);status(names[turn]+" würfelt "+die+".");
+ const diceEl=$("dice");diceEl.classList.remove("roll");void diceEl.offsetWidth;diceEl.classList.add("roll");
+ render();
+ if(!ms.length){
+  const id=epoch;aiTimer=setTimeout(()=>{if(id!==epoch||ended)return;status("Kein gültiger Zug.");next();},180);
+ }else if(!isHuman()){
+  const id=epoch;aiTimer=setTimeout(()=>{if(id!==epoch||ended)return;
+   const move=DiceRace.choose(b,turn,die,$("difficulty").value);if(move)finishMove(move);
+  },180);
  }
- function rolled(){if(ended||die)return;die=1+Math.floor(Math.random()*6);
-  const ms=DiceRace.possible(b,turn,die);status(DiceRace.names[turn]+" würfelt "+die+".");
-  draw();
-  if(!ms.length){const id=epoch;setTimeout(()=>{if(id!==epoch||ended)return;status("Kein gültiger Zug – nächste Person.");next();},450);}
-  else if(!isHuman()){const id=epoch;setTimeout(()=>{if(id!==epoch||ended)return;const move=DiceRace.choose(b,turn,die,$("difficulty").value);if(move)execute(move);},340);}
+}
+function computer(){
+ if(!ended&&!isHuman()&&!die){
+  const id=epoch;aiTimer=setTimeout(()=>{if(id===epoch)rolled();},160);
  }
- function computer(){if(!ended&&!isHuman()&&!die){const id=epoch;setTimeout(()=>{if(id===epoch)rolled();},350);}}
- function reset(){epoch++;players=+$("playercount").value;human=Math.min(+$("human").value,players);$("human").value=human;
-  b=DiceRace.state(players);turn=active()[0];die=0;ended=false;selectedPiece=0;
-  status("Würfle eine Sechs, um einen Stein ins Rennen zu bringen.");draw();computer();}
- roll.onclick=rolled;$("restart").onclick=reset;$("playercount").onchange=reset;$("human").onchange=reset;$("difficulty").onchange=reset;
- $("exit").onclick=()=>{epoch++;sdk.exit()};
- sdk.on("input",({button,action})=>{if(action!=="press")return;if(button==="BACK"){epoch++;sdk.exit();return}
-  if(button==="START"){if(!die&&isHuman())rolled();else if(die)select(selectedPiece);}
-  if(button==="LEFT"||button==="UP")selectedPiece=(selectedPiece+3)%4;
-  if(button==="RIGHT"||button==="DOWN")selectedPiece=(selectedPiece+1)%4;
-  if(button==="A"){if(!die)rolled();else select(selectedPiece);}draw();
- });
- reset();
+}
+function reset(){
+ epoch++;clearTimeout(aiTimer);
+ players=+ $("playercount").value;human=Math.min(+ $("human").value,players);$("human").value=human;
+ b=DiceRace.state(players);turn=active()[0];die=0;ended=false;selectedPiece=0;
+ status("Sechs würfeln, um ins Rennen zu starten!");render();computer();
+}
+$("roll").onclick=()=>{if(isHuman()&&!die)rolled();};
+$("restart").onclick=reset;
+for(const id of ["playercount","human","difficulty"])$(id).onchange=reset;
+$("exit").onclick=()=>{epoch++;clearTimeout(aiTimer);sdk.exit();};
+sdk.on("lifecycle.pause",()=>{epoch++;clearTimeout(aiTimer);});
+sdk.on("input",({button,action})=>{
+ if(action!=="press")return;
+ if(button==="BACK"){epoch++;clearTimeout(aiTimer);sdk.exit();return;}
+ if(button==="LEFT"||button==="UP")selectedPiece=(selectedPiece+3)%4;
+ if(button==="RIGHT"||button==="DOWN")selectedPiece=(selectedPiece+1)%4;
+ if(button==="A"||button==="START"){if(!die&&isHuman())rolled();else if(die)select(selectedPiece);}
+ render();
+});
+reset();
 })();
