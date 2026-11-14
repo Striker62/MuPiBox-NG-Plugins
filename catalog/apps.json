@@ -224,20 +224,6 @@
       "permissions": [
         "controller"
       ]
-    },
-    {
-      "id": "community.mupi-wikingerduell",
-      "name": "MuPis Wikingerduell",
-      "description": "Kubb-Wurfspiel: zwei Teams lokal oder gegen MuPi in drei KI-Stufen. Eigene Kubb-Spielsimulation mit 2-4-6-Wurffolge. Vereinfachte digitale Kubb-Wurfvariante, kein Turnier-Regelwerk.",
-      "category": "games",
-      "author": "MuPiBox Community",
-      "version": "0.1.0",
-      "releaseTag": "v0.1.0-preview.23",
-      "asset": "mupi-wikingerduell.mupiapp",
-      "sha256": "eb44ca67c146effc5636fbafc3b64178b33b30fa577fef00eb8807795b27a069",
-      "permissions": [
-        "controller"
-      ]
     }
   ]
 }

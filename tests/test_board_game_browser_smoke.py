@@ -18,8 +18,8 @@ APPS={
     "mupi-muehle":("circles",48),
     "mupi-reversi":("cells",64),
     "mupi-dame":("cells",64),
-    "mupi-wuerfelrennen":("circles",77),
-    "mupi-wikingerduell":("rects",21),
+    "mupi-wuerfelrennen":("rects",68),
+    "mupi-hnefatafl":("rects",121),
 }
 
 

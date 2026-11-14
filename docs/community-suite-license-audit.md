@@ -29,7 +29,7 @@ final trademark clearance for commercial distribution.
 | **MuPi Reversi Arena** | Independent 8×8 tile-flipping implementation. **Othello** is a registered trademark; do not use its branding or assets | Use generic Reversi description. 2 local / 3 AI levels |
 | **MuPi Dame-Duell** | 8×8 checkers with explicit variant; board and pieces generated independently | Okay to develop. Specify mandatory capture, forward men, long kings, chained captures, no majority-capture requirement |
 | **MuPis Würfelrennen** | Original Ludo/Pachisi-like gameplay, original radial 52-cell graphic; 2–4 participants, all-human or mixed AI | Do not market as **Mensch ärgere Dich nicht** or **MäDn** or reproduce Schmidt artwork. These names are registered marks and Schmidt has enforced them. New game name is separate, pending normal pre-release collision clearance |
-| **MuPis Wikingerduell** | Original Kubb-inspired 5+5 board, independently coded throws/AI and graphics | Kubb traditional garden-game rules; no downloaded Kubb photography, rulebook, packaging or trademark copied. Game is a simplified digital adaptation, not a tournament referee. Keep a final name/trademark collision check |
+| **MuPi Hnefatafl** | Original 11×11 strategy board and AI, independent Tafl rules implementation | Traditional rules with explicit Fetlar-inspired restrictions; no publisher artwork or written rulebook copied; advanced shieldwalls/exit-forts not implemented |
 
 General rules/mechanics are not automatically protected (German Copyright Act
 §69a(2) concerning software principles; DPMA FAQ for board-game mechanics).
@@ -43,8 +43,8 @@ Sources:
 - https://dregeriplegal.de/2025/04/04/markenrechtliche-abmahnung-der-schmidt-spiele-gmbh-mensch-aergere-dich-nicht/
 - https://www.othello.gr.jp/trademark_registrations
 - https://www.gesetze-im-internet.de/urhg/__69a.html
-- https://www.dkubbb.de/der-dkubbb/regelwerk/
-- https://www.kubb.world/de/spielregeln
+- https://aagenielsen.dk/fetlar_rules_en.php
+- https://hnefatafl.org/rules.html
 - https://www.deutsches-patentamt.de/english/services/customer_care_services/faq/index.html
 
 ## External projects inspected, **NOT yet copied into any MuPi package**

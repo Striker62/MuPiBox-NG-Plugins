@@ -24,7 +24,7 @@ engine or publisher artwork is bundled. 800×480, touch and controller.
 | MuPi Reversi Arena | Two local | Easy random / medium positional / hard minimax |
 | MuPi Dame-Duell | Two local | Easy random / medium greedy / hard shallow minimax |
 | MuPis Würfelrennen | Two to four participants; configurable number of humans | Remaining participants AI with easy/medium/hard strategy |
-| MuPis Wikingerduell (Kubb) | Two teams / two local players | Easy/medium/hard aiming skill with legal-target priority |
+| MuPi Hnefatafl | 11×11 asymmetric attacker/king board game, 2 local | Easy/medium/hard AI; bounded 2-ply search |
 
 Mühlenmeister uses 9 stones per player, placing, sliding, 3-stone flying,
 the capture-of-nonmill-stone priority, and a 100-no-mill-moves draw.
@@ -39,12 +39,12 @@ captures on the ring, extra roll on six following a valid move. A six
 with **no** legal move passes the turn. Avoid the protected Schmidt
 trademark and any associated artwork, trade dress or rulebook text.
 
-MuPis Wikingerduell is a small-screen, turn-based **Kubb** adaptation (not
-historical Hnefatafl). It draws a 5+5 baseline-kubb field with a central king,
-uses a simplified 2/4/6-baton opening, carries knocked-down cubbs back as
-field kubbs and enforces field-first priority and early-king-loss. It does
-not attempt rigid-body throwing physics or exact tournament adjudication.
-It has no licensed third-party board photography or rulebook copy.
+MuPi Hnefatafl is an independent beginner-friendly 11×11 Tafl adaptation:
+24 attackers, 12 defenders and one king; rook movement, sandwich captures,
+restricted corners and throne, king escape via corners, four-sided king
+capture or three attackers plus throne next to the center. Advanced shieldwall
+and exit-fort rules are not included; the original Kubb game has been removed.
+Both local play and AI with three difficulties are supported.
 
 See [legal review](community-suite-license-audit.md).
 

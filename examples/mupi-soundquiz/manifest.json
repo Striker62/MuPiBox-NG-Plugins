@@ -4,7 +4,7 @@
   "name": "MuPi Soundquiz",
   "description": "Instrumente nach Gehör erkennen, mit lokalen Klängen und Highscore.",
   "author": "MuPiBox Community",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.svg",
