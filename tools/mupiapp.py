@@ -26,7 +26,7 @@ HOST_ALLOWED_EXTENSIONS = {
     ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico",
     ".woff", ".woff2", ".ttf", ".mp3", ".ogg", ".wav", ".txt",
 }
-ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "shared-assets", "network"}
+ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "shared-assets", "network", "links", "homeassistant"}
 ALLOWED_FIELDS = {
     "apiVersion", "id", "name", "version", "runtime", "entry", "icon", "cover",
     "description", "author", "permissions", "networkHosts", "display",
@@ -95,7 +95,7 @@ def validate_manifest(data: object, files: set[str]) -> dict:
         if cover not in files or not cover.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
             raise PackageError("cover must point to an existing PNG/JPEG/WebP file")
     perms = data["permissions"]
-    if not isinstance(perms, list) or len(perms) > 6 or any(type(p) is not str for p in perms):
+    if not isinstance(perms, list) or len(perms) > 8 or any(type(p) is not str for p in perms):
         raise PackageError("permissions must be a string array")
     if len(set(perms)) != len(perms) or not set(perms).issubset(ALLOWED_PERMISSIONS):
         raise PackageError("permissions contain duplicates or unsupported values")

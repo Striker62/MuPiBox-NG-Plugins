@@ -1,0 +1,25 @@
+{
+  "apiVersion": "1",
+  "id": "community.mupi-wuerfelrennen",
+  "name": "MuPis Würfelrennen",
+  "version": "0.2.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "cover": "cover.png",
+  "description": "Eigenständiges Ludo-Würfelspiel für zwei bis vier Menschen oder KI-Spieler",
+  "author": "MuPiBox Community",
+  "permissions": [
+    "controller"
+  ],
+  "category": "games",
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "app"
+  }
+}

@@ -66,10 +66,12 @@
           "camera",
           "photo-save",
           "shared-assets",
-          "network"
+          "network",
+          "links",
+          "homeassistant"
         ]
       },
-      "maxItems": 6
+      "maxItems": 8
     },
     "networkHosts": {
       "type": "array",

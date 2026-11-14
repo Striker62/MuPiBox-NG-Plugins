@@ -6,6 +6,28 @@ Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SD
 
 > **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Native Qt-Touch-Apps und der offizielle, geprüfte App-Katalog sind inzwischen verfügbar. Vollständiger Audiofokus und unabhängige Publisher-Signaturen fehlen weiterhin; ältere NG-Versionen haben keinen Plugin-Manager.
 
+## Neue Community-App-Vorschauen (November 2026)
+
+Zehn eigenständige Prototypen liegen unter `examples/mupi-*`:
+**MuPis BeatBox**, **MuPi Soundquiz**, **MuPis Rhythm Game**,
+**MuPi Links**, **MuPi Home Assistant**, **MuPi Mühlenmeister**,
+**MuPi Reversi Arena**, **MuPi Dame-Duell**, **MuPis Würfelrennen** und
+**MuPi Hnefatafl**. Sie werden bewusst **nicht**
+automatisch in den offiziellen App-Katalog aufgenommen.
+
+```bash
+python3 tools/build_community_suite.py
+# Pakete: dist/community-preview/*.mupiapp
+python3 -m unittest discover -s tests -v
+node --test tests/community_board_games.test.cjs
+```
+
+Die beiden Integrationsapps erfordern einen aktualisierten Host mit den neuen
+Berechtigungen `links` bzw. `homeassistant`. Die externe Browser-Navigation
+ist bis zur Umsetzung der nativen Netzwerkanfrage-Filterung absichtlich
+deaktiviert. Details, Brettspiel-Regelvarianten und Lizenzprüfung:
+[Community Suite Lizenz-Audit](docs/community-suite-license-audit.md), [Community Suite Roadmap](docs/community-suite-roadmap.md).
+
 ## Für Entwickler
 
 Voraussetzungen: Python 3.10+, Go 1.24+ (für das Go-Beispiel; das SDK selbst benötigt kein Go).

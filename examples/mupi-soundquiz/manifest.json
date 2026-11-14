@@ -1,0 +1,27 @@
+{
+  "apiVersion": "1",
+  "id": "community.mupi-soundquiz",
+  "name": "MuPi Soundquiz",
+  "description": "Instrumente nach Gehör erkennen, mit lokalen Klängen und Highscore.",
+  "author": "MuPiBox Community",
+  "version": "0.1.1",
+  "runtime": "web",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "cover": "cover.png",
+  "permissions": [
+    "storage",
+    "controller",
+    "audio"
+  ],
+  "category": "learning",
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "app"
+  }
+}

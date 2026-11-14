@@ -120,6 +120,124 @@
         "shared-assets",
         "audio"
       ]
+    },
+    {
+      "id": "community.mupi-beatbox",
+      "name": "MuPis BeatBox",
+      "description": "16-Step-Loopbox mit vier Spuren, Instrumenten und speicherbaren Patterns (Audio-Preview: bis vier Stimmen pro Schritt).",
+      "category": "creative",
+      "author": "MuPiBox Community",
+      "version": "0.1.1",
+      "releaseTag": "v0.1.0-preview.24",
+      "asset": "mupi-beatbox.mupiapp",
+      "sha256": "87b179b27651cc4d662ba1528783cf1b1c7fd854c5ddc13df7ddcffcdb8cb59d",
+      "permissions": [
+        "storage",
+        "controller",
+        "audio"
+      ]
+    },
+    {
+      "id": "community.mupi-soundquiz",
+      "name": "MuPi Soundquiz",
+      "description": "Instrumente nach Gehör erkennen, mit lokalen Klängen und Highscore.",
+      "category": "learning",
+      "author": "MuPiBox Community",
+      "version": "0.1.1",
+      "releaseTag": "v0.1.0-preview.24",
+      "asset": "mupi-soundquiz.mupiapp",
+      "sha256": "678b7cec681582c6ed0240179689c0e6c1cb90ce3e592c2fde1d19df498bf983",
+      "permissions": [
+        "storage",
+        "controller",
+        "audio"
+      ]
+    },
+    {
+      "id": "community.mupi-rhythm",
+      "name": "MuPis Rhythm Game",
+      "description": "MuPi Rhythm Arena mit drei Geschwindigkeiten (112/145/176 BPM), Beat-Countdown, Tempo-/Combo-Wertung, vier großen Touch- und Controller-Pads.",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.2.0",
+      "releaseTag": "v0.1.0-preview.24",
+      "asset": "mupi-rhythm.mupiapp",
+      "sha256": "1775c5d80ac029d7e4d8508bead05d6c70f184c43fdf0f6a9dd05b089c4ce9ba",
+      "permissions": [
+        "storage",
+        "controller",
+        "audio"
+      ]
+    },
+    {
+      "id": "community.mupi-muehle",
+      "name": "MuPi Mühlenmeister",
+      "description": "Neunermühle: zu zweit lokal oder gegen KI in drei Stufen",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.1",
+      "releaseTag": "v0.1.0-preview.24",
+      "asset": "mupi-muehle.mupiapp",
+      "sha256": "5b01fc1b466b0edd4e0b4411339c214206d8b72ae3ad74512c0834c7ff61c6ed",
+      "permissions": [
+        "controller"
+      ]
+    },
+    {
+      "id": "community.mupi-reversi",
+      "name": "MuPi Reversi Arena",
+      "description": "Reversi 8x8: zu zweit lokal oder gegen KI in drei Stufen",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.1",
+      "releaseTag": "v0.1.0-preview.24",
+      "asset": "mupi-reversi.mupiapp",
+      "sha256": "814e579b5eabb2466f336f10f687bc5512edbf1dff932941ac472afceb48c8bc",
+      "permissions": [
+        "controller"
+      ]
+    },
+    {
+      "id": "community.mupi-dame",
+      "name": "MuPi Dame-Duell",
+      "description": "Dame 8x8: zu zweit lokal oder gegen KI in drei Stufen",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.1",
+      "releaseTag": "v0.1.0-preview.24",
+      "asset": "mupi-dame.mupiapp",
+      "sha256": "20f0bebbca61a2689a3738a98f3608af9e76d2042827ebbaeba5487930025b01",
+      "permissions": [
+        "controller"
+      ]
+    },
+    {
+      "id": "community.mupi-wuerfelrennen",
+      "name": "MuPis Würfelrennen",
+      "description": "Großes quadratisches 52-Felder-Brett für zwei bis vier Menschen oder KI-Spieler, mit deutlich größeren Touchzielen und flotteren Spielzügen.",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.2.0",
+      "releaseTag": "v0.1.0-preview.24",
+      "asset": "mupi-wuerfelrennen.mupiapp",
+      "sha256": "9c08d1e0a5101d6838be966081dd7cab4edceaec79ad2798ac0cca5f4da01889",
+      "permissions": [
+        "controller"
+      ]
+    },
+    {
+      "id": "community.mupi-hnefatafl",
+      "name": "MuPi Hnefatafl",
+      "description": "Hnefatafl: historisch inspiriertes 11×11-Wikinger-Brettspiel, König gegen 24 Angreifer, lokal zu zweit oder KI in drei Stufen (vereinfachte Fetlar-Regeln).",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.1.0",
+      "releaseTag": "v0.1.0-preview.24",
+      "asset": "mupi-hnefatafl.mupiapp",
+      "sha256": "913b1b78cc98cdd5246bca2b06382f4ccdf8d917dcfc3e6761ce0d423db8a2a4",
+      "permissions": [
+        "controller"
+      ]
     }
   ]
 }

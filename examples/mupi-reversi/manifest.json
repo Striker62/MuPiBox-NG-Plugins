@@ -1,0 +1,25 @@
+{
+  "apiVersion": "1",
+  "id": "community.mupi-reversi",
+  "name": "MuPi Reversi Arena",
+  "version": "0.1.1",
+  "runtime": "web",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "cover": "cover.png",
+  "description": "Reversi 8x8: zu zweit lokal oder gegen KI in drei Stufen",
+  "author": "MuPiBox Community",
+  "permissions": [
+    "controller"
+  ],
+  "category": "games",
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "app"
+  }
+}

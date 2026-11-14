@@ -1,0 +1,25 @@
+{
+  "apiVersion": "1",
+  "id": "community.mupi-hnefatafl",
+  "name": "MuPi Hnefatafl",
+  "description": "Wikinger-Brettspiel auf 11×11 Feldern: König zur Ecke führen oder einkesseln. Zwei Menschen lokal oder gegen MuPi in drei KI-Stufen. Fetlar-inspirierte Grundregeln.",
+  "author": "MuPiBox Community",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "cover": "cover.png",
+  "permissions": [
+    "controller"
+  ],
+  "category": "games",
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "app"
+  }
+}
