@@ -99,6 +99,22 @@
       oscillator.connect(gain); gain.connect(previewAudioContext.destination);
       oscillator.start(now); oscillator.stop(now + .31);
       return true;
+    },
+    async playChord(notes, volume = 30, options = {}) {
+      const instruments = ['musicbox', 'piano', 'epiano', 'glockenspiel', 'xylophone', 'marimba', 'harp'];
+      if (!Array.isArray(notes) || notes.length < 1 || notes.length > 4 ||
+          notes.some(n => !n || typeof n.note !== 'string' ||
+            !/^[A-G](?:#)?[45]$/.test(n.note) || !instruments.includes(n.instrument))) {
+        throw new TypeError('chord needs 1..4 valid note/instrument objects');
+      }
+      if (!Number.isInteger(volume) || volume < 0 || volume > 100 ||
+          options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.relative !== undefined && typeof options.relative !== 'boolean')) {
+        throw new TypeError('invalid chord volume/options');
+      }
+      if (bridge) return invoke('audio.chord', {notes, volume, relative: options.relative === true});
+      // Browser-only preview is not the native PipeWire mixing guarantee.
+      return Promise.all(notes.map(n => audio.playNote(n.note, volume, n.instrument, options)));
     }
   });
 
@@ -227,6 +243,24 @@
     }
   });
 
+  // Browser and Home Assistant capabilities are always mediated by the
+  // trusted host. Child apps never receive credentials or unrestricted URLs.
+  const links = Object.freeze({
+    async list(){return invoke('links.list', {});},
+    async open(url){
+      if(typeof url !== 'string' || url.length>1024) throw new TypeError('invalid favorite URL');
+      return invoke('links.open', {url});
+    }
+  });
+  const homeassistant = Object.freeze({
+    async list(){return invoke('homeassistant.list',{});},
+    async command(entityId,action){
+      if(typeof entityId!=='string' || !/^(light|switch|scene)\.[a-z0-9_]{1,90}$/.test(entityId) ||
+         !['turn_on','turn_off'].includes(action))throw new TypeError('invalid entity/action');
+      return invoke('homeassistant.command',{entity_id:entityId,action});
+    }
+  });
+
   const sdk = Object.freeze({
     apiVersion: '1',
     isHosted: Boolean(bridge),
@@ -237,6 +271,8 @@
     camera,
     photos,
     shared,
+    links,
+    homeassistant,
     async getContext() {
       if (bridge) return invoke('host.context', {});
       return { apiVersion: '1', preview: true, language: global.navigator.language || 'de' };

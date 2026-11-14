@@ -1,0 +1,5 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><link rel="stylesheet" href="style.css"><title>MuPis BeatBox</title></head><body>
+<main><header><h1>MuPis BeatBox <small>Loopbox · Alpha</small></h1><button id="exit" class="danger">Zurück</button></header>
+<div class="controls"><button id="play" class="primary">▶ Spielen</button><label>Tempo <input id="bpm" type="range" min="60" max="140" step="5" value="100"></label><span id="tempo">100 BPM</span><button id="preset">Beispielbeat</button><button id="save">Speichern</button><button id="load">Laden</button><button id="clear">Leeren</button></div>
+<section><div id="tracks" aria-label="16 Schritte je Spur"></div><div class="row" style="margin-top:10px"><small>Touch: Step setzen · Controller: ←/→ wählen, A setzen, Start spielen.</small></div></section><div id="status" role="status">4 Instrumente mit bis zu vier parallelen Noten pro Schritt (Audio-Preview).</div>
+</main><script src="mupibox-sdk.js"></script><script src="app.js"></script></body></html>

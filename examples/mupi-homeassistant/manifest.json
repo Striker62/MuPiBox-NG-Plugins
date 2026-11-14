@@ -1,0 +1,26 @@
+{
+  "apiVersion": "1",
+  "id": "community.mupi-homeassistant",
+  "name": "MuPi Home Assistant",
+  "description": "Kinderfreundliche Home-Assistant-Steuerung mit ausschlie\u00dflich hostseitig freigegebenen Entit\u00e4ten.",
+  "author": "MuPiBox Community",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "cover": "cover.png",
+  "permissions": [
+    "controller",
+    "homeassistant"
+  ],
+  "category": "tools",
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "app"
+  }
+}
