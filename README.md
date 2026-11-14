@@ -8,10 +8,11 @@ Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SD
 
 ## Neue Community-App-Vorschauen (November 2026)
 
-Neun eigenständige Prototypen liegen unter `examples/mupi-*`:
+Zehn eigenständige Prototypen liegen unter `examples/mupi-*`:
 **MuPis BeatBox**, **MuPi Soundquiz**, **MuPis Rhythm Game**,
 **MuPi Links**, **MuPi Home Assistant**, **MuPi Mühlenmeister**,
-**MuPi Reversi Arena**, **MuPi Dame-Duell** und **MuPis Würfelrennen**. Sie werden bewusst **nicht**
+**MuPi Reversi Arena**, **MuPi Dame-Duell**, **MuPis Würfelrennen** und
+**MuPis Wikingerduell (Kubb)**. Sie werden bewusst **nicht**
 automatisch in den offiziellen App-Katalog aufgenommen.
 
 ```bash

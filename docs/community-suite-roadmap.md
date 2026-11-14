@@ -1,6 +1,6 @@
 # Community Suite 2026 — MuPi Links, Home Assistant and creative games
 
-Status: **developer previews**, not curated releases. All nine prototypes are
+Status: **developer previews**, not curated releases. All ten prototypes are
 independent web packages using the public SDK; none requires privileged plugins,
 third-party JavaScript downloads or copying MuPiBox-NG private source.
 
@@ -13,9 +13,9 @@ developer instance. The NG host must know the new optional `links` and
 `homeassistant` capabilities before those two plugins can be installed.
 Apps are not automatically entered into the official catalog.
 
-## Four independently authored board games (preview)
+## Five independently authored classic / lawn-game adaptations (preview)
 
-All four are original code and generated SVG/PNG assets. No third-party
+All five are original code and generated SVG/PNG assets. No third-party
 engine or publisher artwork is bundled. 800×480, touch and controller.
 
 | App | Players | Computer |
@@ -24,6 +24,7 @@ engine or publisher artwork is bundled. 800×480, touch and controller.
 | MuPi Reversi Arena | Two local | Easy random / medium positional / hard minimax |
 | MuPi Dame-Duell | Two local | Easy random / medium greedy / hard shallow minimax |
 | MuPis Würfelrennen | Two to four participants; configurable number of humans | Remaining participants AI with easy/medium/hard strategy |
+| MuPis Wikingerduell (Kubb) | Two teams / two local players | Easy/medium/hard aiming skill with legal-target priority |
 
 Mühlenmeister uses 9 stones per player, placing, sliding, 3-stone flying,
 the capture-of-nonmill-stone priority, and a 100-no-mill-moves draw.
@@ -37,6 +38,13 @@ Ludo/Pachisi-like rules: six to leave home, exact private home lane,
 captures on the ring, extra roll on six following a valid move. A six
 with **no** legal move passes the turn. Avoid the protected Schmidt
 trademark and any associated artwork, trade dress or rulebook text.
+
+MuPis Wikingerduell is a small-screen, turn-based **Kubb** adaptation (not
+historical Hnefatafl). It draws a 5+5 baseline-kubb field with a central king,
+uses a simplified 2/4/6-baton opening, carries knocked-down cubbs back as
+field kubbs and enforces field-first priority and early-king-loss. It does
+not attempt rigid-body throwing physics or exact tournament adjudication.
+It has no licensed third-party board photography or rulebook copy.
 
 See [legal review](community-suite-license-audit.md).
 

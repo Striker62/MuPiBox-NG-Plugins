@@ -22,6 +22,7 @@ APPS={
  "mupi-reversi":("games",{"controller"}),
  "mupi-dame":("games",{"controller"}),
  "mupi-wuerfelrennen":("games",{"controller"}),
+ "mupi-wikingerduell":("games",{"controller"}),
 }
 class CommunitySuiteTests(unittest.TestCase):
  def test_all_preview_packages_are_offline_and_valid(self):

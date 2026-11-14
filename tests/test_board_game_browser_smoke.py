@@ -18,6 +18,7 @@ APPS={
     "mupi-reversi":("cells",64),
     "mupi-dame":("cells",64),
     "mupi-wuerfelrennen":("circles",77),
+    "mupi-wikingerduell":("rects",21),
 }
 
 
@@ -56,8 +57,10 @@ class BoardGamesBrowserSmoke(unittest.TestCase):
                 self.assertIn('id="status"',result.stdout)
                 if kind=="cells":
                     self.assertEqual(len(re.findall(r'class="cell"',result.stdout)),required)
-                else:
+                elif kind=="circles":
                     self.assertGreaterEqual(result.stdout.count("<circle"),required)
+                else:
+                    self.assertGreaterEqual(result.stdout.count("<rect"),required)
 
 
 if __name__=="__main__":

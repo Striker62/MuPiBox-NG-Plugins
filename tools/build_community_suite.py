@@ -4,7 +4,7 @@ from pathlib import Path
 import shutil
 from mupiapp import pack
 ROOT=Path(__file__).resolve().parent.parent
-APPS=('mupi-beatbox','mupi-soundquiz','mupi-rhythm','mupi-links','mupi-homeassistant','mupi-muehle','mupi-reversi','mupi-dame','mupi-wuerfelrennen')
+APPS=('mupi-beatbox','mupi-soundquiz','mupi-rhythm','mupi-links','mupi-homeassistant','mupi-muehle','mupi-reversi','mupi-dame','mupi-wuerfelrennen','mupi-wikingerduell')
 def main():
  dist=ROOT/'dist'/'community-preview'
  dist.mkdir(parents=True,exist_ok=True)

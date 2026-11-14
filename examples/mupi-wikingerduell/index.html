@@ -1,0 +1,6 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>MuPis Wikingerduell</title><link rel="stylesheet" href="style.css"></head><body><main>
+<header><strong>MuPis Wikingerduell</strong><button id="exit">Zurück</button></header>
+<div class="top"><label>Gegner <select id="mode"><option value="human">Zwei Menschen</option><option value="easy">MuPi · leicht</option><option value="medium">MuPi · mittel</option><option value="hard">MuPi · schwer</option></select></label><button id="reset">Neu starten</button><span id="turn"></span></div>
+<div class="work"><div class="pitch" id="pitch" role="group" aria-label="Wikingerschach Wurffeld"><svg id="field" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 380" aria-label="Kubb-Spielfeld"></svg></div>
+<section class="aside"><div id="score"></div><div id="status" role="status"></div><div class="row"><button id="throw" class="primary">Wurf!</button><button id="skip">Zugende</button></div><small>Touch: Kubb oder Ziel antippen → Wurf. Controller: Pfeile auf Ziele, A werfen. Feld-Kubbs vor Grundlinien-Kubbs umwerfen. König zuletzt!</small></section></div>
+</main><script src="mupibox-sdk.js"></script><script src="app.js"></script></body></html>

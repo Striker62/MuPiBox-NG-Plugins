@@ -1,12 +1,12 @@
 # License & trademark review — MuPiBox NG Community Suite (2026-11-14)
 
-**Scope:** Four independently implemented classic board games and the five earlier
+**Scope:** Four independently implemented classic board games and the six earlier
 Community Suite prototypes. A preliminary engineering review, not an attorney's
 final trademark clearance for commercial distribution.
 
-## Audit of the actual nine packages
+## Audit of the actual ten packages
 
-- Game logic, HTML/CSS and SVG icons for all nine preview apps are newly written
+- Game logic, HTML/CSS and SVG icons for all ten preview apps are newly written
   for the MuPiBox Community project; no third-party engines were copied.
 - Cover PNGs were generated programmatically from simple shapes/type;
   no downloaded pictures, publishers' game boards, logos or character artwork.
@@ -16,7 +16,7 @@ final trademark clearance for commercial distribution.
 - Each package bundles the public `mupibox-sdk.js`, which is part of this
   repository's MIT-licensed SDK. The build system includes `LICENSE.txt`
   (root MIT copyright and permission notice) in **every .mupiapp ZIP**.
-  Unit tests verify the exact license text is inside all nine archives.
+  Unit tests verify the exact license text is inside all ten archives.
 - `storage`, `controller`, `audio`, `links`, `homeassistant` are
   MuPiBox-host permission names, not third-party dependencies.
 - No external CDNs or unreviewed websites are fetched by the packaged apps.
@@ -29,6 +29,7 @@ final trademark clearance for commercial distribution.
 | **MuPi Reversi Arena** | Independent 8×8 tile-flipping implementation. **Othello** is a registered trademark; do not use its branding or assets | Use generic Reversi description. 2 local / 3 AI levels |
 | **MuPi Dame-Duell** | 8×8 checkers with explicit variant; board and pieces generated independently | Okay to develop. Specify mandatory capture, forward men, long kings, chained captures, no majority-capture requirement |
 | **MuPis Würfelrennen** | Original Ludo/Pachisi-like gameplay, original radial 52-cell graphic; 2–4 participants, all-human or mixed AI | Do not market as **Mensch ärgere Dich nicht** or **MäDn** or reproduce Schmidt artwork. These names are registered marks and Schmidt has enforced them. New game name is separate, pending normal pre-release collision clearance |
+| **MuPis Wikingerduell** | Original Kubb-inspired 5+5 board, independently coded throws/AI and graphics | Kubb traditional garden-game rules; no downloaded Kubb photography, rulebook, packaging or trademark copied. Game is a simplified digital adaptation, not a tournament referee. Keep a final name/trademark collision check |
 
 General rules/mechanics are not automatically protected (German Copyright Act
 §69a(2) concerning software principles; DPMA FAQ for board-game mechanics).
@@ -42,6 +43,8 @@ Sources:
 - https://dregeriplegal.de/2025/04/04/markenrechtliche-abmahnung-der-schmidt-spiele-gmbh-mensch-aergere-dich-nicht/
 - https://www.othello.gr.jp/trademark_registrations
 - https://www.gesetze-im-internet.de/urhg/__69a.html
+- https://www.dkubbb.de/der-dkubbb/regelwerk/
+- https://www.kubb.world/de/spielregeln
 - https://www.deutsches-patentamt.de/english/services/customer_care_services/faq/index.html
 
 ## External projects inspected, **NOT yet copied into any MuPi package**
