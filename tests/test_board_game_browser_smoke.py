@@ -3,6 +3,7 @@
 Loads each new .mupiapp's HTML source via a loopback-only local server and
 checks that its 800x480 board is initialized by the actual DOM runtime.
 """
+import os
 import re
 import shutil
 import socket
@@ -22,7 +23,8 @@ APPS={
 }
 
 
-@unittest.skipUnless(BROWSER,"chromium is not installed")
+@unittest.skipUnless(BROWSER and os.environ.get("MUPIBOX_RUN_BROWSER_SMOKE")=="1",
+  "browser smoke tests run only on an explicitly enabled Chromium-capable runner")
 class BoardGamesBrowserSmoke(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

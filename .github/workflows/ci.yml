@@ -17,6 +17,10 @@ jobs:
           go-version: '1.26.x'
       - name: Validate Python packaging and security checks
         run: python3 -m unittest discover -s tests -v
+      - name: Test new Community Suite board engines
+        run: |
+          node --test tests/community_board_games.test.cjs tests/community_kubb.test.cjs
+          python3 tools/build_community_suite.py
       - name: Test Go game engine
         working-directory: examples/tic-tac-toe
         run: go test ./game
