@@ -1,0 +1,406 @@
+{
+  "$id": "https://github.com/splitti/MuPiBox-NG-Plugins/blob/main/schema/theme-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "assets": {
+      "additionalProperties": false,
+      "properties": {
+        "background": {
+          "pattern": "^assets/[a-zA-Z0-9_/-]+\\.(?:png|jpg|jpeg|webp)$",
+          "type": "string"
+        },
+        "font": {
+          "pattern": "^assets/[a-zA-Z0-9_/-]+\\.(?:ttf|otf)$",
+          "type": "string"
+        },
+        "splash": {
+          "pattern": "^assets/[a-zA-Z0-9_/-]+\\.(?:png|jpg|jpeg|webp)$",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "components": {
+      "additionalProperties": false,
+      "properties": {
+        "media.card": {
+          "additionalProperties": false,
+          "properties": {
+            "background": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "borderStyle": {
+              "enum": [
+                "alternating",
+                "line"
+              ],
+              "type": "string"
+            },
+            "borderWidth": {
+              "maximum": 4,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "player.progress": {
+          "additionalProperties": false,
+          "properties": {
+            "fill": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "thumb": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "track": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "player.queue": {
+          "additionalProperties": false,
+          "properties": {
+            "active": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "activeText": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "background": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "player.surface": {
+          "additionalProperties": false,
+          "properties": {
+            "background": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "border": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "heading": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "player.transport": {
+          "additionalProperties": false,
+          "properties": {
+            "background": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "pressed": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "primary": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "primaryPressed": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "primaryText": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "text": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "status.bar": {
+          "additionalProperties": false,
+          "properties": {
+            "accent": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "background": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "border": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "borderWidth": {
+              "maximum": 4,
+              "minimum": 0,
+              "type": "number"
+            },
+            "muted": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "shadow": {
+              "enum": [
+                "deep",
+                "glow",
+                "none",
+                "soft"
+              ],
+              "type": "string"
+            },
+            "shape": {
+              "enum": [
+                "edge",
+                "floating",
+                "icons"
+              ],
+              "type": "string"
+            },
+            "text": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "tokens": {
+      "additionalProperties": false,
+      "properties": {
+        "accent": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "accent2": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "accentPressed": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "accentText": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "bg": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "card": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "cardBorder": {
+          "maximum": 4,
+          "minimum": 0,
+          "type": "number"
+        },
+        "cardBorderStyle": {
+          "enum": [
+            "alternating",
+            "line"
+          ],
+          "type": "string"
+        },
+        "chromeStyle": {
+          "enum": [
+            "default",
+            "glass",
+            "lcars",
+            "storybook"
+          ],
+          "type": "string"
+        },
+        "control": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "controlPressed": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "controlText": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "error": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "fallback": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "focus": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "font": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "heading": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "light": {
+          "type": "boolean"
+        },
+        "line": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "muted": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "panel": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "pixel": {
+          "type": "boolean"
+        },
+        "playAccent": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "playAccentPressed": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "playAccentText": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "player": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "playerEdge": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "progressFill": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "progressThumb": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "progressTrack": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "queueActive": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "queueActiveText": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "queueCard": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "radius": {
+          "maximum": 2,
+          "minimum": 0,
+          "type": "number"
+        },
+        "status": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "statusAccent": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "statusAlpha": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "statusBorderWidth": {
+          "maximum": 4,
+          "minimum": 0,
+          "type": "number"
+        },
+        "statusEdge": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "statusMuted": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "statusShadow": {
+          "enum": [
+            "deep",
+            "glow",
+            "none",
+            "soft"
+          ],
+          "type": "string"
+        },
+        "statusShape": {
+          "enum": [
+            "edge",
+            "floating",
+            "icons"
+          ],
+          "type": "string"
+        },
+        "statusText": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "stripe": {
+          "type": "boolean"
+        },
+        "success": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "text": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        },
+        "warning": {
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "title": "MuPiBox-NG Theme API v1",
+  "type": "object"
+}

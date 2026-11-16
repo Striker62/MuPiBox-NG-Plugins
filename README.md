@@ -28,6 +28,20 @@ ist bis zur Umsetzung der nativen Netzwerkanfrage-Filterung absichtlich
 deaktiviert. Details, Brettspiel-Regelvarianten und Lizenzprüfung:
 [Community Suite Lizenz-Audit](docs/community-suite-license-audit.md), [Community Suite Roadmap](docs/community-suite-roadmap.md).
 
+## Community-Themes (neues SDK)
+
+Neben `.mupiapp`-Spielepaketen können Entwickler reine Designpakete als **`.mupitheme`** bauen. Theme API v1 enthält validierte Farben, Formen, Schriften, Player- und Statusleisten-Komponenten sowie optionale eigene Hintergründe. Ein Theme kann keine Programme oder beliebiges QML ausführen.
+
+**[Theme-SDK, vollständige Token-Referenz, UI-Elementinventar und Beispiel](docs/themes/README.md)** · **[Theme-Katalog](catalog/THEMES.md)**
+
+Paket bauen:
+
+~~~sh
+python3 tools/mupitheme.py pack examples/themes/starfield dist/sternenreise.mupitheme
+~~~
+
+**Status:** Die NG-Host-Änderungen liegen zunächst in einem separaten Entwicklungszweig, noch nicht in einer veröffentlichten Alpha. Der offizielle Theme-Katalog ist bis zur ersten geprüften Veröffentlichung leer.
+
 ## Für Entwickler
 
 Voraussetzungen: Python 3.10+, Go 1.24+ (für das Go-Beispiel; das SDK selbst benötigt kein Go).

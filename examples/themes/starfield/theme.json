@@ -1,0 +1,25 @@
+{
+  "tokens": {
+    "bg": "#071125",
+    "panel": "#112642",
+    "card": "#173453",
+    "text": "#EDF9FF",
+    "muted": "#A5D0E7",
+    "heading": "#FFFFFF",
+    "accent": "#4DDFF2",
+    "accentText": "#061421",
+    "accent2": "#8D8BFF",
+    "line": "#3C718F",
+    "radius": 1.15,
+    "statusAlpha": 0.92,
+    "statusShape": "floating",
+    "statusShadow": "soft"
+  },
+  "components": {
+    "status.bar": {"background":"#091B33", "accent":"#4DDFF2"},
+    "player.progress": {"track":"#264B6D", "fill":"#4DDFF2", "thumb":"#FFFFFF"},
+    "player.transport": {"primary":"#4DDFF2", "primaryText":"#061421"},
+    "player.queue": {"active":"#4DDFF2", "activeText":"#061421"}
+  },
+  "assets": {"background":"assets/background.png"}
+}
