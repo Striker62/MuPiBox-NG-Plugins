@@ -21,6 +21,182 @@
       },
       "type": "object"
     },
+    "colorAlphas": {
+      "additionalProperties": false,
+      "properties": {
+        "accent": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "accent2": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "accentPressed": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "accentText": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "bg": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "card": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "control": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "controlPressed": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "controlText": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "error": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "focus": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "heading": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "line": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "muted": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "panel": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "playAccent": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "playAccentPressed": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "playAccentText": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "player": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "playerEdge": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "progressFill": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "progressThumb": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "progressTrack": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "queueActive": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "queueActiveText": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "queueCard": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "status": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "statusAccent": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "statusEdge": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "statusMuted": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "statusText": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "success": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "text": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "warning": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
     "components": {
       "additionalProperties": false,
       "properties": {
@@ -363,13 +539,18 @@
             "pattern": "^#[0-9a-fA-F]{6}$",
             "type": "string"
           },
+          "colorOpacity": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
           "height": {
             "maximum": 480,
             "minimum": 4,
             "type": "number"
           },
           "opacity": {
-            "maximum": 0.8,
+            "maximum": 1,
             "minimum": 0,
             "type": "number"
           },
@@ -762,6 +943,11 @@
               "pattern": "^#[0-9a-fA-F]{6}$",
               "type": "string"
             },
+            "borderOpacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
             "borderWidth": {
               "maximum": 8,
               "minimum": 0,
@@ -801,6 +987,11 @@
             "borderColor": {
               "pattern": "^#[0-9a-fA-F]{6}$",
               "type": "string"
+            },
+            "borderOpacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
             },
             "borderWidth": {
               "maximum": 8,
@@ -864,6 +1055,11 @@
               "pattern": "^#[0-9a-fA-F]{6}$",
               "type": "string"
             },
+            "borderOpacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
             "borderWidth": {
               "maximum": 8,
               "minimum": 0,
@@ -904,6 +1100,11 @@
               "pattern": "^#[0-9a-fA-F]{6}$",
               "type": "string"
             },
+            "borderOpacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
             "borderWidth": {
               "maximum": 8,
               "minimum": 0,
@@ -943,6 +1144,11 @@
             "borderColor": {
               "pattern": "^#[0-9a-fA-F]{6}$",
               "type": "string"
+            },
+            "borderOpacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
             },
             "borderWidth": {
               "maximum": 8,
@@ -995,6 +1201,11 @@
               "pattern": "^#[0-9a-fA-F]{6}$",
               "type": "string"
             },
+            "borderOpacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
             "borderWidth": {
               "maximum": 8,
               "minimum": 0,
@@ -1034,6 +1245,11 @@
             "borderColor": {
               "pattern": "^#[0-9a-fA-F]{6}$",
               "type": "string"
+            },
+            "borderOpacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
             },
             "borderWidth": {
               "maximum": 8,
@@ -1075,6 +1291,11 @@
               "pattern": "^#[0-9a-fA-F]{6}$",
               "type": "string"
             },
+            "borderOpacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
             "borderWidth": {
               "maximum": 8,
               "minimum": 0,
@@ -1114,6 +1335,11 @@
             "borderColor": {
               "pattern": "^#[0-9a-fA-F]{6}$",
               "type": "string"
+            },
+            "borderOpacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
             },
             "borderWidth": {
               "maximum": 8,

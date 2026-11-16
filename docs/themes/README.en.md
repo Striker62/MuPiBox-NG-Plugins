@@ -21,3 +21,12 @@ Package source code, screenshots and license terms must be available for the cur
 ### Fine-grained element styling
 
 Optional `visuals` values offer bounded background opacity (0–1), independently adjustable corner radii (topLeft/topRight/bottomRight/bottomLeft, 0–80 px), and per-element border width/color on supported surfaces. System status icons and sensitive pairing prompts remain host-controlled. The browser designer exposes individual sliders and corner presets. See `reference.de.md` for the complete allowlist and examples.
+
+### Per-color opacity and font preview
+
+Each editable color has an independent alpha slider, stored in `colorAlphas`
+(0–1 per validated palette token). Borders additionally offer `borderOpacity`,
+and geometry decorations have `colorOpacity`. These settings multiply with
+any existing element opacity. The browser designer loads NG's bundled
+webfonts to accurately preview the selected typeface. Native Qt uses
+the corresponding bundled font families.

@@ -61,7 +61,7 @@ class ThemePackTests(unittest.TestCase):
         cases=[
             {'type':'image','x':1,'y':1,'width':20,'height':20,'asset':'../../etc/shadow'},
             {'type':'image','x':1,'y':1,'width':20,'height':20,'asset':'assets/nope.png'},
-            {'type':'rect','x':1,'y':1,'width':20,'height':20,'color':'#AABBCC','opacity':1},
+            {'type':'rect','x':1,'y':1,'width':20,'height':20,'color':'#AABBCC','opacity':1.1},
             {'type':'qml','x':1,'y':1,'width':20,'height':20,'color':'#AABBCC'},
             {'type':'ellipse','x':1,'y':1,'width':999,'height':20,'color':'#AABBCC'},
         ]
@@ -73,6 +73,35 @@ class ThemePackTests(unittest.TestCase):
         too_many=json.loads(json.dumps(theme))
         too_many['decorations']=theme['decorations']*11
         with self.assertRaises(module.ThemeError):module.verify(manifest,too_many,files)
+
+    def test_transparency_per_color_and_border(self):
+        manifest=json.loads((SAMPLE/"manifest.json").read_text())
+        theme=json.loads((SAMPLE/"theme.json").read_text())
+        files={str(p.relative_to(SAMPLE)) for p in SAMPLE.rglob("*") if p.is_file()}
+        module.verify(manifest,theme,files)
+        assert theme['colorAlphas']['card'] == 0.68
+        assert theme['visuals']['home.card']['borderOpacity'] == 0.65
+        for key,bad in [('card',1.2),('text',-.1),('radius',.5),
+                        ('__proto__',0),('accent','0.5')]:
+            with self.subTest(key=key):
+                candidate=json.loads(json.dumps(theme))
+                candidate['colorAlphas'][key]=bad
+                with self.assertRaises(module.ThemeError):
+                    module.verify(manifest,candidate,files)
+        for key,bad in [('borderOpacity',1.5),('borderOpacity',-1)]:
+            candidate=json.loads(json.dumps(theme))
+            candidate['visuals']['home.card'][key]=bad
+            with self.assertRaises(module.ThemeError):
+                module.verify(manifest,candidate,files)
+        candidate=json.loads(json.dumps(theme))
+        candidate['decorations'][0]['colorOpacity']=1.1
+        with self.assertRaises(module.ThemeError):
+            module.verify(manifest,candidate,files)
+        candidate=json.loads(json.dumps(theme))
+        for d in candidate['decorations']:
+            if d['type']=='image': d['colorOpacity']=0.6
+        with self.assertRaises(module.ThemeError):
+            module.verify(manifest,candidate,files)
 
     def test_action_icon_contract(self):
         manifest=json.loads((SAMPLE/"manifest.json").read_text())

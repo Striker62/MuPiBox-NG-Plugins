@@ -300,3 +300,43 @@ Wird eine Ecke nicht angegeben, bleibt die **bisherige native Rundung dieser Eck
 Der grafische Theme-Designer bietet dafür getrennte Eck-Regler und fertige Presets: **alle rund, alle eckig, nur oben, nur unten, nur links, nur rechts, nur oben links und nur oben rechts**. Auch die Deckkraft sowie Rahmenfarbe/-breite sind je Oberflächenkomponente separat einstellbar.
 
 **Wichtig:** Nicht jeder denkbare innere Unterbestandteil einer komplexen Medienansicht hat bereits einen eigenen semantischen Slot. Das Theme kann insbesondere keine Systemwarnungen unlesbar machen, Icons für reale Hardwarezustände ersetzen oder Touch-Bereiche verändern. Die Webvorschau simuliert die Darstellung; ein Test auf der Box bleibt die verbindliche visuelle Prüfung.
+
+## 16. Transparenz **für jede Farbdefinition** und Web-Schriftvorschau
+
+Zusätzlich zur bisherigen Element-Deckkraft (`visuals.<element>.opacity`) unterstützt
+die API jetzt `colorAlphas`, eine Alpha-Einstellung **je einzelnem Farbtoken**.
+Der Farbwert selbst bleibt im plattformunabhängigen Format `#RRGGBB`.
+Jeder Schlüssel aus dem offiziellen `COLOR_KEYS`-Verzeichnis kann einen Alpha-Wert
+zwischen 0 (vollständig transparent) und 1 (vollständig deckend) erhalten:
+
+```json
+{
+  "tokens": {
+    "bg": "#030817", "card": "#09122E",
+    "text": "#EFFAFF", "accent": "#42E8F4", "line": "#31478D"
+  },
+  "colorAlphas": {
+    "bg": 0.80, "card": 0.40, "text": 0.95,
+    "accent": 0.60, "line": 0.25
+  },
+  "visuals": {
+    "home.card": {
+      "borderColor": "#FFCC77", "borderOpacity": 0.45,
+      "opacity": 0.85
+    }
+  }
+}
+```
+
+Die jeweilige Farb-Deckkraft und die Deckkraft des gesamten Elements wirken
+**multiplikativ**. Beispiel: Kartenfarbe 40 % und Kartenfläche 85 % ergibt
+34 % effektive Fläche; der Text behält seinen eigenen Farb-Alpha-Wert.
+Für unabhängig gefärbte Rechtecke und Ellipsen gilt `colorOpacity` (0–1)
+zusätzlich zur bisherigen `opacity` (ebenfalls 0–1). Bilddekorationen
+haben keine Füllfarbe.
+
+Die Qt-Implementierung wandelt `#RRGGBB` + Alpha in native
+`#AARRGGBB`-Farbwerte um; der Browser zeigt die gleichen Farbwerte mit
+CSS `rgba()`. Der Designer lädt dafür die in NG bereits enthaltenen
+Webfont-Dateien. Nicht installierte externe Schriften werden nicht
+stillschweigend als identische Vorschau ausgegeben.

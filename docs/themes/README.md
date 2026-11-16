@@ -43,3 +43,11 @@ Das offizielle Beispiel ist `examples/themes/starfield/`.
 **Mitmachen:** Themes können von jeder Community-Person eigenständig entwickelt werden. Für den offiziellen Katalog ist ein Maintainer-Review einschließlich Asset- und Lizenzprüfung sowie Veröffentlichung als GitHub-Release notwendig. Ein Katalogeintrag besteht ausschließlich aus Metadaten und SHA-256 – keine beliebigen Download-URLs.
 
 **Lizenz:** Die .mupitheme-Dateien sind unabhängig vom NG-Kern. Jede Veröffentlichung muss eine eigene passende Lizenz haben; externe Schriften und Bilder müssen separat dafür freigegeben sein. Originäre NG-Artworks oder QML-Quellcode nicht ungeprüft in Community-Themes kopieren.
+
+### Individuelle Deckkraft jeder Farbe
+
+`colorAlphas` erlaubt für **jeden validierten Farbtoken** einen eigenen
+Alphawert von 0 bis 1 – unabhängig von Element-Deckkraft. Rahmenfarbe
+unterstützt zusätzlich `borderOpacity`; geometrische Dekorationen
+`colorOpacity`. Der grafische Theme-Editor lädt die bereits in NG
+mitgelieferten Webfonts für die Schriftvorschau.

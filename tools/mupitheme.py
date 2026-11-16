@@ -94,7 +94,7 @@ def verify(manifest, theme, files):
     preview=manifest.get('preview','')
     asset(preview, {'.png','.jpg','.jpeg','.webp'})
     if preview: check(preview in files,'missing preview')
-    check(set(theme)<={'tokens','components','assets','decorations','icons','visuals'},'unknown theme.json field')
+    check(set(theme)<={'tokens','components','assets','decorations','icons','visuals','colorAlphas'},'unknown theme.json field')
     tokens=theme.get('tokens') or {}
     components=theme.get('components') or {}
     assets=theme.get('assets') or {}
@@ -104,6 +104,11 @@ def verify(manifest, theme, files):
         val=assets.get(key,'')
         asset(val,extensions)
         if val: check(val in files,'missing asset '+val)
+    color_alphas=theme.get('colorAlphas',{})
+    check(isinstance(color_alphas,dict) and len(color_alphas)<=len(COLOR_KEYS),'invalid colorAlphas map')
+    for key,opacity in color_alphas.items():
+        check(key in COLOR_KEYS and type(opacity) in (int,float) and
+              math.isfinite(opacity) and 0<=opacity<=1, 'invalid color alpha '+key)
     resolved=dict(tokens)
     for component,properties in components.items():
         check(component in COMPONENTS and isinstance(properties,dict),'unsupported component '+component)
@@ -131,17 +136,21 @@ def verify(manifest, theme, files):
     check(isinstance(decorations,list) and len(decorations)<=32,'too many decorations')
     num_images=0
     for i,d in enumerate(decorations):
-        check(isinstance(d,dict) and set(d)<={'type','x','y','width','height','color','opacity','rotation','asset'},
+        check(isinstance(d,dict) and set(d)<={'type','x','y','width','height','color','colorOpacity','opacity','rotation','asset'},
               'unknown decoration properties')
         kind=d.get('type')
         check(kind in ('rect','ellipse','image'),'invalid decoration type')
         for key,lo,hi in (('x',-200,800),('y',-200,480),
                           ('width',4,800),('height',4,480),('rotation',-180,180),
-                          ('opacity',0,.8)):
+                          ('opacity',0,1)):
             if key not in d and key in ('rotation','opacity'):continue
             val=d.get(key)
             check(type(val) in (int,float) and lo<=val<=hi,
                   f'invalid decoration {i}.{key}')
+        if d.get('colorOpacity') is not None:
+            check(kind != 'image' and type(d['colorOpacity']) in (int,float) and
+                  math.isfinite(d['colorOpacity']) and 0 <= d['colorOpacity'] <= 1,
+                  'invalid decoration color opacity')
         if kind=='image':
             num_images+=1
             check(num_images<=6 and not d.get('color'),'too many images or image has color')
@@ -164,13 +173,13 @@ def verify(manifest, theme, files):
               'unsupported visual target '+target)
         allowed={'opacity'}
         if target in VISUAL_CORNERS:
-            allowed|=VISUAL_CORNER_PROPERTIES|{'borderWidth','borderColor'}
+            allowed|=VISUAL_CORNER_PROPERTIES|{'borderWidth','borderColor','borderOpacity'}
         check(set(style)<=allowed,'unsupported visual style property '+target)
         for key,value in style.items():
             if key=='borderColor':
                 check(isinstance(value,str) and HEX.fullmatch(value),'invalid border color')
             else:
-                high=1 if key=='opacity' else 8 if key=='borderWidth' else 80
+                high=1 if key in ('opacity','borderOpacity') else 8 if key=='borderWidth' else 80
                 check(type(value) in (int,float) and math.isfinite(value) and 0<=value<=high,
                       'visual style outside bounds: '+target+'.'+key)
     return manifest

@@ -18,6 +18,10 @@ for name in mupitheme.BOOLEANS:all_tokens[name]={'type':'boolean'}
 for name in mupitheme.FONTS:all_tokens[name]={'type':'string','minLength':1,'maxLength':80}
 for name,values in mupitheme.ENUMS.items():all_tokens[name]={'type':'string','enum':sorted(values)}
 schema['properties']['tokens']['properties']=all_tokens
+schema['properties']['colorAlphas']={
+  'type':'object','additionalProperties':False,
+  'properties':{key:{'type':'number','minimum':0,'maximum':1} for key in sorted(mupitheme.COLOR_KEYS)}
+}
 schema['properties']['components']['properties']={
     name:{'type':'object','additionalProperties':False,
           'properties':{key:all_tokens[token] for key,token in properties.items()}}
@@ -37,7 +41,7 @@ style_schema={
       'opacity':numeric(0,1),
       'topLeft':numeric(0,80),'topRight':numeric(0,80),
       'bottomRight':numeric(0,80),'bottomLeft':numeric(0,80),
-      'borderWidth':numeric(0,8),
+      'borderWidth':numeric(0,8),'borderOpacity':numeric(0,1),
       'borderColor':{'type':'string','pattern':'^#[0-9a-fA-F]{6}$'}
     }
 }
@@ -59,7 +63,7 @@ schema['properties']['decorations']={
    'x':numeric(-200,800),'y':numeric(-200,480),
    'width':numeric(4,800),'height':numeric(4,480),
    'color':{'type':'string','pattern':'^#[0-9a-fA-F]{6}$'},
-   'opacity':numeric(0,0.8),'rotation':numeric(-180,180),
+   'opacity':numeric(0,1),'colorOpacity':numeric(0,1),'rotation':numeric(-180,180),
    'asset':{'type':'string','pattern':r'^assets/[a-zA-Z0-9_/-]+\.(?:png|jpg|jpeg|webp)$'}
   },
   'allOf':[

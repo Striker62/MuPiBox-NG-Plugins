@@ -75,7 +75,8 @@
       "width": 270,
       "height": 270,
       "color": "#4DDFF2",
-      "opacity": 0.09
+      "opacity": 0.09,
+      "colorOpacity": 0.55
     },
     {
       "type": "rect",
@@ -85,7 +86,8 @@
       "height": 8,
       "color": "#8D8BFF",
       "rotation": -4,
-      "opacity": 0.22
+      "opacity": 0.22,
+      "colorOpacity": 0.55
     },
     {
       "type": "image",
@@ -127,7 +129,8 @@
       "bottomRight": 22,
       "bottomLeft": 22,
       "borderWidth": 2,
-      "borderColor": "#8D8BFF"
+      "borderColor": "#8D8BFF",
+      "borderOpacity": 0.65
     },
     "media.list": {
       "opacity": 0.86,
@@ -160,5 +163,15 @@
     "icons": {
       "opacity": 1
     }
+  },
+  "colorAlphas": {
+    "bg": 0.92,
+    "status": 0.6,
+    "panel": 0.9,
+    "card": 0.68,
+    "text": 1.0,
+    "heading": 0.96,
+    "accent": 0.75,
+    "line": 0.6
   }
 }
