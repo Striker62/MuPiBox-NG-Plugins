@@ -25,7 +25,7 @@ Themes aus dem Systemlieferumfang bleiben in `ui/qtquick/ThemeDefs.js`, bis die 
 - Nur ZIP mit `manifest.json` und `theme.json`, nicht die `.mupiapp`-App-Laufzeit.
 - Größe maximal 24 MiB komprimiert, 40 MiB entpackt, höchstens 128 Dateien / 16 MiB pro Datei.
 - Keine Symlinks, verschachtelte Pfad-Traversal, doppelten Dateinamen, ZIP-Verschlüsselung oder ausführbare Dateien.
-- Nur PNG/JPEG/WebP und TTF/OTF als referenzierte Assets; keine externen URLs.
+- Nur PNG/JPEG/WebP und TTF/OTF als referenzierte Assets; höchstens 32 statische Dekorationen, darunter maximal 6 Bilder à 3 MiB; keine externen URLs.
 - Theme-Tokens, Datentypen, Wertebereiche und Komponentennamen werden explizit gegen die Host-Allowlist geprüft.
 - Theme-Katalog: HTTPS mit festgelegten offiziellen Hosts, SHA-256-Prüfung und Matching von Manifest/Version/Autor. Hash ist keine Publisher-Signatur.
 - Ein aktives Theme kann nicht deinstalliert werden. Bei fehlendem/ungültigem Theme fallen die Qt-Tokens auf Modern Dark zurück.

@@ -16,10 +16,73 @@
     "statusShadow": "soft"
   },
   "components": {
-    "status.bar": {"background":"#091B33", "accent":"#4DDFF2"},
-    "player.progress": {"track":"#264B6D", "fill":"#4DDFF2", "thumb":"#FFFFFF"},
-    "player.transport": {"primary":"#4DDFF2", "primaryText":"#061421"},
-    "player.queue": {"active":"#4DDFF2", "activeText":"#061421"}
+    "status.bar": {
+      "background": "#091B33",
+      "accent": "#4DDFF2"
+    },
+    "player.progress": {
+      "track": "#264B6D",
+      "fill": "#4DDFF2",
+      "thumb": "#FFFFFF"
+    },
+    "player.transport": {
+      "primary": "#4DDFF2",
+      "primaryText": "#061421"
+    },
+    "player.queue": {
+      "active": "#4DDFF2",
+      "activeText": "#061421"
+    },
+    "home.heading": {
+      "size": 23,
+      "gap": 11
+    },
+    "home.card": {
+      "spacing": 19
+    },
+    "player.cover": {
+      "radius": 1.8
+    },
+    "media.coverflow": {
+      "tiltDegrees": 48,
+      "overlap": 0.48,
+      "sideScale": 0.88,
+      "sideOpacity": 0.82,
+      "snapMs": 220,
+      "cardRatio": 0.85
+    }
   },
-  "assets": {"background":"assets/background.png"}
+  "assets": {
+    "background": "assets/background.png"
+  },
+  "decorations": [
+    {
+      "type": "ellipse",
+      "x": 620,
+      "y": -80,
+      "width": 270,
+      "height": 270,
+      "color": "#4DDFF2",
+      "opacity": 0.09
+    },
+    {
+      "type": "rect",
+      "x": 50,
+      "y": 370,
+      "width": 600,
+      "height": 8,
+      "color": "#8D8BFF",
+      "rotation": -4,
+      "opacity": 0.22
+    },
+    {
+      "type": "image",
+      "x": 715,
+      "y": 115,
+      "width": 65,
+      "height": 65,
+      "asset": "assets/sparkle.png",
+      "opacity": 0.5
+    }
+  ]
 }

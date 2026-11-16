@@ -126,7 +126,71 @@ Jede Komponenteneigenschaft wird auf ein bestehendes, semantisches Qt-Theme-Toke
 }
 ~~~
 
-## 6. Assets
+## 6. Erweitertes Komponenten-Design: Abstände, Coverflow und Player
+
+Die folgenden zusätzlichen Werte sind **abwärtskompatible, deklarative Erweiterungen** der Theme API v1. Sie steuern die native Qt-Quick-Oberfläche direkt; damit unterscheiden sie sich von reinen CSS-Vorschauen.
+
+| Komponente | Eigenschaft | Token | Wertebereich | Standard |
+| --- | --- | --- | --- | --- |
+| `home.heading` | `size` | `homeHeadingSize` | 16–30 px | 19 |
+| `home.heading` | `gap` | `homeHeadingGap` | 4–20 px | 8 |
+| `home.card` | `spacing` | `homeCardSpacing` | 8–32 px | 14 |
+| `player.cover` | `radius` | `playerCoverRadius` | 0–2 (Faktor) | wie `radius` |
+| `media.coverflow` | `tiltDegrees` | `coverflowTiltDegrees` | 0–70° | 60 |
+| `media.coverflow` | `overlap` | `coverflowOverlap` | 0–0,65 | 0,55 |
+| `media.coverflow` | `sideScale` | `coverflowSideScale` | 0,7–1 | 0,82 |
+| `media.coverflow` | `sideOpacity` | `coverflowSideOpacity` | 0,55–1 | 0,70 |
+| `media.coverflow` | `snapMs` | `coverflowSnapMs` | 50–450 ms | 180 |
+| `media.coverflow` | `cardRatio` | `coverflowCardRatio` | 0,65–1 | 0,8 |
+
+Diese Werte wirken auf **beide** virtualisierten Coverflow-Ansichten (Kategorien und Spotify-Browser) sowie auf die Startkarten bzw. Player-Cover. Die normale horizontale Ansicht bleibt von den Coverflow-Werten unberührt. Der Abstand der Home-Karten bleibt vom Coverflow-Abstand getrennt.
+
+Beispiel:
+
+~~~json
+{
+  "components": {
+    "home.heading": {"size": 22, "gap": 10},
+    "home.card": {"spacing": 18},
+    "player.cover": {"radius": 1.7},
+    "media.coverflow": {
+      "tiltDegrees": 50, "overlap": 0.45,
+      "sideScale": 0.86, "sideOpacity": 0.80,
+      "snapMs": 220, "cardRatio": 0.85
+    }
+  }
+}
+~~~
+
+## 7. Deklarative Hintergrunddekorationen
+
+`theme.json` unterstützt zusätzlich eine Liste `decorations`. Bis zu **32** Elemente werden auf einer **800×480-Logikfläche** vor der Kinderoberfläche und hinter deren Bedienelementen gezeichnet. Es gibt keine QML-/JavaScript-Ausführung und keine interaktiven Trefferflächen.
+
+| Eigenschaft | Beschreibung | Grenzen |
+| --- | --- | --- |
+| `type` | `rect`, `ellipse` oder `image` | Pflicht |
+| `x` / `y` | Linke obere Ecke im logischen 800×480-Koordinatensystem | x: −200…800; y: −200…480 |
+| `width` / `height` | Breite und Höhe | 4…800 / 4…480 |
+| `color` | Volltonfarbe bei `rect` und `ellipse` | `#RRGGBB`, Pflicht für diese Formen |
+| `asset` | Paketierte Bilddatei bei `image` | PNG/JPEG/WebP unter `assets/`, maximal 3 MiB |
+| `opacity` | Deckkraft | 0…0,8; Standard 0,25 |
+| `rotation` | Drehwinkel | −180…180°, Standard 0 |
+
+Zusätzlich höchstens **6 Bilddekorationen** je Theme. Das ist ein bewusstes Ressourcenlimit für Raspberry-Pi-Hardware.
+
+~~~json
+{
+  "decorations": [
+    {"type":"ellipse","x":620,"y":-80,"width":270,"height":270,"color":"#4DDFF2","opacity":0.09},
+    {"type":"rect","x":50,"y":370,"width":600,"height":8,"color":"#8D8BFF","rotation":-4,"opacity":0.22},
+    {"type":"image","x":715,"y":115,"width":65,"height":65,"asset":"assets/sparkle.png","opacity":0.50}
+  ]
+}
+~~~
+
+Bei einem vom Benutzer gewählten Hintergrundbild (`library` oder `custom`) werden diese Theme-Dekorationen nicht über die persönlichen Fotos gelegt. Startbild und Bildschirmschoner bleiben unabhängig. Die Dekorationen sind statisch; Animationen sind ein späterer API-Schritt.
+
+## 8. Assets
 
 | `assets`-Feld | Erlaubtes Format | Darstellung |
 | --- | --- | --- |

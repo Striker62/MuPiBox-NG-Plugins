@@ -38,6 +38,8 @@ Das offizielle Beispiel ist `examples/themes/starfield/`.
 - [Installation, API und Sicherheit](api.de.md)
 - [English quick start](README.en.md)
 
+**Neu:** Die native Oberfläche unterstützt dokumentierte Größen-/Abstandswerte für Startseite und Player, anpassbare Coverflow-Perspektive und statische Hintergrunddekorationen. Alle Werte stehen mit Bereich und Standardwert in der [Token-Referenz](reference.de.md).
+
 **Mitmachen:** Themes können von jeder Community-Person eigenständig entwickelt werden. Für den offiziellen Katalog ist ein Maintainer-Review einschließlich Asset- und Lizenzprüfung sowie Veröffentlichung als GitHub-Release notwendig. Ein Katalogeintrag besteht ausschließlich aus Metadaten und SHA-256 – keine beliebigen Download-URLs.
 
 **Lizenz:** Die .mupitheme-Dateien sind unabhängig vom NG-Kern. Jede Veröffentlichung muss eine eigene passende Lizenz haben; externe Schriften und Bilder müssen separat dafür freigegeben sein. Originäre NG-Artworks oder QML-Quellcode nicht ungeprüft in Community-Themes kopieren.

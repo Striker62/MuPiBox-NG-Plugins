@@ -24,6 +24,33 @@
     "components": {
       "additionalProperties": false,
       "properties": {
+        "home.card": {
+          "additionalProperties": false,
+          "properties": {
+            "spacing": {
+              "maximum": 32,
+              "minimum": 8,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "home.heading": {
+          "additionalProperties": false,
+          "properties": {
+            "gap": {
+              "maximum": 20,
+              "minimum": 4,
+              "type": "number"
+            },
+            "size": {
+              "maximum": 30,
+              "minimum": 16,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
         "media.card": {
           "additionalProperties": false,
           "properties": {
@@ -40,6 +67,53 @@
             },
             "borderWidth": {
               "maximum": 4,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "media.coverflow": {
+          "additionalProperties": false,
+          "properties": {
+            "cardRatio": {
+              "maximum": 1,
+              "minimum": 0.65,
+              "type": "number"
+            },
+            "overlap": {
+              "maximum": 0.65,
+              "minimum": 0,
+              "type": "number"
+            },
+            "sideOpacity": {
+              "maximum": 1,
+              "minimum": 0.55,
+              "type": "number"
+            },
+            "sideScale": {
+              "maximum": 1,
+              "minimum": 0.7,
+              "type": "number"
+            },
+            "snapMs": {
+              "maximum": 450,
+              "minimum": 50,
+              "type": "number"
+            },
+            "tiltDegrees": {
+              "maximum": 70,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "player.cover": {
+          "additionalProperties": false,
+          "properties": {
+            "radius": {
+              "maximum": 2,
               "minimum": 0,
               "type": "number"
             }
@@ -186,6 +260,111 @@
       },
       "type": "object"
     },
+    "decorations": {
+      "items": {
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "image"
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "color"
+                ]
+              },
+              "required": [
+                "asset"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "rect",
+                    "ellipse"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "asset"
+                ]
+              },
+              "required": [
+                "color"
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "asset": {
+            "pattern": "^assets/[a-zA-Z0-9_/-]+\\.(?:png|jpg|jpeg|webp)$",
+            "type": "string"
+          },
+          "color": {
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "type": "string"
+          },
+          "height": {
+            "maximum": 480,
+            "minimum": 4,
+            "type": "number"
+          },
+          "opacity": {
+            "maximum": 0.8,
+            "minimum": 0,
+            "type": "number"
+          },
+          "rotation": {
+            "maximum": 180,
+            "minimum": -180,
+            "type": "number"
+          },
+          "type": {
+            "enum": [
+              "rect",
+              "ellipse",
+              "image"
+            ]
+          },
+          "width": {
+            "maximum": 800,
+            "minimum": 4,
+            "type": "number"
+          },
+          "x": {
+            "maximum": 800,
+            "minimum": -200,
+            "type": "number"
+          },
+          "y": {
+            "maximum": 480,
+            "minimum": -200,
+            "type": "number"
+          }
+        },
+        "required": [
+          "type",
+          "x",
+          "y",
+          "width",
+          "height"
+        ],
+        "type": "object"
+      },
+      "maxItems": 32,
+      "type": "array"
+    },
     "tokens": {
       "additionalProperties": false,
       "properties": {
@@ -246,6 +425,36 @@
           "pattern": "^#[0-9a-fA-F]{6}$",
           "type": "string"
         },
+        "coverflowCardRatio": {
+          "maximum": 1,
+          "minimum": 0.65,
+          "type": "number"
+        },
+        "coverflowOverlap": {
+          "maximum": 0.65,
+          "minimum": 0,
+          "type": "number"
+        },
+        "coverflowSideOpacity": {
+          "maximum": 1,
+          "minimum": 0.55,
+          "type": "number"
+        },
+        "coverflowSideScale": {
+          "maximum": 1,
+          "minimum": 0.7,
+          "type": "number"
+        },
+        "coverflowSnapMs": {
+          "maximum": 450,
+          "minimum": 50,
+          "type": "number"
+        },
+        "coverflowTiltDegrees": {
+          "maximum": 70,
+          "minimum": 0,
+          "type": "number"
+        },
         "error": {
           "pattern": "^#[0-9a-fA-F]{6}$",
           "type": "string"
@@ -267,6 +476,21 @@
         "heading": {
           "pattern": "^#[0-9a-fA-F]{6}$",
           "type": "string"
+        },
+        "homeCardSpacing": {
+          "maximum": 32,
+          "minimum": 8,
+          "type": "number"
+        },
+        "homeHeadingGap": {
+          "maximum": 20,
+          "minimum": 4,
+          "type": "number"
+        },
+        "homeHeadingSize": {
+          "maximum": 30,
+          "minimum": 16,
+          "type": "number"
         },
         "light": {
           "type": "boolean"
@@ -301,6 +525,11 @@
         "player": {
           "pattern": "^#[0-9a-fA-F]{6}$",
           "type": "string"
+        },
+        "playerCoverRadius": {
+          "maximum": 2,
+          "minimum": 0,
+          "type": "number"
         },
         "playerEdge": {
           "pattern": "^#[0-9a-fA-F]{6}$",

@@ -19,6 +19,13 @@ HEX = re.compile(r'^#[0-9a-fA-F]{6}$')
 BUILTINS = set('modern-dark pulse arcade-8bit block-world mupi-kids ark-storybook space magic dino neon-arcade neon-grid neon-grid-red lcars dreamy-pastel kawaii-pop fairy-garden moonwalk web-hero night-guardian classic football ocean vinyl rainbow'.split())
 COLOR_KEYS = set('bg status panel card text muted accent accentPressed accentText accent2 line focus success warning error heading player playerEdge statusEdge statusAccent statusText statusMuted control controlPressed controlText playAccent playAccentPressed playAccentText progressTrack progressFill progressThumb queueCard queueActive queueActiveText'.split())
 NUMBERS = {'radius': 2, 'statusAlpha': 1, 'cardBorder': 4, 'statusBorderWidth': 4}
+BOUNDS = {
+    'homeHeadingSize': (16, 30), 'homeHeadingGap': (4, 20),
+    'homeCardSpacing': (8, 32), 'playerCoverRadius': (0, 2),
+    'coverflowTiltDegrees': (0, 70), 'coverflowOverlap': (0, .65),
+    'coverflowSideScale': (.7, 1), 'coverflowSideOpacity': (.55, 1),
+    'coverflowSnapMs': (50, 450), 'coverflowCardRatio': (.65, 1),
+}
 BOOLEANS = {'light', 'pixel', 'stripe'}
 FONTS = {'font', 'fallback'}
 ENUMS = {
@@ -33,7 +40,14 @@ COMPONENTS = {
     'player.surface': dict(zip('background border heading'.split(),'player playerEdge heading'.split())),
     'player.progress': dict(zip('track fill thumb'.split(),'progressTrack progressFill progressThumb'.split())),
     'player.transport': dict(zip('background pressed text primary primaryPressed primaryText'.split(),'control controlPressed controlText playAccent playAccentPressed playAccentText'.split())),
-    'player.queue': dict(zip('background active activeText'.split(),'queueCard queueActive queueActiveText'.split()))
+    'player.queue': dict(zip('background active activeText'.split(),'queueCard queueActive queueActiveText'.split())),
+    'player.cover': {'radius': 'playerCoverRadius'},
+    'home.heading': {'size':'homeHeadingSize','gap':'homeHeadingGap'},
+    'home.card': {'spacing':'homeCardSpacing'},
+    'media.coverflow': dict(zip(
+        'tiltDegrees overlap sideScale sideOpacity snapMs cardRatio'.split(),
+        'coverflowTiltDegrees coverflowOverlap coverflowSideScale coverflowSideOpacity coverflowSnapMs coverflowCardRatio'.split()
+    ))
 }
 
 class ThemeError(ValueError): pass
@@ -60,7 +74,7 @@ def verify(manifest, theme, files):
     preview=manifest.get('preview','')
     asset(preview, {'.png','.jpg','.jpeg','.webp'})
     if preview: check(preview in files,'missing preview')
-    check(set(theme)<={'tokens','components','assets'},'unknown theme.json field')
+    check(set(theme)<={'tokens','components','assets','decorations'},'unknown theme.json field')
     tokens=theme.get('tokens') or {}
     components=theme.get('components') or {}
     assets=theme.get('assets') or {}
@@ -83,6 +97,9 @@ def verify(manifest, theme, files):
             check(isinstance(value,str) and HEX.fullmatch(value),'invalid color '+key)
         elif key in NUMBERS:
             check(type(value) in (int,float) and 0<=value<=NUMBERS[key],'invalid numeric '+key)
+        elif key in BOUNDS:
+            lo, hi = BOUNDS[key]
+            check(type(value) in (int,float) and lo<=value<=hi,'invalid geometry token '+key)
         elif key in BOOLEANS:
             check(type(value) is bool,'invalid boolean '+key)
         elif key in FONTS:
@@ -90,6 +107,30 @@ def verify(manifest, theme, files):
         elif key in ENUMS:
             check(isinstance(value,str) and value in ENUMS[key],'invalid enum '+key)
         else: raise ThemeError('unknown theme token '+key)
+    decorations=theme.get('decorations',[])
+    check(isinstance(decorations,list) and len(decorations)<=32,'too many decorations')
+    num_images=0
+    for i,d in enumerate(decorations):
+        check(isinstance(d,dict) and set(d)<={'type','x','y','width','height','color','opacity','rotation','asset'},
+              'unknown decoration properties')
+        kind=d.get('type')
+        check(kind in ('rect','ellipse','image'),'invalid decoration type')
+        for key,lo,hi in (('x',-200,800),('y',-200,480),
+                          ('width',4,800),('height',4,480),('rotation',-180,180),
+                          ('opacity',0,.8)):
+            if key not in d and key in ('rotation','opacity'):continue
+            val=d.get(key)
+            check(type(val) in (int,float) and lo<=val<=hi,
+                  f'invalid decoration {i}.{key}')
+        if kind=='image':
+            num_images+=1
+            check(num_images<=6 and not d.get('color'),'too many images or image has color')
+            image=d.get('asset')
+            asset(image,{'.png','.jpg','.jpeg','.webp'})
+            check(bool(image) and image in files,'missing decoration image')
+        else:
+            check(not d.get('asset') and isinstance(d.get('color'),str) and HEX.fullmatch(d['color']),
+                  'geometric decoration requires a color and no image asset')
     return manifest
 
 def validate(archive):
@@ -112,7 +153,11 @@ def validate(archive):
         check({'manifest.json','theme.json'} <= set(e.filename for e in entries),'missing metadata')
         manifest=json.loads(z.read('manifest.json'))
         theme=json.loads(z.read('theme.json'))
-        return verify(manifest,theme,set(e.filename for e in entries))
+        result=verify(manifest,theme,set(e.filename for e in entries))
+        for decoration in theme.get('decorations',[]):
+            if decoration['type']=='image':
+                check(z.getinfo(decoration['asset']).file_size<=3<<20,'decoration image exceeds 3 MiB')
+        return result
 
 def pack(folder,output):
     folder=Path(folder)

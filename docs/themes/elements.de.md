@@ -6,9 +6,9 @@ Hier sind die wichtigsten sichtbaren Oberflächen und Zustände aus der gegenwä
 | --- | --- | --- |
 | Allgemeiner Hintergrund | Thema, eigenes Nutzerbild, Cover-Hintergrund, abgedunkelt, Galerie | `bg`, `assets.background`; benutzerdefinierter Hintergrund hat Vorrang |
 | Systemstatusleiste | WLAN aktiv/offline, BT aktiv/inaktiv, Akku lädt/niedrig, Netzteil, Uhr, Lautstärke, Lüfter | `status.bar`, `statusShape`, `statusShadow`; Hardwarestatusfarben teilweise hostgesteuert |
-| Startseiten-Kategorien | aktiv/inaktiv, Scrollen, langer Text, leere Kategorie | Farben/Fonts geerbt, eigene Geometrie noch nicht in v1 |
+| Startseiten-Kategorien | aktiv/inaktiv, Scrollen, langer Text, leere Kategorie | §home.heading.size§ und §home.heading.gap§, Farben/Fonts geerbt; weitere Geometrie hostgesteuert |
 | Medienkachel | normal/aktiv/gedrückt, Fokus, ohne Cover, Titel kurz/lang, gesperrt | `media.card`, `focus`; Kartengröße/Abstand noch hostgesteuert |
-| Kategorie-/Medienlisten | vertikal/horizontal/Coverflow, leer, laden, Fehler | Flächen geerbt; Coverflow-Abstände, Winkel und Animation noch nicht getrennt themebar |
+| Kategorie-/Medienlisten | vertikal/horizontal/Coverflow, leer, laden, Fehler | Flächen geerbt; Coverflow-Breite, Überlappung, Winkel, seitliche Deckkraft/Skalierung und Snap-Dauer über §media.coverflow§ |
 | Cover-Maske | eckig/rund, spezielle Storybook-Kontur | `radius` und `chromeStyle`-Preset; eigene Masken später |
 | Player | Pause/Wiedergabe, Vor-/Zurück, Spulen, Lautstärke, Stopp | `player.surface` und `player.transport` |
 | Player-Zeitachse | Anfang, Mitte, Ende, Ziehen, unbekannte Dauer | `player.progress` |
@@ -35,4 +35,4 @@ Hier sind die wichtigsten sichtbaren Oberflächen und Zustände aus der gegenwä
 
 ## Erweiterungsplan (nicht Bestandteil von v1)
 
-Für tatsächlich frei veränderliche Layouts braucht der Host nach und nach: semantische Komponenten für Kategorie-Tabs, Coverflow, Listen, Suchfeld/Tastatur, Dialoge, Medienbadges, Galerie/Spiel-HUD; außerdem definierte Layout-Slots, eigene Icons und zustandsbezogene Motion-Tokens. Die Erweiterung erfolgt mit neuen API-Versionen und Hardware-/Lesbarkeits-Tests, **ohne beliebigen Qt- oder JS-Code**.
+Für tatsächlich frei veränderliche Layouts braucht der Host nach und nach: semantische Komponenten für Kategorie-Tabs, Listen, Suchfeld/Tastatur, Dialoge, Medienbadges, Galerie/Spiel-HUD; außerdem definierte Layout-Slots, eigene Icons und zustandsbezogene Motion-Tokens. Die Erweiterung erfolgt mit neuen API-Versionen und Hardware-/Lesbarkeits-Tests, **ohne beliebigen Qt- oder JS-Code**.
