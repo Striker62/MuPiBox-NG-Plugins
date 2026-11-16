@@ -47,7 +47,7 @@ Die Entwickler-Voreinstellungen sind im Manifest unabhängig wählbar:
 Dieses Spiel wählt **Systemhintergrund**, **Vollbild**, **keine native Leiste**
 und einen **eigenen gut erreichbaren Zurück-Button** (`MuPiBoxSDK.exit()`).
 Die im Admin gesetzten Anzeige-Overrides der MuPiBox haben Vorrang vor den
-App-Voreinstellungen. Das native Kartenbild ist unter `assets/cover.jpg`
+App-Voreinstellungen. Das native Kartenbild ist unter `assets/cover-clean-v2.jpg`
 und das dazugehörige Raster-Icon unter `assets/icon.png` abgelegt.
 
 Beim Test ohne MuPiBox-Host liefert der Zurück-Button lediglich das sichere

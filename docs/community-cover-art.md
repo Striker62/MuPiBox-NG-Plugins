@@ -17,5 +17,13 @@ Kreis, orange axolotl with cream belly/coral gills/black-yellow headphones;
 top wooden sign with golden MuPi and cream exact app title; mascot left,
 activity right; rich woodland lighting and foliage; no UI, buttons or collage.
 Motifs: nine men's morris / green Reversi board / four neon rhythm lanes /
-Ludo pawns and die / crowned checkers / Nordic tafl king and attackers /
+winding woodland race trail, round tokens and die / crowned checkers / Nordic tafl king and attackers /
 drum-pad sequencer / listening quiz with instruments and question mark.
+
+## Cover cleanup (Preview 26)
+
+Würfelrennen uses an original winding race trail and finish flag, with no
+cross-shaped Ludo board or four home circles. Schach, Kreuz & Kreis and
+4er-Reihe have repaired full-bleed bottom edges, retaining their established
+illustrations and titles. These edits were produced with OpenAI image editing.
+New cover filenames prevent stale cached white stripes.
