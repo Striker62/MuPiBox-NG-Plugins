@@ -7,6 +7,8 @@ Dieses Verzeichnis dokumentiert freiwillige Beiträge aus der MuPiBox-NG-Communi
 | 2026-11-06 | [@Striker62](https://github.com/Striker62) | **FotoSpaß**: USB-Kamera, Countdown, Malen/Accessoires, lokale Foto-Speicherung und Galerie mit Einzelbild-Löschung | [#4](https://github.com/splitti/MuPiBox-NG-Plugins/pull/4) | 0.4.2 |
 | 2026-11-08 | [@Striker62](https://github.com/Striker62) | **Bücherkiste**: interaktives Kinderbücherregal, Bilderbuch-Reader und Erweiterung um eigene Bücher (inkl. SMB-Unterstützung) | [#8](https://github.com/splitti/MuPiBox-NG-Plugins/pull/8), [#12](https://github.com/splitti/MuPiBox-NG-Plugins/pull/12) | 0.2.19 → 0.2.25 |
 
+| 2026-11-16 | [@splitti](https://github.com/splitti) | **Community Suite**: acht einheitliche MuPi-Cover (Mühlenmeister, Reversi, Rhythm, Würfelrennen, Dame-Duell, Hnefatafl, BeatBox, Soundquiz), mit OpenAI-Bildgenerierung erstellt | [#27](https://github.com/splitti/MuPiBox-NG-Plugins/pull/27) | 0.1.2 / 0.2.1 / Hnefatafl 0.1.1 |
+
 ## Sicherheit und Aufnahme
 
 Der Quellcode aus PR [#4](https://github.com/splitti/MuPiBox-NG-Plugins/pull/4) wurde am 06.11.2026 statisch auf verdächtige Netzwerkzugriffe, eingebettete Ressourcen und Host-API-Aufrufe geprüft. Es fanden sich keine unbeabsichtigten Internet-Datenübertragungen im eingereichten Code. Benötigte Host-Berechtigungen: `camera` und `photo-save` (keine `network`-Berechtigung). Nach der Aufnahme wurde die lokale SDK-Kopie an das öffentliche Haupt-SDK mit strenger Foto-ID-Prüfung angeglichen.

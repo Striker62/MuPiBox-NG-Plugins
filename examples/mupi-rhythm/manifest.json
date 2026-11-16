@@ -4,11 +4,11 @@
   "name": "MuPis Rhythm Game",
   "description": "Rhythmusspiel mit vier Touch-Spuren, Controller, eigenen Synthesizer-Melodien und Punktewertung.",
   "author": "MuPiBox Community",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.svg",
-  "cover": "cover.png",
+  "cover": "cover-illustrated-v2.jpg",
   "permissions": [
     "storage",
     "controller",

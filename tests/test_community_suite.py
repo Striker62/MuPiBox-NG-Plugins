@@ -35,7 +35,7 @@ class CommunitySuiteTests(unittest.TestCase):
      self.assertEqual(set(meta["permissions"]),permissions)
      self.assertEqual(meta["display"]["minWidth"],800)
      self.assertEqual(meta["display"]["minHeight"],480)
-     self.assertTrue((folder/"cover.png").is_file())
+     self.assertTrue((folder/meta["cover"]).is_file())
      self.assertNotIn("network",meta["permissions"])
      self.assertNotIn("networkHosts",meta)
      target=Path(td)/slug
