@@ -22,13 +22,13 @@ class Markup(HTMLParser):
 
 class ThemeIntegrationTests(unittest.TestCase):
     def test_native_back_theme_and_game_only_layout(self):
-        for slug, version in (("four-in-a-row", "0.1.4"), ("tic-tac-toe", "0.2.5")):
+        for slug, version in (("four-in-a-row", "0.1.5"), ("tic-tac-toe", "0.2.6")):
             with self.subTest(slug=slug):
                 directory = ROOT / "examples" / slug
                 manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
                 self.assertEqual(manifest["version"], version)
                 self.assertEqual(manifest["category"], "games")
-                self.assertEqual(manifest["cover"], "assets/cover.jpg")
+                self.assertEqual(manifest["cover"], "assets/cover-clean-v2.jpg")
                 self.assertTrue((directory / manifest["cover"]).is_file())
                 self.assertEqual(manifest["icon"], "assets/icon.png")
                 self.assertTrue((directory / manifest["icon"]).is_file())

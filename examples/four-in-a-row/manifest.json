@@ -2,7 +2,7 @@
   "apiVersion": "1",
   "id": "community.mupi-four-in-a-row",
   "name": "MuPi 4er-Reihe",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "runtime": "web",
   "entry": "index.html",
   "icon": "assets/icon.png",
@@ -22,5 +22,5 @@
     "background": "system"
   },
   "category": "games",
-  "cover": "assets/cover.jpg"
+  "cover": "assets/cover-clean-v2.jpg"
 }

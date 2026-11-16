@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from math import sin,cos,pi
 ROOT=Path(__file__).resolve().parents[1]
-SRC=ROOT/"examples/chess/web/cover.jpg"
+SRC=ROOT/"examples/chess/web/cover-clean-v2.jpg"
 SIZE=(416,325)
 FONT="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 SCENES={

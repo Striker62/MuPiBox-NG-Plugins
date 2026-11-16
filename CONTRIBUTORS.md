@@ -6,8 +6,9 @@ Dieses Verzeichnis dokumentiert freiwillige Beiträge aus der MuPiBox-NG-Communi
 | --- | --- | --- | --- | --- |
 | 2026-11-06 | [@Striker62](https://github.com/Striker62) | **FotoSpaß**: USB-Kamera, Countdown, Malen/Accessoires, lokale Foto-Speicherung und Galerie mit Einzelbild-Löschung | [#4](https://github.com/splitti/MuPiBox-NG-Plugins/pull/4) | 0.4.2 |
 | 2026-11-08 | [@Striker62](https://github.com/Striker62) | **Bücherkiste**: interaktives Kinderbücherregal, Bilderbuch-Reader und Erweiterung um eigene Bücher (inkl. SMB-Unterstützung) | [#8](https://github.com/splitti/MuPiBox-NG-Plugins/pull/8), [#12](https://github.com/splitti/MuPiBox-NG-Plugins/pull/12) | 0.2.19 → 0.2.25 |
-
 | 2026-11-16 | [@splitti](https://github.com/splitti) | **Community Suite**: acht einheitliche MuPi-Cover (Mühlenmeister, Reversi, Rhythm, Würfelrennen, Dame-Duell, Hnefatafl, BeatBox, Soundquiz), mit OpenAI-Bildgenerierung erstellt | [#27](https://github.com/splitti/MuPiBox-NG-Plugins/pull/27) | 0.1.2 / 0.2.1 / Hnefatafl 0.1.1 |
+
+| 2026-11-16 | [@splitti](https://github.com/splitti) | **Cover-Korrekturen**: eigenes Würfelrennen-Rennmotiv und weiße Unterkanten bei Schach, Kreuz & Kreis und 4er-Reihe entfernt | [#29](https://github.com/splitti/MuPiBox-NG-Plugins/pull/29) | Würfelrennen 0.2.2 / Schach 0.1.3 / Kreuz & Kreis 0.2.6 / 4er-Reihe 0.1.5 |
 
 ## Sicherheit und Aufnahme
 
