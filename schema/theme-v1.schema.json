@@ -740,6 +740,416 @@
         }
       },
       "type": "object"
+    },
+    "visuals": {
+      "additionalProperties": false,
+      "properties": {
+        "background": {
+          "additionalProperties": false,
+          "properties": {
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "dialog": {
+          "additionalProperties": false,
+          "properties": {
+            "borderColor": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "borderWidth": {
+              "maximum": 8,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "home.card": {
+          "additionalProperties": false,
+          "properties": {
+            "borderColor": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "borderWidth": {
+              "maximum": 8,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "home.heading": {
+          "additionalProperties": false,
+          "properties": {
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "icons": {
+          "additionalProperties": false,
+          "properties": {
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "media.coverflow": {
+          "additionalProperties": false,
+          "properties": {
+            "borderColor": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "borderWidth": {
+              "maximum": 8,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "media.list": {
+          "additionalProperties": false,
+          "properties": {
+            "borderColor": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "borderWidth": {
+              "maximum": 8,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "navigation.back": {
+          "additionalProperties": false,
+          "properties": {
+            "borderColor": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "borderWidth": {
+              "maximum": 8,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "navigation.bar": {
+          "additionalProperties": false,
+          "properties": {
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "player.cover": {
+          "additionalProperties": false,
+          "properties": {
+            "borderColor": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "borderWidth": {
+              "maximum": 8,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "player.surface": {
+          "additionalProperties": false,
+          "properties": {
+            "borderColor": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "borderWidth": {
+              "maximum": 8,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "player.transport": {
+          "additionalProperties": false,
+          "properties": {
+            "borderColor": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "borderWidth": {
+              "maximum": 8,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "status.bar": {
+          "additionalProperties": false,
+          "properties": {
+            "borderColor": {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            "borderWidth": {
+              "maximum": 8,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottomRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "opacity": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topLeft": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            },
+            "topRight": {
+              "maximum": 80,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
     }
   },
   "title": "MuPiBox-NG Theme API v1",

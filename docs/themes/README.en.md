@@ -16,3 +16,8 @@ Upload the package in **Admin → Community Apps / Plugins → Community Themes*
 - Theme API v1 supports bounded home heading/card spacing, player cover radius, navigation and vertical media-list geometry, seven validated action-icon slots, Cover Flow perspective controls and up to 32 static decoration layers. The Admin custom-theme editor can export its current settings as a portable `.mupitheme` ZIP. It does **not** offer a general custom layout engine, per-element animations or arbitrary QML overrides. See [component/element inventory (DE)](elements.de.md), [tokens (DE)](reference.de.md) and [security/API (DE)](api.de.md).
 
 Package source code, screenshots and license terms must be available for the curated catalog; maintainers publish inspected assets under GitHub Releases with SHA-256 verification.
+
+
+### Fine-grained element styling
+
+Optional `visuals` values offer bounded background opacity (0–1), independently adjustable corner radii (topLeft/topRight/bottomRight/bottomLeft, 0–80 px), and per-element border width/color on supported surfaces. System status icons and sensitive pairing prompts remain host-controlled. The browser designer exposes individual sliders and corner presets. See `reference.de.md` for the complete allowlist and examples.

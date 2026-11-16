@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Offline validator and packer for MuPiBox-NG data-only theme packages."""
 import argparse
+import math
 import json
 import os
 import re
@@ -68,6 +69,17 @@ def asset(name, extensions):
           Path(name).suffix.lower() in extensions, f'bad asset path: {name}')
 
 ICONS={'navigation.back','player.play','player.pause','player.previous','player.next','player.volume','player.microphone'}
+VISUAL_TARGETS = {
+    'background','status.bar','navigation.bar','navigation.back','home.heading',
+    'home.card','media.list','media.coverflow','player.surface',
+    'player.cover','player.transport','dialog','icons',
+}
+VISUAL_CORNERS = {
+    'status.bar','navigation.back','home.card','media.list','media.coverflow',
+    'player.surface','player.cover','player.transport','dialog',
+}
+VISUAL_CORNER_PROPERTIES = {'topLeft','topRight','bottomRight','bottomLeft'}
+
 
 def verify(manifest, theme, files):
     check(set(manifest) <= {'apiVersion','kind','id','name','version','author','description','license','extends','theme','preview'}, 'unknown manifest field')
@@ -82,7 +94,7 @@ def verify(manifest, theme, files):
     preview=manifest.get('preview','')
     asset(preview, {'.png','.jpg','.jpeg','.webp'})
     if preview: check(preview in files,'missing preview')
-    check(set(theme)<={'tokens','components','assets','decorations','icons'},'unknown theme.json field')
+    check(set(theme)<={'tokens','components','assets','decorations','icons','visuals'},'unknown theme.json field')
     tokens=theme.get('tokens') or {}
     components=theme.get('components') or {}
     assets=theme.get('assets') or {}
@@ -145,6 +157,22 @@ def verify(manifest, theme, files):
         check(slot in ICONS,'unknown icon slot '+slot)
         asset(image,{'.png','.webp'})
         check(bool(image) and image in files,'missing icon image for '+slot)
+    visuals=theme.get('visuals',{})
+    check(isinstance(visuals,dict) and len(visuals)<=len(VISUAL_TARGETS),'invalid visual styles map')
+    for target,style in visuals.items():
+        check(target in VISUAL_TARGETS and isinstance(style,dict),
+              'unsupported visual target '+target)
+        allowed={'opacity'}
+        if target in VISUAL_CORNERS:
+            allowed|=VISUAL_CORNER_PROPERTIES|{'borderWidth','borderColor'}
+        check(set(style)<=allowed,'unsupported visual style property '+target)
+        for key,value in style.items():
+            if key=='borderColor':
+                check(isinstance(value,str) and HEX.fullmatch(value),'invalid border color')
+            else:
+                high=1 if key=='opacity' else 8 if key=='borderWidth' else 80
+                check(type(value) in (int,float) and math.isfinite(value) and 0<=value<=high,
+                      'visual style outside bounds: '+target+'.'+key)
     return manifest
 
 def validate(archive):

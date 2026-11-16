@@ -257,3 +257,46 @@ Unter **Box & Bedienung → Customizing → Eigenes Theme** gibt es **„Als Com
 Der Export verwendet **die gerade sichtbaren Editor-Werte**, auch wenn sie noch nicht gespeichert wurden. Enthalten sind Farben, Schriftwahl, Statusleistenform/-transparenz/-rahmen, Kartenrahmen und Rundungen. Die vorhandenen NG-Schriften werden beim späteren Import durch die vertrauenswürdige lokale Fontbibliothek aufgelöst, nicht als fremde Binärdateien verteilt.
 
 **Nicht enthalten:** Zugangsdaten, Medien, Fotos, Geräteeinstellungen, eigene Splash-Bilder und nicht im Editor vorhandene erweiterte Optionen. Die neuen Icon-, Coverflow- und Dekorationswerte können anschließend im exportierten `theme.json` ergänzt werden. Vor der Veröffentlichung bitte Paketvalidator und Asset-Lizenzen prüfen.
+
+## 15. Detaillierte Gestaltung je Element: Transparenz und individuelle Ecken
+
+Mit `visuals` kann ein Community-Theme jedes **freigegebene semantische UI-Element** gesondert anpassen. Dieser Satz gilt für die Theme API v1 und benötigt weder Skripte noch eigene QML-Dateien.
+
+Die vollständig freigegebenen Ziele sind `status.bar`, `navigation.back`, `home.card`, `media.list`, `media.coverflow`, `player.surface`, `player.cover`, `player.transport` und `dialog` (die normale Benachrichtigung). Diese akzeptieren:
+
+| Schlüssel | Beschreibung | Werte |
+| --- | --- | --- |
+| `opacity` | Deckkraft des Oberflächenhintergrundes; Text und Touch-Ereignisse werden dabei nicht abgedunkelt. Beim Coverflow und Cover beeinflusst es das dargestellte Cover. | 0–1 |
+| `topLeft` | Rundung oben links in logischen 800×480-Pixeln | 0–80 |
+| `topRight` | Rundung oben rechts | 0–80 |
+| `bottomRight` | Rundung unten rechts | 0–80 |
+| `bottomLeft` | Rundung unten links | 0–80 |
+| `borderWidth` | Rahmenstärke | 0–8 px |
+| `borderColor` | Rahmenfarbe | `#RRGGBB` |
+
+Für `background` (Theme-Hintergrundbild), `navigation.bar` (Inhalt des Kontext-Headers), `home.heading` (Überschrift) und `icons` (geprüfte Aktion-Icons) wird ausschließlich `opacity` angeboten. WLAN, Batterie, Bluetooth, Pairing-Karten und Berechtigungsanzeigen bleiben bewusst vom Theme unberührt.
+
+Wird eine Ecke nicht angegeben, bleibt die **bisherige native Rundung dieser Ecke** erhalten. Der Wert `0` ist ausdrücklich erlaubt und bedeutet **eckig**. Beispiel:
+
+~~~json
+{
+  "visuals": {
+    "home.card": {
+      "opacity": 0.8,
+      "topLeft": 0, "topRight": 0,
+      "bottomRight": 24, "bottomLeft": 24,
+      "borderWidth": 2, "borderColor": "#8D8BFF"
+    },
+    "player.cover": {
+      "topLeft": 32, "topRight": 0,
+      "bottomRight": 32, "bottomLeft": 0
+    },
+    "home.heading": {"opacity": 0.85},
+    "icons": {"opacity": 0.9}
+  }
+}
+~~~
+
+Der grafische Theme-Designer bietet dafür getrennte Eck-Regler und fertige Presets: **alle rund, alle eckig, nur oben, nur unten, nur links, nur rechts, nur oben links und nur oben rechts**. Auch die Deckkraft sowie Rahmenfarbe/-breite sind je Oberflächenkomponente separat einstellbar.
+
+**Wichtig:** Nicht jeder denkbare innere Unterbestandteil einer komplexen Medienansicht hat bereits einen eigenen semantischen Slot. Das Theme kann insbesondere keine Systemwarnungen unlesbar machen, Icons für reale Hardwarezustände ersetzen oder Touch-Bereiche verändern. Die Webvorschau simuliert die Darstellung; ein Test auf der Box bleibt die verbindliche visuelle Prüfung.

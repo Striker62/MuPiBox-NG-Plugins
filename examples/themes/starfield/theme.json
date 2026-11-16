@@ -102,5 +102,63 @@
     "player.play": "assets/icons/play.png",
     "player.pause": "assets/icons/pause.png",
     "player.previous": "assets/icons/previous.png"
+  },
+  "visuals": {
+    "status.bar": {
+      "opacity": 0.85,
+      "topLeft": 0,
+      "topRight": 0,
+      "bottomRight": 16,
+      "bottomLeft": 16,
+      "borderWidth": 1,
+      "borderColor": "#4DDFF2"
+    },
+    "navigation.back": {
+      "opacity": 0.9,
+      "topLeft": 15,
+      "topRight": 0,
+      "bottomRight": 0,
+      "bottomLeft": 15
+    },
+    "home.card": {
+      "opacity": 0.82,
+      "topLeft": 0,
+      "topRight": 0,
+      "bottomRight": 22,
+      "bottomLeft": 22,
+      "borderWidth": 2,
+      "borderColor": "#8D8BFF"
+    },
+    "media.list": {
+      "opacity": 0.86,
+      "topLeft": 10,
+      "topRight": 10,
+      "bottomRight": 10,
+      "bottomLeft": 10
+    },
+    "media.coverflow": {
+      "opacity": 0.95,
+      "topLeft": 0,
+      "topRight": 0,
+      "bottomRight": 18,
+      "bottomLeft": 18
+    },
+    "player.cover": {
+      "opacity": 1,
+      "topLeft": 24,
+      "topRight": 0,
+      "bottomRight": 24,
+      "bottomLeft": 0
+    },
+    "player.transport": {
+      "opacity": 0.9,
+      "topLeft": 15,
+      "topRight": 0,
+      "bottomRight": 0,
+      "bottomLeft": 15
+    },
+    "icons": {
+      "opacity": 1
+    }
   }
 }

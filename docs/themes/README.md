@@ -38,7 +38,7 @@ Das offizielle Beispiel ist `examples/themes/starfield/`.
 - [Installation, API und Sicherheit](api.de.md)
 - [English quick start](README.en.md)
 
-**Neu:** Die native Oberfläche unterstützt dokumentierte Größen-/Abstandswerte für Startseite, Player, Navigation und Medienlisten, anpassbare Coverflow-Perspektive, eigene Bild-Icons für sieben sichere Aktions-Slots und statische Hintergrunddekorationen. Der vorhandene Admin-Custom-Theme-Editor kann seine aktuellen Einstellungen direkt als `.mupitheme` exportieren. Alle Werte stehen mit Bereich und Standardwert in der [Token-Referenz](reference.de.md).
+**Neu:** Die native Oberfläche unterstützt dokumentierte Größen-/Abstandswerte für Startseite, Player, Navigation und Medienlisten, anpassbare Coverflow-Perspektive, **individuelle Eckrundungen, Rahmen und Transparenz je unterstützter Komponente**, eigene Bild-Icons für sieben sichere Aktions-Slots und statische Hintergrunddekorationen. Der vorhandene Admin-Custom-Theme-Editor kann seine aktuellen Einstellungen direkt als `.mupitheme` exportieren. Alle Werte stehen mit Bereich und Standardwert in der [Token-Referenz](reference.de.md).
 
 **Mitmachen:** Themes können von jeder Community-Person eigenständig entwickelt werden. Für den offiziellen Katalog ist ein Maintainer-Review einschließlich Asset- und Lizenzprüfung sowie Veröffentlichung als GitHub-Release notwendig. Ein Katalogeintrag besteht ausschließlich aus Metadaten und SHA-256 – keine beliebigen Download-URLs.
 

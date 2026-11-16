@@ -31,6 +31,25 @@ schema['properties']['icons']={
         for slot in sorted(mupitheme.ICONS)
     }
 }
+style_schema={
+    'type':'object','additionalProperties':False,
+    'properties':{
+      'opacity':numeric(0,1),
+      'topLeft':numeric(0,80),'topRight':numeric(0,80),
+      'bottomRight':numeric(0,80),'bottomLeft':numeric(0,80),
+      'borderWidth':numeric(0,8),
+      'borderColor':{'type':'string','pattern':'^#[0-9a-fA-F]{6}$'}
+    }
+}
+simple_style_schema={'type':'object','additionalProperties':False,
+                     'properties':{'opacity':numeric(0,1)}}
+schema['properties']['visuals']={
+  'type':'object','additionalProperties':False,
+  'properties':{
+    target:style_schema if target in mupitheme.VISUAL_CORNERS else simple_style_schema
+    for target in sorted(mupitheme.VISUAL_TARGETS)
+  }
+}
 schema['properties']['decorations']={
  'type':'array','maxItems':32,
  'items':{'type':'object','additionalProperties':False,

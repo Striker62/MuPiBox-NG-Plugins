@@ -116,6 +116,29 @@ class ThemePackTests(unittest.TestCase):
                 altered['components'][component][key]=value
                 with self.assertRaises(module.ThemeError):module.verify(manifest,altered,files)
 
+    def test_element_visual_style_validation(self):
+        manifest=json.loads((SAMPLE/"manifest.json").read_text())
+        theme=json.loads((SAMPLE/"theme.json").read_text())
+        files={str(p.relative_to(SAMPLE)) for p in SAMPLE.rglob("*") if p.is_file()}
+        self.assertEqual(theme['visuals']['home.card']['topLeft'],0)
+        module.verify(manifest,theme,files)
+        invalid=[
+            ('home.card','opacity',1.1),
+            ('home.card','topLeft',88),
+            ('home.card','borderWidth',9),
+            ('home.card','borderColor','red'),
+            ('icons','topLeft',3),
+            ('system.battery','opacity',0),
+        ]
+        for target,key,value in invalid:
+            with self.subTest(target=target,key=key):
+                t=json.loads(json.dumps(theme))
+                t['visuals'].setdefault(target,{})[key]=value
+                with self.assertRaises(module.ThemeError):
+                    module.verify(manifest,t,files)
+        schema=json.loads((MODULE.parent.parent/"schema"/"theme-v1.schema.json").read_text())
+        self.assertEqual(set(schema['properties']['visuals']['properties']),module.VISUAL_TARGETS)
+
     def test_json_schema_matches_validator_component_registry(self):
         schema=json.loads((MODULE.parent.parent/"schema"/"theme-v1.schema.json").read_text())
         self.assertEqual(set(schema['properties']['tokens']['properties']),
