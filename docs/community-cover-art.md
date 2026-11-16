@@ -27,3 +27,7 @@ cross-shaped Ludo board or four home circles. Schach, Kreuz & Kreis and
 4er-Reihe have repaired full-bleed bottom edges, retaining their established
 illustrations and titles. These edits were produced with OpenAI image editing.
 New cover filenames prevent stale cached white stripes.
+
+Preview 27 repairs only the Würfelrennen die: five pips on top, one on
+the left/front face and three diagonal pips on the right. Mascot, title
+and woodland-race composition remain unchanged.
