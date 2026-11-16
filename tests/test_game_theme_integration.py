@@ -28,7 +28,7 @@ class ThemeIntegrationTests(unittest.TestCase):
                 manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
                 self.assertEqual(manifest["version"], version)
                 self.assertEqual(manifest["category"], "games")
-                self.assertEqual(manifest["cover"], "assets/cover.jpg")
+                self.assertEqual(manifest["cover"], "assets/cover-clean-v2.jpg")
                 self.assertTrue((directory / manifest["cover"]).is_file())
                 self.assertEqual(manifest["icon"], "assets/icon.png")
                 self.assertTrue((directory / manifest["icon"]).is_file())
