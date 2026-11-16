@@ -217,10 +217,10 @@
       "description": "Großes quadratisches 52-Felder-Brett für zwei bis vier Menschen oder KI-Spieler, mit deutlich größeren Touchzielen und flotteren Spielzügen.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.2",
-      "releaseTag": "v0.1.0-preview.26",
+      "version": "0.2.3",
+      "releaseTag": "v0.1.0-preview.27",
       "asset": "mupi-wuerfelrennen.mupiapp",
-      "sha256": "68359e405df90dbb4a7565838e3a3062a69a15f4d0015802d1218052d4c442fa",
+      "sha256": "e013e595a1e0a8daa5e4f27e29de08d6f8bbcb732ec840225f77f587dbe91ddf",
       "permissions": [
         "controller"
       ]
