@@ -24,6 +24,13 @@ schema['properties']['components']['properties']={
     for name,properties in mupitheme.COMPONENTS.items()
 }
 numeric=lambda lo,hi:{'type':'number','minimum':lo,'maximum':hi}
+schema['properties']['icons']={
+    'type':'object','additionalProperties':False,
+    'properties':{
+        slot:{'type':'string','pattern':r'^assets/[a-zA-Z0-9_/-]+\.(?:png|webp)$'}
+        for slot in sorted(mupitheme.ICONS)
+    }
+}
 schema['properties']['decorations']={
  'type':'array','maxItems':32,
  'items':{'type':'object','additionalProperties':False,

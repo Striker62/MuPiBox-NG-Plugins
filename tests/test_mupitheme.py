@@ -74,6 +74,48 @@ class ThemePackTests(unittest.TestCase):
         too_many['decorations']=theme['decorations']*11
         with self.assertRaises(module.ThemeError):module.verify(manifest,too_many,files)
 
+    def test_action_icon_contract(self):
+        manifest=json.loads((SAMPLE/"manifest.json").read_text())
+        theme=json.loads((SAMPLE/"theme.json").read_text())
+        files={str(p.relative_to(SAMPLE)) for p in SAMPLE.rglob("*") if p.is_file()}
+        self.assertEqual(len(theme['icons']),4)
+        self.assertEqual(theme['components']['navigation.bar']['titleSize'],21)
+        self.assertEqual(theme['components']['media.list']['rowHeight'],94)
+        for slot in theme['icons']:
+            self.assertIn(slot,module.ICONS)
+        module.verify(manifest,theme,files)
+        for key in ('navigation.bar','navigation.back','media.list'):
+            self.assertIn(key,module.COMPONENTS)
+        for name,badPath in [
+            ('arbitrary QML','assets/icons/icon.qml'),
+            ('SVG unsupported','assets/icons/icon.svg'),
+            ('path traversal','../../test.png'),
+            ('missing file','assets/icons/absent.png')]:
+            with self.subTest(name=name):
+                changed=json.loads(json.dumps(theme))
+                changed['icons']['player.play']=badPath
+                with self.assertRaises(module.ThemeError):
+                    module.verify(manifest,changed,files)
+        changed=json.loads(json.dumps(theme))
+        changed['icons']['system.battery']='assets/icons/play.png'
+        with self.assertRaises(module.ThemeError):
+            module.verify(manifest,changed,files)
+
+    def test_bad_navigation_and_list_geometry(self):
+        manifest=json.loads((SAMPLE/"manifest.json").read_text())
+        theme=json.loads((SAMPLE/"theme.json").read_text())
+        files={str(p.relative_to(SAMPLE)) for p in SAMPLE.rglob("*") if p.is_file()}
+        badValues=[
+            ('navigation.bar','gap',30),('navigation.bar','titleSize',9),
+            ('navigation.back','radius',3),('media.list','spacing',1),
+            ('media.list','rowHeight',56),('media.list','titleSize',39)
+        ]
+        for component,key,value in badValues:
+            with self.subTest(component=component,key=key):
+                altered=json.loads(json.dumps(theme))
+                altered['components'][component][key]=value
+                with self.assertRaises(module.ThemeError):module.verify(manifest,altered,files)
+
     def test_json_schema_matches_validator_component_registry(self):
         schema=json.loads((MODULE.parent.parent/"schema"/"theme-v1.schema.json").read_text())
         self.assertEqual(set(schema['properties']['tokens']['properties']),
@@ -81,6 +123,7 @@ class ThemePackTests(unittest.TestCase):
                          | module.BOOLEANS | module.FONTS | set(module.ENUMS))
         self.assertEqual(set(schema['properties']['components']['properties']),set(module.COMPONENTS))
         self.assertIn('decorations',schema['properties'])
+        self.assertEqual(set(schema['properties']['icons']['properties']),module.ICONS)
         for name,mapping in module.COMPONENTS.items():
             self.assertEqual(set(schema['properties']['components']['properties'][name]['properties']),set(mapping))
 

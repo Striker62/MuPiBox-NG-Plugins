@@ -21,7 +21,10 @@ COLOR_KEYS = set('bg status panel card text muted accent accentPressed accentTex
 NUMBERS = {'radius': 2, 'statusAlpha': 1, 'cardBorder': 4, 'statusBorderWidth': 4}
 BOUNDS = {
     'homeHeadingSize': (16, 30), 'homeHeadingGap': (4, 20),
-    'homeCardSpacing': (8, 32), 'playerCoverRadius': (0, 2),
+    'homeCardSpacing': (8, 32), 'playerCoverRadius': (0, 2), 'navigationBackRadius': (0, 2),
+    'navigationBarGap': (4, 18), 'navigationTitleSize': (14, 29),
+    'mediaListSpacing': (4, 24), 'mediaListRowHeight': (78, 125),
+    'mediaListTitleSize': (12, 26),
     'coverflowTiltDegrees': (0, 70), 'coverflowOverlap': (0, .65),
     'coverflowSideScale': (.7, 1), 'coverflowSideOpacity': (.55, 1),
     'coverflowSnapMs': (50, 450), 'coverflowCardRatio': (.65, 1),
@@ -41,6 +44,9 @@ COMPONENTS = {
     'player.progress': dict(zip('track fill thumb'.split(),'progressTrack progressFill progressThumb'.split())),
     'player.transport': dict(zip('background pressed text primary primaryPressed primaryText'.split(),'control controlPressed controlText playAccent playAccentPressed playAccentText'.split())),
     'player.queue': dict(zip('background active activeText'.split(),'queueCard queueActive queueActiveText'.split())),
+    'navigation.bar': {'gap':'navigationBarGap','titleSize':'navigationTitleSize'},
+    'navigation.back': {'radius':'navigationBackRadius'},
+    'media.list': {'spacing':'mediaListSpacing','rowHeight':'mediaListRowHeight','titleSize':'mediaListTitleSize'},
     'player.cover': {'radius': 'playerCoverRadius'},
     'home.heading': {'size':'homeHeadingSize','gap':'homeHeadingGap'},
     'home.card': {'spacing':'homeCardSpacing'},
@@ -61,6 +67,8 @@ def asset(name, extensions):
           '..' not in name and not any(x.startswith('.') for x in name.split('/')) and
           Path(name).suffix.lower() in extensions, f'bad asset path: {name}')
 
+ICONS={'navigation.back','player.play','player.pause','player.previous','player.next','player.volume','player.microphone'}
+
 def verify(manifest, theme, files):
     check(set(manifest) <= {'apiVersion','kind','id','name','version','author','description','license','extends','theme','preview'}, 'unknown manifest field')
     check(manifest.get('apiVersion')=='1' and manifest.get('kind')=='theme','wrong API version or kind')
@@ -74,7 +82,7 @@ def verify(manifest, theme, files):
     preview=manifest.get('preview','')
     asset(preview, {'.png','.jpg','.jpeg','.webp'})
     if preview: check(preview in files,'missing preview')
-    check(set(theme)<={'tokens','components','assets','decorations'},'unknown theme.json field')
+    check(set(theme)<={'tokens','components','assets','decorations','icons'},'unknown theme.json field')
     tokens=theme.get('tokens') or {}
     components=theme.get('components') or {}
     assets=theme.get('assets') or {}
@@ -131,6 +139,12 @@ def verify(manifest, theme, files):
         else:
             check(not d.get('asset') and isinstance(d.get('color'),str) and HEX.fullmatch(d['color']),
                   'geometric decoration requires a color and no image asset')
+    icons=theme.get('icons',{})
+    check(isinstance(icons,dict) and len(icons)<=len(ICONS),'invalid icons map')
+    for slot,image in icons.items():
+        check(slot in ICONS,'unknown icon slot '+slot)
+        asset(image,{'.png','.webp'})
+        check(bool(image) and image in files,'missing icon image for '+slot)
     return manifest
 
 def validate(archive):
@@ -157,6 +171,8 @@ def validate(archive):
         for decoration in theme.get('decorations',[]):
             if decoration['type']=='image':
                 check(z.getinfo(decoration['asset']).file_size<=3<<20,'decoration image exceeds 3 MiB')
+        for slot,image in theme.get('icons',{}).items():
+            check(z.getinfo(image).file_size<=512<<10,'icon file exceeds 512 KiB')
         return result
 
 def pack(folder,output):

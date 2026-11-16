@@ -13,6 +13,6 @@ Upload the package in **Admin → Community Apps / Plugins → Community Themes*
 - `theme.json` contains validated color/style tokens, optional component overrides and optional embedded images/fonts.
 - All unspecified values inherit from the base theme. Arbitrary QML, JavaScript and CSS are intentionally unsupported.
 - Installation is atomic; existing designs survive updates and removal of an active design is refused.
-- Theme API v1 supports bounded home heading/card spacing, player cover radius, Cover Flow perspective controls and up to 32 static decoration layers. It does **not** offer a general custom layout engine, per-element animations or arbitrary QML overrides. See [component/element inventory (DE)](elements.de.md), [tokens (DE)](reference.de.md) and [security/API (DE)](api.de.md).
+- Theme API v1 supports bounded home heading/card spacing, player cover radius, navigation and vertical media-list geometry, seven validated action-icon slots, Cover Flow perspective controls and up to 32 static decoration layers. The Admin custom-theme editor can export its current settings as a portable `.mupitheme` ZIP. It does **not** offer a general custom layout engine, per-element animations or arbitrary QML overrides. See [component/element inventory (DE)](elements.de.md), [tokens (DE)](reference.de.md) and [security/API (DE)](api.de.md).
 
 Package source code, screenshots and license terms must be available for the curated catalog; maintainers publish inspected assets under GitHub Releases with SHA-256 verification.

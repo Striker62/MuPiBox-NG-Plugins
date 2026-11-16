@@ -109,6 +109,54 @@
           },
           "type": "object"
         },
+        "media.list": {
+          "additionalProperties": false,
+          "properties": {
+            "rowHeight": {
+              "maximum": 125,
+              "minimum": 78,
+              "type": "number"
+            },
+            "spacing": {
+              "maximum": 24,
+              "minimum": 4,
+              "type": "number"
+            },
+            "titleSize": {
+              "maximum": 26,
+              "minimum": 12,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "navigation.back": {
+          "additionalProperties": false,
+          "properties": {
+            "radius": {
+              "maximum": 2,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "navigation.bar": {
+          "additionalProperties": false,
+          "properties": {
+            "gap": {
+              "maximum": 18,
+              "minimum": 4,
+              "type": "number"
+            },
+            "titleSize": {
+              "maximum": 29,
+              "minimum": 14,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
         "player.cover": {
           "additionalProperties": false,
           "properties": {
@@ -365,6 +413,40 @@
       "maxItems": 32,
       "type": "array"
     },
+    "icons": {
+      "additionalProperties": false,
+      "properties": {
+        "navigation.back": {
+          "pattern": "^assets/[a-zA-Z0-9_/-]+\\.(?:png|webp)$",
+          "type": "string"
+        },
+        "player.microphone": {
+          "pattern": "^assets/[a-zA-Z0-9_/-]+\\.(?:png|webp)$",
+          "type": "string"
+        },
+        "player.next": {
+          "pattern": "^assets/[a-zA-Z0-9_/-]+\\.(?:png|webp)$",
+          "type": "string"
+        },
+        "player.pause": {
+          "pattern": "^assets/[a-zA-Z0-9_/-]+\\.(?:png|webp)$",
+          "type": "string"
+        },
+        "player.play": {
+          "pattern": "^assets/[a-zA-Z0-9_/-]+\\.(?:png|webp)$",
+          "type": "string"
+        },
+        "player.previous": {
+          "pattern": "^assets/[a-zA-Z0-9_/-]+\\.(?:png|webp)$",
+          "type": "string"
+        },
+        "player.volume": {
+          "pattern": "^assets/[a-zA-Z0-9_/-]+\\.(?:png|webp)$",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "tokens": {
       "additionalProperties": false,
       "properties": {
@@ -499,9 +581,39 @@
           "pattern": "^#[0-9a-fA-F]{6}$",
           "type": "string"
         },
+        "mediaListRowHeight": {
+          "maximum": 125,
+          "minimum": 78,
+          "type": "number"
+        },
+        "mediaListSpacing": {
+          "maximum": 24,
+          "minimum": 4,
+          "type": "number"
+        },
+        "mediaListTitleSize": {
+          "maximum": 26,
+          "minimum": 12,
+          "type": "number"
+        },
         "muted": {
           "pattern": "^#[0-9a-fA-F]{6}$",
           "type": "string"
+        },
+        "navigationBackRadius": {
+          "maximum": 2,
+          "minimum": 0,
+          "type": "number"
+        },
+        "navigationBarGap": {
+          "maximum": 18,
+          "minimum": 4,
+          "type": "number"
+        },
+        "navigationTitleSize": {
+          "maximum": 29,
+          "minimum": 14,
+          "type": "number"
         },
         "panel": {
           "pattern": "^#[0-9a-fA-F]{6}$",

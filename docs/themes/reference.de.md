@@ -98,6 +98,9 @@ Alle Player-Farben sind optional und erhalten bei Nichtangabe den bisherigen Sta
 | `player.progress` | `track`, `fill`, `thumb` |
 | `player.transport` | `background`, `pressed`, `text`, `primary`, `primaryPressed`, `primaryText` |
 | `player.queue` | `background`, `active`, `activeText` |
+| `navigation.bar` | `gap`, `titleSize` |
+| `navigation.back` | `radius` |
+| `media.list` | `spacing`, `rowHeight`, `titleSize` |
 
 Jede Komponenteneigenschaft wird auf ein bestehendes, semantisches Qt-Theme-Token abgebildet; z. B. `player.progress.fill` → `progressFill`. Dasselbe Token darf **nicht gleichzeitig** im globalen `tokens`-Objekt und in `components` definiert werden. Bei Konflikten weist der Installer das Theme ab, statt den Vorrang zu erraten.
 
@@ -201,3 +204,56 @@ Bei einem vom Benutzer gewählten Hintergrundbild (`library` oder `custom`) werd
 `preview` im Manifest darf PNG, JPEG oder WebP sein. Für automatische Katalog-Vorschaubilder wird die Bilddatei mitinstalliert. Keine SVG-/CSS-/JavaScript-Dateien, keine externen Bild- oder Font-URLs.
 
 **Wichtig:** Dokumentierte Optionen beziehen sich auf die zurzeit aktiv vom Host unterstützten Theme-Tokens. Eine Komponente, die hier nicht genannt ist, hat momentan keine unabhängige Theme-Eigenschaft. Das Inventar in [elements.de.md](elements.de.md) zeigt diese Grenzen explizit.
+
+## 12. Navigation und vertikale Medienlisten
+
+Die folgenden Theme-Komponenten ändern die **native Qt-Quick-Geometrie**. Touchflächen, Benutzerrechte und Navigation bleiben unter Kontrolle der NG.
+
+| Komponente | Eigenschaft | Token | Wertebereich | Standard |
+| --- | --- | --- | --- | --- |
+| `navigation.bar` | `gap` | `navigationBarGap` | 4–18 px | 8 |
+| `navigation.bar` | `titleSize` | `navigationTitleSize` | 14–29 px | 18 |
+| `navigation.back` | `radius` | `navigationBackRadius` | 0–2, Faktor | wie Grund-Theme |
+| `media.list` | `spacing` | `mediaListSpacing` | 4–24 px | 8 |
+| `media.list` | `rowHeight` | `mediaListRowHeight` | 78–125 px | 78 (Kategorie) / 68 (Spotify-Browse, mit 10 px Versatz) |
+| `media.list` | `titleSize` | `mediaListTitleSize` | 12–26 px | 15, bei vergrößerter UI 20 |
+
+Beide vertikalen Listen verwenden dieselben Theme-Tokens, aber ihre bisherigen Standardhöhen werden beibehalten. In der horizontalen Ansicht und im Coverflow gelten eigene, unabhängige Geometrieregeln. Der Host stellt die Scrollbar-Touchflächen weiterhin sicher und kürzt zu lange Texte automatisch.
+
+## 13. Eigene Icons – sieben sichere Aktions-Slots
+
+Das optionale `icons`-Objekt ordnet erlaubten Aktionstypen **mitgelieferte PNG- oder WebP-Dateien** zu. Es kann weder andere Systemfunktionen ändern noch interaktiven QML-Code laden.
+
+| Slot | Zweck |
+| --- | --- |
+| `navigation.back` | Zurück-Pfeil im gemeinsamen Kontext-Header |
+| `player.play` | Startsymbol im Mini-/Voll-/Queue-Player und Galerie-Slideshow |
+| `player.pause` | Pausensymbol |
+| `player.previous` | Vorheriger Titel |
+| `player.next` | Nächster Titel |
+| `player.volume` | Lautstärke |
+| `player.microphone` | Mikrofon und Karaoke |
+
+Beispiel:
+
+~~~json
+{
+  "icons": {
+    "navigation.back": "assets/icons/back.png",
+    "player.play": "assets/icons/play.png",
+    "player.pause": "assets/icons/pause.png"
+  }
+}
+~~~
+
+**Grenzen:** maximal sieben Slots, nur geprüfte Pfade unter `assets/`, PNG/WebP und höchstens **512 KiB je Datei**. Empfohlen werden transparente quadratische Bilder in 128×128 px mit ausreichend Kontrast; diese Icons werden nicht nachgefärbt. Kann Qt ein Icon nicht laden oder ist kein Asset hinterlegt, erscheint **automatisch das eingebaute Vektorsymbol**. Touch- und Deaktivierungszustände werden weiterhin vom Host verarbeitet.
+
+**Nicht themebar:** WLAN-, Bluetooth-, Akku-, Lüfter-, Fehler- und andere zustandsrelevante Systemanzeigen; auch das eigentliche Berechtigungs- und Navigationsverhalten ist ausdrücklich nicht austauschbar.
+
+## 14. Eigene Themes direkt aus der Admin-Oberfläche exportieren
+
+Unter **Box & Bedienung → Customizing → Eigenes Theme** gibt es **„Als Community-Theme (.mupitheme) exportieren“**. Der Nutzer vergibt einen Namen und eine eindeutige ID (zum Beispiel `community.mein-theme`); daraus erzeugt die NG eine vollständige ZIP-Datei aus `manifest.json` und `theme.json`.
+
+Der Export verwendet **die gerade sichtbaren Editor-Werte**, auch wenn sie noch nicht gespeichert wurden. Enthalten sind Farben, Schriftwahl, Statusleistenform/-transparenz/-rahmen, Kartenrahmen und Rundungen. Die vorhandenen NG-Schriften werden beim späteren Import durch die vertrauenswürdige lokale Fontbibliothek aufgelöst, nicht als fremde Binärdateien verteilt.
+
+**Nicht enthalten:** Zugangsdaten, Medien, Fotos, Geräteeinstellungen, eigene Splash-Bilder und nicht im Editor vorhandene erweiterte Optionen. Die neuen Icon-, Coverflow- und Dekorationswerte können anschließend im exportierten `theme.json` ergänzt werden. Vor der Veröffentlichung bitte Paketvalidator und Asset-Lizenzen prüfen.

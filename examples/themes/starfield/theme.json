@@ -50,6 +50,18 @@
       "sideOpacity": 0.82,
       "snapMs": 220,
       "cardRatio": 0.85
+    },
+    "navigation.bar": {
+      "gap": 11,
+      "titleSize": 21
+    },
+    "navigation.back": {
+      "radius": 1.55
+    },
+    "media.list": {
+      "spacing": 12,
+      "rowHeight": 94,
+      "titleSize": 17
     }
   },
   "assets": {
@@ -84,5 +96,11 @@
       "asset": "assets/sparkle.png",
       "opacity": 0.5
     }
-  ]
+  ],
+  "icons": {
+    "navigation.back": "assets/icons/back.png",
+    "player.play": "assets/icons/play.png",
+    "player.pause": "assets/icons/pause.png",
+    "player.previous": "assets/icons/previous.png"
+  }
 }
