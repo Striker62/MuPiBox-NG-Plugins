@@ -7,10 +7,10 @@
       "description": "Kreuz & Kreis mit transparentem Spielhintergrund für das MuPiBox-Theme, 2-Spieler-Modus und drei KI-Stärken. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.2.5",
-      "releaseTag": "v0.1.0-preview.18",
+      "version": "0.2.6",
+      "releaseTag": "v0.1.0-preview.26",
       "asset": "mupi-kreuz-kreis.mupiapp",
-      "sha256": "7d3587d591f0ee65fc388eb53450e1b45bd82b0ceb250b39f3d82d00c400939d",
+      "sha256": "b9953eea6fa5e679e3c78b4ae75c093134bd01e817a18ae28d0ad6e80e2dd666",
       "permissions": [
         "storage",
         "controller"
@@ -22,10 +22,10 @@
       "description": "Eigenständiges Vierer-Reihe-Spiel mit 2-Spieler-Modus oder MuPi-KI in drei Stufen. Sieben Sprachen. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.1.4",
-      "releaseTag": "v0.1.0-preview.18",
+      "version": "0.1.5",
+      "releaseTag": "v0.1.0-preview.26",
       "asset": "four-in-a-row.mupiapp",
-      "sha256": "c48a23ac58416a88d4302e515d395bbb32c2cc697d3e31222a09b7e1083d3024",
+      "sha256": "b5c8fd799387acf2863b4f15069b59f225d9fce92a73a051649a53d67a7407c1",
       "permissions": [
         "storage",
         "controller"
@@ -52,10 +52,10 @@
       "description": "Offline-Schach zu zweit oder gegen MuPi in vier Stärken, mit Zugzeit, Durchschnitt und optionaler Zugzeitbegrenzung. Mit neuem MuPi-Axolotl-Cover. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.1.2",
-      "releaseTag": "v0.1.0-preview.18",
+      "version": "0.1.3",
+      "releaseTag": "v0.1.0-preview.26",
       "asset": "mupi-chess.mupiapp",
-      "sha256": "cb50c008311e290f21605c4991962585a1ae48e2c4278208a76a7f9f58065e01",
+      "sha256": "4727e80883ff68985ae9053910653cee149192641f661202be1132117772752b",
       "permissions": [
         "controller"
       ]
@@ -217,10 +217,10 @@
       "description": "Großes quadratisches 52-Felder-Brett für zwei bis vier Menschen oder KI-Spieler, mit deutlich größeren Touchzielen und flotteren Spielzügen.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.1",
-      "releaseTag": "v0.1.0-preview.25",
+      "version": "0.2.2",
+      "releaseTag": "v0.1.0-preview.26",
       "asset": "mupi-wuerfelrennen.mupiapp",
-      "sha256": "a0883ef286e3a6f19c521a8fcac5bf31fd7ad16149e3d28746065db6542f64bf",
+      "sha256": "68359e405df90dbb4a7565838e3a3062a69a15f4d0015802d1218052d4c442fa",
       "permissions": [
         "controller"
       ]
