@@ -51,3 +51,7 @@ Alphawert von 0 bis 1 – unabhängig von Element-Deckkraft. Rahmenfarbe
 unterstützt zusätzlich `borderOpacity`; geometrische Dekorationen
 `colorOpacity`. Der grafische Theme-Editor lädt die bereits in NG
 mitgelieferten Webfonts für die Schriftvorschau.
+
+### Cover an die Kartenform anpassen
+
+Unter home.card lassen sich clipCover (bool), coverFit (crop/contain) und coverInset (0 bis 16 Pixel) einstellen. Die Bildmaske folgt allen vier Eckradien, auch wenn untere Rundungen die Coverfläche berühren. Native Qt-Masken verwenden das optionale Qt5Compat-Modul.

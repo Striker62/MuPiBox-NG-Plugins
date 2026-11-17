@@ -30,3 +30,7 @@ and geometry decorations have `colorOpacity`. These settings multiply with
 any existing element opacity. The browser designer loads NG's bundled
 webfonts to accurately preview the selected typeface. Native Qt uses
 the corresponding bundled font families.
+
+### Shape-aware home covers
+
+Home card parameters: clipCover (boolean), coverFit (crop/contain) and coverInset (0–16 pixels). The native optional Qt5Compat mask follows all four independent card corners, including lower corners intersecting the artwork.

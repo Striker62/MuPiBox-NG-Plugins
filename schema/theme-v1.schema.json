@@ -203,6 +203,21 @@
         "home.card": {
           "additionalProperties": false,
           "properties": {
+            "clipCover": {
+              "type": "boolean"
+            },
+            "coverFit": {
+              "enum": [
+                "contain",
+                "crop"
+              ],
+              "type": "string"
+            },
+            "coverInset": {
+              "maximum": 16,
+              "minimum": 0,
+              "type": "number"
+            },
             "spacing": {
               "maximum": 32,
               "minimum": 8,
@@ -739,6 +754,21 @@
         "heading": {
           "pattern": "^#[0-9a-fA-F]{6}$",
           "type": "string"
+        },
+        "homeCardCoverClip": {
+          "type": "boolean"
+        },
+        "homeCardCoverFit": {
+          "enum": [
+            "contain",
+            "crop"
+          ],
+          "type": "string"
+        },
+        "homeCardCoverInset": {
+          "maximum": 16,
+          "minimum": 0,
+          "type": "number"
         },
         "homeCardSpacing": {
           "maximum": 32,

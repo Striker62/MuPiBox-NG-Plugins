@@ -38,7 +38,10 @@
       "gap": 11
     },
     "home.card": {
-      "spacing": 19
+      "spacing": 19,
+      "coverInset": 0,
+      "coverFit": "crop",
+      "clipCover": true
     },
     "player.cover": {
       "radius": 1.8

@@ -103,6 +103,21 @@ class ThemePackTests(unittest.TestCase):
         with self.assertRaises(module.ThemeError):
             module.verify(manifest,candidate,files)
 
+    def test_home_card_cover_fit_and_corner_clipping(self):
+        manifest=json.loads((SAMPLE/"manifest.json").read_text())
+        theme=json.loads((SAMPLE/"theme.json").read_text())
+        files={str(p.relative_to(SAMPLE)) for p in SAMPLE.rglob("*") if p.is_file()}
+        module.verify(manifest,theme,files)
+        self.assertEqual(theme['components']['home.card']['coverFit'],'crop')
+        self.assertTrue(theme['components']['home.card']['clipCover'])
+        for key,invalid in [('coverFit','eval(script)'),('clipCover','yes'),
+                            ('coverInset',17),('coverInset',-1)]:
+            with self.subTest(key=key):
+                candidate=json.loads(json.dumps(theme))
+                candidate['components']['home.card'][key]=invalid
+                with self.assertRaises(module.ThemeError):
+                    module.verify(manifest,candidate,files)
+
     def test_action_icon_contract(self):
         manifest=json.loads((SAMPLE/"manifest.json").read_text())
         theme=json.loads((SAMPLE/"theme.json").read_text())

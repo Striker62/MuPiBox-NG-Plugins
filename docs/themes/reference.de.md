@@ -340,3 +340,15 @@ Die Qt-Implementierung wandelt `#RRGGBB` + Alpha in native
 CSS `rgba()`. Der Designer lädt dafür die in NG bereits enthaltenen
 Webfont-Dateien. Nicht installierte externe Schriften werden nicht
 stillschweigend als identische Vorschau ausgegeben.
+
+## 17. Startkachel-Cover an der gesamten Kartenkontur abschneiden
+
+Die Werte in components.home.card ermöglichen die gezielte Cover-Anpassung:
+
+| Name | Erlaubte Werte | Bedeutung |
+| --- | --- | --- |
+| clipCover | true / false | Cover übernimmt die gesamte Kartenform |
+| coverFit | crop / contain | Bild füllt das Cover oder wird vollständig eingepasst |
+| coverInset | 0–16 | Abstand zum Kartenrand in logischen Pixeln |
+
+Der Radius jeder Ecke bleibt unter visuals.home.card.topLeft, topRight, bottomRight und bottomLeft einstellbar. Die Bildmaske folgt auch unteren Radien, wenn diese bis in die Coverfläche reichen. Für die native Maskierung wird Qt5Compat.GraphicalEffects optional benötigt; ohne dieses Modul bleibt das UI lauffähig, aber die Spezialmaske kann fehlen.

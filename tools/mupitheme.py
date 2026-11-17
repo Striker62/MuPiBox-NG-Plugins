@@ -22,7 +22,7 @@ COLOR_KEYS = set('bg status panel card text muted accent accentPressed accentTex
 NUMBERS = {'radius': 2, 'statusAlpha': 1, 'cardBorder': 4, 'statusBorderWidth': 4}
 BOUNDS = {
     'homeHeadingSize': (16, 30), 'homeHeadingGap': (4, 20),
-    'homeCardSpacing': (8, 32), 'playerCoverRadius': (0, 2), 'navigationBackRadius': (0, 2),
+    'homeCardSpacing': (8, 32), 'homeCardCoverInset': (0, 16), 'playerCoverRadius': (0, 2), 'navigationBackRadius': (0, 2),
     'navigationBarGap': (4, 18), 'navigationTitleSize': (14, 29),
     'mediaListSpacing': (4, 24), 'mediaListRowHeight': (78, 125),
     'mediaListTitleSize': (12, 26),
@@ -30,13 +30,14 @@ BOUNDS = {
     'coverflowSideScale': (.7, 1), 'coverflowSideOpacity': (.55, 1),
     'coverflowSnapMs': (50, 450), 'coverflowCardRatio': (.65, 1),
 }
-BOOLEANS = {'light', 'pixel', 'stripe'}
+BOOLEANS = {'light', 'pixel', 'stripe', 'homeCardCoverClip'}
 FONTS = {'font', 'fallback'}
 ENUMS = {
     'statusShape': {'edge','floating','icons'},
     'statusShadow': {'none','soft','deep','glow'},
     'cardBorderStyle': {'line','alternating'},
-    'chromeStyle': {'glass','lcars','storybook','default'}
+    'chromeStyle': {'glass','lcars','storybook','default'},
+    'homeCardCoverFit': {'crop','contain'}
 }
 COMPONENTS = {
     'status.bar': dict(zip('background border text muted accent opacity borderWidth shape shadow'.split(),'status statusEdge statusText statusMuted statusAccent statusAlpha statusBorderWidth statusShape statusShadow'.split())),
@@ -50,7 +51,8 @@ COMPONENTS = {
     'media.list': {'spacing':'mediaListSpacing','rowHeight':'mediaListRowHeight','titleSize':'mediaListTitleSize'},
     'player.cover': {'radius': 'playerCoverRadius'},
     'home.heading': {'size':'homeHeadingSize','gap':'homeHeadingGap'},
-    'home.card': {'spacing':'homeCardSpacing'},
+    'home.card': {'spacing':'homeCardSpacing','coverInset':'homeCardCoverInset',
+                  'coverFit':'homeCardCoverFit','clipCover':'homeCardCoverClip'},
     'media.coverflow': dict(zip(
         'tiltDegrees overlap sideScale sideOpacity snapMs cardRatio'.split(),
         'coverflowTiltDegrees coverflowOverlap coverflowSideScale coverflowSideOpacity coverflowSnapMs coverflowCardRatio'.split()
