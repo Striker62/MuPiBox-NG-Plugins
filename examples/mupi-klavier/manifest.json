@@ -1,0 +1,25 @@
+{
+  "apiVersion": "1",
+  "id": "community.mupi-klavier",
+  "name": "MuPi Klavier",
+  "description": "Freies Klavierspielen und Lieder lernen mit fallenden Noten oder Notenblatt.",
+  "author": "MuPiBox Community",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "category": "learning",
+  "permissions": [
+    "audio",
+    "storage",
+    "controller"
+  ],
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "app"
+  }
+}

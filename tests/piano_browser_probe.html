@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MuPi Klavier</title><link rel="stylesheet" href="style.css"></head>
+<body><header><button id="exit" aria-label="Klavier verlassen">‹ Zurück</button><strong>MuPi Klavier</strong><select id="mode" aria-label="Ansicht"><option value="free">Frei spielen</option><option value="fall">Fallende Noten</option><option value="staff">Notenblatt</option></select><select id="song" aria-label="Lied"></select></header>
+<nav><button id="demo">▶ Vorspielen</button><button id="reset">↺ Neustart</button><label>Tempo <input id="tempo" type="range" min="40" max="160" value="80"></label><select id="instrument" aria-label="Instrument"><option value="piano">Klavier</option><option value="epiano">E-Piano</option><option value="glockenspiel">Glockenspiel</option><option value="xylophone">Xylophon</option><option value="marimba">Marimba</option><option value="musicbox">Spieluhr</option><option value="harp">Harfe</option></select><label>Ton <input id="volume" type="range" min="0" max="100" value="70"></label></nav>
+<main><canvas id="score" aria-label="Notenanzeige"></canvas><div id="hint" role="status"></div><div id="keyboard" aria-label="Klaviatur"></div></main>
+<script>window.__MUPIBOX_BRIDGE__={invoke:async(m,p)=>m==="storage.get"?{value:null}:{},subscribe:()=>()=>{}};</script><script src="mupibox-sdk.js"></script><script src="music.js"></script><script src="app.js"></script><script>
+window.addEventListener('load',()=>setTimeout(async()=>{
+const errors=[];const check=(x,m)=>{if(!x)errors.push(m);};
+try {
+check(document.querySelectorAll('.key').length===13,'keys');
+check(document.documentElement.scrollWidth<=innerWidth,'horizontal overflow');
+check(document.documentElement.scrollHeight<=innerHeight,'vertical overflow');
+for(const e of document.querySelectorAll('header button,header select,nav button,nav select,nav label')){
+const r=e.getBoundingClientRect();check(r.right<=innerWidth&&r.bottom<=innerHeight,'control outside viewport '+e.id);
+}
+
+$('mode').value='staff';$('mode').onchange();
+await press('G4');check(index===0,'wrong note advanced');
+await press('C4');check(index===1,'correct note did not advance');
+$('mode').value='fall';$('mode').onchange();check(index===1,'view change reset');
+$('reset').click();check(index===0,'reset failed');
+$('demo').click();check(demo,'demo failed');$('demo').click();check(!demo,'stop failed');
+} catch(e){errors.push(e.stack);}
+document.body.dataset.testResult=errors.length?errors.join(';'):'PASS';
+},100));
+</script></body></html>
