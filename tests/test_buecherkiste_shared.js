@@ -144,25 +144,25 @@ test('only the manifest-declared books directory is accessed',async()=>{
 test('Bücherkiste reads existing per-page TTS texts and hides the button on credits',async()=>{
  const h=setup('speech');await tick();await tick();
  await h.app.open('ole');await tick();await tick();
- assert.equal(h.get('read-aloud').hidden,false);
+ assert.equal(h.get('speech-controls').hidden,false);
  await h.get('read-aloud').onclick();
  assert.match(h.spoken[0],/Ole und der verschwundene Knopf/);
  h.app.turn(1);await tick();
  await h.get('read-aloud').onclick();
  assert.notEqual(h.spoken[0],h.spoken[1]);
  await h.app.open('henne');await tick();await tick();
- assert.equal(h.get('read-aloud').hidden,false);
+ assert.equal(h.get('speech-controls').hidden,false);
  await h.get('read-aloud').onclick();
  assert.match(h.spoken[2],/Henne und ein Adler/);
  h.app.turn(10);await tick();
  assert.equal(h.get('attribution-page').hidden,false);
- assert.equal(h.get('read-aloud').hidden,true);
+ assert.equal(h.get('speech-controls').hidden,true);
 });
 
 test('SMB books can provide their own TTS JSON without granting file or voice control',async()=>{
  const h=setup('smb-speech');await tick();await tick();
  await h.app.open('smb:ole');await tick();await tick();
- assert.equal(h.get('read-aloud').hidden,false);
+ assert.equal(h.get('speech-controls').hidden,false);
  await h.get('read-aloud').onclick();
  assert.equal(h.spoken[0],'<script>content</script>'); // spoken as text; not rendered as HTML
  assert.ok(h.calls.includes('books/ole/tts/pages.json'));
@@ -177,19 +177,22 @@ test('on-turn mode starts new-page speech; leaving the reader always stops',asyn
  await h.app.open('ole');await tick();await tick();
  assert.ok(h.prepared.length>0,'known pages are prepared with pre-rendering enabled');
  assert.ok(h.prepared.length<=3,'only current and two following pages prepared');
- h.get('read-mode').value='on-turn';h.get('read-mode').onchange();
+ await h.get('read-turn').onclick();
  await tick();
- assert.equal(h.spoken.length,0,'on-turn does not start the current page');
+ assert.equal(h.spoken.length,1,'on-turn reads the current page first');
  h.app.turn(1);await tick();await tick();
- assert.equal(h.spoken.length,1);
+ assert.equal(h.spoken.length,2);
  assert.match(h.spoken[0],/Ole/);
+ await h.get('read-turn').onclick();
+ h.app.turn(1);await tick();await tick();
+ assert.equal(h.spoken.length,2,'stopping on-turn disables speech on later page turns');
  h.get('back').onclick();await tick();
  assert.ok(h.stopped.length>=2);
 });
 test('continuous mode advances only after speech completion and stops at book end',async()=>{
  const h=setup('speech');await tick();await tick();
  await h.app.open('ole');await tick();await tick();
- h.get('read-mode').value='continuous';h.get('read-mode').onchange();
+ void h.get('read-book').onclick();
  for(let n=0;n<25;n++)await tick();
  assert.equal(h.app.current,16,'auto reading should advance through the book');
  assert.equal(h.spoken.length,16,'read exactly each of the sixteen pages');
