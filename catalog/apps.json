@@ -109,13 +109,13 @@
     {
       "id": "community.buecherkiste",
       "name": "Bücherkiste",
-      "description": "Bücherkiste mit Vorlesen über die MuPiBox-TTS-Stimme und zusätzlichen SMB-Büchern.",
+      "description": "Bücherkiste mit automatischem Vorlesen, Seitenwechsel und SMB-Büchern.",
       "category": "learning",
       "author": "MuPiBox Community",
-      "version": "0.2.29",
-      "releaseTag": "v0.1.0-preview.22",
+      "version": "0.2.30",
+      "releaseTag": "v0.1.0-preview.29",
       "asset": "buecherkiste.mupiapp",
-      "sha256": "f2182ea599dff9e0fd57d9945179d8b25afc14e4b714ce9f13fdf683694807aa",
+      "sha256": "a393547273b885501d9ae7e5d12e5acfe3ff2c6be505cf71dc401a3e5cb5e786",
       "permissions": [
         "shared-assets",
         "audio"
