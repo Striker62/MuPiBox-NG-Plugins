@@ -62,3 +62,19 @@ test('native PCM sound and loop requests are scoped to installed audio assets',a
  }
  assert.equal(calls.length,4);
 });
+
+test('native audio gain controls validate levels without replaying sample assets',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.setMusicVolume(10,{relative:true});
+ await sdk.audio.setSampleVolume(80,{relative:true});
+ await sdk.audio.setMusicVolume(0,{relative:true});
+ assert.deepEqual(calls.map(c=>c.method),['audio.music.volume','audio.sample.volume','audio.music.volume']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{volume:10,relative:true});
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[1].payload)),{volume:80,relative:true});
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[2].payload)),{volume:0,relative:true});
+ for(const invalid of [-1,101,1.5,'loud']){
+  await assert.rejects(()=>sdk.audio.setMusicVolume(invalid),{name:'TypeError'});
+  await assert.rejects(()=>sdk.audio.setSampleVolume(invalid),{name:'TypeError'});
+ }
+ assert.equal(calls.length,3);
+});

@@ -94,6 +94,20 @@
       if (!bridge) return false;
       return invoke('audio.music.play', {asset, volume, relative:options.relative!==false});
     },
+    async setMusicVolume(volume, options = {relative:true}) {
+      if (!Number.isInteger(volume) || volume < 0 || volume > 100 ||
+          options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.relative !== undefined && typeof options.relative !== 'boolean'))
+        throw new TypeError('music volume must be 0..100 with valid options');
+      return bridge ? invoke('audio.music.volume', {volume, relative:options.relative!==false}) : false;
+    },
+    async setSampleVolume(volume, options = {relative:true}) {
+      if (!Number.isInteger(volume) || volume < 0 || volume > 100 ||
+          options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.relative !== undefined && typeof options.relative !== 'boolean'))
+        throw new TypeError('sample volume must be 0..100 with valid options');
+      return bridge ? invoke('audio.sample.volume', {volume, relative:options.relative!==false}) : false;
+    },
     async stopMusic() {return bridge ? invoke('audio.music.stop', {}) : false;},
     async stopSamples() {return bridge ? invoke('audio.sample.stop', {}) : false;},
     async playClip(asset) {

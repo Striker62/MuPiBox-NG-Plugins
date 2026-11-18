@@ -201,9 +201,9 @@ $("volume").oninput=()=>{
  if(volume>0)muted=false;
  updateAudioControls();
 };
-$("volume").onchange=()=>{saveAudio();sound("miss");};
+$("volume").onchange=()=>{saveAudio();soundPlayer.flushVolumes();sound("miss");};
 $("music-volume").oninput=()=>{musicVolume=Number($("music-volume").value);updateAudioControls();};
-$("music-volume").onchange=()=>{saveAudio();soundPlayer.startMusic();};
+$("music-volume").onchange=()=>{saveAudio();soundPlayer.flushVolumes();soundPlayer.startMusic();};
 $("music-toggle").onclick=()=>{musicEnabled=!musicEnabled;updateAudioControls();saveAudio();if(musicEnabled)soundPlayer.startMusic();};
 $("mute").onclick=()=>{muted=!muted;updateAudioControls();saveAudio();if(!muted)sound("miss");};
 $("test-sound").onclick=()=>sound("hit");
@@ -241,7 +241,7 @@ translate();newRound();
 sdk.getContext().then(ctx=>{
  const tag=String(ctx?.language||"de").toLowerCase();lang=tag.startsWith("en")?"en":"de";
  // Older NG hosts omit these fields and only understand audio.note.
- soundPlayer.setNativeAvailable(ctx?.audioSamples===true&&ctx?.audioMusic===true);
+ soundPlayer.setNativeAvailable(ctx?.audioSamples===true&&ctx?.audioMusic===true,ctx?.audioVolumeControl===true);
  translate();draw();if(phase==="place")message(t("ready"));
 }).catch(()=>{});
 })();

@@ -10,7 +10,7 @@ class WaterBattleAssetTests(unittest.TestCase):
     def test_cover_is_raster_and_has_correct_manifest(self):
         m = json.loads((ROOT / "manifest.json").read_text())
         self.assertEqual(m["cover"], "cover.jpg")
-        self.assertEqual(m["version"], "0.2.4")
+        self.assertEqual(m["version"], "0.2.5")
         self.assertEqual(m["name"], "MuPi Water Battle")
         self.assertIn("storage", m["permissions"])
         cover = (ROOT / m["cover"]).read_bytes()
@@ -46,6 +46,8 @@ class WaterBattleAssetTests(unittest.TestCase):
         html = (ROOT / "index.html").read_text()
         js = (ROOT / "app.js").read_text()
         self.assertIn('id="volume"', html)
+        self.assertNotIn('<span class="logo">', html)
+        self.assertIn('audioVolumeControl', js)
         self.assertIn('id="music-volume"', html)
         self.assertIn('id="music-toggle"', html)
         self.assertIn('src="audio-player.js"', html)

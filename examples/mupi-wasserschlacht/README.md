@@ -1,4 +1,4 @@
-# MuPi Water Battle – Community App (0.2.4)
+# MuPi Water Battle – Community App (0.2.5)
 
 Eigenständig gestaltetes, kindgerechtes Offline-Suchspiel mit drei Modi: Quick 8×8 (2 Boote mit 3/2 Feldern), Classic 10×10 (5 Boote mit 5/4/3/3/2 Feldern) und Max 12×12 (7 Boote mit 5/4/4/3/3/2/2 Feldern). Keine Verbindung zu Hasbro, Battleship oder kommerziellen Ausgaben. Spiellogik, Bildschirmtexte und Illustrationen wurden eigenständig für MuPiBox erstellt. Die ausgewählten Audiodateien stammen von externen, in SOUND_CREDITS.txt genannten Urhebern und haben eigene Lizenzen.
 
@@ -32,3 +32,7 @@ Das offizielle Community-App-Cover ist `cover.jpg`. Der Admin-Katalog erhält
 `examples/mupi-wasserschlacht/cover.jpg`. Auf unterstützten NG-Versionen
 verwendet das Admin-Interface bei installierten Apps vorrangig das bereits
 installierte `manifest.cover`, identisch zum Spiele-Coverflow.
+
+## Sound- und Lautstärke-Fix 0.2.5
+
+Das funktionslose Symbol neben dem Spieletitel ist entfernt. Auf Hosts mit audioVolumeControl ändern audio.music.volume und audio.sample.volume die Lautstärke ohne die Audiodatei erneut zu dekodieren oder den Hintergrundloop neu zu starten. Für den nativen Mixer ist ein NG-Update mit den beiden Methoden nötig. Änderungen am Slider werden begrenzt übertragen und beim Loslassen sofort übernommen. Der Host glättet die Pegel sowie das Ende der Musikschleife, um Knacken zu verringern.

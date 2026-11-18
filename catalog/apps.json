@@ -258,13 +258,13 @@
     {
       "id": "community.mupi-wasserschlacht",
       "name": "MuPi Water Battle",
-      "description": "Quick, Classic, Max – MuPi mit drei Kiemenästen, eine Sekunde Treffer-Ruckeln, Original-Sounds/Musik über neue NG-Audio-API und identische Admin-/Spiel-Cover.",
+      "description": "MuPi Water Battle: originales Cover, eine Sekunde Trefferanimation, echte Offline-Sounds und direkte, knisterfreie Lautstärkeregelung über neue NG-Audio-API.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.4",
-      "releaseTag": "v0.1.0-preview.39",
+      "version": "0.2.5",
+      "releaseTag": "v0.1.0-preview.42",
       "asset": "mupi-wasserschlacht.mupiapp",
-      "sha256": "1076480ac1e2561eec0d5c6c899c66119e6490bba44d9fe192674c6e9a0b65ae",
+      "sha256": "676820704d41c58769af97002665614b17be6bd03c90a3a9eb0818226b568438",
       "permissions": [
         "controller",
         "audio",

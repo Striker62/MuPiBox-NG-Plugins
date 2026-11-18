@@ -76,3 +76,40 @@ test("older box API gracefully uses native-note fallback",async()=>{
  failing.warned=true;
  assert.equal(await failing.sound("hit"),false);
 });
+
+test("on capable NG: dragging music level changes gain without restarting the loop",async()=>{
+ const calls=[];
+ const native={
+  playMusic:(asset,v)=>{calls.push(["playMusic",v]);return Promise.resolve({playing:true});},
+  setMusicVolume:v=>{calls.push(["setMusicVolume",v]);return Promise.resolve({active:true});},
+  setSampleVolume:v=>{calls.push(["setSampleVolume",v]);return Promise.resolve({active:true});},
+  playSample:()=>Promise.resolve({playing:true}),
+  stopMusic:()=>{calls.push(["stopMusic"]);return Promise.resolve({ok:true});}
+ };
+ const p=new Player(true,native);
+ p.configure({volume:40,musicVolume:20});
+ p.startMusic();
+ p.setNativeAvailable(true,true);
+ await p.musicQueue;
+ assert.deepEqual(calls.filter(c=>c[0]==="playMusic"),[["playMusic",20]]);
+ p.configure({musicVolume:40});
+ p.configure({musicVolume:60});
+ p.configure({musicVolume:80,volume:85});
+ await new Promise(r=>setTimeout(r,145));
+ await p.musicQueue;
+ assert.deepEqual(calls.filter(c=>c[0]==="playMusic"),[["playMusic",20]],"no loop restarts");
+ assert.deepEqual(calls.filter(c=>c[0]==="setMusicVolume"),[["setMusicVolume",80]]);
+ assert.ok(calls.some(c=>c[0]==="setSampleVolume"&&c[1]===85));
+ p.configure({musicVolume:0});
+ await new Promise(r=>setTimeout(r,140));
+ await p.musicQueue;
+ assert.deepEqual(calls.filter(c=>c[0]==="setMusicVolume").at(-1),["setMusicVolume",0]);
+ assert.equal(calls.filter(c=>c[0]==="stopMusic").length,0,"moving slider to zero should mute, not kill loop");
+ p.configure({musicVolume:60});
+ p.flushVolumes();
+ await p.musicQueue;
+ assert.equal(calls.filter(c=>c[0]==="playMusic").length,1);
+ assert.deepEqual(calls.filter(c=>c[0]==="setMusicVolume").at(-1),["setMusicVolume",60]);
+ p.stopMusic();await p.musicQueue;
+ assert.equal(calls.filter(c=>c[0]==="stopMusic").length,1);
+});

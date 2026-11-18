@@ -4,7 +4,6 @@
 #app{width:100vw;height:100dvh;min-height:350px;display:flex;flex-direction:column;background:radial-gradient(ellipse at 40% 120%,#146b80 0%,transparent 58%),linear-gradient(145deg,#08314a,#051629)}
 .header{flex:0 0 51px;display:flex;gap:9px;align-items:center;padding:6px 11px;border-bottom:1px solid #79e4ed3b;background:#0217299c}
 .brand{display:flex;gap:8px;align-items:center;flex:1;white-space:nowrap;min-width:0}.brand strong{font-size:clamp(16px,2.25vw,23px);overflow:hidden;text-overflow:ellipsis}
-.logo{display:inline-grid;place-items:center;border-radius:50%;width:30px;height:30px;background:#f7b64d;color:#272343;font-size:24px}
 .back,.round{border:1px solid #6ab8ca80;color:white;background:#14435b;border-radius:10px;height:34px;min-width:35px;font-size:23px}.option{display:flex;gap:6px;align-items:center;color:var(--dim);font-size:12px;white-space:nowrap}.option select{background:#18465e;border:1px solid #5197a9;color:white;border-radius:8px;padding:6px 5px;max-width:78px;font-weight:700}.pill{background:#206178;border:1px solid #68beca;border-radius:15px;color:white;padding:7px 12px;font-size:13px}
 .play{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(165px,.78fr);gap:10px;padding:10px 12px 7px}
 .panel{display:flex;flex-direction:column;align-items:center;min-width:0;min-height:0;border-radius:17px;background:linear-gradient(150deg,#15465a8f,#0a2e488f);border:1px solid #8aebf12e;padding:7px}
