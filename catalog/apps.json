@@ -214,13 +214,13 @@
     {
       "id": "community.mupi-wuerfelrennen",
       "name": "MuPis Würfelrennen",
-      "description": "Würfelrennen mit goldenem 3D-Würfel hinter den Spielfeldern, kontrastreichem 800×480-Brett und Pflichtausfahrt bei Sechs.",
+      "description": "Würfelrennen mit 16 getrennten runden Zielfeldern, kompakterem 3D-Würfel und vier nach außen gerückten Start-Häusern.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.6",
-      "releaseTag": "v0.1.0-preview.47",
+      "version": "0.2.7",
+      "releaseTag": "v0.1.0-preview.48",
       "asset": "mupi-wuerfelrennen.mupiapp",
-      "sha256": "bb286f92a387d0c0e618fdbcf5b7d57afd039fa974399a95ed2d3ba22cab122a",
+      "sha256": "ef29fb74843f9c654131399811258aa7d63260defe0a74ca793a4f71447de1ef",
       "permissions": [
         "controller"
       ]
