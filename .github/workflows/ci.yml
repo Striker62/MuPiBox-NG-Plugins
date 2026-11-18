@@ -38,6 +38,7 @@ jobs:
       - name: Build Funny MuPi offline joke app
         run: |
           node --check examples/funny-mupi/app.js
+          node --test tests/test_funny_mupi_tts.cjs
           python3 tools/build_funny_mupi.py
           python3 tools/mupiapp.py validate dist/funny-mupi.mupiapp
       - name: Build reference app

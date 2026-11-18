@@ -29,6 +29,14 @@ class FunnyMuPiTests(unittest.TestCase):
         self.assertGreater(len(data["jokes"]), 0)
         self.assertTrue(all(isinstance(j, str) and 0 < len(j) <= 600 for j in data["jokes"]))
 
+    def test_orange_mascot_and_pointing_bubble(self):
+        svg = (APP / "assets/mupi-laugh.svg").read_text(encoding="utf-8")
+        css = (APP / "style.css").read_text(encoding="utf-8")
+        self.assertIn("#ff943d", svg)
+        self.assertNotIn("#7cd5c7", svg)
+        self.assertIn("clip-path:polygon(0 0,100% 50%,0 100%)", css)
+        self.assertIn(".bubble:before", css)
+
     def test_local_files_only(self):
         code = (APP / "app.js").read_text(encoding="utf-8")
         self.assertIn("sdk.tts.speak(", code)

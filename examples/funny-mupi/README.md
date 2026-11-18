@@ -3,11 +3,11 @@
 Eine offlinefähige MuPiBox-NG-Community-App für kurze, familienfreundliche Witze.
 
 ## Benutzung
-- **Sprechblase antippen:** Aktuellen Witz mit der auf der Box konfigurierten MuPiBox-TTS vorlesen.
+- **Sprechblase antippen:** Auf der Box wird die konfigurierte MuPiBox-TTS verwendet. In der Browser-Vorschau liest dagegen der eigene Browser vor (keine Wiedergabe auf der Box).
 - **Nächster Witz:** Ein neuer Zufallswitz; alle Einträge kommen einmal dran, bevor sie sich wiederholen.
 - **Zurück:** Beendet die App und stoppt die von ihr gestartete Sprachausgabe, sofern der Host \`tts.stop\` unterstützt.
 - **Controller:** A / Start = vorlesen, Rechts / X = nächster Witz, B / Back = zurück.
-- TTS ist optional: Ohne aktivierte TTS läuft die Anzeige weiterhin. Zur Sprachausgabe muss **Admin → TTS** aktiviert und die Berechtigung \`audio\` genehmigt sein.
+- TTS ist optional: Ohne aktivierte TTS läuft die Anzeige weiterhin. Für die tatsächliche Box-Ausgabe muss **Admin → TTS** aktiviert, ein Sprachcache verfügbar und die Berechtigung \`audio\` genehmigt sein. Die App unterscheidet deaktivierte und noch nicht bereite TTS und zeigt eine konkrete Meldung.
 
 ## Sprachen und Witze ergänzen
 Die App liest die Box-Sprache aus \`sdk.getContext().language\` und lädt lokal \`jokes/<language>.json\`, z. B. \`de-DE\` → \`jokes/de.json\`. Die Dateien liegen als Klartext im GitHub-Repository und werden beim Bauen **in die .mupiapp-Datei gepackt**. Im Betrieb ist keine GitHub-Abfrage und kein Internet nötig.
@@ -34,3 +34,6 @@ Das Build-Skript kopiert das aktuelle öffentliche \`sdk/mupibox-sdk.js\` hinein
 
 ## Datenschutz und Rechte
 Keine Netzwerkanfragen an fremde Dienste, keine Statistik, keine Speicherung. Die Witze sind kurze überlieferte bzw. frei formulierte Wortspiele; das Artwork wurde eigens für die App gezeichnet. Die App wird unter der Repository-Lizenz MIT bereitgestellt. Hardware/TTS müssen auf einem echten MuPiBox-NG-Host getestet werden.
+
+## Darstellung
+MuPi wird orangefarben angezeigt. Die Spitze der Sprechblase weist rechts auf MuPi; die Darstellung skaliert auch für schmalere Ansichten.

@@ -3,8 +3,8 @@
   const sdk = window.MuPiBoxSDK;
   const el = id => document.getElementById(id);
   const labels = {
-    de: {exit:'Zurück', next:'Nächster Witz', hint:'Auf die Sprechblase tippen, dann liest MuPi vor.', loading:'MuPi sucht einen Witz …', error:'Die Witze konnten nicht geladen werden.', unavailable:'Vorlesen ist auf dieser Box nicht eingerichtet.', speaking:'MuPi erzählt den Witz …', speakError:'Vorlesen momentan nicht möglich.', fallback:'Deutsche Witze (noch keine Übersetzung).'},
-    en: {exit:'Back', next:'Next joke', hint:'Tap the speech bubble to hear MuPi read the joke.', loading:'MuPi is finding a joke …', error:'Could not load jokes.', unavailable:'Text to speech is not enabled on this box.', speaking:'MuPi is telling a joke …', speakError:'Speech is not available right now.', fallback:'German jokes (translation coming soon).'},
+    de: {exit:'Zurück', next:'Nächster Witz', hint:'Auf die Sprechblase tippen, dann liest MuPi vor.', loading:'MuPi sucht einen Witz …', error:'Die Witze konnten nicht geladen werden.', unavailable:'TTS ist ausgeschaltet. Bitte in Admin → TTS aktivieren.', notReady:'TTS ist noch nicht bereit. Bitte Admin → TTS und den Sprachcache prüfen.', previewSpeaking:'Der Browser liest den Witz vor …', browserUnavailable:'Dieser Browser unterstützt kein Vorlesen.', speaking:'MuPi erzählt den Witz …', speakError:'Vorlesen nicht möglich. Bitte TTS und Audio-Freigabe prüfen.', fallback:'Deutsche Witze (noch keine Übersetzung).'},
+    en: {exit:'Back', next:'Next joke', hint:'Tap the speech bubble to hear MuPi read the joke.', loading:'MuPi is finding a joke …', error:'Could not load jokes.', unavailable:'TTS is disabled. Enable it in Admin → TTS.', notReady:'TTS is not ready. Check Admin → TTS and the voice cache.', previewSpeaking:'Your browser is reading the joke …', browserUnavailable:'This browser does not support speech.', speaking:'MuPi is telling a joke …', speakError:'Speech unavailable. Check TTS and audio permission.', fallback:'German jokes (translation coming soon).'},
     fr: {exit:'Retour', next:'Blague suivante', hint:'Touchez la bulle pour écouter la blague.', loading:'MuPi cherche une blague …', error:'Impossible de charger les blagues.', unavailable:'La synthèse vocale est désactivée.', speaking:'MuPi raconte une blague …', speakError:'Lecture indisponible.', fallback:'Blagues allemandes (traduction à venir).'},
     es: {exit:'Volver', next:'Otro chiste', hint:'Toca el bocadillo para escuchar el chiste.', loading:'MuPi busca un chiste …', error:'No se pueden cargar los chistes.', unavailable:'La voz no está activada.', speaking:'MuPi cuenta un chiste …', speakError:'Voz no disponible.', fallback:'Chistes en alemán (traducción pendiente).'},
     it: {exit:'Indietro', next:'Altra battuta', hint:'Tocca il fumetto per ascoltare la battuta.', loading:'MuPi cerca una battuta …', error:'Impossibile caricare le battute.', unavailable:'Sintesi vocale non attiva.', speaking:'MuPi racconta una battuta …', speakError:'Voce non disponibile.', fallback:'Barzellette tedesche (traduzione in arrivo).'},
@@ -19,6 +19,8 @@
   let paused = false;
   let generation = 0;
   let locale = 'de';
+  let jokeLanguage = 'de';
+  let preview = false;
 
   function setStatus(value) { el('status').textContent = value || ''; }
   function shuffleIndices(count) {
@@ -35,11 +37,41 @@
   }
   function stopSpeech() {
     generation += 1;
+    // Browser preview audio must remain local to the browser. Never call the
+    // appliance speech API or change its playback state from this mode.
+    if (preview) {
+      try { window.speechSynthesis?.cancel(); }
+      catch (_) { /* Unsupported browser speech engine. */ }
+      return Promise.resolve();
+    }
     if (sdk && sdk.tts && typeof sdk.tts.stop === 'function') {
       try { return Promise.resolve(sdk.tts.stop()).catch(() => {}); }
       catch (_) { /* Older hosts may not support speech cancellation. */ }
     }
     return Promise.resolve();
+  }
+  function speakInBrowser(token) {
+    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+      setStatus(ui.browserUnavailable || ui.speakError);
+      return;
+    }
+    const utterance = new window.SpeechSynthesisUtterance(jokes[current]);
+    utterance.lang = jokeLanguage === 'de' ? 'de-DE' : jokeLanguage;
+    utterance.rate = 0.96;
+    utterance.onstart = () => {
+      if (token === generation && !paused) setStatus(ui.previewSpeaking || ui.speaking);
+    };
+    utterance.onend = () => {
+      if (token === generation && !paused) setStatus('');
+    };
+    utterance.onerror = error => {
+      // The browser fires "canceled" when the user requests another joke.
+      if (token === generation && !paused && error.error !== 'canceled') {
+        setStatus(ui.speakError);
+      }
+    };
+    window.speechSynthesis.speak(utterance);
+    setStatus(ui.previewSpeaking || ui.speaking);
   }
   function nextJoke() {
     if (paused || !jokes.length) return;
@@ -51,18 +83,25 @@
     setStatus('');
   }
   async function speakJoke() {
-    if (paused || current < 0 || !sdk || !sdk.tts) return;
+    if (paused || current < 0) return;
     const stopping = stopSpeech();
     const token = generation;
     try {
       await stopping;
       if (token !== generation || paused) return;
+      if (preview) {
+        speakInBrowser(token);
+        return;
+      }
+      if (!sdk || !sdk.tts) {setStatus(ui.speakError); return;}
       const state = await sdk.tts.status();
       if (token !== generation || paused) return;
-      if (!state || !state.enabled || !state.available) {setStatus(ui.unavailable); return;}
+      if (!state || state.enabled !== true) {setStatus(ui.unavailable); return;}
+      if (state.available !== true) {setStatus(ui.notReady || ui.unavailable); return;}
       await sdk.tts.speak(jokes[current]);
       if (token === generation && !paused) setStatus(ui.speaking);
     } catch (error) {
+      console.warn('[Funny MuPi] Vorlesen fehlgeschlagen:', error);
       if (token === generation && !paused) setStatus(ui.speakError);
     }
   }
@@ -80,6 +119,11 @@
       const context = await sdk.getContext();
       const raw = String(context && context.language || navigator.language || 'de');
       locale = raw.toLowerCase().split(/[-_]/)[0];
+      // NG versions up to alpha.62 report preview:false even for the Admin
+      // browser runner. Native touchscreen sessions always use loopback.
+      // This fallback changes only where speech plays, never permissions.
+      preview = !!(context && context.preview === true) ||
+        !['localhost', '127.0.0.1', '[::1]', '::1'].includes(window.location.hostname);
       ui = labels[locale] || labels.en;
     } catch (_) { locale = 'de'; ui = labels.de; }
     document.documentElement.lang = locale;
@@ -91,10 +135,12 @@
       const requested = /^[a-z]{2}$/.test(locale) ? locale : 'de';
       try {
         jokes = await loadFile(requested);
+        jokeLanguage = requested;
         el('language').textContent = requested.toUpperCase();
       } catch (_) {
         if (requested !== 'de') {
           jokes = await loadFile('de');
+          jokeLanguage = 'de';
           el('language').textContent = 'DE';
           setStatus(ui.fallback);
         } else throw _;
