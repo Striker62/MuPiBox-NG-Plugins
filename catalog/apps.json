@@ -214,13 +214,13 @@
     {
       "id": "community.mupi-wuerfelrennen",
       "name": "MuPis Würfelrennen",
-      "description": "Würfelrennen mit orangefarbenem MuPi-Emblem, kontrastreichem 800×480-Brett, Pflichtausfahrt bei Sechs und drei Startversuchen.",
+      "description": "Würfelrennen mit goldenem 3D-Würfel hinter den Spielfeldern, kontrastreichem 800×480-Brett und Pflichtausfahrt bei Sechs.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.5",
-      "releaseTag": "v0.1.0-preview.45",
+      "version": "0.2.6",
+      "releaseTag": "v0.1.0-preview.47",
       "asset": "mupi-wuerfelrennen.mupiapp",
-      "sha256": "a500b57d9d23c7f7233f1af6bd02cfeb4cd581b4a109839a4314cbff6d1a2054",
+      "sha256": "bb286f92a387d0c0e618fdbcf5b7d57afd039fa974399a95ed2d3ba22cab122a",
       "permissions": [
         "controller"
       ]
