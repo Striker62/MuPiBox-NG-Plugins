@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 APPS = (
-    ("tic-tac-toe", "assets/cover-clean-v2.jpg", "assets/icon.png", "0.2.6"),
+    ("tic-tac-toe", "assets/cover-clean-v2.jpg", "assets/icon.png", "0.2.7"),
     ("four-in-a-row", "assets/cover-clean-v2.jpg", "assets/icon.png", "0.1.5"),
     ("crumbworm", "cover.jpg", "icon.png", "0.2.2"),
     ("chess", "cover-clean-v2.jpg", "icon.png", "0.1.3"),

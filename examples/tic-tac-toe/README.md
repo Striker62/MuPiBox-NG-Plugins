@@ -31,6 +31,16 @@ Das gebündelte `wasm_exec.js` enthält einen Go-Laufzeit-Lizenzhinweis.
 Quellcode: MIT, keine Drittanbieter-Grafiken oder -Sounds. Ein veröffentlichter
 Katalog-Release muss seinen Hash nach dem Upload aktualisieren.
 
+## Neon-Design (v0.2.7)
+
+Das Spielfeld verwendet auf 800×480 Pixeln einen eigenen dunklen Neon-Hintergrund,
+beleuchtete Cyan-Rahmen, einen goldenen Auswahlrahmen und skalierbare
+lokale SVG-Spielsteine: **X in Cyan, O in Gold**. Die Spielsteine haben eine
+kurze Setzanimation; `prefers-reduced-motion` deaktiviert sie.
+Alle Bedienelemente bleiben touch-freundlich und per Controller erreichbar.
+Die KI und Go/WASM-Spielregeln sind unverändert; es sind keine neuen
+Berechtigungen, Netzwerkressourcen oder externen Assets erforderlich.
+
 ## Native Darstellung (NG alpha.34+)
 
 Die Entwickler-Voreinstellungen sind im Manifest unabhängig wählbar:
@@ -44,7 +54,7 @@ Die Entwickler-Voreinstellungen sind im Manifest unabhängig wählbar:
   die Batterie-/WLAN-/Uhr-Anzeigen, `fullScreen` den reservierten oberen Rand.
   Diese Werte dürfen je App anders gesetzt werden.
 
-Dieses Spiel wählt **Systemhintergrund**, **Vollbild**, **keine native Leiste**
+Seit v0.2.7 wählt dieses Spiel **App-Hintergrund**, **Vollbild**, **keine native Leiste**
 und einen **eigenen gut erreichbaren Zurück-Button** (`MuPiBoxSDK.exit()`).
 Die im Admin gesetzten Anzeige-Overrides der MuPiBox haben Vorrang vor den
 App-Voreinstellungen. Das native Kartenbild ist unter `assets/cover-clean-v2.jpg`
@@ -54,9 +64,9 @@ Beim Test ohne MuPiBox-Host liefert der Zurück-Button lediglich das sichere
 SDK-Ereignis `preview.exit` statt den Browser ungefragt zu schließen.
 
 
-## Transparentes Spielfeld vor dem MuPiBox-Theme (v0.2.4)
+## Historisch: Transparentes Spielfeld (v0.2.4–0.2.6)
 
-Die App nutzt weiterhin `display.background: system`. Die komplette
+Bis einschließlich v0.2.6 nutzte die App `display.background: system`. Die komplette
 HTML-Seite (inkl. `html`, `body`, `.screen`) bleibt transparent. Auch
 der großflächige Bereich `.info` hinter den Einstellungen hat jetzt
 **keinen eigenen Hintergrund** mehr. Die neun Felder sind statt deckend
