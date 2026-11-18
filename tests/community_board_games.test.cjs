@@ -147,6 +147,74 @@ test('Würfelrennen: bis zu drei Startwürfe ohne ziehbare Figur auf dem Feld',(
  assert.equal(L.rollLimit(board,0),1);
 });
 
+test('Würfelrennen: reproduzierbare ganze Partien mit Invarianten pro Zug',()=>{
+ const initialRandom=Math.random;
+ let completed=0,checkedMoves=0,captures=0;
+ try{
+  for(const players of [2,3,4])for(const level of ['easy','medium','hard'])
+   for(let seed=1;seed<=4;seed++){
+    let x=(seed*0x9e3779b9)>>>0;
+    Math.random=()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return (x>>>0)/4294967296;};
+    let board=L.state(),active=players===2?[0,2]:players===3?[0,1,2]:[0,1,2,3];
+    let turn=active[0],attempts=0,limit=L.rollLimit(board,turn),winner=false;
+    const validate=()=>{
+     const used=new Map();
+     for(let p=0;p<4;p++){
+      const ownGoal=new Set();
+      for(const v of board[p]){
+       assert(Number.isInteger(v)&&v>=-1&&v<=55);
+       if(v>=0&&v<52){
+        const cell=(L.starts[p]+v)%52;
+        assert(!used.has(cell),'figures overlap on main track');
+        used.set(cell,p);
+       }else if(v>=52){
+        assert(!ownGoal.has(v),'two pieces in one private goal cell');
+        ownGoal.add(v);
+       }
+      }
+     }
+    };
+    for(let roll=0;roll<4500;roll++){
+     validate();
+     const die=1+Math.floor(Math.random()*6);
+     attempts++;
+     assert(attempts<=limit);
+     const moves=L.possible(board,turn,die);
+     if(moves.length){
+      const m=L.choose(board,turn,die,level);
+      assert(moves.some(a=>a.piece===m.piece&&a.to===m.to));
+      const before=board.map(row=>row.slice());
+      const after=L.apply(board,turn,m);
+      assert.deepEqual(board,before,'apply must not mutate original');
+      assert.equal(after[turn][m.piece],m.to);
+      const from=before[turn][m.piece];
+      assert.equal(m.to,from===-1?0:from+die);
+      let changed=0;
+      for(let q=0;q<4;q++)for(let k=0;k<4;k++)if(after[q][k]!==before[q][k]){
+       changed++;
+       if(q===turn&&k===m.piece)continue;
+       assert.equal(after[q][k],-1,'captured figure must return to base');
+       assert(m.captured.some(c=>c.player===q&&c.piece===k),'teleported figure');
+       assert.equal((L.starts[q]+before[q][k])%52,(L.starts[turn]+m.to)%52);
+      }
+      assert.equal(changed,1+m.captured.length);
+      checkedMoves++;captures+=m.captured.length;
+      board=after;
+      validate();
+      if(board[turn].every(v=>v>=52)){winner=true;completed++;break;}
+      if(die===6){attempts=0;limit=L.rollLimit(board,turn);continue;}
+     }else if(attempts<limit)continue;
+     turn=active[(active.indexOf(turn)+1)%active.length];
+     attempts=0;limit=L.rollLimit(board,turn);
+    }
+    assert(winner,players+' player '+level+' seed '+seed+' did not finish');
+   }
+ }finally{Math.random=initialRandom;}
+ assert.equal(completed,36);
+ assert(checkedMoves>1000);
+ assert(captures>100);
+});
+
 test('AI-vs-AI Reversi completes a legal game and accounts for every square',()=>{
  let board=R.initial(),turn=1,passes=0,steps=0;
  while(passes<2&&steps++<80){

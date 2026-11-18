@@ -170,7 +170,18 @@ for(let p=0;p<4;p++){
   staticLayer.append(S("circle",{cx:bx,cy:by,r:13.2,fill:"#0a3043",stroke:goalTop[p],"stroke-width":.75,opacity:.68}));
  }
 }
-let b,players=4,human=1,turn=0,die=0,lastRoll=0,ended=false,settling=false,epoch=0,selectedPiece=0,aiTimer=0,pendingAdvance=null,attempts=0,maxAttempts=3;
+let b,players=4,human=1,turn=0,die=0,lastRoll=0,ended=false,settling=false,paused=false,epoch=0,selectedPiece=0,aiTimer=0,pendingTimer=null,pendingAdvance=null,attempts=0,maxAttempts=3;
+function schedule(delay,action){
+ clearTimeout(aiTimer);
+ pendingTimer={delay,action};
+ if(paused)return;
+ const id=epoch;
+ aiTimer=setTimeout(()=>{
+  if(id!==epoch||paused||ended)return;
+  pendingTimer=null;
+  action();
+ },delay);
+}
 const active=()=>players===2?[0,2]:players===3?[0,1,2]:[0,1,2,3];
 const isHuman=()=>active().indexOf(turn)<human;
 const locate=(p,k)=>{
@@ -234,7 +245,7 @@ function finishMove(m){
  // Revalidate before applying: a timer must never move a piece for a later turn.
  const legal=DiceRace.possible(b,turn,die).find(x=>x.piece===m.piece&&x.to===m.to);
  if(!legal)return;
- epoch++;clearTimeout(aiTimer);pendingAdvance=null;
+ epoch++;clearTimeout(aiTimer);pendingTimer=null;pendingAdvance=null;
  b=DiceRace.apply(b,turn,legal);
  const face=die;
  const victimNames=legal.captured.map(c=>names[c.player]+" "+(c.piece+1)).join(", ");
@@ -256,7 +267,7 @@ function finishMove(m){
   // Hold the board so the beaten piece visibly returns home before the next turn.
   settling=true;die=0;pendingAdvance=advance;render();
   const id=epoch;
-  aiTimer=setTimeout(()=>{if(id===epoch&&!ended)advance();},1000);
+  schedule(1000,()=>{if(id===epoch&&!ended)advance();});
  }else advance();
 }
 function select(k,p=turn){
@@ -273,8 +284,8 @@ function next(){
  render();computer();
 }
 function rolled(){
- if(ended||die||settling)return;
- epoch++;clearTimeout(aiTimer);
+ if(ended||die||settling||paused)return;
+ epoch++;clearTimeout(aiTimer);pendingTimer=null;
  attempts++;
  die=1+Math.floor(Math.random()*6);lastRoll=die;
  const ms=DiceRace.possible(b,turn,die);
@@ -286,32 +297,32 @@ function rolled(){
  const diceEl=$("dice");diceEl.classList.remove("roll");void diceEl.offsetWidth;diceEl.classList.add("roll");
  render();
  if(!ms.length){
-  const id=epoch;aiTimer=setTimeout(()=>{
+  const id=epoch;schedule(die===6?1050:520,()=>{
    if(id!==epoch||ended)return;
    die=0;
    if(attempts<maxAttempts){
     status("Kein Zug möglich – nächster Versuch ("+(attempts+1)+"/"+maxAttempts+").");
     render();computer();
    }else{status("Kein Zug möglich – nächster Spieler.");next();}
-  },die===6?1050:520);
+  });
  }else if(forcedExit){
   // Alle Basisfiguren sind gleichwertig: automatische Pflichtausfahrt.
-  const id=epoch;aiTimer=setTimeout(()=>{
+  const id=epoch;schedule(1150,()=>{
    if(id!==epoch||ended||die!==6)return;finishMove(ms[0]);
-  },1150);
+  });
  }else if(!isHuman()){
-  const id=epoch;aiTimer=setTimeout(()=>{if(id!==epoch||ended)return;
+  const id=epoch;schedule(die===6?1050:450,()=>{if(id!==epoch||ended)return;
    const move=DiceRace.choose(b,turn,die,$("difficulty").value);if(move)finishMove(move);
-  },die===6?1050:450);
+  });
  }
 }
 function computer(){
- if(!ended&&!isHuman()&&!die){
-  const id=epoch;aiTimer=setTimeout(()=>{if(id===epoch&&!settling)rolled();},320);
+ if(!ended&&!isHuman()&&!die&&!paused){
+  const id=epoch;schedule(320,()=>{if(id===epoch&&!settling)rolled();});
  }
 }
 function reset(){
- epoch++;clearTimeout(aiTimer);pendingAdvance=null;
+ epoch++;clearTimeout(aiTimer);pendingTimer=null;pendingAdvance=null;
  players=+ $("playercount").value;human=Math.min(+ $("human").value,players);$("human").value=human;
  b=DiceRace.state(players);turn=active()[0];die=0;lastRoll=0;ended=false;settling=false;selectedPiece=0;
  attempts=0;maxAttempts=DiceRace.rollLimit(b,turn);
@@ -320,12 +331,14 @@ function reset(){
 $("roll").onclick=()=>{if(isHuman()&&!die)rolled();};
 $("restart").onclick=reset;
 for(const id of ["playercount","human","difficulty"])$(id).onchange=reset;
-$("exit").onclick=()=>{epoch++;clearTimeout(aiTimer);sdk.exit();};
-sdk.on("lifecycle.pause",()=>{epoch++;clearTimeout(aiTimer);});
+$("exit").onclick=()=>{epoch++;clearTimeout(aiTimer);pendingTimer=null;sdk.exit();};
+sdk.on("lifecycle.pause",()=>{paused=true;clearTimeout(aiTimer);});
 sdk.on("lifecycle.resume",()=>{
- // If a capture animation was interrupted, resume the recorded turn transition.
+ paused=false;
+ // Re-arm the exact interrupted action: missing rolls and pending AI moves
+ // must not leave a visible, but non-interactive die on the screen.
+ if(pendingTimer){const {delay,action}=pendingTimer;schedule(delay,action);return;}
  if(pendingAdvance){pendingAdvance();return;}
- // A computer turn must also resume if it was waiting for its next roll.
  if(!ended&&!die&&!settling)computer();
 });
 sdk.on("input",({button,action})=>{

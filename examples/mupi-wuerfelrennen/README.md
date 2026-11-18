@@ -1,7 +1,7 @@
 # MuPis Würfelrennen
 
 Eigenständiges, offline spielbares Würfel-Brettspiel für zwei bis vier Personen
-oder KI-Spieler. Die aktuelle **Hochglanz-Edition 0.2.9** kombiniert ein
+oder KI-Spieler. Die aktuelle **Hochglanz-Edition 0.2.10** kombiniert ein
 goldgerahmtes Spielfeld mit 52 äußeren Feldern, vier Startbereichen und
 16 getrennten, kreisförmigen Zielfeldern. Optimiert für die **5-Zoll-MuPiBox
 (800 × 480 Pixel)** mit Touch- und Controllerbedienung.
@@ -36,6 +36,8 @@ direkt im Ordner dieser Anwendung.
   gibt es bis zu **drei Wurfversuche**.
 - Eine 6 wird deutlich sichtbar angezeigt und bei automatischer Pflichtausfahrt
   mindestens eine Sekunde gezeigt. Eine 6 nach einem gültigen Zug gibt einen **Extrawurf**.
+- Pausierte Würfel- und KI-Züge werden nach Rückkehr zur App zuverlässig
+  fortgesetzt; auch ein unterbrochener Extrawurf bleibt nicht hängen.
 - Nach einem Schlag kehrt **nur die geschlagene Figur** ins eigene Haus zurück;
   die angreifende Figur steht auf dem Schlagfeld. Die Anzeige pausiert kurz,
   bevor der nächste Zug beginnt.
@@ -79,6 +81,6 @@ node --test tests/community_board_games.test.cjs
 Der Builder schließt `README.md` und alle
 `screenshot-*.webp`-Dateien ausdrücklich aus dem installierbaren
 `.mupiapp`-Archiv aus, damit die Galerie keinen Speicherplatz auf der Box
-belegt. Offizielle Katalogversion: **0.2.9**, Community Preview 51.
+belegt. Offizielle Katalogversion: **0.2.9**, Community Preview 51 (0.2.10 als Korrektur vorbereitet).
 Die App benötigt nur die `controller`-Berechtigung, keine Netzverbindung.
 Quellcode unter MIT-Lizenz.

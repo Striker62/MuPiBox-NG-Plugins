@@ -126,5 +126,65 @@ class BoardGamesBrowserSmoke(unittest.TestCase):
             self.assertRegex(run.stdout,r'data-next="[^"]*Extrawurf!')
 
 
+    def test_dicerace_resume_interrupted_ai_actions(self):
+        # A real hosted SDK pause/resume event must restore the pending AI timer.
+        app=ROOT/"examples"/"mupi-wuerfelrennen"
+        for scenario,random_value in (("six",0.99),("no-move",0.01)):
+            with self.subTest(scenario=scenario):
+                with tempfile.TemporaryDirectory(prefix="mupi-dicerace-resume-") as tmp:
+                    dest=Path(tmp)
+                    for name in ("index.html","app.js","style.css","mupibox-sdk.js"):
+                        shutil.copy2(app/name,dest/name)
+                    js=(dest/"app.js").read_text(encoding="utf-8")
+                    trailer="reset();\n})();"
+                    self.assertIn(trailer,js)
+                    js=js.replace(trailer,
+                        f'$("playercount").value="2";reset();turn=2;Math.random=()=>{random_value};'
+                        "window.__boardSnapshot=()=>JSON.stringify(b);computer();\n})();")
+                    (dest/"app.js").write_text(js,encoding="utf-8")
+                    html=(dest/"index.html").read_text(encoding="utf-8")
+                    bridge=(
+                        '<script>window.__MUPIBOX_BRIDGE__={'
+                        'subscribe:fn=>{window.__emit=fn;},'
+                        'invoke:()=>Promise.resolve({})};</script>'
+                        '<script src="mupibox-sdk.js"></script>'
+                    )
+                    html=html.replace('<script src="mupibox-sdk.js"></script>',bridge)
+                    probe="""<script src="app.js"></script>
+                    <script>
+                    setTimeout(()=>{
+                      window.__emit({event:'lifecycle.pause',payload:{}});
+                      document.body.dataset.paused='yes';
+                    },400);
+                    setTimeout(()=>{
+                      window.__emit({event:'lifecycle.resume',payload:{}});
+                      document.body.dataset.resumed='yes';
+                    },500);
+                    setTimeout(()=>{
+                      document.body.dataset.result=document.getElementById('turn').textContent;
+                      document.body.dataset.board=window.__boardSnapshot();
+                    },2900);
+                    </script>"""
+                    html=html.replace('<script src="app.js"></script>',probe)
+                    (dest/"index.html").write_text(html,encoding="utf-8")
+                    run=subprocess.run([
+                        BROWSER,"--headless","--no-sandbox","--disable-gpu",
+                        "--disable-dev-shm-usage","--disable-background-networking",
+                        "--virtual-time-budget=3300","--window-size=800,480",
+                        "--dump-dom",(dest/"index.html").as_uri(),
+                    ],capture_output=True,text=True,timeout=22)
+                    self.assertEqual(run.returncode,0,run.stderr[-500:])
+                    self.assertIn('data-paused="yes"',run.stdout)
+                    self.assertIn('data-resumed="yes"',run.stdout)
+                    if scenario=="six":
+                        # Without resume, the AI is stuck on a 6 with all pieces home.
+                        self.assertIn(
+                          'data-board="[[-1,-1,-1,-1],[-1,-1,-1,-1],[0,-1,-1,-1],[-1,-1,-1,-1]]"',
+                          run.stdout)
+                    else:
+                        # Three invalid AI rolls must pass the turn back to Rot.
+                        self.assertIn('data-result="Rot · DU BIST DRAN"',run.stdout)
+
+
 if __name__=="__main__":
     unittest.main()
