@@ -46,29 +46,92 @@ $('reset').onclick=()=>{reset();save();};
 $('exit').onclick=()=>{stop();sdk.exit();};
 $('demo').onclick=()=>{if(demo){stop();return;}if(mode()==='free')$('mode').value='staff';index=0;progress=0;demo=true;generation++;sound(song().notes[0]);refresh();};
 for(const id of ['volume','instrument'])$(id).onchange=()=>sdk.storage.set(id,$(id).value).catch(()=>{});
+// Drawing is pixel-ratio aware so the staff and falling notes remain sharp on Qt touchscreens.
+function roundedPath(g,x,y,w,h,r) {
+  const q=Math.min(r,w/2,h/2);
+  g.beginPath();g.moveTo(x+q,y);g.lineTo(x+w-q,y);
+  g.quadraticCurveTo(x+w,y,x+w,y+q);g.lineTo(x+w,y+h-q);
+  g.quadraticCurveTo(x+w,y+h,x+w-q,y+h);g.lineTo(x+q,y+h);
+  g.quadraticCurveTo(x,y+h,x,y+h-q);g.lineTo(x,y+q);
+  g.quadraticCurveTo(x,y,x+q,y);g.closePath();
+}
 function draw() {
-  const c=$('score'), w=c.clientWidth,h=c.clientHeight;
-  if(c.width!==w||c.height!==h){c.width=w;c.height=h;}
-  const g=c.getContext('2d');g.clearRect(0,0,w,h);
-  if(mode()==='free'){g.fillStyle='#aabbdc';g.font='24px sans-serif';g.textAlign='center';g.fillText('C · D · E · F · G · A · H · C',w/2,h/2);return;}
+  const c=$('score'),w=c.clientWidth,h=c.clientHeight;
+  if(w<1||h<1)return;
+  const dpr=Math.min(2,window.devicePixelRatio||1),pw=Math.round(w*dpr),ph=Math.round(h*dpr);
+  if(c.width!==pw||c.height!==ph){c.width=pw;c.height=ph;}
+  const g=c.getContext('2d');
+  g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
+  if(mode()==='free'){
+    g.textAlign='center';g.font='700 '+Math.min(21,h*.19)+'px system-ui,sans-serif';
+    g.fillStyle='#e7f1ff';g.shadowColor='#55b6ff';g.shadowBlur=8;
+    g.fillText('Tippe eine Taste zum Start',w/2,h*.48);
+    g.shadowBlur=0;g.font='14px system-ui,sans-serif';g.fillStyle='#a9cbed';
+    g.fillText('C  ·  D  ·  E  ·  F  ·  G  ·  A  ·  H  ·  C',w/2,h*.72);
+    return;
+  }
   const s=song(),start=Math.max(0,index-1);
   if(mode()==='staff') {
-    const gap=Math.min(15,h/8),bottom=h*.72;
-    g.strokeStyle='#7285ab';g.lineWidth=1;
-    for(let j=0;j<5;j++){g.beginPath();g.moveTo(10,bottom-j*gap);g.lineTo(w-10,bottom-j*gap);g.stroke();}
+    const gap=Math.min(16,Math.max(10,h/9)),bottom=h*.73;
+    const lineLeft=56,lineRight=w-20;
+    g.lineWidth=1.3;g.strokeStyle='#739ac7';
+    for(let j=0;j<5;j++){
+      const y=bottom-j*gap;
+      g.beginPath();g.moveTo(lineLeft,y);g.lineTo(lineRight,y);g.stroke();
+    }
+    // Draw the clef as vector curves: Qt images can lack the Unicode music font.
+    g.save();g.translate(40,bottom-gap*1.65);g.scale(gap/16,gap/16);
+    g.strokeStyle='#e2f3ff';g.lineWidth=2.8;g.lineCap='round';g.lineJoin='round';
+    g.beginPath();
+    g.moveTo(6,48);
+    g.bezierCurveTo(4,22,-5,-8,5,-33);
+    g.bezierCurveTo(17,-58,9,-62,-2,-49);
+    g.bezierCurveTo(-15,-31,8,-12,8,10);
+    g.bezierCurveTo(9,31,-8,42,-20,28);
+    g.bezierCurveTo(-29,17,-17,1,-5,1);
+    g.bezierCurveTo(12,1,19,23,7,33);
+    g.bezierCurveTo(-3,42,-14,35,-12,26);
+    g.stroke();
+    g.fillStyle='#e2f3ff';g.beginPath();g.arc(-11,27,3.5,0,Math.PI*2);g.fill();g.restore();
+    const noteWidth=(w-112)/8;
     for(let j=start;j<Math.min(s.notes.length,start+8);j++){
-      const x=45+(j-start)*(w-80)/8,y=bottom+gap-music.white.indexOf(s.notes[j])*gap/2;
-      g.fillStyle=j===index?'#ffe16b':'#c8d9f4';g.strokeStyle=g.fillStyle;
-      if(s.notes[j]==='C4'){g.beginPath();g.moveTo(x-15,y);g.lineTo(x+15,y);g.stroke();}
-      g.beginPath();g.ellipse(x,y,9,6,-.25,0,Math.PI*2);
-      if(s.beats[j]>=2)g.stroke();else g.fill();
-      g.beginPath();g.moveTo(x+8,y);g.lineTo(x+8,y-32);g.stroke();
+      const i=music.white.indexOf(s.notes[j]);
+      if(i<0)continue;
+      const x=84+(j-start)*noteWidth,y=bottom+gap-i*gap/2;
+      const active=j===index,shade=active?'#ffe169':'#c5e3fc';
+      g.save();if(active){g.shadowColor='#ffda4a';g.shadowBlur=14;}
+      g.fillStyle=shade;g.strokeStyle=shade;g.lineWidth=2.2;
+      if(s.notes[j]==='C4'){
+        g.beginPath();g.moveTo(x-12,y);g.lineTo(x+12,y);g.stroke();
+      }
+      g.beginPath();g.ellipse(x,y,Math.min(9,gap*.6),Math.min(6,gap*.38),-.25,0,Math.PI*2);
+      if(s.beats[j]>=2){g.fillStyle='#113c72';g.fill();g.stroke();}else g.fill();
+      const dir=y<bottom-2*gap?-1:1;
+      g.beginPath();
+      if(dir===1){g.moveTo(x+8,y);g.lineTo(x+8,y-31);}
+      else{g.moveTo(x-8,y);g.lineTo(x-8,y+31);}
+      g.stroke();g.restore();
     }
   } else {
-    g.strokeStyle='#7285ab';g.beginPath();g.moveTo(0,h-4);g.lineTo(w,h-4);g.stroke();
+    // Falling notes stay exactly aligned with the eight white keys below.
+    const keyW=w/8,hitY=h-12;
+    g.fillStyle='#2165aa15';
+    for(let k=0;k<8;k++){g.fillRect(k*keyW,0,keyW-1,h);}
+    g.strokeStyle='#67c8ff';g.lineWidth=2;
+    g.shadowColor='#33baff';g.shadowBlur=9;
+    g.beginPath();g.moveTo(0,hitY);g.lineTo(w,hitY);g.stroke();g.shadowBlur=0;
     for(let j=index;j<Math.min(s.notes.length,index+4);j++){
-      const k=music.white.indexOf(s.notes[j]),x=(k+.5)*w/8,y=h-24-(j-index+1-progress)*h*.3;
-      g.fillStyle=j===index?'#ffe16b':'#8aa9e8';g.fillRect(x-w/32,y,w/16,22);
+      const k=music.white.indexOf(s.notes[j]);
+      if(k<0)continue;
+      const x=(k+.5)*keyW,y=hitY-25-(j-index+1-progress)*h*.28;
+      if(y<-28||y>h)continue;
+      const active=j===index,width=Math.min(47,keyW*.64),height=Math.min(21,h*.16);
+      g.save();if(active){g.shadowColor='#ffe169';g.shadowBlur=14;}
+      roundedPath(g,x-width/2,y,width,height,5);
+      const fill=g.createLinearGradient(0,y,0,y+height);
+      fill.addColorStop(0,active?'#fff6aa':'#aed9ff');
+      fill.addColorStop(1,active?'#ffca33':'#5d95e0');
+      g.fillStyle=fill;g.fill();g.restore();
     }
   }
 }
