@@ -77,3 +77,7 @@ Kehre nach Änderungen aus einem Buch ins Regal zurück oder starte die App neu.
 ## Quellen und Lizenzen
 
 **Henne und Adler**: Text von Ann Nduku, Illustrationen von Wiehan de Jager, deutsche Übersetzung von Anna Westpfahl. [Storybooks African Languages / African Storybook](https://storybooksafricanlanguages.net/stories/de/0158/) · [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+
+## Gerätetest
+
+Der App-Entwickler hat die drei Vorlesetasten und eigene SMB-Bücher auf MuPiBox NG Alpha 65 getestet.
