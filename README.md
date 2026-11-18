@@ -14,6 +14,17 @@ Eine kindgerechte, eigenständige Flottensuche-App für das 5-Zoll-Touchdisplay:
 - [Paket erzeugen](tools/build_wasserschlacht.py): python3 tools/build_wasserschlacht.py
 - [Automatisierte Tests](tests/mupi_wasserschlacht.test.cjs)
 
+## MuPi Klavier (Lernen)
+
+Die Community-Lern-App **MuPi Klavier** bietet freies Spielen, Notenblatt und
+fallende Noten auf dem 5-Zoll-Touchdisplay (800 × 480). Das überarbeitete
+Design verwendet einen richtigen Violinschlüssel und das freigegebene
+MuPi-Klavier-Cover.
+
+[![MuPi Klavier – Notenblatt mit hervorgehobener G4-Taste](docs/screenshots/mupi-klavier/notenblatt.png)](examples/mupi-klavier/README.md)
+
+[**Anleitung und alle drei Screenshots**](examples/mupi-klavier/README.md)
+
 ## Neue Community-App-Vorschauen (November 2026)
 
 Zehn eigenständige Prototypen liegen unter `examples/mupi-*`:
