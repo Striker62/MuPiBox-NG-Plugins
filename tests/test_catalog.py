@@ -31,7 +31,7 @@ def validate(catalog):
         seen.add(app["id"])
         if not TAG.fullmatch(app["releaseTag"]) or not ASSET.fullmatch(app["asset"]) or not SHA.fullmatch(app["sha256"]):
             raise ValueError("unsafe artifact locator or checksum")
-        if not 1 <= len(app["name"]) <= 100 or len(app["description"]) > 1000 or len(app["author"]) > 100 or app["category"] not in ("games","learning","creative"):
+        if not 1 <= len(app["name"]) <= 100 or len(app["description"]) > 1000 or len(app["author"]) > 100 or app["category"] not in ("games","learning","creative","tools","other"):
             raise ValueError("invalid metadata")
         perms = app["permissions"]
         if not isinstance(perms, list) or len(perms) != len(set(perms)) or not set(perms) <= PERMISSIONS:
