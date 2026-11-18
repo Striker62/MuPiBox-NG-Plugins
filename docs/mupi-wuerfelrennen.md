@@ -3,6 +3,20 @@
 Eigenständiges, offline spielbares Würfel-Brettspiel für 2–4 Spieler (Menschen und KI).
 Optimiert für 800 × 480 Pixel, Touch und MuPiBox-Controller.
 
+## Screenshots (aktuelle Version 0.2.8)
+
+![MuPis Würfelrennen im Hochglanz-Design, 800 × 480](../examples/mupi-wuerfelrennen/screenshot-1-start.webp)
+
+Weitere Spielansichten, darunter **Sechs/Pflichtausfahrt**, **laufende Partie**,
+**Zielgang** und **Sieg**, stehen in der
+[README direkt bei der Anwendung](../examples/mupi-wuerfelrennen/README.md).
+Alle Bilder stammen aus Chromium mit legalen Spielzuständen des
+unveränderten Spielcodes (keine Mockups). Erneut erstellen mit
+`python3 tools/capture_mupi_wuerfelrennen_screenshots.py`.
+
+Installationspaket ohne README und Screenshots bauen mit
+`python3 tools/build_mupi_wuerfelrennen.py`.
+
 ## Spielregeln
 
 - Alle vier Figuren starten im **Haus**. Mit einer **6** zieht eine Figur auf das
@@ -31,7 +45,7 @@ Optimiert für 800 × 480 Pixel, Touch und MuPiBox-Controller.
 ## Entwicklung
 
     node --test tests/community_board_games.test.cjs
-    python3 tools/mupiapp.py pack examples/mupi-wuerfelrennen dist/mupi-wuerfelrennen.mupiapp
+    python3 tools/build_mupi_wuerfelrennen.py
     python3 tools/mupiapp.py validate dist/mupi-wuerfelrennen.mupiapp
 
 Keine zusätzlichen Berechtigungen außer controller, keine Netzwerknutzung.
