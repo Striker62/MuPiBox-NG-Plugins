@@ -1,0 +1,37 @@
+# MuPis Würfelrennen
+
+Eigenständiges, offline spielbares Würfel-Brettspiel für 2–4 Spieler (Menschen und KI).
+Optimiert für 800 × 480 Pixel, Touch und MuPiBox-Controller.
+
+## Spielregeln
+
+- Alle vier Figuren starten im **Haus**. Mit einer **6** zieht eine Figur auf das
+  eigene Startfeld. Ist das möglich, hat dieser Zug immer Vorrang; die Figur
+  kommt automatisch heraus. Ein Gegner auf dem Startfeld wird geschlagen.
+- Steht eine eigene Figur auf dem Startfeld, **muss sie bei nächster legaler
+  Gelegenheit weiterziehen**, damit das Startfeld wieder frei wird. Ist genau
+  dieser Zug blockiert, darf eine andere Figur ziehen.
+- Wenn **keine Figur außerhalb des Hauses** mit einer Zahl von 1 bis 6
+  einen legalen Zug machen kann, gibt es bis zu **drei Wurfversuche**.
+  Andernfalls einen Versuch pro regulärem Zug.
+- Eine **6 nach einem gültigen Zug** erlaubt einen weiteren Wurf.
+- Eigene Figuren dürfen nicht auf demselben äußeren Feld stehen. Im privaten
+  Zielgang dürfen eigene Figuren weder übersprungen noch überholt werden.
+  Die Zielfelder 52–55 müssen mit genauer Augenzahl erreicht werden.
+- Wer zuerst alle vier Figuren in seinen Zielgang gebracht hat, gewinnt.
+
+## Steuerung
+
+- **Touch:** „WÜRFELN“ antippen; danach eine erlaubte Figur antippen.
+- **Controller:** A oder Start zum Würfeln, Pfeiltasten zur Figurwahl, A
+  zum Ziehen, BACK zum Verlassen.
+- Verfügbare Figuren sind optisch hervorgehoben. Bei einer Pflichtausfahrt
+  nach einer Sechs wird die Hausfigur automatisch eingesetzt.
+
+## Entwicklung
+
+    node --test tests/community_board_games.test.cjs
+    python3 tools/mupiapp.py pack examples/mupi-wuerfelrennen dist/mupi-wuerfelrennen.mupiapp
+    python3 tools/mupiapp.py validate dist/mupi-wuerfelrennen.mupiapp
+
+Keine zusätzlichen Berechtigungen außer controller, keine Netzwerknutzung.

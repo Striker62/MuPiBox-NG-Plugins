@@ -13,7 +13,7 @@ const DiceRace=(()=>{
   const at=(starts[p]+progress)%52;
   return b.some((row,q)=>row.some(v=>v>=0&&v<52&&(starts[q]+v)%52===at));
  }
- function possible(b,p,die){
+ function rawMoves(b,p,die){
   if(!Number.isInteger(die)||die<1||die>6)return [];
   const moves=[];
   for(let k=0;k<4;k++){
@@ -29,6 +29,28 @@ const DiceRace=(()=>{
   }
   return moves;
  }
+ // Pflichtzug: beim Sechser zuerst aus der Basis; ein eigenes Startfeld
+ // wird ansonsten bei der nächsten möglichen Gelegenheit geräumt.
+ function possible(b,p,die){
+  const moves=rawMoves(b,p,die);
+  if(!moves.length)return moves;
+  const waiting=b[p].some(v=>v===-1);
+  if(waiting&&die===6){
+   const exits=moves.filter(m=>b[p][m.piece]===-1);
+   if(exits.length)return exits;
+  }
+  // Die eigene Startposition darf nicht unnötig besetzt bleiben.
+  const clearStart=moves.filter(m=>b[p][m.piece]===0);
+  if(clearStart.length)return clearStart;
+  return moves;
+ }
+ // Drei Chancen, wenn keine bereits ausgezogene Figur mit 1..6 ziehen kann.
+ // Bei vorhandener beweglicher Spielfigur nur ein normaler Wurf.
+ function rollLimit(b,p){
+  const canMoveOutside=Array.from({length:6},(_,i)=>i+1).some(die=>
+   rawMoves(b,p,die).some(m=>b[p][m.piece]>=0));
+  return canMoveOutside?1:3;
+ }
  function apply(b,p,m){const out=b.map(row=>row.slice());out[p][m.piece]=m.to;for(const c of m.captured)out[c.player][c.piece]=-1;return out;}
  function choose(b,p,die,level){
   const ms=possible(b,p,die);if(!ms.length)return null;
@@ -40,7 +62,7 @@ const DiceRace=(()=>{
     return {m,score:score+Math.random()*(level==="medium"?10:1)};
   });ranked.sort((a,b)=>b.score-a.score);return ranked[0].m;
  }
- return {palette,starts,names,state,possible,apply,choose};
+ return {palette,starts,names,state,possible,rollLimit,apply,choose};
 })();
 if(typeof module!=="undefined")module.exports=DiceRace;
 if(typeof document!=="undefined")(()=>{
@@ -72,23 +94,39 @@ const base=(p,j)=>{
  return [OFFSET+x*CELL+xx*(54+(j%2)*30),OFFSET+y*CELL+yy*(54+Math.floor(j/2)*30)];
 };
 const S=(tag,attrs={})=>{const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));return e;};
+const defs=S("defs");svg.insertBefore(defs,staticLayer);
+function gradient(id,top,bottom){
+ const g=S("linearGradient",{id,x1:"0%",y1:"0%",x2:"15%",y2:"100%"});
+ g.append(S("stop",{offset:"0%","stop-color":top}),S("stop",{offset:"100%","stop-color":bottom}));
+ defs.append(g);
+}
+gradient("trackA","#477f9d","#1d4b69");
+gradient("trackB","#3c7192","#174160");
+gradient("centerGold","#22617b","#10283d");
+const shiny=["#ffadb3","#fff3a0","#77e9d4","#bec5ff"];
+const shaded=["#d63d59","#d79b35","#128878","#5367d8"];
+for(let p=0;p<4;p++)gradient("piece"+p,shiny[p],shaded[p]);
 for(let i=0;i<52;i++){
  const [x,y]=pos(i),owner=DiceRace.starts.indexOf(i);
- const r=S("rect",{x:x-14.8,y:y-14.8,width:29.6,height:29.6,rx:5,fill:owner>=0?DiceRace.palette[owner]:i%2?"#366587":"#295271",stroke:"#89aec5","stroke-width":1.3});
+ const r=S("rect",{x:x-14.8,y:y-14.8,width:29.6,height:29.6,rx:5.8,fill:owner>=0?DiceRace.palette[owner]:i%2?"url(#trackA)":"url(#trackB)",stroke:owner>=0?"#fff2bd":"#91bfd2","stroke-width":1.25});
  staticLayer.append(r);
+ staticLayer.append(S("path",{d:"M"+(x-10)+" "+(y-10)+"h20",stroke:"#e0f7fb","stroke-width":1.2,opacity:.24,"stroke-linecap":"round","pointer-events":"none"}));
 }
 for(let p=0;p<4;p++){
  for(let j=0;j<4;j++){
   const [x,y]=lane(p,j);
-  staticLayer.append(S("rect",{x:x-14,y:y-14,width:28,height:28,rx:6,fill:DiceRace.palette[p],opacity:.53,stroke:"#fff","stroke-width":1.3}));
+  staticLayer.append(S("rect",{x:x-14,y:y-14,width:28,height:28,rx:6,fill:DiceRace.palette[p],opacity:.63,stroke:"#e4eef3","stroke-width":1.2}));
   const [bx,by]=base(p,j);
   staticLayer.append(S("circle",{cx:bx,cy:by,r:15.5,fill:"#10263b",stroke:DiceRace.palette[p],"stroke-width":2.2,opacity:.88}));
  }
 }
-staticLayer.append(S("circle",{cx:WIDTH/2,cy:WIDTH/2,r:25,fill:"#183b55",stroke:"#b6d8c9","stroke-width":3}));
-const centerLabel=S("text",{x:WIDTH/2,y:WIDTH/2+6,"text-anchor":"middle","font-size":22,fill:"#ffe4ab","font-weight":"bold"});
+staticLayer.append(S("circle",{cx:WIDTH/2,cy:WIDTH/2,r:27.5,fill:"#092b40",stroke:"#3e7a84","stroke-width":3}));
+staticLayer.append(S("circle",{cx:WIDTH/2,cy:WIDTH/2,r:25,fill:"url(#centerGold)",stroke:"#eaca76","stroke-width":2.5}));
+const star=S("text",{x:WIDTH/2,y:WIDTH/2-9,"text-anchor":"middle","font-size":11,fill:"#ffdf7d"});
+star.textContent="✦";staticLayer.append(star);
+const centerLabel=S("text",{x:WIDTH/2,y:WIDTH/2+9,"text-anchor":"middle","font-size":20,fill:"#ffe4ab","font-weight":"bold"});
 centerLabel.textContent="MuPi";staticLayer.append(centerLabel);
-let b,players=4,human=1,turn=0,die=0,ended=false,epoch=0,selectedPiece=0,aiTimer=0,selectedNodes=[];
+let b,players=4,human=1,turn=0,die=0,ended=false,epoch=0,selectedPiece=0,aiTimer=0,attempts=0,maxAttempts=3;
 const active=()=>players===2?[0,2]:players===3?[0,1,2]:[0,1,2,3];
 const isHuman=()=>active().indexOf(turn)<human;
 const locate=(p,k)=>{
@@ -96,10 +134,12 @@ const locate=(p,k)=>{
 };
 const nodes={};for(let p=0;p<4;p++)for(let k=0;k<4;k++){
  const g=S("g");g.style.cursor="pointer";g.addEventListener("click",()=>select(k,p));
- const c=S("circle",{cx:0,cy:0,r:14.3,fill:DiceRace.palette[p],stroke:"#10263c","stroke-width":2.7});
+ const shadow=S("circle",{cx:1.3,cy:2,r:15.2,fill:"#071b29",opacity:.65,"pointer-events":"none"});
+ const c=S("circle",{cx:0,cy:0,r:14.3,fill:"url(#piece"+p+")",stroke:"#10263c","stroke-width":2.7});
+ const shine=S("ellipse",{cx:-3,cy:-6.5,rx:7.5,ry:3.4,fill:"#fff",opacity:.28,"pointer-events":"none"});
  const tx=S("text",{x:0,y:5,"text-anchor":"middle","font-size":14,"font-weight":"bold",fill:"#092438","pointer-events":"none"});tx.textContent=k+1;
  const area=S("circle",{cx:0,cy:0,r:19,fill:"transparent"});
- g.append(c,tx,area);pieceLayer.append(g);nodes[p+"-"+k]={g,c};
+ g.append(shadow,c,shine,tx,area);pieceLayer.append(g);nodes[p+"-"+k]={g,c};
 }
 const pieceButtons=Array.from({length:4},(_,k)=>{
  const e=document.createElement("button");e.textContent=k+1;e.addEventListener("click",()=>select(k,turn));$("pieces").append(e);return e;
@@ -123,12 +163,23 @@ function render(){
  }
  for(let p=0;p<4;p++)if(!active().includes(p))for(let k=0;k<4;k++)nodes[p+"-"+k].g.style.display="none";
  $("turn").textContent=ended?names[turn]+" gewinnt!":names[turn]+" · "+(isHuman()?"DU BIST DRAN":"MuPi DENKT");
- $("score").textContent=active().map(p=>names[p]+" "+b[p].filter(v=>v>=52).length+"/4").join("  ·  ");
+ $("turn").classList.toggle("winner",ended);
+ $("status").classList.toggle("won",ended);
+ const scoreNodes=[];
+ for(const [i,p] of active().entries()){
+  if(i){const sep=document.createElement("span");sep.className="score-separator";sep.textContent="·";scoreNodes.push(sep);}
+  const tag=document.createElement("span");tag.className="score-player";
+  tag.style.setProperty("--player-color",DiceRace.palette[p]);
+  tag.textContent=names[p]+" "+b[p].filter(v=>v>=52).length+"/4";
+  scoreNodes.push(tag);
+ }
+ $("score").replaceChildren(...scoreNodes);
+ $("attempts").textContent=ended?"Sieg":die?"Zug wählen":maxAttempts===3?"Wurf "+Math.min(attempts+1,3)+"/3":"Dein Zug";
  $("dice").textContent=die?faces[die-1]:"⚄";
  $("roll").disabled=ended||!isHuman()||die>0;
  for(let k=0;k<4;k++){
   const btn=pieceButtons[k];btn.disabled=ended||!isHuman()||!playable.has(k);
-  btn.classList.toggle("active",selectedPiece===k);
+  btn.classList.toggle("active",selectedPiece===k&&playable.has(k)&&isHuman()&&!ended);
  }
 }
 function finishMove(m){
@@ -136,7 +187,11 @@ function finishMove(m){
  const face=die;
  status(names[turn]+" zieht Stein "+(m.piece+1)+(m.captured.length?" – rausgeworfen!":""));
  if(b[turn].every(v=>v>=52)){ended=true;die=0;status(names[turn]+" GEWINNT!");render();return;}
- if(face===6){die=0;render();computer();}else next();
+ if(face===6){
+  attempts=0;maxAttempts=DiceRace.rollLimit(b,turn);die=0;
+  status(names[turn]+" hat eine Sechs – Extrawurf!");
+  render();computer();
+ }else next();
 }
 function select(k,p=turn){
  selectedPiece=k;if(p!==turn||ended||!isHuman()||!die){render();return;}
@@ -146,20 +201,40 @@ function select(k,p=turn){
 }
 function next(){
  die=0;const list=active();turn=list[(list.indexOf(turn)+1)%list.length];
+ attempts=0;maxAttempts=DiceRace.rollLimit(b,turn);selectedPiece=0;
+ status(names[turn]+" ist dran."+(maxAttempts===3?" Drei Wurfversuche.":""));
  render();computer();
 }
 function rolled(){
  if(ended||die)return;
+ attempts++;
  die=1+Math.floor(Math.random()*6);
- const ms=DiceRace.possible(b,turn,die);status(names[turn]+" würfelt "+die+".");
+ const ms=DiceRace.possible(b,turn,die);
+ if(ms.length&&!ms.some(m=>m.piece===selectedPiece))selectedPiece=ms[0].piece;
+ const forcedExit=die===6&&ms.length&&ms.every(m=>b[turn][m.piece]===-1);
+ const mustClear=ms.length&&ms.every(m=>b[turn][m.piece]===0);
+ status(forcedExit?"Sechs! Eine Figur zieht aus dem Haus.":mustClear?
+  "Startfeld freimachen: Figur "+(ms[0].piece+1)+" ziehen.":names[turn]+" würfelt "+die+".");
  const diceEl=$("dice");diceEl.classList.remove("roll");void diceEl.offsetWidth;diceEl.classList.add("roll");
  render();
  if(!ms.length){
-  const id=epoch;aiTimer=setTimeout(()=>{if(id!==epoch||ended)return;status("Kein gültiger Zug.");next();},180);
+  const id=epoch;aiTimer=setTimeout(()=>{
+   if(id!==epoch||ended)return;
+   die=0;
+   if(attempts<maxAttempts){
+    status("Kein Zug möglich – nächster Versuch ("+(attempts+1)+"/"+maxAttempts+").");
+    render();computer();
+   }else{status("Kein Zug möglich – nächster Spieler.");next();}
+  },300);
+ }else if(forcedExit){
+  // Alle Basisfiguren sind gleichwertig: automatische Pflichtausfahrt.
+  const id=epoch;aiTimer=setTimeout(()=>{
+   if(id!==epoch||ended||die!==6)return;finishMove(ms[0]);
+  },260);
  }else if(!isHuman()){
   const id=epoch;aiTimer=setTimeout(()=>{if(id!==epoch||ended)return;
    const move=DiceRace.choose(b,turn,die,$("difficulty").value);if(move)finishMove(move);
-  },180);
+  },220);
  }
 }
 function computer(){
@@ -171,7 +246,8 @@ function reset(){
  epoch++;clearTimeout(aiTimer);
  players=+ $("playercount").value;human=Math.min(+ $("human").value,players);$("human").value=human;
  b=DiceRace.state(players);turn=active()[0];die=0;ended=false;selectedPiece=0;
- status("Sechs würfeln, um ins Rennen zu starten!");render();computer();
+ attempts=0;maxAttempts=DiceRace.rollLimit(b,turn);
+ status("Du hast drei Versuche, eine Sechs zu würfeln.");render();computer();
 }
 $("roll").onclick=()=>{if(isHuman()&&!die)rolled();};
 $("restart").onclick=reset;
