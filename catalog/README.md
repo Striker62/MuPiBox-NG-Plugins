@@ -31,6 +31,25 @@ no older than the release; matching versions must match name and permissions.
 The installer still checks published bytes against the catalog and asks for
 approval of newly requested permissions when a new release is installed.
 
+## Veröffentlichungs- und Aktualisierungsdaten
+
+`app-dates.json` ist die **separate, optionale** Metadaten-Datei für den NG-Admin
+(ab alpha.61). Sie enthält für jede App-ID `publishedAt` und `updatedAt`
+als UTC-ISO-8601-Zeitstempel. `publishedAt` ist die erste Aufnahme in
+`apps.json`, `updatedAt` der letzte Commit, der deren Katalogeintrag
+geändert hat. Die Werte wurden aus der Git-Historie des Katalogs ermittelt.
+Bei jeder neuen Veröffentlichung oder Änderung der App sind die Werte in
+`app-dates.json` zu pflegen; das erste Veröffentlichungsdatum bleibt gleich.
+Der neue Aktualisierungswert entspricht dem Commit-Zeitpunkt der Katalogänderung.
+Diese Daten dienen **nur der Sortierung** und werden nicht zur Prüfung des
+heruntergeladenen Pakets verwendet.
+
+Die separate Datei ist wichtig: Ältere NG-Versionen verwenden beim Laden
+von `apps.json` einen strikten Decoder und würden unbekannte Datumsfelder
+sonst ablehnen. Ist `app-dates.json` nicht erreichbar, bleibt der
+Katalog installierbar; Datumssortierung fällt auf die alphabetische
+Reihenfolge zurück.
+
 ## Camera-capable catalog apps
 
 A catalog entry with the `camera` permission must explain why it needs an attached USB/V4L2 camera. Admin approval at installation does **not** turn the camera on: the trusted local touchscreen asks for explicit session consent each time. A red Stop indicator is always visible. Camera apps are local-only; media is not uploaded or persisted by the host. For the experimental `official.webcam-preview` app, device capture has not been validated with physical hardware on Box 85.

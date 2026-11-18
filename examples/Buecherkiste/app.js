@@ -2,7 +2,7 @@
 let shelfEntries=[],shelfPage=0,shelfCols=3,shelfRows=2;
 const bookInfo=Object.assign(Object.create(null),{ole:{pageCount:15,title:'Ole und der verschwundene Knopf',imagePattern:'images/{page:02d}.jpg',layout:'full-page'},henne:{pageCount:10,title:'Henne und Adler',imagePattern:'images/{page_plus_one:02d}.jpg',layout:'image-and-text'}});
 const bookFolder=Object.assign(Object.create(null),{ole:'ole',henne:'henne-und-adler'});const bookTexts=Object.create(null);
-const bookSpeech=Object.create(null);let speechAvailable=false;
+const bookSpeech=Object.create(null);let speechAvailable=false,speechPreRendering=false,speechMode='manual',speechRun=0,speaking=false;const preparedPages=new Set();
 const pageFiles=Object.assign(Object.create(null),{ole:[],henne:[]});const MAX_PAGES=200;
 
 // SMB files remain content: no raw SMB/HTTP routes and no executable image formats.
@@ -48,29 +48,69 @@ async function sharedImage(path){
 }
 function releasePage(){++pageRender;if(pageObjectURL){URL.revokeObjectURL(pageObjectURL);pageObjectURL=null}}
 function releaseCovers(){++coverRender;for(const url of coverURLs)URL.revokeObjectURL(url);coverURLs.clear()}
-window.addEventListener('pagehide',()=>{++shelfLoad;releasePage();releaseCovers()});
+window.addEventListener('pagehide',()=>{void haltSpeech();++shelfLoad;releasePage();releaseCovers()});
+function speechForPage(which,page){
+ if(page<1||page>getImageTotal(which))return '';
+ const lines=bookSpeech[which]||[];
+ const fallback=bookInfo[which].layout==='image-and-text'?
+  (bookTexts[which]||(!sharedBooks[which]&&which==='henne'?henText:[])):[];
+ return String(lines[page-1]||fallback[page-1]||'').trim();
+}
 function pageSpeechText(){
- if(reader.hidden||isAttributionPage())return '';
- const lines=bookSpeech[book]||[];
- const fallback=bookInfo[book].layout==='image-and-text'?(bookTexts[book]||(!sharedBooks[book]&&book==='henne'?henText:[])):[];
- return String(lines[current-1]||fallback[current-1]||'').trim();
+ return reader.hidden||isAttributionPage()?'':speechForPage(book,current);
 }
 function updateSpeakControl(){
  const button=$('read-aloud'),text=pageSpeechText();
  button.hidden=!speechAvailable||!text||Array.from(text).length>600;
+ button.textContent=speaking?'■ Stopp':'▶ Vorlesen';
+ $('read-mode').hidden=!speechAvailable;
+ if(!reader.hidden)prepareFollowingPages();
+}
+function prepareFollowingPages(){
+ if(!speechAvailable||!speechPreRendering||!window.MuPiBoxSDK?.tts?.prepare)return;
+ for(let page=current;page<=Math.min(getImageTotal(book),current+2);page++){
+  const text=speechForPage(book,page),key=book+':'+page;
+  if(!text||Array.from(text).length>600||preparedPages.has(key))continue;
+  preparedPages.add(key);
+  void window.MuPiBoxSDK.tts.prepare(text).catch(e=>console.warn('TTS-Vorbereitung fehlgeschlagen:',e));
+ }
 }
 async function refreshSpeechAvailability(){
- try{speechAvailable=(await window.MuPiBoxSDK?.tts?.status())?.available===true}
- catch(e){speechAvailable=false}
+ try{
+  const status=await window.MuPiBoxSDK?.tts?.status();
+  speechAvailable=status?.available===true;
+  speechPreRendering=status?.preRenderingEnabled===true;
+ }catch(e){speechAvailable=false;speechPreRendering=false}
  updateSpeakControl();
 }
-async function readPageAloud(){
+function haltSpeech(){
+ const version=++speechRun;
+ speaking=false;
+ updateSpeakControl();
+ const stop=window.MuPiBoxSDK?.tts?.stop;
+ return {version,done:Promise.resolve(typeof stop==='function'?stop():null).catch(e=>{
+  console.warn('Vorlesen konnte nicht gestoppt werden:',e);
+ })};
+}
+async function readPageAloud(version=speechRun){
  const button=$('read-aloud'),text=pageSpeechText();
- if(button.hidden||button.disabled||!text)return;
- button.disabled=true;
- try{await window.MuPiBoxSDK.tts.speak(text)}
- catch(e){console.warn('Vorlesen nicht verfügbar:',e);button.title='Vorlesen derzeit nicht verfügbar'}
- finally{button.disabled=false}
+ if(speaking){await haltSpeech().done;return}
+ if(button.hidden||!text||version!==speechRun)return;
+ const sdk=window.MuPiBoxSDK?.tts;
+ // Stop also clears the host's three-second anti-flood cooldown.
+ if(typeof sdk?.stop==='function')await sdk.stop();
+ if(version!==speechRun||reader.hidden)return;
+ speaking=true;updateSpeakControl();
+ let finished=false;
+ try{
+  const outcome=await sdk.speak(text,{waitForCompletion:true});
+  finished=outcome?.state==='completed';
+ }catch(e){
+  if(version===speechRun){console.warn('Vorlesen nicht verfügbar:',e);button.title='Vorlesen derzeit nicht verfügbar'}
+ }finally{
+  if(version===speechRun){speaking=false;updateSpeakControl()}
+ }
+ if(finished&&version===speechRun&&speechMode==='continuous'&&current<getTotal()&&!reader.hidden)turn(1);
 }
 
 async function loadSharedShelf(generation){
@@ -256,7 +296,7 @@ function show(){
  }else renderPage(pagePath(book,current));
 }
 function renderPage(resolved){let total=getTotal();if(isAttributionPage()){renderAttribution();updatePageControls();return}if(bookInfo[book].layout!=='image-and-text'){let src=resolved;if(src)$('page').src=src;else $('page').removeAttribute('src');$('page').hidden=false;$('henne-page').hidden=true;$('backdrop').style.backgroundImage=src?'url("'+src+'")':'none';$('credits').hidden=true;}else{$('page').hidden=true;$('henne-page').hidden=false;if(resolved)$('henne-image').src=resolved;else $('henne-image').removeAttribute('src');$('henne-image').onload=()=>requestAnimationFrame(fitHenneText);$('henne-text').innerHTML='';const textInner=document.createElement('div');textInner.id='henne-text-inner';textInner.textContent=(bookTexts[book]||(sharedBooks[book]?[]:henText))[current-1]||'';$('henne-text').appendChild(textInner);$('credits').hidden=book!=='henne';requestAnimationFrame(fitHenneText);}updatePageControls()}
-function updatePageControls(){const total=getTotal();$('counter').textContent=current+' / '+total;$('prev').disabled=current===1;$('next').disabled=current===total;viewport.scrollTop=0;viewport.scrollLeft=0;if(bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText);updateSpeakControl()}function zoom(on){zoomed=on;viewport.classList.toggle('zoom',on);reader.classList.toggle('zoomed',on);$('zoom').textContent=on?'⊟ Ganz':'⌕ Zoom';viewport.scrollTop=0;viewport.scrollLeft=0;if(!on&&bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}async function open(which){void refreshSpeechAvailability();++shelfLoad;book=which;current=1;shelf.hidden=true;reader.hidden=false;$('app-exit').hidden=true;reader.classList.toggle('henne',bookInfo[book].layout==='image-and-text');$('reader-title').textContent=bookInfo[which].title;zoom(false);show();try{await loadBookInfo(which);await scanPages(which)}catch(e){console.warn('Buch nicht vollständig geladen:',which,e)}if(book!==which||reader.hidden)return;$('reader-title').textContent=bookInfo[which].title;show()}
+function updatePageControls(){const total=getTotal();$('counter').textContent=current+' / '+total;$('prev').disabled=current===1;$('next').disabled=current===total;viewport.scrollTop=0;viewport.scrollLeft=0;if(bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText);updateSpeakControl()}function zoom(on){zoomed=on;viewport.classList.toggle('zoom',on);reader.classList.toggle('zoomed',on);$('zoom').textContent=on?'⊟ Ganz':'⌕ Zoom';viewport.scrollTop=0;viewport.scrollLeft=0;if(!on&&bookInfo[book].layout==='image-and-text')requestAnimationFrame(fitHenneText)}async function open(which){void haltSpeech();void refreshSpeechAvailability();++shelfLoad;book=which;current=1;shelf.hidden=true;reader.hidden=false;$('app-exit').hidden=true;reader.classList.toggle('henne',bookInfo[book].layout==='image-and-text');$('reader-title').textContent=bookInfo[which].title;zoom(false);show();try{await loadBookInfo(which);await scanPages(which)}catch(e){console.warn('Buch nicht vollständig geladen:',which,e)}if(book!==which||reader.hidden)return;$('reader-title').textContent=bookInfo[which].title;show()}
 async function loadShelf(){
  const generation=++shelfLoad;
  const holder=document.querySelector('#shelf .books');
@@ -352,5 +392,23 @@ $('app-exit').onclick=async()=>{
  finally{button.disabled=false}
 };
 loadShelf();void refreshSpeechAvailability();
-$('read-aloud').onclick=readPageAloud;
-$('back').onclick=()=>{releasePage();$('page').removeAttribute('src');$('henne-image').removeAttribute('src');$('backdrop').style.backgroundImage='none';reader.hidden=true;shelf.hidden=false;$('app-exit').hidden=false;loadShelf()};function turn(d){let total=getTotal();let n=Math.max(1,Math.min(total,current+d));if(n!==current){current=n;show()}}$('prev').onclick=()=>turn(-1);$('next').onclick=()=>turn(1);$('zoom').onclick=()=>zoom(!zoomed);window.addEventListener('resize',()=>{requestAnimationFrame(fitHenneText);if(!shelf.hidden)renderShelf()});if(window.ResizeObserver){new ResizeObserver(()=>requestAnimationFrame(fitHenneText)).observe($('viewport'));}if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>requestAnimationFrame(fitHenneText));document.addEventListener('keydown',e=>{if(reader.hidden){if(e.key==='ArrowRight')changeShelfPage(1);if(e.key==='ArrowLeft')changeShelfPage(-1);return;}if(e.key==='ArrowRight')turn(1);if(e.key==='ArrowLeft')turn(-1);if(e.key==='Escape')$('back').click()})})();
+window.MuPiBoxSDK?.on?.('lifecycle.pause',()=>{void haltSpeech()});
+$('read-aloud').onclick=()=>readPageAloud();
+$('read-mode').onchange=()=>{
+ speechMode=$('read-mode').value||'manual';
+ const state=haltSpeech();
+ if(speechMode==='continuous')void state.done.then(()=>{if(state.version===speechRun&&!reader.hidden)readPageAloud(state.version)});
+};
+$('back').onclick=()=>{void haltSpeech();releasePage();$('page').removeAttribute('src');$('henne-image').removeAttribute('src');$('backdrop').style.backgroundImage='none';reader.hidden=true;shelf.hidden=false;$('app-exit').hidden=false;loadShelf()};
+function turn(d){
+ const n=Math.max(1,Math.min(getTotal(),current+d));
+ if(n===current)return;
+ const state=haltSpeech();
+ current=n;show();
+ if(speechMode!=='manual')void state.done.then(()=>{
+  if(state.version!==speechRun||reader.hidden)return;
+  if(pageSpeechText())void readPageAloud(state.version);
+  else if(speechMode==='continuous'&&current<getTotal())turn(1);
+ });
+}
+$('prev').onclick=()=>turn(-1);$('next').onclick=()=>turn(1);$('zoom').onclick=()=>zoom(!zoomed);window.addEventListener('resize',()=>{requestAnimationFrame(fitHenneText);if(!shelf.hidden)renderShelf()});if(window.ResizeObserver){new ResizeObserver(()=>requestAnimationFrame(fitHenneText)).observe($('viewport'));}if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>requestAnimationFrame(fitHenneText));document.addEventListener('keydown',e=>{if(reader.hidden){if(e.key==='ArrowRight')changeShelfPage(1);if(e.key==='ArrowLeft')changeShelfPage(-1);return;}if(e.key==='ArrowRight')turn(1);if(e.key==='ArrowLeft')turn(-1);if(e.key==='Escape')$('back').click()})})();

@@ -44,3 +44,44 @@ test('Standalone preview does not pretend to speak through appliance',async()=>{
 test('Bundled Bücherkiste SDK is identical to public SDK',()=>{
  assert.equal(fs.readFileSync(path.join(__dirname,'../examples/Buecherkiste/mupibox-sdk.js'),'utf8'),code);
 });
+
+test('TTS playback completion is opt-in; status, stop and prefetch are session-scoped',async()=>{
+ const calls=[];
+ let polls=0;
+ const window={navigator:{language:'de'},console,localStorage:{getItem:()=>null,setItem(){}},addEventListener(){},
+  __MUPIBOX_BRIDGE__:{invoke:async(method,payload)=>{
+   calls.push({method,payload});
+   if(method==='tts.status')return{enabled:true,available:true,language:'de',state:'playing',speaking:true,canPause:false,preRenderingEnabled:true};
+   if(method==='tts.speak')return{speaking:true,request_id:'abc123'};
+   if(method==='tts.wait')return ++polls===1?{done:false,state:'playing'}:{done:true,state:'completed'};
+   return{ok:true};
+  },subscribe:()=>()=>{}}
+ };
+ vm.runInNewContext(code,{window,console});
+ const sdk=window.MuPiBoxSDK;
+ assert.equal((await sdk.tts.status()).state,'playing');
+ assert.equal((await sdk.tts.status()).preRenderingEnabled,true);
+ assert.equal((await sdk.tts.prepare(' Vorab ')).ok,true);
+ assert.equal((await sdk.tts.stop()).ok,true);
+ const finished=await sdk.tts.speak(' Seite zwei ',{waitForCompletion:true});
+ assert.equal(finished.state,'completed');
+ assert.equal(polls,2);
+ assert.deepEqual(calls.filter(c=>c.method==='tts.wait').map(c=>c.payload.request_id),['abc123','abc123']);
+ assert.equal(calls.some(c=>c.method==='tts.prepare'&&c.payload.text==='Vorab'),true);
+ await assert.rejects(()=>sdk.tts.prepare('x'.repeat(601)),{name:'TypeError'});
+ await assert.rejects(()=>sdk.tts.speak('x',{waitForCompletion:'yes'}),{name:'TypeError'});
+});
+
+
+test('bundled post-speech clip is forwarded only as a validated asset',async()=>{
+ const {sdk,calls}=host();
+ await sdk.tts.speak('Eine Pointe.',{afterClip:'assets/laugh-ionakan-712055.wav'});
+ assert.equal(calls.length,1);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{
+   text:'Eine Pointe.',after_clip:'assets/laugh-ionakan-712055.wav'
+ });
+ for(const invalid of ['../bad.wav','https://example.com/a.wav','assets/../../secret.wav','assets/a.mp3','assets/.hidden.wav','assets/laugh.wav?x']){
+  await assert.rejects(()=>sdk.tts.speak('x',{afterClip:invalid}),{name:'TypeError'});
+ }
+ assert.equal(calls.length,1);
+});

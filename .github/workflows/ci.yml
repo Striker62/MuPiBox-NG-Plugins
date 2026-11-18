@@ -35,6 +35,12 @@ jobs:
           node --check examples/crumbworm/web/logic.js
           node --check examples/crumbworm/web/app.js
           node --check examples/shared/game-i18n.js
+      - name: Build Funny MuPi offline joke app
+        run: |
+          node --check examples/funny-mupi/app.js
+          node --test tests/test_funny_mupi_tts.cjs
+          python3 tools/build_funny_mupi.py
+          python3 tools/mupiapp.py validate dist/funny-mupi.mupiapp
       - name: Build reference app
         run: python3 tools/build_example.py
       - name: Build four-in-a-row app
@@ -43,6 +49,14 @@ jobs:
         run: python3 tools/build_crumbworm.py
       - name: Build MuPi Schach
         run: python3 tools/build_chess.py
+      - name: Test and build MuPi Water Battle (Quick / Classic / Max)
+        run: |
+          node --check examples/mupi-wasserschlacht/engine.js
+          node --check examples/mupi-wasserschlacht/app.js
+          node --check examples/mupi-wasserschlacht/audio-player.js
+          node --test tests/mupi_wasserschlacht.test.cjs tests/waterbattle_audio.test.cjs
+          python3 tools/build_wasserschlacht.py
+          python3 tools/mupiapp.py validate dist/mupi-wasserschlacht.mupiapp
       - name: Build independent Klang Memory preview
         run: python3 tools/build_klang_memory.py
       - name: Build USB webcam preview
@@ -75,7 +89,9 @@ jobs:
             dist/four-in-a-row.mupiapp
             dist/crumbworm.mupiapp
             dist/mupi-chess.mupiapp
+            dist/mupi-wasserschlacht.mupiapp
             dist/klang-memory.mupiapp
             dist/webcam-preview.mupiapp
             dist/fotospass.mupiapp
+            dist/funny-mupi.mupiapp
           if-no-files-found: error

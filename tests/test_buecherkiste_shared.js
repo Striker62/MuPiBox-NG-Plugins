@@ -7,7 +7,7 @@ const path=require('node:path');
 const source=fs.readFileSync(path.join(__dirname,'../examples/Buecherkiste/app.js'),'utf8');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function setup(mode='ok'){
- const nodes=new Map(),calls=[],urls=new Set(),revoked=[],events={},spoken=[];let next=0;
+ const nodes=new Map(),calls=[],urls=new Set(),revoked=[],events={},spoken=[],stopped=[],prepared=[];let next=0;
  function element(){return {hidden:false,children:[],style:{setProperty(){},backgroundImage:''},classList:{toggle(){}},addEventListener(){},setAttribute(k,v){this[k]=v},removeAttribute(k){delete this[k]},appendChild(c){this.children.push(c)},replaceChildren(){this.children=[]},isConnected:true}}
  function get(id){if(!nodes.has(id))nodes.set(id,element());return nodes.get(id)}
  get('reader').hidden=true;
@@ -37,7 +37,7 @@ function setup(mode='ok'){
   }
  };
  const context={Blob,Uint8Array,console:{warn(){}},URL:{createObjectURL(){const u='blob:'+ ++next;urls.add(u);return u},revokeObjectURL(u){urls.delete(u);revoked.push(u)}},
-  window:{innerWidth:800,innerHeight:480,MuPiBoxSDK:mode==='absent'?undefined:{shared,tts:{status:async()=>({available:mode==='speech'||mode==='smb-speech'}),speak:async(text)=>{spoken.push(text);return{speaking:true}}}},addEventListener(n,f){events[n]=f}},
+  window:{innerWidth:800,innerHeight:480,MuPiBoxSDK:mode==='absent'?undefined:{shared,tts:{status:async()=>({available:mode==='speech'||mode==='smb-speech',preRenderingEnabled:mode==='speech'}),prepare:async(text)=>{prepared.push(text);return{queued:true}},stop:async()=>{stopped.push(true);return{ok:true}},speak:async(text)=>{spoken.push(text);return{state:'completed'}}}},addEventListener(n,f){events[n]=f}},
   document:{getElementById:get,querySelector:get,createElement:element,documentElement:element(),addEventListener(){}},
   requestAnimationFrame(){},fetch:async p=>{
    if(mode==='attribution'||mode==='speech'){
@@ -49,7 +49,7 @@ function setup(mode='ok'){
  // Expose lexical app functions only in this test VM, without changing shipped code.
  const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={loadShelf,loadSharedShelf,scanPages,open,show,turn,validSharedInfo,sharedImage,releaseCovers,releasePage,renderShelf,bookInfo,pageFiles,bookTexts,sharedBooks,get entries(){return shelfEntries},get current(){return current}};})();`);
  vm.runInNewContext(exposed,context);
- return {...context,app:context.app,get,calls,urls,revoked,events,spoken};
+ return {...context,app:context.app,get,calls,urls,revoked,events,spoken,stopped,prepared};
 }
 test('SMB books append with separate identities and titles may repeat',async()=>{
  const h=setup();await tick();await tick();
@@ -170,4 +170,29 @@ test('SMB books can provide their own TTS JSON without granting file or voice co
   title:'Unsicher',cover:'images/01.jpg',imagePattern:'images/{page:02d}.jpg',
   tts:'tts/../../secret.json'
  }));
+});
+
+test('on-turn mode starts new-page speech; leaving the reader always stops',async()=>{
+ const h=setup('speech');await tick();await tick();
+ await h.app.open('ole');await tick();await tick();
+ assert.ok(h.prepared.length>0,'known pages are prepared with pre-rendering enabled');
+ assert.ok(h.prepared.length<=3,'only current and two following pages prepared');
+ h.get('read-mode').value='on-turn';h.get('read-mode').onchange();
+ await tick();
+ assert.equal(h.spoken.length,0,'on-turn does not start the current page');
+ h.app.turn(1);await tick();await tick();
+ assert.equal(h.spoken.length,1);
+ assert.match(h.spoken[0],/Ole/);
+ h.get('back').onclick();await tick();
+ assert.ok(h.stopped.length>=2);
+});
+test('continuous mode advances only after speech completion and stops at book end',async()=>{
+ const h=setup('speech');await tick();await tick();
+ await h.app.open('ole');await tick();await tick();
+ h.get('read-mode').value='continuous';h.get('read-mode').onchange();
+ for(let n=0;n<25;n++)await tick();
+ assert.equal(h.app.current,16,'auto reading should advance through the book');
+ assert.equal(h.spoken.length,16,'read exactly each of the sixteen pages');
+ h.events.pagehide();await tick();
+ assert.ok(h.stopped.length>=16);
 });

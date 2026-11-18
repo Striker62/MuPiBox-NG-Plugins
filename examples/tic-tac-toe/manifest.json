@@ -2,12 +2,12 @@
   "apiVersion": "1",
   "id": "community.tictactoe",
   "name": "MuPi Kreuz & Kreis",
-  "version": "0.2.5",
+  "version": "0.2.7",
   "runtime": "web",
   "entry": "index.html",
   "icon": "assets/icon.png",
   "author": "MuPiBox-NG Community",
-  "description": "Kreuz & Kreis mit transparentem Spielhintergrund für das MuPiBox-Theme, 2-Spieler-Modus und drei KI-Stärken.",
+  "description": "Kreuz & Kreis im Cyan-Gold-Neonstil mit animierten Spielsteinen, 2-Spieler-Modus und drei KI-Stärken.",
   "permissions": [
     "storage",
     "controller"
@@ -19,8 +19,8 @@
     "showBackButton": false,
     "showSystemInfo": false,
     "fullScreen": true,
-    "background": "system"
+    "background": "app"
   },
   "category": "games",
-  "cover": "assets/cover.jpg"
+  "cover": "assets/cover-clean-v2.jpg"
 }

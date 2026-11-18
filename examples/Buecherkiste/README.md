@@ -1,6 +1,6 @@
 # Bücherkiste für MuPiBox-NG
 
-Version **0.2.29** · Community-App · Web-Runtime · App-ID `community.buecherkiste`
+Version **0.2.30** · Community-App · Web-Runtime · App-ID `community.buecherkiste`
 
 Ab Version 0.2.28 verwendet die Kachel die neue Illustration mit großem
 orangefarbenem MuPi-Axolotl und aufgeschlagenem blauem Zauberbuch
@@ -22,14 +22,31 @@ gewählte Sprache und Stimme. Eine separate Stimmenauswahl, Geschwindigkeits-
 oder Tonhöhensteuerung in der App ist nicht vorgesehen. Ist TTS deaktiviert
 oder nicht verfügbar, wird der Vorlesen-Knopf ausgeblendet.
 
-Beim Öffnen einer Buchseite erscheint **▶ Vorlesen**, sofern für diese Seite
-Vorlesetext vorhanden ist. Ein Klick liest **nur die aktuelle Seite** vor.
-Bereits vorhandene `tts/pages.json`-Dateien für Ole sowie Henne und Adler
-werden verwendet. Bei Henne kann alternativ der sichtbare Text der Seite
-vorgelesen werden. Ein laufendes Hörbuch wird über die bestehende MuPiBox-
-Sprachausgabe unterbrochen und anschließend fortgesetzt; es entsteht keine
-separate Audioausgabe im Browser. Automatisches Weiterblättern und eine
-App-eigene Stopp-Funktion gehören nicht zu dieser ersten Integration.
+Beim Öffnen einer Buchseite erscheint **▶ Vorlesen**, sofern Text für
+diese Seite vorhanden ist. Der Button lässt sich während der Wiedergabe auch
+als **■ Stopp** verwenden. Beim Seitenwechsel, beim Wechsel ins Regal und
+beim Verlassen der Community-App wird die bisherige Seite abgebrochen.
+
+Das Menü **Vorlesemodus** bietet drei Varianten:
+- **Einzelseite**: Vorlesen nur auf Tastendruck.
+- **Beim Blättern**: Nach einem manuellen Seitenwechsel automatisch vorlesen.
+- **Ganzes Buch**: Die aktuelle Seite vorlesen und erst nach dem bestätigten
+  Wiedergabeende zur nächsten Seite wechseln.
+
+Seiten ohne TTS-Text und Urheber-/Lizenzseiten werden nicht vorgelesen.
+Der Modus „Ganzes Buch“ stoppt am Buchende. Beide eingebauten Bücher und
+zusätzliche SMB-Bücher verwenden dieselbe Steuerung.
+
+Wenn in NG das **automatische TTS-Pre-Rendering** aktiviert ist, werden
+die aktuelle und bis zu zwei nächste Seiten zur Synthese angemeldet.
+Das globale NG-Pre-Rendering erfasst die Bücherkiste nicht pauschal:
+Bereits vorgelesene Seiten können aus dem normalen generation- und
+stimmengebundenen TTS-Cache wiedergegeben werden. Die Vorbereitung ist
+auf maximal zehn Anforderungen pro App-Sitzung und Minute begrenzt.
+
+Voraussetzung für die drei Modi ist ein MuPiBox-NG-Host mit
+`tts.stop`, `tts.prepare` und `tts.wait` (vorgesehen ab Alpha.58).
+Ältere NG-Versionen unterstützen diese Erweiterungen nicht vollständig.
 
 Beim Plugin-Update ist zusätzlich zur bisherigen SMB-Freigabe die bestehende
 **`audio`-Berechtigung** zu bestätigen. Das ist auch die Berechtigung für
@@ -97,7 +114,7 @@ CommunityApps/
 ```
 
 Bei einem als `Q:` eingebundenen Laufwerk lautet der Buchpfad beispielsweise
-`Q:\CommunityApps\community.buecherkiste\books\mein-buch\`.
+`Q:\CommunityApps\community.buecherkiste\books\mein-buch`.
 Das Manifest deklariert `sharedDirectories: ["books"]`; gelesen wird nur unter
 diesem Ordner. Falls Bücher bisher direkt unter `community.buecherkiste/`
 liegen, muss der Besitzer sie vor dem Update in dessen `books/`-Unterordner

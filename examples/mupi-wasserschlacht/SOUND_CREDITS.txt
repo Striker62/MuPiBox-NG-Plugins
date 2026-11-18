@@ -1,0 +1,59 @@
+MuPi Water Battle – Audioquellen und Lizenzen (Version 0.2.2)
+=========================================================
+
+Die folgenden Dateien sind Offline-Bestandteile des App-Pakets. Dateien
+wurden für platzsparende Wiedergabe in Ogg Vorbis (44,1 kHz) konvertiert.
+Die Musik wird in der Browser-Vorschau als Loop wiedergegeben.
+Auf MuPiBox-NG-Geräten ist native Audiodatei-Wiedergabe über das
+Community-App-SDK derzeit nicht verfügbar; dort werden Soundaktionen
+durch sichere, vorhandene SDK-Tonfolgen ersetzt. Der native Musikloop
+ist bis zur Einführung einer gesicherten Sample-API nicht hörbar.
+
+bg-music.ogg — "Loading screen loop", TremLoadingloopl.wav
+Autor: Brandon Morris (eingereicht von HaelDB)
+Quelle: https://opengameart.org/content/loading-screen-loop
+Lizenz: CC0 1.0
+https://creativecommons.org/publicdomain/zero/1.0/
+
+miss.ogg — "Fisheefects", bloop.wav [nicht "bloob.wav"]
+Autor: You're Perfect Studio
+Quelle: https://opengameart.org/content/fisheefects
+Lizenzwahl: CC0 1.0 (auf der Quellseite parallel angeboten)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+hit.ogg — "Big Explosion", DeathFlash.flac
+Urheber: Blender Foundation (eingereicht von Lamoot)
+Quelle: https://opengameart.org/content/big-explosion
+Lizenz: Creative Commons Attribution 3.0 (CC BY 3.0)
+https://creativecommons.org/licenses/by/3.0/
+Bearbeitung: Original-FLAC in Ogg Vorbis bei 44,1 kHz konvertiert.
+Namensnennung an Blender Foundation; keine Verbindung zum Projekt
+oder Billigung durch den Urheber wird behauptet.
+
+sunk.ogg — "shipboard_railgun.mp3", Sound-ID 155790
+Autor: deleted_user_1941307
+Quelle: https://freesound.org/people/deleted_user_1941307/sounds/155790/
+Lizenz: CC0 1.0
+Verwendete Datei: öffentlich zugängliche HQ-MP3-Vorschau,
+in Ogg Vorbis konvertiert.
+
+win.ogg — "game-win.mp3", Sound-ID 269198
+Autor: mickleness
+Quelle: https://freesound.org/people/mickleness/sounds/269198/
+Lizenz: CC0 1.0
+Verwendete Datei: öffentlich zugängliche HQ-MP3-Vorschau,
+in Ogg Vorbis konvertiert.
+
+lose.ogg — "Game Fail Fanfare", Sound-ID 677855
+Autor: el_boss
+Quelle: https://freesound.org/people/el_boss/sounds/677855/
+Lizenz: CC0 1.0
+Verwendete Datei: öffentlich zugängliche HQ-MP3-Vorschau,
+in Ogg Vorbis konvertiert.
+
+CC0: https://creativecommons.org/publicdomain/zero/1.0/
+Die CC0-Sounds dürfen auch ohne verpflichtende Namensnennung
+verwendet werden; Credits sind aus Transparenzgründen dokumentiert.
+Die Freesound-Originaldownloads erfordern auf der Quelle eine
+Anmeldung. Eine hohe Tonqualität der Vorschau ist nicht zwangsläufig
+mit der Originaldatei identisch.
