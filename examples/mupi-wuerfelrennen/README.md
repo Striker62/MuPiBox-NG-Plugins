@@ -79,6 +79,6 @@ node --test tests/community_board_games.test.cjs
 Der Builder schließt `README.md` und alle
 `screenshot-*.webp`-Dateien ausdrücklich aus dem installierbaren
 `.mupiapp`-Archiv aus, damit die Galerie keinen Speicherplatz auf der Box
-belegt. Offizielle Katalogversion: **0.2.8**, Community Preview 50 (0.2.9 im Quellcode, noch nicht veröffentlicht).
+belegt. Offizielle Katalogversion: **0.2.9**, Community Preview 51.
 Die App benötigt nur die `controller`-Berechtigung, keine Netzverbindung.
 Quellcode unter MIT-Lizenz.
