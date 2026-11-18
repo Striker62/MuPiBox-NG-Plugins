@@ -45,6 +45,11 @@ class FunnyMuPiTests(unittest.TestCase):
         self.assertTrue(audio.is_file())
         self.assertGreater(audio.stat().st_size, 10000)
         self.assertIn("ionakan", (APP / "README.md").read_text(encoding="utf-8"))
+        import wave
+        with wave.open(str(APP / "assets/laugh-ionakan-712055.wav"), "rb") as sound:
+            self.assertEqual(sound.getframerate(), 24000)
+            self.assertEqual(sound.getnchannels(), 1)
+            self.assertEqual(sound.getsampwidth(), 2)
 
     def test_local_files_only(self):
         code = (APP / "app.js").read_text(encoding="utf-8")

@@ -134,10 +134,19 @@
       if (!state || state.enabled !== true) {setStatus(ui.unavailable); return;}
       if (state.available !== true) {setStatus(ui.notReady || ui.unavailable); return;}
       setStatus(ui.speaking);
-      const result = await sdk.tts.speak(jokes[current], {waitForCompletion:true});
+      // Newer NG hosts join voice and laugh in a single PCM stream. Older
+      // versions ignore after_clip, so the existing audio.clip fallback stays.
+      const result = await sdk.tts.speak(jokes[current], {
+        waitForCompletion:true,
+        afterClip:'assets/laugh-ionakan-712055.wav'
+      });
       if (token !== generation || paused) return;
       if (result && result.state === 'completed') {
-        await playLaughter(token);
+        if (result.after_clip_queued === true) {
+          setStatus('');
+        } else {
+          await playLaughter(token);
+        }
       } else {
         setStatus('');
       }

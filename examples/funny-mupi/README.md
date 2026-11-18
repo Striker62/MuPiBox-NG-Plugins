@@ -45,3 +45,7 @@ MuPi wird orangefarben angezeigt. Die Spitze der Sprechblase weist rechts auf Mu
 - assets/laugh-ionakan-712055.mp3 ist ein lokal mitgelieferter, ca. 2,4 Sekunden langer Lacher von ionakan: [girl laughs loudly](https://freesound.org/people/ionakan/sounds/712055/), Lizenz CC0 1.0. Quelle: Freesound. Offline-Wiedergabe, keine HTTP-Verbindung zum Anbieter während des Spiels.
 - Das Lachen ertönt ausschließlich nach vollständig beendetem Vorlesen. Es wird bei neuem Witz, Unterbrechen, Verlassen oder fehlerhafter Sprachausgabe abgebrochen und niemals automatisch beim Wechseln der Witzkarte gespielt.
 - In der Browser-Vorschau spielt der lokale Browser den Effekt. Auf dem Gerät erfolgt die Ausgabe über die MuPiBox-NG-Audio-Bridge (audio.playClip); hierfür wird eine NG-Version mit dieser Methode benötigt.
+
+## Schnellere Wiedergabe ab 0.1.3
+
+Auf Boxen mit NG-Hostunterstützung für after_clip hängt die Sprachausgabe den lokal mitgelieferten CC0-Lacher (24-kHz-Mono-WAV) an den gesprochenen Witz an. Beide Teile werden ohne erneuten Audioplayer-Start abgespielt; eine kurze Sprechpause bleibt erhalten. Die Stimme bleibt unverändert. Ältere NG-Versionen nutzen weiterhin die separate MP3-Wiedergabe über audio.clip. Die Browser-Vorschau nutzt weiterhin die bisherige Browser-Sprachausgabe und MP3.

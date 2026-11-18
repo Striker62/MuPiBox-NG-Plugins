@@ -71,3 +71,17 @@ test('TTS playback completion is opt-in; status, stop and prefetch are session-s
  await assert.rejects(()=>sdk.tts.prepare('x'.repeat(601)),{name:'TypeError'});
  await assert.rejects(()=>sdk.tts.speak('x',{waitForCompletion:'yes'}),{name:'TypeError'});
 });
+
+
+test('bundled post-speech clip is forwarded only as a validated asset',async()=>{
+ const {sdk,calls}=host();
+ await sdk.tts.speak('Eine Pointe.',{afterClip:'assets/laugh-ionakan-712055.wav'});
+ assert.equal(calls.length,1);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{
+   text:'Eine Pointe.',after_clip:'assets/laugh-ionakan-712055.wav'
+ });
+ for(const invalid of ['../bad.wav','https://example.com/a.wav','assets/../../secret.wav','assets/a.mp3','assets/.hidden.wav','assets/laugh.wav?x']){
+  await assert.rejects(()=>sdk.tts.speak('x',{afterClip:invalid}),{name:'TypeError'});
+ }
+ assert.equal(calls.length,1);
+});

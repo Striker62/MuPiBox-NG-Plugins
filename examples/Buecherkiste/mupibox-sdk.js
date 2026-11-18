@@ -189,7 +189,17 @@
       if (options === null || typeof options !== 'object' || Array.isArray(options) ||
           (options.waitForCompletion !== undefined && typeof options.waitForCompletion !== 'boolean'))
         throw new TypeError('speech options must contain a boolean waitForCompletion');
-      const result = await invoke('tts.speak', {text: speechText(text)});
+      const payload = {text: speechText(text)};
+      if (options.afterClip !== undefined) {
+        const asset = options.afterClip;
+        if (typeof asset !== 'string' || asset.length > 180 ||
+            !/^assets\/[a-zA-Z0-9_/-]+\.wav$/.test(asset) ||
+            asset.split('/').some(part => part === '..' || part.startsWith('.'))) {
+          throw new TypeError('afterClip must be a bundled assets/*.wav file');
+        }
+        payload.after_clip = asset;
+      }
+      const result = await invoke('tts.speak', payload);
       if (options.waitForCompletion !== true) return result; // existing immediate-start contract
       if (typeof result?.request_id !== 'string')
         throw new Error('MuPiBox host does not support speech completion');

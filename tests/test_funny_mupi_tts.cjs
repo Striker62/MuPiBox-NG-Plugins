@@ -7,7 +7,7 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '../examples/funny-mupi');
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 
-async function launch({hostname, preview = false, enabled = true, available = true, spokenState = 'completed'}) {
+async function launch({hostname, preview = false, enabled = true, available = true, spokenState = 'completed', afterClipQueued = false}) {
   const elements = new Map();
   const calls = [];
   for (const id of ['bubble', 'next', 'exit', 'language', 'joke', 'status', 'hint', 'exit-label', 'next-label']) {
@@ -25,7 +25,7 @@ async function launch({hostname, preview = false, enabled = true, available = tr
     tts: {
       stop: async () => { calls.push(['boxStop']); },
       status: async () => { calls.push(['boxStatus']); return {enabled, available}; },
-      speak: async (text, options) => { calls.push(['boxSpeak', text, options]); return {state:spokenState}; }
+      speak: async (text, options) => { calls.push(['boxSpeak', text, options]); return {state:spokenState, after_clip_queued:afterClipQueued}; }
     },
     audio: {playClip: async (asset) => {calls.push(['boxClip', asset]);}},
     exit: async () => {calls.push(['exit']);},
@@ -121,4 +121,17 @@ test('native speech completion invokes on-device audio.clip exactly once', async
   stopped.click('bubble');
   for(let n=0;n<20;n++) await Promise.resolve();
   assert.equal(stopped.calls.filter(c=>c[0]==='boxClip').length,0);
+});
+
+
+test('new host plays the laugh inline without a second audio.clip request', async () => {
+  const b = await launch({hostname:'localhost', afterClipQueued:true});
+  b.click('bubble');
+  for (let n=0;n<20;n++) await Promise.resolve();
+  const request = b.calls.find(c=>c[0]==='boxSpeak');
+  assert.equal(request[2].afterClip,'assets/laugh-ionakan-712055.wav');
+  assert.equal(request[2].waitForCompletion,true);
+  assert.equal(b.calls.filter(c=>c[0]==='boxClip').length,0);
+  assert.equal(b.calls.filter(c=>c[0]==='browserClip').length,0);
+  assert.equal(b.elements.get('status').textContent,'');
 });
