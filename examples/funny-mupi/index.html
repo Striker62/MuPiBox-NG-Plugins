@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#173852">
+  <title>Funny MuPi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div class="brand"><span class="spark" aria-hidden="true">✦</span><h1>Funny MuPi</h1><span id="language" class="pill">DE</span></div>
+    <button id="exit" class="exit" type="button">✕ <span id="exit-label">Zurück</span></button>
+  </header>
+  <section class="stage" aria-label="Witz">
+    <div class="decor decor-1" aria-hidden="true">✳</div>
+    <div class="decor decor-2" aria-hidden="true">✦</div>
+    <button id="bubble" class="bubble" type="button" aria-describedby="hint">
+      <span id="joke" class="joke">Ein Witz kommt gleich …</span>
+      <span class="bubble-tap" aria-hidden="true">♪</span>
+    </button>
+    <img class="mupi" src="assets/mupi-laugh.svg" alt="" draggable="false" aria-hidden="true">
+  </section>
+  <footer class="footer">
+    <div class="footer-main">
+      <button id="next" class="next" type="button"><span aria-hidden="true">↻</span> <span id="next-label">Nächster Witz</span></button>
+      <p id="hint">Auf die Sprechblase tippen, dann liest MuPi vor.</p>
+    </div>
+    <p id="status" role="status" aria-live="polite"></p>
+  </footer>
+</main>
+<script src="mupibox-sdk.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

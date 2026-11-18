@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 275" role="img" aria-label="Lachender MuPi">
+  <defs>
+    <linearGradient id="skin" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#c5f7e8"/><stop offset="1" stop-color="#7cd5c7"/></linearGradient>
+    <linearGradient id="belly" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f3ffe8"/><stop offset="1" stop-color="#c7f4e2"/></linearGradient>
+  </defs>
+  <g stroke="#377d86" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M95 190Q65 158 48 180Q20 211 58 232Q91 241 100 212" fill="#78c8b4" stroke-width="6"/>
+    <path d="M91 216Q72 227 67 248M157 213Q184 225 184 247" fill="none" stroke-width="17"/>
+    <path d="M66 241Q65 250 51 253M66 241Q77 250 82 255M185 242Q173 251 171 254M185 242Q198 247 201 252" fill="none" stroke-width="7"/>
+    <ellipse cx="130" cy="193" rx="66" ry="73" fill="url(#skin)" stroke-width="6"/>
+    <ellipse cx="130" cy="214" rx="42" ry="38" fill="url(#belly)" stroke="none"/>
+    <path d="M78 189Q59 165 46 180M182 189Q197 166 214 180" fill="none" stroke-width="17"/>
+    <path d="M47 171Q25 142 14 158M47 171Q14 165 10 186M47 171Q22 194 30 206M213 171Q232 142 248 159M213 171Q247 163 251 184M213 171Q244 197 232 208" fill="none" stroke="#f6a0ad" stroke-width="15"/>
+    <path d="M42 167Q22 144 13 158M42 171Q18 168 12 184M42 181Q22 197 32 206M216 167Q237 143 247 159M216 171Q240 169 250 184M216 181Q239 197 231 206" fill="none" stroke="#bd6b8a" stroke-width="4"/>
+    <path d="M54 80Q39 44 25 57M50 87Q18 76 17 92M56 105Q23 116 31 131M206 80Q220 43 236 56M210 87Q243 75 243 92M204 105Q237 116 230 131" fill="none" stroke="#ed91a4" stroke-width="18"/>
+    <path d="M55 80Q41 50 27 57M50 87Q22 79 18 92M55 105Q29 116 31 131M205 80Q220 51 234 57M209 87Q239 80 241 92M204 105Q232 118 229 130" fill="none" stroke="#a95073" stroke-width="4"/>
+    <path d="M51 107Q43 29 117 25Q205 14 215 106Q218 179 130 184Q41 176 51 107Z" fill="url(#skin)" stroke-width="7"/>
+    <path d="M82 100Q100 84 117 103M143 103Q160 84 178 100" fill="none" stroke="#27556a" stroke-width="8"/>
+    <path d="M97 137Q129 169 163 134Q165 125 154 124L105 123Q94 123 97 137Z" fill="#823e61" stroke-width="5"/>
+    <path d="M106 130Q129 139 156 129" fill="none" stroke="#fffefa" stroke-width="6"/>
+    <ellipse cx="132" cy="149" rx="17" ry="9" fill="#ee879f" stroke="none"/>
+    <ellipse cx="72" cy="126" rx="19" ry="9" fill="#f2a6a9" opacity=".78" stroke="none"/>
+    <ellipse cx="188" cy="126" rx="19" ry="9" fill="#f2a6a9" opacity=".78" stroke="none"/>
+    <path d="M94 73Q88 69 84 73M174 73Q170 69 166 73" fill="none" stroke="#fff8f0" stroke-width="5"/>
+    <path d="M65 157Q42 144 43 127M193 156Q219 146 216 128" fill="none" stroke="#ffffffaa" stroke-width="4"/>
+  </g>
+  <g fill="#fff0a5"><path d="M217 24l6 13 14 5-14 6-6 13-6-13-14-6 14-5z"/><circle cx="24" cy="31" r="6"/><circle cx="236" cy="116" r="4"/></g>
+</svg>

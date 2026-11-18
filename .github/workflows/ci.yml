@@ -35,6 +35,11 @@ jobs:
           node --check examples/crumbworm/web/logic.js
           node --check examples/crumbworm/web/app.js
           node --check examples/shared/game-i18n.js
+      - name: Build Funny MuPi offline joke app
+        run: |
+          node --check examples/funny-mupi/app.js
+          python3 tools/build_funny_mupi.py
+          python3 tools/mupiapp.py validate dist/funny-mupi.mupiapp
       - name: Build reference app
         run: python3 tools/build_example.py
       - name: Build four-in-a-row app
@@ -86,4 +91,5 @@ jobs:
             dist/klang-memory.mupiapp
             dist/webcam-preview.mupiapp
             dist/fotospass.mupiapp
+            dist/funny-mupi.mupiapp
           if-no-files-found: error

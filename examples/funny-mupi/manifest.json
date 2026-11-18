@@ -1,0 +1,26 @@
+{
+  "apiVersion": "1",
+  "id": "community.funny-mupi",
+  "name": "Funny MuPi",
+  "description": "Zufällige familienfreundliche Kinderwitze aus lokalen Sprachdateien, auf Wunsch per MuPiBox-TTS vorgelesen.",
+  "author": "MuPiBox Community",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "icon": "assets/mupi-laugh.svg",
+  "permissions": [
+    "audio",
+    "controller"
+  ],
+  "category": "other",
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "app"
+  },
+  "cover": "assets/cover.webp"
+}
