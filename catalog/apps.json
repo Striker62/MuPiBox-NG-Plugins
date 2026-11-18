@@ -245,15 +245,15 @@
       "description": "Freies Klavierspielen und Lieder lernen mit fallenden Noten oder Notenblatt.",
       "category": "learning",
       "author": "MuPiBox Community",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "permissions": [
         "audio",
         "storage",
         "controller"
       ],
-      "releaseTag": "v0.1.0-preview.28",
+      "releaseTag": "v0.1.0-preview.40",
       "asset": "mupi-klavier.mupiapp",
-      "sha256": "890e0d0a04e7ebaf675db97bca8fa949248d766149444ada945d3494c6c79d1f"
+      "sha256": "65613a70637bc80ae02124aab14db80d2ce99b20180eb8e26622f4900fda0170"
     },
     {
       "id": "community.mupi-wasserschlacht",
