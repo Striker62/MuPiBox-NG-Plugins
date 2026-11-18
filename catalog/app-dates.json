@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "apps": {
+    "community.tictactoe": {
+      "publishedAt": "2026-11-03T17:04:10Z",
+      "updatedAt": "2026-11-16T14:02:17Z"
+    },
+    "community.mupi-four-in-a-row": {
+      "publishedAt": "2026-11-04T04:47:19Z",
+      "updatedAt": "2026-11-16T14:02:17Z"
+    },
+    "community.mupi-kruemelwurm": {
+      "publishedAt": "2026-11-04T04:47:19Z",
+      "updatedAt": "2026-11-09T23:20:27Z"
+    },
+    "community.mupi-chess": {
+      "publishedAt": "2026-11-08T22:05:31Z",
+      "updatedAt": "2026-11-16T14:02:17Z"
+    },
+    "official.klang-memory": {
+      "publishedAt": "2026-11-03T17:04:10Z",
+      "updatedAt": "2026-11-09T23:20:27Z"
+    },
+    "official.webcam-preview": {
+      "publishedAt": "2026-11-03T21:46:38Z",
+      "updatedAt": "2026-11-03T21:46:38Z"
+    },
+    "community.fotospass": {
+      "publishedAt": "2026-11-06T21:32:35Z",
+      "updatedAt": "2026-11-11T20:10:07Z"
+    },
+    "community.buecherkiste": {
+      "publishedAt": "2026-11-08T21:33:28Z",
+      "updatedAt": "2026-11-17T17:52:53Z"
+    },
+    "community.mupi-beatbox": {
+      "publishedAt": "2026-11-14T01:33:14Z",
+      "updatedAt": "2026-11-16T12:14:09Z"
+    },
+    "community.mupi-soundquiz": {
+      "publishedAt": "2026-11-14T01:33:14Z",
+      "updatedAt": "2026-11-16T12:14:09Z"
+    },
+    "community.mupi-rhythm": {
+      "publishedAt": "2026-11-14T01:33:14Z",
+      "updatedAt": "2026-11-16T12:14:09Z"
+    },
+    "community.mupi-muehle": {
+      "publishedAt": "2026-11-14T01:33:14Z",
+      "updatedAt": "2026-11-16T12:14:09Z"
+    },
+    "community.mupi-reversi": {
+      "publishedAt": "2026-11-14T01:33:14Z",
+      "updatedAt": "2026-11-16T12:14:09Z"
+    },
+    "community.mupi-dame": {
+      "publishedAt": "2026-11-14T01:33:14Z",
+      "updatedAt": "2026-11-16T12:14:09Z"
+    },
+    "community.mupi-wuerfelrennen": {
+      "publishedAt": "2026-11-14T01:33:14Z",
+      "updatedAt": "2026-11-16T14:11:04Z"
+    },
+    "community.mupi-hnefatafl": {
+      "publishedAt": "2026-11-14T06:37:19Z",
+      "updatedAt": "2026-11-16T12:14:09Z"
+    },
+    "community.mupi-klavier": {
+      "publishedAt": "2026-11-17T15:39:17Z",
+      "updatedAt": "2026-11-17T15:39:17Z"
+    },
+    "community.mupi-wasserschlacht": {
+      "publishedAt": "2026-11-18T07:27:32Z",
+      "updatedAt": "2026-11-18T07:27:32Z"
+    }
+  }
+}
