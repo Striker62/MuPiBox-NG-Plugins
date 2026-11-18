@@ -13,7 +13,7 @@ const words={
  botTurn:"MuPi is searching …",miss:"Splash! Just water!",hit:"Oops! MuPi's getting wet!",sunk:"Oh no! MuPi needs the lifebuoy!",win:"Hooray, you won!",lose:"MuPi won. Another round?",
  ownMiss:"MuPi splashed into the sea!",ownHit:"Oh dear! Your boat was hit!",ownSunk:"Glug! A boat went down!",wait:"MuPi's turn.",preview:"Preview: close this window"}
 };
-let lang="de",player=E.empty(),computer=E.empty(),phase="place",turn="player",placed=0,vertical=false,selected=27,epoch=0,muted=false,volume=40,musicVolume=20,musicEnabled=true,reactionTimer=0,focusTarget="own",shakeTimer=0;
+let lang="de",player=E.empty(),computer=E.empty(),phase="place",turn="player",placed=0,vertical=false,selected=27,epoch=0,muted=false,volume=40,musicVolume=20,musicEnabled=true,reactionTimer=0,focusTarget="own",shakeTimer=0,lastImpact=null;
 const ui={enemy:[],own:[]};
 const soundPlayer=new WaterBattleAudio.Player(sdk.isHosted,sdk.audio);
 function syncAudio(){soundPlayer.configure({volume,musicVolume,musicEnabled,muted});}
@@ -59,6 +59,7 @@ function draw(){
    btn.className="cell";
    if(which==="own"&&ownCell.has(i))btn.classList.add("ship");
    if(shot)btn.classList.add(shot);
+   if(lastImpact&&lastImpact.which===which&&lastImpact.index===i)btn.classList.add("last-hit");
    if(selected===i&&(phase==="place"?which==="own":which==="enemy")&&phase!=="finished")btn.classList.add("aim");
    btn.disabled=phase==="finished"||(which==="enemy"?(phase!=="play"||turn!=="player"||shot!==null):(phase!=="place"));
   });
@@ -92,14 +93,26 @@ function picture(kind){
  clearTimeout(reactionTimer);reactionTimer=setTimeout(()=>node.classList.remove("pop"),500);
 }
 function message(text){$("message").textContent=text;}
-function screenShake(){
- const node=$("app");
- if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+function screenShake(which,index,kind){
+ // Restart on EVERY hit, not just the first. The old timer removed "shake"
+ // instead of "hit-shake", which left subsequent hits without animation.
+ const app=$("app"),board=$(which),panel=board.closest(".panel"),flash=$("impact-flash");
+ lastImpact={which,index};
  clearTimeout(shakeTimer);
- node.classList.remove("hit-shake");
- void node.offsetWidth;
- node.classList.add("hit-shake");
- shakeTimer=setTimeout(()=>node.classList.remove("shake"),550);
+ for(const node of [app,$("enemy"),$("own")])node.classList.remove("hit-shake","board-impact");
+ for(const node of document.querySelectorAll(".panel"))node.classList.remove("impact-glow");
+ flash.classList.remove("active","on-own");
+ void board.offsetWidth; // force Qt WebEngine repaint and restart CSS keyframes
+ const reduced=Boolean(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+ if(!reduced){app.classList.add("hit-shake");board.classList.add("board-impact");}
+ panel.classList.add("impact-glow");
+ flash.textContent=kind==="sunk"?(lang==="de"?"VERSENKT!":"SUNK!"):(lang==="de"?"TREFFER!":"HIT!");
+ flash.classList.add("active");
+ if(which==="own")flash.classList.add("on-own");
+ shakeTimer=setTimeout(()=>{
+  app.classList.remove("hit-shake");board.classList.remove("board-impact");panel.classList.remove("impact-glow");
+  flash.classList.remove("active","on-own");
+ },1000);
 }
 function announce(kind,key){picture(kind);sound(kind);message(t(key));}
 function newRound(){
@@ -108,7 +121,7 @@ function newRound(){
  phase="place";turn="player";placed=0;vertical=false;
  selected=E.index(Math.floor(player.size/2),Math.floor(player.size/2),player);
  focusTarget="own";makeGrid("enemy");makeGrid("own");
- $("reaction-img").src="assets/sunk.png";soundPlayer.startMusic();message(t("ready"));draw();
+ $("reaction-img").src="assets/sunk.png";lastImpact=null;$("impact-flash").classList.remove("active","on-own");soundPlayer.startMusic();message(t("ready"));draw();
 }
 function tryPlace(i){
  if(phase!=="place"||placed>=player.fleet.length)return;
@@ -138,7 +151,7 @@ function tryFire(i){
  if(phase!=="play"||turn!=="player")return;
  selected=i;const hit=E.fire(computer,i);
  if(!hit){draw();return;}
- announce(hit.type,hit.type);if(hit.type!=="miss")screenShake();draw();
+ announce(hit.type,hit.type);if(hit.type!=="miss")screenShake("enemy",i,hit.type);draw();
  if(hit.win){finish(true);return;}
  turn="computer";draw();
  const run=epoch;
@@ -149,6 +162,7 @@ function tryFire(i){
   const response=E.fire(player,chosen);
   if(!response)return;
   announce(response.type,response.type==="miss"?"ownMiss":response.type==="hit"?"ownHit":"ownSunk");
+  if(response.type!=="miss")screenShake("own",chosen,response.type);
   if(response.win){finish(false);return;}
   turn="player";draw();
  },680);

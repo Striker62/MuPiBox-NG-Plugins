@@ -10,7 +10,7 @@ class WaterBattleAssetTests(unittest.TestCase):
     def test_cover_is_raster_and_has_correct_manifest(self):
         m = json.loads((ROOT / "manifest.json").read_text())
         self.assertEqual(m["cover"], "cover.jpg")
-        self.assertEqual(m["version"], "0.2.3")
+        self.assertEqual(m["version"], "0.2.4")
         self.assertEqual(m["name"], "MuPi Water Battle")
         self.assertIn("storage", m["permissions"])
         cover = (ROOT / m["cover"]).read_bytes()
@@ -56,11 +56,17 @@ class WaterBattleAssetTests(unittest.TestCase):
         self.assertIn('sdk.storage.get(VOLUME_KEY)', js)
         self.assertIn('sdk.audio.playNote(note,volume,instrument,{relative:true})', js)
         self.assertIn("if(muted||volume<=0)return;", js)
-        self.assertIn("screenShake()", js)
         self.assertIn('sound(won?"win":"lose")', js)
         css=(ROOT / "style.css").read_text()
         self.assertIn(".cell.sunk::after", css)
         self.assertIn("#app.hit-shake", css)
+        self.assertIn(".grid.board-impact", css)
+        self.assertIn("@keyframes wb-impact-label", css)
+        self.assertIn("animation:wb-screen-impact 1s", css)
+        self.assertIn('id="impact-flash"', html)
+        self.assertIn('app.classList.remove("hit-shake")', js)
+        self.assertIn('screenShake("enemy",i,hit.type)', js)
+        self.assertIn('screenShake("own",chosen,response.type)', js)
 
 if __name__ == "__main__":
     unittest.main()

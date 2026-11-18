@@ -20,10 +20,14 @@ def validate(catalog):
         raise ValueError("empty or oversized catalog")
     seen = set()
     for app in apps:
-        if not isinstance(app, dict) or set(app) != {"id","name","description","category","author","version","releaseTag","asset","sha256","permissions"}:
+        required={"id","name","description","category","author","version","releaseTag","asset","sha256","permissions"}
+        optional={"icon","publishedAt","updatedAt"}
+        if not isinstance(app,dict) or not required.issubset(app) or not set(app).issubset(required|optional):
             raise ValueError("unsupported app fields")
         if not all(isinstance(app[f], str) for f in ("id","name","description","category","author","version","releaseTag","asset","sha256")):
             raise ValueError("app metadata must be strings")
+        if "icon" in app and (not isinstance(app["icon"],str) or not re.fullmatch(r"examples/[A-Za-z0-9_-]+/(?:[A-Za-z0-9_-]+/){0,3}[A-Za-z0-9_.-]+\.(?:png|jpg|jpeg|webp)",app["icon"])):
+            raise ValueError("invalid catalog icon")
         if not APP_ID.fullmatch(app["id"]) or not VERSION.fullmatch(app["version"]):
             raise ValueError("invalid app id or version")
         if app["id"] in seen:

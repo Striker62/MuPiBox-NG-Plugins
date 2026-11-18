@@ -258,18 +258,19 @@
     {
       "id": "community.mupi-wasserschlacht",
       "name": "MuPi Water Battle",
-      "description": "Drei Modi, freigestellte MuPi-Reaktionen, kräftiger Treffer-Shake und echte OGG-Spielgeräusche mit Musikloop über NG-PipeWire (ab Audio-SDK-Hostfreigabe).",
+      "description": "Quick, Classic, Max – MuPi mit drei Kiemenästen, eine Sekunde Treffer-Ruckeln, Original-Sounds/Musik über neue NG-Audio-API und identische Admin-/Spiel-Cover.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.3",
-      "releaseTag": "v0.1.0-preview.36",
+      "version": "0.2.4",
+      "releaseTag": "v0.1.0-preview.39",
       "asset": "mupi-wasserschlacht.mupiapp",
-      "sha256": "603f5f9068883c8c49aa9bcb46f33d4ad80d772a7ce9b495a1133cb495ab085a",
+      "sha256": "1076480ac1e2561eec0d5c6c899c66119e6490bba44d9fe192674c6e9a0b65ae",
       "permissions": [
         "controller",
         "audio",
         "storage"
-      ]
+      ],
+      "icon": "examples/mupi-wasserschlacht/cover.jpg"
     },
     {
       "id": "community.funny-mupi",
