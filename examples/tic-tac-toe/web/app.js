@@ -9,6 +9,7 @@
   const modePicker = document.getElementById('mode');
   let selected = 0, current = null, mode = 'normal', i18n = null;
   let paused = false, botTimer = null, roundToken = 0;
+  let previousCells = Array(9).fill('');
   const order = [4, 0, 2, 6, 8, 1, 3, 5, 7];
   const lines = [
     [0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]
@@ -62,12 +63,29 @@
     if (!state || !Array.isArray(state.cells)) return;
     current = state;
     const botTurn = isBotTurn();
+    const winningLine = state.winner && lines.find(([a, b, c]) =>
+      state.cells[a] === state.winner && state.cells[b] === state.winner && state.cells[c] === state.winner);
     cells.forEach((cell, index) => {
       const value = state.cells[index];
-      cell.textContent = value;
+      // Images keep the neon marks crisp at 800x480 and every smaller viewport.
+      // Reuse unchanged marks so controller navigation never restarts animations.
+      if (value !== previousCells[index] || cell.dataset.mark !== value) {
+        const mark = value ? document.createElement('img') : null;
+        if (mark) {
+          mark.src = value === 'X' ? './neon-x.svg' : './neon-o.svg';
+          mark.className = 'mark';
+          if (!previousCells[index]) mark.classList.add('mark-new');
+          mark.alt = '';
+          mark.setAttribute('aria-hidden', 'true');
+          mark.draggable = false;
+        }
+        cell.replaceChildren(...(mark ? [mark] : []));
+      }
+      previousCells[index] = value;
       cell.dataset.mark = value;
       cell.disabled = Boolean(value) || state.finished || botTurn || paused;
       cell.classList.toggle('selected', selected === index);
+      cell.classList.toggle('winning', Boolean(winningLine && winningLine.includes(index)));
       cell.setAttribute('aria-label', t('cell', { number: index + 1 }) + ': ' +
         (value || t('free')));
     });

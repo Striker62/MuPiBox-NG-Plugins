@@ -8,7 +8,7 @@ def main():
     stage = ROOT / ".build" / "mupi-klavier"
     if stage.exists():
         shutil.rmtree(stage)
-    shutil.copytree(ROOT / "examples" / "mupi-klavier", stage, ignore=shutil.ignore_patterns("*.md"))
+    shutil.copytree(ROOT / "examples" / "mupi-klavier", stage, ignore=shutil.ignore_patterns("*.md", "screenshots"))
     shutil.copy2(ROOT / "sdk" / "mupibox-sdk.js", stage / "mupibox-sdk.js")
     return pack(stage, ROOT / "dist" / "mupi-klavier.mupiapp")
 if __name__ == "__main__":

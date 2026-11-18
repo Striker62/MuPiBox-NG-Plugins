@@ -13,7 +13,7 @@ const DiceRace=(()=>{
   const at=(starts[p]+progress)%52;
   return b.some((row,q)=>row.some(v=>v>=0&&v<52&&(starts[q]+v)%52===at));
  }
- function possible(b,p,die){
+ function rawMoves(b,p,die){
   if(!Number.isInteger(die)||die<1||die>6)return [];
   const moves=[];
   for(let k=0;k<4;k++){
@@ -29,6 +29,28 @@ const DiceRace=(()=>{
   }
   return moves;
  }
+ // Pflichtzug: beim Sechser zuerst aus der Basis; ein eigenes Startfeld
+ // wird ansonsten bei der nächsten möglichen Gelegenheit geräumt.
+ function possible(b,p,die){
+  const moves=rawMoves(b,p,die);
+  if(!moves.length)return moves;
+  const waiting=b[p].some(v=>v===-1);
+  if(waiting&&die===6){
+   const exits=moves.filter(m=>b[p][m.piece]===-1);
+   if(exits.length)return exits;
+  }
+  // Die eigene Startposition darf nicht unnötig besetzt bleiben.
+  const clearStart=moves.filter(m=>b[p][m.piece]===0);
+  if(clearStart.length)return clearStart;
+  return moves;
+ }
+ // Drei Chancen, wenn keine bereits ausgezogene Figur mit 1..6 ziehen kann.
+ // Bei vorhandener beweglicher Spielfigur nur ein normaler Wurf.
+ function rollLimit(b,p){
+  const canMoveOutside=Array.from({length:6},(_,i)=>i+1).some(die=>
+   rawMoves(b,p,die).some(m=>b[p][m.piece]>=0));
+  return canMoveOutside?1:3;
+ }
  function apply(b,p,m){const out=b.map(row=>row.slice());out[p][m.piece]=m.to;for(const c of m.captured)out[c.player][c.piece]=-1;return out;}
  function choose(b,p,die,level){
   const ms=possible(b,p,die);if(!ms.length)return null;
@@ -40,7 +62,7 @@ const DiceRace=(()=>{
     return {m,score:score+Math.random()*(level==="medium"?10:1)};
   });ranked.sort((a,b)=>b.score-a.score);return ranked[0].m;
  }
- return {palette,starts,names,state,possible,apply,choose};
+ return {palette,starts,names,state,possible,rollLimit,apply,choose};
 })();
 if(typeof module!=="undefined")module.exports=DiceRace;
 if(typeof document!=="undefined")(()=>{
@@ -48,8 +70,10 @@ if(typeof document!=="undefined")(()=>{
 const sdk=window.MuPiBoxSDK,$=id=>document.getElementById(id),NS="http://www.w3.org/2000/svg";
 const board=$("board"),svg=document.createElementNS(NS,"svg");
 svg.setAttribute("viewBox","0 0 442 442");svg.setAttribute("aria-label","Großes Würfelrennen-Brett");board.append(svg);
-const staticLayer=document.createElementNS(NS,"g"),highlightLayer=document.createElementNS(NS,"g"),pieceLayer=document.createElementNS(NS,"g");
-svg.append(staticLayer,highlightLayer,pieceLayer);
+const backdropLayer=document.createElementNS(NS,"g"),staticLayer=document.createElementNS(NS,"g");
+const highlightLayer=document.createElementNS(NS,"g"),pieceLayer=document.createElementNS(NS,"g");
+// Keep every decorative element behind all selectable targets and moving pieces.
+svg.append(backdropLayer,staticLayer,highlightLayer,pieceLayer);
 const WIDTH=442,CELL=30.4,OFFSET=23,SPACE=13;
 const names=DiceRace.names,faces=["⚀","⚁","⚂","⚃","⚄","⚅"],cache={};
 const pos=i=>{
@@ -61,34 +85,82 @@ const pos=i=>{
  return [OFFSET+c*CELL,OFFSET+r*CELL];
 };
 const corners=[[0,0],[13,0],[13,13],[0,13]];
+// Four separate circular home lanes: the diagonal step leaves a visible gap
+// between adjacent 13.4px-radius fields, including the four inner fields.
 const lane=(p,j)=>{
  const [x,y]=corners[p];
- const xx=x===0?1:-1,yy=y===0?1:-1,delta=122+j*16;
+ const xx=x===0?1:-1,yy=y===0?1:-1,delta=111+j*22;
  return [OFFSET+x*CELL+xx*delta,OFFSET+y*CELL+yy*delta];
 };
+// Push the four start homes slightly outward, away from the new finish lanes.
 const base=(p,j)=>{
  const [x,y]=corners[p];
  const xx=x===0?1:-1,yy=y===0?1:-1;
- return [OFFSET+x*CELL+xx*(54+(j%2)*30),OFFSET+y*CELL+yy*(54+Math.floor(j/2)*30)];
+ return [OFFSET+x*CELL+xx*(46+(j%2)*30),OFFSET+y*CELL+yy*(46+Math.floor(j/2)*30)];
 };
 const S=(tag,attrs={})=>{const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));return e;};
+const defs=S("defs");svg.insertBefore(defs,backdropLayer);
+function gradient(id,top,bottom){
+ const g=S("linearGradient",{id,x1:"0%",y1:"0%",x2:"15%",y2:"100%"});
+ g.append(S("stop",{offset:"0%","stop-color":top}),S("stop",{offset:"100%","stop-color":bottom}));
+ defs.append(g);
+}
+gradient("trackA","#64bad4","#124765");
+gradient("trackB","#49a3c2","#0a3d5d");
+const shiny=["#ffbacb","#fff3a4","#91ffe6","#c2d2ff"];
+const shaded=["#d92f50","#d99210","#08ac86","#4768d9"];
+const goalTop=["#ffe0e8","#fff7c7","#b5ffef","#e2e6ff"];
+const goalMid=["#ff6f8b","#ffd44e","#32e2bd","#7fa2ff"];
+const cornerTop=["#ffb3be","#ffedaa","#98ffe0","#bdc9ff"];
+for(let p=0;p<4;p++){
+ gradient("piece"+p,shiny[p],shaded[p]);
+ gradient("corner"+p,cornerTop[p],shaded[p]);
+ const g=S("radialGradient",{id:"goal"+p,cx:"30%",cy:"19%",r:"88%"});
+ g.append(S("stop",{offset:"0%","stop-color":goalTop[p]}));
+ g.append(S("stop",{offset:"38%","stop-color":goalMid[p]}));
+ g.append(S("stop",{offset:"100%","stop-color":shaded[p]}));
+ defs.append(g);
+}
+const light=S("radialGradient",{id:"boardAtmosphere",cx:"50%",cy:"48%",r:"65%"});
+light.append(S("stop",{offset:"0%","stop-color":"#0d7997","stop-opacity":.75}));
+light.append(S("stop",{offset:"57%","stop-color":"#0b4b68","stop-opacity":.55}));
+light.append(S("stop",{offset:"100%","stop-color":"#06273e","stop-opacity":0}));
+defs.append(light);
+// Atmospheric spotlight and a discreet circular accent, never a center mascot/die.
+backdropLayer.append(S("circle",{cx:WIDTH/2,cy:WIDTH/2,r:202,fill:"url(#boardAtmosphere)","pointer-events":"none"}));
+backdropLayer.append(S("circle",{cx:WIDTH/2,cy:WIDTH/2,r:160.5,fill:"none",stroke:"#37b9d6","stroke-width":1.15,opacity:.33,"pointer-events":"none"}));
+backdropLayer.append(S("path",{d:"M62 226 A159 159 0 0 1 221 62",fill:"none",stroke:"#64dcf4","stroke-width":1,opacity:.38,"pointer-events":"none"}));
+backdropLayer.append(S("path",{d:"M380 216 A159 159 0 0 1 221 380",fill:"none",stroke:"#5bd1eb","stroke-width":1.2,opacity:.42,"pointer-events":"none"}));
 for(let i=0;i<52;i++){
  const [x,y]=pos(i),owner=DiceRace.starts.indexOf(i);
- const r=S("rect",{x:x-14.8,y:y-14.8,width:29.6,height:29.6,rx:5,fill:owner>=0?DiceRace.palette[owner]:i%2?"#366587":"#295271",stroke:"#89aec5","stroke-width":1.3});
+ const r=S("rect",{x:x-14.8,y:y-14.8,width:29.6,height:29.6,rx:5.8,
+  fill:owner>=0?"url(#corner"+owner+")":i%2?"url(#trackA)":"url(#trackB)",
+  stroke:owner>=0?"#ffedb7":"#80d8eb","stroke-width":owner>=0?2.1:1.6});
+ staticLayer.append(S("rect",{x:x-13.5,y:y-12.4,width:27,height:25.7,rx:5,
+  fill:"#001324",opacity:.2,"pointer-events":"none"}));
  staticLayer.append(r);
+ staticLayer.append(S("path",{d:"M"+(x-10)+" "+(y-10)+"Q"+x+" "+(y-12)+" "+(x+10)+" "+(y-10),
+  stroke:"#f5ffff","stroke-width":1.9,opacity:.6,fill:"none","stroke-linecap":"round","pointer-events":"none"}));
+ staticLayer.append(S("path",{d:"M"+(x-9)+" "+(y+11)+"h18",stroke:"#03172a","stroke-width":1.6,
+  opacity:.3,"stroke-linecap":"round","pointer-events":"none"}));
 }
 for(let p=0;p<4;p++){
  for(let j=0;j<4;j++){
   const [x,y]=lane(p,j);
-  staticLayer.append(S("rect",{x:x-14,y:y-14,width:28,height:28,rx:6,fill:DiceRace.palette[p],opacity:.53,stroke:"#fff","stroke-width":1.3}));
+  // Glossy circular target cells; unlike the former squares they never overlap.
+  staticLayer.append(S("circle",{cx:x,cy:y,r:14.1,"class":"finish-cell",fill:"#09293d",
+   stroke:DiceRace.palette[p],"stroke-width":2.1}));
+  staticLayer.append(S("circle",{cx:x,cy:y,r:12.2,fill:"url(#goal"+p+")",
+   stroke:goalTop[p],"stroke-width":1.2}));
+  staticLayer.append(S("ellipse",{cx:x-3.3,cy:y-5.9,rx:6.2,ry:3,fill:"#fff",opacity:.47,"pointer-events":"none"}));
+  staticLayer.append(S("path",{d:"M"+(x-7)+" "+(y+8)+"Q"+x+" "+(y+12)+" "+(x+7)+" "+(y+8),
+   stroke:"#061d2e",opacity:.37,"stroke-width":1.5,fill:"none","pointer-events":"none"}));
   const [bx,by]=base(p,j);
-  staticLayer.append(S("circle",{cx:bx,cy:by,r:15.5,fill:"#10263b",stroke:DiceRace.palette[p],"stroke-width":2.2,opacity:.88}));
+  staticLayer.append(S("circle",{cx:bx,cy:by,r:15.5,fill:"#051929",stroke:DiceRace.palette[p],"stroke-width":2.8}));
+  staticLayer.append(S("circle",{cx:bx,cy:by,r:13.2,fill:"#0a3043",stroke:goalTop[p],"stroke-width":.75,opacity:.68}));
  }
 }
-staticLayer.append(S("circle",{cx:WIDTH/2,cy:WIDTH/2,r:25,fill:"#183b55",stroke:"#b6d8c9","stroke-width":3}));
-const centerLabel=S("text",{x:WIDTH/2,y:WIDTH/2+6,"text-anchor":"middle","font-size":22,fill:"#ffe4ab","font-weight":"bold"});
-centerLabel.textContent="MuPi";staticLayer.append(centerLabel);
-let b,players=4,human=1,turn=0,die=0,ended=false,epoch=0,selectedPiece=0,aiTimer=0,selectedNodes=[];
+let b,players=4,human=1,turn=0,die=0,ended=false,epoch=0,selectedPiece=0,aiTimer=0,attempts=0,maxAttempts=3;
 const active=()=>players===2?[0,2]:players===3?[0,1,2]:[0,1,2,3];
 const isHuman=()=>active().indexOf(turn)<human;
 const locate=(p,k)=>{
@@ -96,10 +168,12 @@ const locate=(p,k)=>{
 };
 const nodes={};for(let p=0;p<4;p++)for(let k=0;k<4;k++){
  const g=S("g");g.style.cursor="pointer";g.addEventListener("click",()=>select(k,p));
- const c=S("circle",{cx:0,cy:0,r:14.3,fill:DiceRace.palette[p],stroke:"#10263c","stroke-width":2.7});
+ const shadow=S("circle",{cx:1.3,cy:2,r:15.2,fill:"#071b29",opacity:.65,"pointer-events":"none"});
+ const c=S("circle",{cx:0,cy:0,r:14.3,fill:"url(#piece"+p+")",stroke:"#10263c","stroke-width":2.7});
+ const shine=S("ellipse",{cx:-3,cy:-6.5,rx:7.5,ry:3.4,fill:"#fff",opacity:.28,"pointer-events":"none"});
  const tx=S("text",{x:0,y:5,"text-anchor":"middle","font-size":14,"font-weight":"bold",fill:"#092438","pointer-events":"none"});tx.textContent=k+1;
  const area=S("circle",{cx:0,cy:0,r:19,fill:"transparent"});
- g.append(c,tx,area);pieceLayer.append(g);nodes[p+"-"+k]={g,c};
+ g.append(shadow,c,shine,tx,area);pieceLayer.append(g);nodes[p+"-"+k]={g,c};
 }
 const pieceButtons=Array.from({length:4},(_,k)=>{
  const e=document.createElement("button");e.textContent=k+1;e.addEventListener("click",()=>select(k,turn));$("pieces").append(e);return e;
@@ -112,7 +186,7 @@ function render(){
  for(const p of active())for(let k=0;k<4;k++){
   const e=nodes[p+"-"+k],v=b[p][k];const [x,y]=locate(p,k);
   e.g.setAttribute("transform","translate("+x+" "+y+")");
-  const show=p===turn&&k===selectedPiece;
+  const show=die>0&&p===turn&&k===selectedPiece;
   e.c.setAttribute("stroke",show?"#ffffff":"#10263c");
   e.c.setAttribute("stroke-width",show?4.6:2.7);
   e.c.setAttribute("r",show?15.4:14.3);
@@ -123,12 +197,23 @@ function render(){
  }
  for(let p=0;p<4;p++)if(!active().includes(p))for(let k=0;k<4;k++)nodes[p+"-"+k].g.style.display="none";
  $("turn").textContent=ended?names[turn]+" gewinnt!":names[turn]+" · "+(isHuman()?"DU BIST DRAN":"MuPi DENKT");
- $("score").textContent=active().map(p=>names[p]+" "+b[p].filter(v=>v>=52).length+"/4").join("  ·  ");
+ $("turn").classList.toggle("winner",ended);
+ $("status").classList.toggle("won",ended);
+ const scoreNodes=[];
+ for(const [i,p] of active().entries()){
+  if(i){const sep=document.createElement("span");sep.className="score-separator";sep.textContent="·";scoreNodes.push(sep);}
+  const tag=document.createElement("span");tag.className="score-player";
+  tag.style.setProperty("--player-color",DiceRace.palette[p]);
+  tag.textContent=names[p]+" "+b[p].filter(v=>v>=52).length+"/4";
+  scoreNodes.push(tag);
+ }
+ $("score").replaceChildren(...scoreNodes);
+ $("attempts").textContent=ended?"Sieg":die?"Zug wählen":maxAttempts===3?"Wurf "+Math.min(attempts+1,3)+"/3":"Dein Zug";
  $("dice").textContent=die?faces[die-1]:"⚄";
  $("roll").disabled=ended||!isHuman()||die>0;
  for(let k=0;k<4;k++){
   const btn=pieceButtons[k];btn.disabled=ended||!isHuman()||!playable.has(k);
-  btn.classList.toggle("active",selectedPiece===k);
+  btn.classList.toggle("active",selectedPiece===k&&playable.has(k)&&isHuman()&&!ended);
  }
 }
 function finishMove(m){
@@ -136,7 +221,11 @@ function finishMove(m){
  const face=die;
  status(names[turn]+" zieht Stein "+(m.piece+1)+(m.captured.length?" – rausgeworfen!":""));
  if(b[turn].every(v=>v>=52)){ended=true;die=0;status(names[turn]+" GEWINNT!");render();return;}
- if(face===6){die=0;render();computer();}else next();
+ if(face===6){
+  attempts=0;maxAttempts=DiceRace.rollLimit(b,turn);die=0;
+  status(names[turn]+" hat eine Sechs – Extrawurf!");
+  render();computer();
+ }else next();
 }
 function select(k,p=turn){
  selectedPiece=k;if(p!==turn||ended||!isHuman()||!die){render();return;}
@@ -146,20 +235,40 @@ function select(k,p=turn){
 }
 function next(){
  die=0;const list=active();turn=list[(list.indexOf(turn)+1)%list.length];
+ attempts=0;maxAttempts=DiceRace.rollLimit(b,turn);selectedPiece=0;
+ status(names[turn]+" ist dran."+(maxAttempts===3?" Drei Wurfversuche.":""));
  render();computer();
 }
 function rolled(){
  if(ended||die)return;
+ attempts++;
  die=1+Math.floor(Math.random()*6);
- const ms=DiceRace.possible(b,turn,die);status(names[turn]+" würfelt "+die+".");
+ const ms=DiceRace.possible(b,turn,die);
+ if(ms.length&&!ms.some(m=>m.piece===selectedPiece))selectedPiece=ms[0].piece;
+ const forcedExit=die===6&&ms.length&&ms.every(m=>b[turn][m.piece]===-1);
+ const mustClear=ms.length&&ms.every(m=>b[turn][m.piece]===0);
+ status(forcedExit?"Sechs! Eine Figur zieht aus dem Haus.":mustClear?
+  "Startfeld freimachen: Figur "+(ms[0].piece+1)+" ziehen.":names[turn]+" würfelt "+die+".");
  const diceEl=$("dice");diceEl.classList.remove("roll");void diceEl.offsetWidth;diceEl.classList.add("roll");
  render();
  if(!ms.length){
-  const id=epoch;aiTimer=setTimeout(()=>{if(id!==epoch||ended)return;status("Kein gültiger Zug.");next();},180);
+  const id=epoch;aiTimer=setTimeout(()=>{
+   if(id!==epoch||ended)return;
+   die=0;
+   if(attempts<maxAttempts){
+    status("Kein Zug möglich – nächster Versuch ("+(attempts+1)+"/"+maxAttempts+").");
+    render();computer();
+   }else{status("Kein Zug möglich – nächster Spieler.");next();}
+  },300);
+ }else if(forcedExit){
+  // Alle Basisfiguren sind gleichwertig: automatische Pflichtausfahrt.
+  const id=epoch;aiTimer=setTimeout(()=>{
+   if(id!==epoch||ended||die!==6)return;finishMove(ms[0]);
+  },260);
  }else if(!isHuman()){
   const id=epoch;aiTimer=setTimeout(()=>{if(id!==epoch||ended)return;
    const move=DiceRace.choose(b,turn,die,$("difficulty").value);if(move)finishMove(move);
-  },180);
+  },220);
  }
 }
 function computer(){
@@ -171,7 +280,8 @@ function reset(){
  epoch++;clearTimeout(aiTimer);
  players=+ $("playercount").value;human=Math.min(+ $("human").value,players);$("human").value=human;
  b=DiceRace.state(players);turn=active()[0];die=0;ended=false;selectedPiece=0;
- status("Sechs würfeln, um ins Rennen zu starten!");render();computer();
+ attempts=0;maxAttempts=DiceRace.rollLimit(b,turn);
+ status("Du hast drei Versuche, eine Sechs zu würfeln.");render();computer();
 }
 $("roll").onclick=()=>{if(isHuman()&&!die)rolled();};
 $("restart").onclick=reset;

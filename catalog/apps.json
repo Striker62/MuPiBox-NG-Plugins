@@ -4,13 +4,13 @@
     {
       "id": "community.tictactoe",
       "name": "MuPi Kreuz & Kreis",
-      "description": "Kreuz & Kreis mit transparentem Spielhintergrund für das MuPiBox-Theme, 2-Spieler-Modus und drei KI-Stärken. MuPi-Axolotl-Cover für den Coverflow.",
+      "description": "Kreuz & Kreis im Cyan/Gold-Neonstil mit leuchtenden Spielsteinen, 2-Spieler-Modus und drei KI-Stärken. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.2.6",
-      "releaseTag": "v0.1.0-preview.26",
+      "version": "0.2.7",
+      "releaseTag": "v0.1.0-preview.44",
       "asset": "mupi-kreuz-kreis.mupiapp",
-      "sha256": "b9953eea6fa5e679e3c78b4ae75c093134bd01e817a18ae28d0ad6e80e2dd666",
+      "sha256": "ef0fd82c9ebe75dee7828927a30b5acc0c763bd84c5f0ea510fefaf042f92049",
       "permissions": [
         "storage",
         "controller"
@@ -49,13 +49,13 @@
     {
       "id": "community.mupi-chess",
       "name": "MuPi Schach",
-      "description": "Offline-Schach zu zweit oder gegen MuPi in vier Stärken, mit Zugzeit, Durchschnitt und optionaler Zugzeitbegrenzung. Mit neuem MuPi-Axolotl-Cover. MuPi-Axolotl-Cover für den Coverflow.",
+      "description": "Offline-Schach zu zweit oder gegen MuPi – mit Gold/Türkis-Neon-Design, neuer MuPi-Königsfigur, vier KI-Stärken und Zugzeitoptionen.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.1.3",
-      "releaseTag": "v0.1.0-preview.26",
+      "version": "0.1.5",
+      "releaseTag": "v0.1.0-preview.49",
       "asset": "mupi-chess.mupiapp",
-      "sha256": "4727e80883ff68985ae9053910653cee149192641f661202be1132117772752b",
+      "sha256": "45b3952afb5a0fb987e1ff7fb9cc12e4d47d2074bd6cdad92bc33eb4833bb8ce",
       "permissions": [
         "controller"
       ]
@@ -214,13 +214,13 @@
     {
       "id": "community.mupi-wuerfelrennen",
       "name": "MuPis Würfelrennen",
-      "description": "Großes quadratisches 52-Felder-Brett für zwei bis vier Menschen oder KI-Spieler, mit deutlich größeren Touchzielen und flotteren Spielzügen.",
+      "description": "Würfelrennen im Hochglanz-Design mit klarer Spielfeldmitte, leuchtenden Zielfeldern, Glas-Laufbahn und goldener Bedienung.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.3",
-      "releaseTag": "v0.1.0-preview.27",
+      "version": "0.2.8",
+      "releaseTag": "v0.1.0-preview.50",
       "asset": "mupi-wuerfelrennen.mupiapp",
-      "sha256": "e013e595a1e0a8daa5e4f27e29de08d6f8bbcb732ec840225f77f587dbe91ddf",
+      "sha256": "b09246c1ef7173b0b6fc50ba895ce48e0381ba2f45750c1a37039ffa8a7c46d3",
       "permissions": [
         "controller"
       ]
@@ -245,15 +245,47 @@
       "description": "Freies Klavierspielen und Lieder lernen mit fallenden Noten oder Notenblatt.",
       "category": "learning",
       "author": "MuPiBox Community",
-      "version": "0.1.0",
+      "version": "0.1.2",
       "permissions": [
         "audio",
         "storage",
         "controller"
       ],
-      "releaseTag": "v0.1.0-preview.28",
+      "releaseTag": "v0.1.0-preview.41",
       "asset": "mupi-klavier.mupiapp",
-      "sha256": "890e0d0a04e7ebaf675db97bca8fa949248d766149444ada945d3494c6c79d1f"
+      "sha256": "417bf382ea72e235eb183e8943bbdeeaca825ff488b8769a864747a0c0e655f1"
+    },
+    {
+      "id": "community.mupi-wasserschlacht",
+      "name": "MuPi Water Battle",
+      "description": "MuPi Water Battle: originales Cover, eine Sekunde Trefferanimation, echte Offline-Sounds und direkte, knisterfreie Lautstärkeregelung über neue NG-Audio-API.",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.2.5",
+      "releaseTag": "v0.1.0-preview.42",
+      "asset": "mupi-wasserschlacht.mupiapp",
+      "sha256": "676820704d41c58769af97002665614b17be6bd03c90a3a9eb0818226b568438",
+      "permissions": [
+        "controller",
+        "audio",
+        "storage"
+      ],
+      "icon": "examples/mupi-wasserschlacht/cover.jpg"
+    },
+    {
+      "id": "community.funny-mupi",
+      "name": "Funny MuPi",
+      "description": "50 deutsche und 12 englische Kinderwitze offline. Freigestellter oranger MuPi, Vorlesen und direkt anschließendes CC0-Lachen.",
+      "category": "other",
+      "author": "MuPiBox Community",
+      "version": "0.1.4",
+      "releaseTag": "v0.1.0-preview.38",
+      "asset": "funny-mupi.mupiapp",
+      "sha256": "6a5d452c1452ec0e50280dfd60ff2977cea6d16d88699d1b8f56bcf3a7d1ab2a",
+      "permissions": [
+        "audio",
+        "controller"
+      ]
     }
   ]
 }

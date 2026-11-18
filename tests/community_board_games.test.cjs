@@ -66,6 +66,46 @@ test('Würfelrennen launch, capture, private home and own occupancy',()=>{
  for(const level of ['easy','medium','hard'])assert.ok(L.choose(L.state(4),0,6,level));
 });
 
+test('Würfelrennen: Sechs hat Pflichtausfahrt, auch auf besetztes gegnerisches Startfeld',()=>{
+ const board=L.state(4);board[0][0]=8;board[0][1]=-1;
+ assert.ok(L.possible(board,0,6).length>0);
+ assert.ok(L.possible(board,0,6).every(m=>board[0][m.piece]===-1));
+ for(const level of ['easy','medium','hard'])
+  assert.equal(board[0][L.choose(board,0,6,level).piece],-1);
+ // Gold steht auf dem roten Startfeld und wird beim Herauskommen geschlagen.
+ board[1][0]=39;
+ const entry=L.possible(board,0,6)[0];
+ assert.equal(entry.to,0);
+ assert.deepEqual(entry.captured,[{player:1,piece:0}]);
+ const after=L.apply(board,0,entry);
+ assert.equal(after[1][0],-1);
+});
+
+test('Würfelrennen: eigenes Startfeld muss bei nächstmöglichem Wurf frei werden',()=>{
+ const board=L.state(4);
+ board[0]=[0,10,-1,-1];
+ assert.deepEqual(L.possible(board,0,3).map(m=>m.piece),[0]);
+ assert.deepEqual(L.possible(board,0,6).map(m=>m.piece),[0]);
+ // Ist die Startfigur blockiert, bleiben andere legale Züge möglich.
+ board[0]=[0,1,-1,-1];
+ assert.ok(!L.possible(board,0,1).some(m=>m.piece===0));
+ assert.ok(L.possible(board,0,1).some(m=>m.piece===1));
+ // Ohne wartende Figuren muss eine Figur am Start trotzdem Platz machen.
+ board[0]=[0,10,20,30];
+ assert.deepEqual(L.possible(board,0,2).map(m=>m.piece),[0]);
+});
+
+test('Würfelrennen: bis zu drei Startwürfe ohne ziehbare Figur auf dem Feld',()=>{
+ const board=L.state(4);
+ assert.equal(L.rollLimit(board,0),3);
+ board[0][0]=0;
+ assert.equal(L.rollLimit(board,0),1);
+ board[0]=[53,54,55,-1]; // Zielgang durch eigene Figuren blockiert
+ assert.equal(L.rollLimit(board,0),3);
+ board[0]=[53,55,-1,-1]; // mit passender Zahl wieder beweglich
+ assert.equal(L.rollLimit(board,0),1);
+});
+
 test('AI-vs-AI Reversi completes a legal game and accounts for every square',()=>{
  let board=R.initial(),turn=1,passes=0,steps=0;
  while(passes<2&&steps++<80){
