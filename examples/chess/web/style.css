@@ -353,17 +353,25 @@ button:disabled { opacity: .43; cursor: default; transform: none; }
   line-height: 1.35;
   color: #c7d7df;
 }
+.bottom-strip {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(140px,58%);
+  gap: 2px;
+  flex: 1 1 auto;
+  min-height: 96px;
+  align-items: stretch;
+  overflow: hidden;
+}
+.bottom-strip .help {
+  margin-top: 7px;
+  align-self: start;
+}
 .mascot-deco {
-  flex: 1 0 50px;
-  min-height: 50px;
-  margin: 4px -3px -7px;
-  border-radius: 0 0 10px 10px;
+  min-width: 0;
+  min-height: 0;
   background:
-    radial-gradient(ellipse at 50% 90%,#ffaa3c27,transparent 63%),
-    url("./mascot-deco.png") center bottom / auto 142px no-repeat;
-  -webkit-mask-image: linear-gradient(0deg,#000 0%,#000 78%,transparent 100%);
-  mask-image: linear-gradient(0deg,#000 0%,#000 78%,transparent 100%);
-  opacity: .95;
+    radial-gradient(ellipse at 50% 100%,#e79d2f33,transparent 66%),
+    url("./mascot-king.webp") center bottom / contain no-repeat;
   pointer-events: none;
 }
 .promotion { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; background: #020e19d9; }
@@ -387,7 +395,7 @@ button:disabled { opacity: .43; cursor: default; transform: none; }
   .board-shell { width: min(96vw,calc(100dvh - 65px)); max-height: none; }
   .game-bar { width: min(96vw,calc(100dvh - 65px)); }
   .panel { overflow: visible; }
-  .mascot-deco { flex: none; height: 85px; }
+  .bottom-strip { flex: none; min-height: 126px; }
 }
 @media (max-height:410px) and (min-width:651px) {
   .layout { padding: 3px 6px; gap: 7px; }
@@ -397,7 +405,7 @@ button:disabled { opacity: .43; cursor: default; transform: none; }
   .panel-header { margin-bottom: 4px; }
   .clocks { margin-bottom: 5px; }
   .clock-card { padding: 4px 6px; }
-  .mascot-deco { display: none; }
+  .bottom-strip { min-height: 75px; }
 }
 @media (prefers-reduced-motion:no-preference) {
   .sq.selected { animation: glow-selected 1.8s ease-in-out infinite; }

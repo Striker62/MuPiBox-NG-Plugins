@@ -2,13 +2,13 @@
   "apiVersion": "1",
   "id": "community.mupi-chess",
   "name": "MuPi Schach",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.png",
   "cover": "cover-clean-v2.jpg",
   "author": "MuPiBox Community",
-  "description": "Offline-Schach zu zweit oder gegen MuPi in vier Stärken – mit gold-türkisem Neon-Design, Zugzeit, Durchschnitt und optionalem Zeitlimit.",
+  "description": "Offline-Schach zu zweit oder gegen MuPi – mit Gold/Türkis-Neon-Design, neuer MuPi-Königsfigur, vier KI-Stärken und Zugzeitoptionen.",
   "permissions": [
     "controller"
   ],
