@@ -25,7 +25,7 @@ fallende Noten auf dem 5-Zoll-Touchdisplay (800 × 480). Das überarbeitete
 Design verwendet einen richtigen Violinschlüssel und das freigegebene
 MuPi-Klavier-Cover.
 
-[![MuPi Klavier – Notenblatt mit hervorgehobener G4-Taste](docs/screenshots/mupi-klavier/notenblatt.png)](examples/mupi-klavier/README.md)
+[![MuPi Klavier – Notenblatt mit hervorgehobener G4-Taste](examples/mupi-klavier/screenshots/notenblatt.png)](examples/mupi-klavier/README.md)
 
 [**Anleitung und alle drei Screenshots**](examples/mupi-klavier/README.md)
 

@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCREENSHOTS = ROOT / "docs" / "screenshots" / "mupi-klavier"
+SCREENSHOTS = ROOT / "examples" / "mupi-klavier" / "screenshots"
 MODES = ("frei-spielen.png", "notenblatt.png", "fallende-noten.png")
 
 
@@ -23,8 +23,8 @@ class PianoScreenshotTests(unittest.TestCase):
         main = (ROOT / "README.md").read_text()
         for filename in MODES:
             with self.subTest(filename=filename):
-                self.assertIn(f"../../docs/screenshots/mupi-klavier/{filename}", readme)
-        self.assertIn("docs/screenshots/mupi-klavier/notenblatt.png", main)
+                self.assertIn(f"screenshots/{filename}", readme)
+        self.assertIn("examples/mupi-klavier/screenshots/notenblatt.png", main)
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "docs" / "screenshots" / "mupi-klavier"
+OUTPUT = ROOT / "examples" / "mupi-klavier" / "screenshots"
 BUILD = ROOT / ".build" / "mupi-klavier"
 SIZE = (800, 480)
 VIEWS = (

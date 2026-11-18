@@ -8,15 +8,15 @@ der App; es handelt sich nicht um Design-Mockups oder Aufnahmen vom Raspberry Pi
 
 ### Frei spielen
 
-![MuPi Klavier – Frei spielen mit hervorgehobener Taste E4](../../docs/screenshots/mupi-klavier/frei-spielen.png)
+![MuPi Klavier – Frei spielen mit hervorgehobener Taste E4](screenshots/frei-spielen.png)
 
 ### Notenblatt
 
-![MuPi Klavier – Notenblatt mit Violinschlüssel und hervorgehobener G4-Taste](../../docs/screenshots/mupi-klavier/notenblatt.png)
+![MuPi Klavier – Notenblatt mit Violinschlüssel und hervorgehobener G4-Taste](screenshots/notenblatt.png)
 
 ### Fallende Noten
 
-![MuPi Klavier – Fallende Noten mit Xylophon und hervorgehobener G4-Taste](../../docs/screenshots/mupi-klavier/fallende-noten.png)
+![MuPi Klavier – Fallende Noten mit Xylophon und hervorgehobener G4-Taste](screenshots/fallende-noten.png)
 
 Screenshots erneut erstellen (Chromium erforderlich, aus dem Repository-Wurzelverzeichnis):
 
@@ -24,7 +24,7 @@ Screenshots erneut erstellen (Chromium erforderlich, aus dem Repository-Wurzelve
 python3 tools/capture_mupi_klavier_screenshots.py
 ```
 
-Die Screenshots werden unter `docs/screenshots/mupi-klavier/` abgelegt.
+Die Screenshots liegen direkt bei der Anwendung unter `examples/mupi-klavier/screenshots/`.
 Sie gehören zur Dokumentation und **nicht** zum installierbaren `.mupiapp`-Paket.
 
 Eigenständige Community-App unter Lernen, optimiert für 800×480 (5 Zoll).
