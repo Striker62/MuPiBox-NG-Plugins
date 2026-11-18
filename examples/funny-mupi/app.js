@@ -3,8 +3,8 @@
   const sdk = window.MuPiBoxSDK;
   const el = id => document.getElementById(id);
   const labels = {
-    de: {exit:'Zurück', next:'Nächster Witz', hint:'Auf die Sprechblase tippen, dann liest MuPi vor.', loading:'MuPi sucht einen Witz …', error:'Die Witze konnten nicht geladen werden.', unavailable:'TTS ist ausgeschaltet. Bitte in Admin → TTS aktivieren.', notReady:'TTS ist noch nicht bereit. Bitte Admin → TTS und den Sprachcache prüfen.', previewSpeaking:'Der Browser liest den Witz vor …', browserUnavailable:'Dieser Browser unterstützt kein Vorlesen.', speaking:'MuPi erzählt den Witz …', speakError:'Vorlesen nicht möglich. Bitte TTS und Audio-Freigabe prüfen.', fallback:'Deutsche Witze (noch keine Übersetzung).'},
-    en: {exit:'Back', next:'Next joke', hint:'Tap the speech bubble to hear MuPi read the joke.', loading:'MuPi is finding a joke …', error:'Could not load jokes.', unavailable:'TTS is disabled. Enable it in Admin → TTS.', notReady:'TTS is not ready. Check Admin → TTS and the voice cache.', previewSpeaking:'Your browser is reading the joke …', browserUnavailable:'This browser does not support speech.', speaking:'MuPi is telling a joke …', speakError:'Speech unavailable. Check TTS and audio permission.', fallback:'German jokes (translation coming soon).'},
+    de: {exit:'Zurück', next:'Nächster Witz', hint:'Auf die Sprechblase tippen, dann liest MuPi vor.', loading:'MuPi sucht einen Witz …', error:'Die Witze konnten nicht geladen werden.', unavailable:'TTS ist ausgeschaltet. Bitte in Admin → TTS aktivieren.', notReady:'TTS ist noch nicht bereit. Bitte Admin → TTS und den Sprachcache prüfen.', previewSpeaking:'Der Browser liest den Witz vor …', browserUnavailable:'Dieser Browser unterstützt kein Vorlesen.', speaking:'MuPi erzählt den Witz …', laughing:'MuPi lacht …', speakError:'Vorlesen nicht möglich. Bitte TTS und Audio-Freigabe prüfen.', fallback:'Deutsche Witze (noch keine Übersetzung).'},
+    en: {exit:'Back', next:'Next joke', hint:'Tap the speech bubble to hear MuPi read the joke.', loading:'MuPi is finding a joke …', error:'Could not load jokes.', unavailable:'TTS is disabled. Enable it in Admin → TTS.', notReady:'TTS is not ready. Check Admin → TTS and the voice cache.', previewSpeaking:'Your browser is reading the joke …', browserUnavailable:'This browser does not support speech.', speaking:'MuPi is telling a joke …', laughing:'MuPi laughs …', speakError:'Speech unavailable. Check TTS and audio permission.', fallback:'German jokes (translation coming soon).'},
     fr: {exit:'Retour', next:'Blague suivante', hint:'Touchez la bulle pour écouter la blague.', loading:'MuPi cherche une blague …', error:'Impossible de charger les blagues.', unavailable:'La synthèse vocale est désactivée.', speaking:'MuPi raconte une blague …', speakError:'Lecture indisponible.', fallback:'Blagues allemandes (traduction à venir).'},
     es: {exit:'Volver', next:'Otro chiste', hint:'Toca el bocadillo para escuchar el chiste.', loading:'MuPi busca un chiste …', error:'No se pueden cargar los chistes.', unavailable:'La voz no está activada.', speaking:'MuPi cuenta un chiste …', speakError:'Voz no disponible.', fallback:'Chistes en alemán (traducción pendiente).'},
     it: {exit:'Indietro', next:'Altra battuta', hint:'Tocca il fumetto per ascoltare la battuta.', loading:'MuPi cerca una battuta …', error:'Impossibile caricare le battute.', unavailable:'Sintesi vocale non attiva.', speaking:'MuPi racconta una battuta …', speakError:'Voce non disponibile.', fallback:'Barzellette tedesche (traduzione in arrivo).'},
@@ -21,6 +21,7 @@
   let locale = 'de';
   let jokeLanguage = 'de';
   let preview = false;
+  let laughterAudio = null;
 
   function setStatus(value) { el('status').textContent = value || ''; }
   function shuffleIndices(count) {
@@ -37,6 +38,11 @@
   }
   function stopSpeech() {
     generation += 1;
+    if (laughterAudio) {
+      laughterAudio.pause();
+      laughterAudio.currentTime = 0;
+      laughterAudio = null;
+    }
     // Browser preview audio must remain local to the browser. Never call the
     // appliance speech API or change its playback state from this mode.
     if (preview) {
@@ -50,6 +56,35 @@
     }
     return Promise.resolve();
   }
+  async function playLaughter(token) {
+    if (token !== generation || paused) return;
+    try {
+      if (preview) {
+        const audio = new window.Audio('assets/laugh-ionakan-712055.mp3');
+        laughterAudio = audio;
+        audio.volume = 0.8;
+        audio.onended = () => {
+          if (token === generation && !paused) setStatus('');
+          if (laughterAudio === audio) laughterAudio = null;
+        };
+        audio.onerror = () => {
+          if (token === generation && !paused) setStatus('');
+          if (laughterAudio === audio) laughterAudio = null;
+        };
+        await audio.play();
+      } else {
+        // Use the appliance audio bridge, not Chromium/WebAudio on the Pi.
+        // This keeps the effect on the device's configured PipeWire sink.
+        if (!sdk.audio || typeof sdk.audio.playClip !== 'function') return;
+        await sdk.audio.playClip('assets/laugh-ionakan-712055.mp3');
+      }
+      if (token === generation && !paused) setStatus(ui.laughing || '');
+    } catch (error) {
+      // An older host without audio.clip must not prevent jokes/TTS.
+      console.warn('[Funny MuPi] Lachen nicht verfügbar:', error);
+      if (token === generation && !paused) setStatus('');
+    }
+  }
   function speakInBrowser(token) {
     if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
       setStatus(ui.browserUnavailable || ui.speakError);
@@ -62,7 +97,7 @@
       if (token === generation && !paused) setStatus(ui.previewSpeaking || ui.speaking);
     };
     utterance.onend = () => {
-      if (token === generation && !paused) setStatus('');
+      if (token === generation && !paused) void playLaughter(token);
     };
     utterance.onerror = error => {
       // The browser fires "canceled" when the user requests another joke.
@@ -98,8 +133,14 @@
       if (token !== generation || paused) return;
       if (!state || state.enabled !== true) {setStatus(ui.unavailable); return;}
       if (state.available !== true) {setStatus(ui.notReady || ui.unavailable); return;}
-      await sdk.tts.speak(jokes[current]);
-      if (token === generation && !paused) setStatus(ui.speaking);
+      setStatus(ui.speaking);
+      const result = await sdk.tts.speak(jokes[current], {waitForCompletion:true});
+      if (token !== generation || paused) return;
+      if (result && result.state === 'completed') {
+        await playLaughter(token);
+      } else {
+        setStatus('');
+      }
     } catch (error) {
       console.warn('[Funny MuPi] Vorlesen fehlgeschlagen:', error);
       if (token === generation && !paused) setStatus(ui.speakError);

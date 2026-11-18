@@ -310,3 +310,20 @@ An upgraded NG host implements `sdk.audio.playChord(notes, volume,
 device volume ceiling, parental controls and 75ms per-app call rate limit
 apply as with `playNote`. It does not accept raw audio samples or arbitrary
 note ranges and is not a sample-accurate song sequencer.
+
+
+### Wiedergabe kurzer App-eigener Soundeffekte
+
+Eine MuPiBox-NG-Version mit der optionalen Host-Bridge-Methode `audio.clip`
+kann kleine Audiodateien (MP3, OGG, WAV) direkt über die eingerichtete
+Box-Audioausgabe ausgeben. Die Datei muss als reguläre Datei im installierten
+App-Paket unter `assets/` liegen und maximal 2 MiB groß sein. Die vorhandene
+Berechtigung `audio`, Kindersicherung, per-App-Ratenlimit und die globale
+Lautstärkebegrenzung bleiben aktiv. Beliebige Dateipfade und Netzwerk-URLs
+werden nicht akzeptiert.
+
+Die Funktion kann z. B. nach `tts.speak(text, {waitForCompletion:true})`
+verwendet werden: Erst bei `result.state === "completed"` wird der kurze
+Effekt mit `sdk.audio.playClip("assets/laugh.mp3")` gestartet. Die laufende
+Clip-Ausgabe kann über `sdk.tts.stop()` vorzeitig beendet werden. Ältere
+Hosts ohne `audio.clip` unterstützen weiterhin den restlichen App-Betrieb.

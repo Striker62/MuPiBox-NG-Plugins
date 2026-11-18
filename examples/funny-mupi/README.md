@@ -37,3 +37,11 @@ Keine Netzwerkanfragen an fremde Dienste, keine Statistik, keine Speicherung. Di
 
 ## Darstellung
 MuPi wird orangefarben angezeigt. Die Spitze der Sprechblase weist rechts auf MuPi; die Darstellung skaliert auch für schmalere Ansichten.
+
+
+## Artwork und Abschluss-Lachen
+
+- Die Bildschirmfigur und das App-Symbol verwenden assets/mupi-laugh-refined.png, freigestellt mit transparentem Hintergrund.
+- assets/laugh-ionakan-712055.mp3 ist ein lokal mitgelieferter, ca. 2,4 Sekunden langer Lacher von ionakan: [girl laughs loudly](https://freesound.org/people/ionakan/sounds/712055/), Lizenz CC0 1.0. Quelle: Freesound. Offline-Wiedergabe, keine HTTP-Verbindung zum Anbieter während des Spiels.
+- Das Lachen ertönt ausschließlich nach vollständig beendetem Vorlesen. Es wird bei neuem Witz, Unterbrechen, Verlassen oder fehlerhafter Sprachausgabe abgebrochen und niemals automatisch beim Wechseln der Witzkarte gespielt.
+- In der Browser-Vorschau spielt der lokale Browser den Effekt. Auf dem Gerät erfolgt die Ausgabe über die MuPiBox-NG-Audio-Bridge (audio.playClip); hierfür wird eine NG-Version mit dieser Methode benötigt.

@@ -30,3 +30,15 @@ test('browser standalone fallback stays available without a privileged bridge',a
  assert.equal(sdk.isHosted,false);
  assert.equal(await sdk.audio.playNote('G4',30,'musicbox'),false);
 });
+
+
+test('bundled audio clip uses the trusted audio bridge with strict asset validation',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.playClip('assets/laugh-ionakan-712055.mp3');
+ assert.equal(calls[0].method,'audio.clip');
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{asset:'assets/laugh-ionakan-712055.mp3'});
+ for(const invalid of ['../secret.wav','assets/../../secret.mp3','https://example.com/sound.mp3','assets/file.js','assets/.private.mp3','assets/foo.mp3?x']) {
+  await assert.rejects(()=>sdk.audio.playClip(invalid),{name:'TypeError'});
+ }
+ assert.equal(calls.length,1);
+});

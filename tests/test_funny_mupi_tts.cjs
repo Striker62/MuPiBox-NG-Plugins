@@ -7,7 +7,7 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '../examples/funny-mupi');
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 
-async function launch({hostname, preview = false, enabled = true, available = true}) {
+async function launch({hostname, preview = false, enabled = true, available = true, spokenState = 'completed'}) {
   const elements = new Map();
   const calls = [];
   for (const id of ['bubble', 'next', 'exit', 'language', 'joke', 'status', 'hint', 'exit-label', 'next-label']) {
@@ -25,16 +25,23 @@ async function launch({hostname, preview = false, enabled = true, available = tr
     tts: {
       stop: async () => { calls.push(['boxStop']); },
       status: async () => { calls.push(['boxStatus']); return {enabled, available}; },
-      speak: async (text) => { calls.push(['boxSpeak', text]); }
+      speak: async (text, options) => { calls.push(['boxSpeak', text, options]); return {state:spokenState}; }
     },
+    audio: {playClip: async (asset) => {calls.push(['boxClip', asset]);}},
     exit: async () => {calls.push(['exit']);},
     on: () => {}
   };
   const speech = {
+    utterance: null,
     cancel: () => { calls.push(['browserCancel']); },
-    speak: (utterance) => { calls.push(['browserSpeak', utterance.text, utterance.lang]); }
+    speak: (utterance) => { speech.utterance = utterance; calls.push(['browserSpeak', utterance.text, utterance.lang]); }
   };
-  const window = {MuPiBoxSDK:sdk, location:{hostname}, speechSynthesis:speech,
+  class Audio {
+    constructor(src) {this.src=src;this.currentTime=0;}
+    async play() {calls.push(['browserClip',this.src]);}
+    pause() {calls.push(['browserClipPause',this.src]);}
+  }
+  const window = {MuPiBoxSDK:sdk, location:{hostname}, speechSynthesis:speech, Audio,
     SpeechSynthesisUtterance: class {constructor(text) {this.text=text;}}};
   const document = {
     getElementById: id => elements.get(id),
@@ -48,7 +55,7 @@ async function launch({hostname, preview = false, enabled = true, available = tr
   });
   vm.runInNewContext(app, {window, document, navigator:{language:'de-DE'}, fetch, console});
   for (let n = 0; n < 15; n++) await Promise.resolve();
-  return {calls, elements, click: id => elements.get(id).click()};
+  return {calls, elements, speech, click: id => elements.get(id).click()};
 }
 
 test('remote admin preview speaks in this browser even if older host marks preview false', async () => {
@@ -81,4 +88,37 @@ test('disabled TTS and missing voice cache have different actionable messages', 
   for(let n=0;n<12;n++) await Promise.resolve();
   assert.match(cache.elements.get('status').textContent, /noch nicht bereit/);
   assert.ok(!cache.calls.some(c=>c[0]==='boxSpeak'));
+});
+
+
+test('end of browser speech plays the bundled laugh once, never when stopped', async () => {
+  const b = await launch({hostname:'192.168.2.83'});
+  b.click('bubble');
+  for(let n=0;n<12;n++) await Promise.resolve();
+  assert.equal(b.calls.filter(c=>c[0]==='browserClip').length,0);
+  b.speech.utterance.onend();
+  for(let n=0;n<12;n++) await Promise.resolve();
+  assert.deepEqual(b.calls.filter(c=>c[0]==='browserClip').map(c=>c[1]),['assets/laugh-ionakan-712055.mp3']);
+  b.click('next');
+  assert.equal(b.calls.filter(c=>c[0]==='browserClipPause').length,1);
+  b.click('bubble');
+  for(let n=0;n<12;n++) await Promise.resolve();
+  b.click('next');
+  b.speech.utterance.onend();
+  for(let n=0;n<12;n++) await Promise.resolve();
+  assert.equal(b.calls.filter(c=>c[0]==='browserClip').length,1);
+});
+
+test('native speech completion invokes on-device audio.clip exactly once', async () => {
+  const b = await launch({hostname:'localhost'});
+  b.click('bubble');
+  for(let n=0;n<20;n++) await Promise.resolve();
+  assert.equal(b.calls.filter(c=>c[0]==='boxClip').length,1);
+  assert.equal(b.calls.find(c=>c[0]==='boxSpeak')[2].waitForCompletion,true);
+  assert.equal(b.calls.find(c=>c[0]==='boxClip')[1], 'assets/laugh-ionakan-712055.mp3');
+  assert.equal(b.calls.filter(c=>c[0]==='browserClip').length,0);
+  const stopped = await launch({hostname:'localhost',spokenState:'stopped'});
+  stopped.click('bubble');
+  for(let n=0;n<20;n++) await Promise.resolve();
+  assert.equal(stopped.calls.filter(c=>c[0]==='boxClip').length,0);
 });

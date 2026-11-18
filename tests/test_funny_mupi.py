@@ -36,6 +36,15 @@ class FunnyMuPiTests(unittest.TestCase):
         self.assertNotIn("#7cd5c7", svg)
         self.assertIn("clip-path:polygon(0 0,100% 50%,0 100%)", css)
         self.assertIn(".bubble:before", css)
+        png = (APP / "assets/mupi-laugh-refined.png").read_bytes()
+        self.assertTrue(png.startswith(bytes([137,80,78,71,13,10,26,10])))
+        self.assertIn("assets/mupi-laugh-refined.png", (APP / "index.html").read_text(encoding="utf-8"))
+
+    def test_bundled_cc0_laughter(self):
+        audio = (APP / "assets/laugh-ionakan-712055.mp3")
+        self.assertTrue(audio.is_file())
+        self.assertGreater(audio.stat().st_size, 10000)
+        self.assertIn("ionakan", (APP / "README.md").read_text(encoding="utf-8"))
 
     def test_local_files_only(self):
         code = (APP / "app.js").read_text(encoding="utf-8")

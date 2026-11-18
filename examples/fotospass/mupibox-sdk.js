@@ -65,6 +65,16 @@
   // Standalone browser previews synthesize tones locally instead.
   let previewAudioContext = null;
   const audio = Object.freeze({
+    async playClip(asset) {
+      // Only local, bundled audio assets may be requested. The host checks
+      // that the asset belongs to the installed app and audio was granted.
+      if (typeof asset !== 'string' || asset.length > 180 ||
+          !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+          asset.split('/').some(part => part === '..' || part.startsWith('.'))) {
+        throw new TypeError('audio clip must be a bundled assets/*.mp3, .ogg or .wav file');
+      }
+      return invoke('audio.clip', {asset});
+    },
     async playNote(note, volume = 30, instrument = 'musicbox', options = {}) {
       if (typeof note !== 'string' || !/^[A-G](?:#)?[45]$/.test(note))
         throw new TypeError('unsupported note');

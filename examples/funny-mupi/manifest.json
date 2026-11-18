@@ -2,12 +2,12 @@
   "apiVersion": "1",
   "id": "community.funny-mupi",
   "name": "Funny MuPi",
-  "description": "Zufällige Kinderwitze mit lachendem orangefarbenem MuPi und Vorlesefunktion (Box-TTS oder Browser-Vorschau).",
+  "description": "Kinderwitze offline mit neuem freigestellten MuPi, Vorlesen und Lacher zum Abschluss.",
   "author": "MuPiBox Community",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "runtime": "web",
   "entry": "index.html",
-  "icon": "assets/mupi-laugh.svg",
+  "icon": "assets/mupi-laugh-refined.png",
   "permissions": [
     "audio",
     "controller"
