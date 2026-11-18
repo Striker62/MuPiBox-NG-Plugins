@@ -44,3 +44,15 @@ je Seite und separatem MuPi-Schriftzug. Ein goldener Doppelring,
 kontrastreichere Spielfelder, kräftigere farbige Zielwege und dunklerer
 Brett-Hintergrund verbessern die Erkennbarkeit auf 800×480 Pixeln.
 Es werden keine externen Bildressourcen oder neuen Berechtigungen benötigt.
+
+## Mittelpunkt (Version 0.2.6)
+
+Der Mittelpunkt zeigt statt des MuPi-Maskottchens einen kleinen, glänzenden
+isometrischen Würfel mit elfenbeinfarbener Oberseite und dunkelblauen
+Seitenflächen sowie goldenen Kanten. Die 5 liegt oben, die 3 und 1 auf
+den sichtbaren Seiten: Die 2 ist die gegenüberliegende, unsichtbare
+Unterseite der 5; alle gegenüberliegenden Würfelflächen ergeben 7.
+Der Würfel wird in einer eigenen SVG-Hintergrundebene **vor** den
+Spielzielen gezeichnet und liegt damit **hinter** den farbigen
+Zielfeldern, Bewegungsmarkierungen und Spielfiguren. Die Spieldaten
+und Regeln bleiben unverändert.

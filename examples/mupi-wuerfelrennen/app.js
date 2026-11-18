@@ -70,8 +70,9 @@ if(typeof document!=="undefined")(()=>{
 const sdk=window.MuPiBoxSDK,$=id=>document.getElementById(id),NS="http://www.w3.org/2000/svg";
 const board=$("board"),svg=document.createElementNS(NS,"svg");
 svg.setAttribute("viewBox","0 0 442 442");svg.setAttribute("aria-label","Großes Würfelrennen-Brett");board.append(svg);
-const staticLayer=document.createElementNS(NS,"g"),highlightLayer=document.createElementNS(NS,"g"),pieceLayer=document.createElementNS(NS,"g");
-svg.append(staticLayer,highlightLayer,pieceLayer);
+const dieLayer=document.createElementNS(NS,"g"),staticLayer=document.createElementNS(NS,"g"),highlightLayer=document.createElementNS(NS,"g"),pieceLayer=document.createElementNS(NS,"g");
+// The decorative die is deliberately behind every board tile, highlight and piece.
+svg.append(dieLayer,staticLayer,highlightLayer,pieceLayer);
 const WIDTH=442,CELL=30.4,OFFSET=23,SPACE=13;
 const names=DiceRace.names,faces=["⚀","⚁","⚂","⚃","⚄","⚅"],cache={};
 const pos=i=>{
@@ -102,8 +103,15 @@ function gradient(id,top,bottom){
 }
 gradient("trackA","#4f91b1","#195474");
 gradient("trackB","#4383a5","#123f62");
-gradient("centerGold","#28677b","#092739");
-gradient("mupiFace","#ffdb95","#f38b37");
+gradient("dieTop","#fff9db","#efc17b");
+gradient("dieGold","#fff6c0","#a6631c");
+gradient("dieLeft","#315a77","#071b30");
+gradient("dieRight","#20445d","#06182a");
+const glow=S("radialGradient",{id:"dieGlow"});
+glow.append(S("stop",{offset:"0%","stop-color":"#f9cb67","stop-opacity":.55}));
+glow.append(S("stop",{offset:"60%","stop-color":"#daa64b","stop-opacity":.16}));
+glow.append(S("stop",{offset:"100%","stop-color":"#b88538","stop-opacity":0}));
+defs.append(glow);
 const shiny=["#ffc0c6","#fff4a9","#83ffdf","#c4cbff"];
 const shaded=["#de3b57","#d89a22","#079c86","#5368e2"];
 for(let p=0;p<4;p++)gradient("piece"+p,shiny[p],shaded[p]);
@@ -122,40 +130,40 @@ for(let p=0;p<4;p++){
   staticLayer.append(S("circle",{cx:bx,cy:by,r:15.5,fill:"#081f30",stroke:DiceRace.palette[p],"stroke-width":2.8,opacity:1}));
  }
 }
-// Compact, vector-drawn orange MuPi emblem; everything stays inside its round medallion.
-const badge=S("g",{transform:"translate("+WIDTH/2+" "+WIDTH/2+")","pointer-events":"none"});
-badge.append(S("circle",{r:36,fill:"#e5af4e",opacity:.15}));
-badge.append(S("circle",{r:34,fill:"#061b2b",stroke:"#a66a28","stroke-width":1.8}));
-badge.append(S("circle",{r:31.3,fill:"url(#centerGold)",stroke:"#ffdc89","stroke-width":2.4}));
-badge.append(S("circle",{r:28.6,fill:"none",stroke:"#80c8ca","stroke-width":.85,opacity:.7}));
-const inner=S("g");
-const clip=S("clipPath",{id:"mupi-badge-clip"});
-clip.append(S("circle",{r:29}));
-defs.append(clip);
-inner.setAttribute("clip-path","url(#mupi-badge-clip)");
-for(const sign of [-1,1]){
- const flip=S("g",{transform:"scale("+sign+" 1)"});
- // Exactly three orange, branching gill stalks per side.
- for(const d of ["M12 -16 Q17 -20 22 -20","M13 -11 Q19 -12 24 -11","M12 -6 Q18 -2 22 -1"]){
-  flip.append(S("path",{d,fill:"none",stroke:"#f78964","stroke-width":3.5,"stroke-linecap":"round"}));
- }
- for(const [x,y] of [[22,-20],[24,-11],[22,-1]]){
-  flip.append(S("ellipse",{cx:x,cy:y,rx:3.1,ry:3.6,fill:"#ffaf83",stroke:"#c45f40","stroke-width":.8}));
- }
- inner.append(flip);
+// Small premium isometric die. Top=5, left=3, right=1; the 2 is opposite 5
+// on the hidden bottom. Drawn behind the target paths and pieces.
+const decorativeDie=S("g",{
+ transform:"translate("+WIDTH/2+" "+WIDTH/2+") scale(.88)",
+ "pointer-events":"none",
+ "aria-label":"Goldener Spielwürfel mit korrekten Würfelseiten"
+});
+decorativeDie.append(S("ellipse",{cx:0,cy:13,rx:41,ry:34,fill:"url(#dieGlow)"}));
+decorativeDie.append(S("ellipse",{cx:0,cy:31,rx:24,ry:6.5,fill:"#031421",opacity:.64}));
+decorativeDie.append(S("path",{d:"M0 -30Q3 -30 6 -28L26 -17Q29 -15 29 -11V15Q29 19 25 21L5 32Q0 35 -5 32L-25 21Q-29 19 -29 15V-11Q-29 -15 -26 -17L-6 -28Q-3 -30 0 -30Z",fill:"url(#dieGold)",stroke:"#ad6d28","stroke-width":1.2,"stroke-linejoin":"round"}));
+// Gold-framed deep-blue side facets, slightly inset to expose the bevel.
+decorativeDie.append(S("path",{d:"M-25 -13L-1 0V27Q-1 29 -4 27L-23 17Q-25 16 -25 13Z",fill:"url(#dieLeft)",stroke:"#ffdb81","stroke-width":1.65,"stroke-linejoin":"round"}));
+decorativeDie.append(S("path",{d:"M1 0L25 -13V13Q25 16 23 17L4 27Q1 29 1 27Z",fill:"url(#dieRight)",stroke:"#ffda83","stroke-width":1.65,"stroke-linejoin":"round"}));
+decorativeDie.append(S("path",{d:"M-24 -10L-24 12M24 -10L24 12",stroke:"#f6ca67","stroke-width":.9,opacity:.7,"stroke-linecap":"round"}));
+// Ivory top with embossed golden border and subtle specular reflection.
+decorativeDie.append(S("path",{d:"M0 -26Q2 -26 4 -25L24 -14Q26 -13 23 -11L3 0Q0 2 -3 0L-23 -11Q-26 -13 -24 -14L-4 -25Q-2 -26 0 -26Z",fill:"url(#dieTop)",stroke:"#fff5c0","stroke-width":1.8,"stroke-linejoin":"round"}));
+decorativeDie.append(S("path",{d:"M-17 -15L-2 -23Q0 -24 2 -23L18 -14",fill:"none",stroke:"#fff","stroke-width":1.1,opacity:.84,"stroke-linecap":"round"}));
+decorativeDie.append(S("path",{d:"M-23 14L-4 25Q0 28 0 25L0 1M4 25L23 14",fill:"none",stroke:"#f8bf56","stroke-width":1,"opacity":.7,"stroke-linecap":"round"}));
+// Pips: top is five, left is three, right is one. Opposite faces sum to seven.
+function pip(cx,cy,rx,ry,light=false){
+ decorativeDie.append(S("ellipse",{cx,cy:cy+.65,rx:rx+1.25,ry:ry+.95,fill:light?"#12263b":"#a46a26",opacity:.9}));
+ decorativeDie.append(S("ellipse",{cx,cy,rx,ry,fill:light?"#ffd475":"#1b3344",stroke:light?"#fff1b7":"#c99843","stroke-width":.85}));
+ decorativeDie.append(S("ellipse",{cx:cx-rx*.25,cy:cy-ry*.35,rx:rx*.35,ry:ry*.28,fill:light?"#fff2ca":"#adc0c5",opacity:.78}));
 }
-inner.append(S("ellipse",{cx:0,cy:-11,rx:14.7,ry:13.8,fill:"url(#mupiFace)",stroke:"#ffe5a9","stroke-width":1.2}));
-inner.append(S("ellipse",{cx:-5.5,cy:-19,rx:5.1,ry:2.8,fill:"#fff4c7",opacity:.5,transform:"rotate(-16 -5.5 -19)"}));
-for(const x of [-5.3,5.3]){
- inner.append(S("circle",{cx:x,cy:-12,r:2.1,fill:"#183343"}));
- inner.append(S("circle",{cx:x-.6,cy:-12.9,r:.65,fill:"#ffffff"}));
- inner.append(S("ellipse",{cx:x*1.76,cy:-6.9,rx:2.5,ry:1.45,fill:"#ee765b",opacity:.52}));
+// Five pips mapped into the diamond top face.
+for(const [u,v] of [[-.65,-.65],[-.65,.65],[.65,-.65],[.65,.65],[0,0]]){
+ pip((u-v)*10.5,-13+(u+v)*6.5,2.4,1.75);
 }
-inner.append(S("path",{d:"M-4.1 -5 Q0 -1.5 4.1 -5",fill:"none",stroke:"#543728","stroke-width":1.55,"stroke-linecap":"round"}));
-inner.append(S("path",{d:"M-16 9 Q0 6 16 9",fill:"none",stroke:"#f6c975","stroke-width":1.1,opacity:.65}));
-const centerLabel=S("text",{x:0,y:21,"text-anchor":"middle","font-family":"system-ui, sans-serif","font-size":15.5,"letter-spacing":-.55,fill:"#fff1bb","font-weight":900,stroke:"#06253b","stroke-width":.8,"paint-order":"stroke fill"});
-centerLabel.textContent="MuPi";inner.append(centerLabel);
-badge.append(inner);staticLayer.append(badge);
+for(const [cx,cy] of [[-18,-4],[-13,7],[-7,17]])pip(cx,cy,2.25,3.15,true);
+pip(14,7.5,3.1,4.1,true);
+// A restrained sparkle on the gold trim, behind all playable content.
+decorativeDie.append(S("path",{d:"M23 -23L24.6 -17L30 -15L24.6 -13.4L23 -8L21.5 -13.4L16 -15L21.5 -17Z",fill:"#fff5ba",opacity:.95}));
+decorativeDie.append(S("circle",{cx:23,cy:-15,r:1.4,fill:"#ffffff"}));
+dieLayer.append(decorativeDie);
 let b,players=4,human=1,turn=0,die=0,ended=false,epoch=0,selectedPiece=0,aiTimer=0,attempts=0,maxAttempts=3;
 const active=()=>players===2?[0,2]:players===3?[0,1,2]:[0,1,2,3];
 const isHuman=()=>active().indexOf(turn)<human;
