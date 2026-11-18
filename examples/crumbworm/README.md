@@ -1,5 +1,14 @@
 # MuPi Krümelwurm
 
+## Screenshots (800 × 480 Pixel)
+
+Zwei echte Browser-Aufnahmen aus **Krümelwurm 0.3.0** (Neon-Design und laufende Partie). Die Bilddateien bleiben direkt im Anwendungsverzeichnis und werden nicht in das `.mupiapp`-Paket übernommen.
+
+| Startansicht | Spielszene |
+| :---: | :---: |
+| ![MuPi Krümelwurm – Start](screenshot-1-start.webp) | ![MuPi Krümelwurm – Neon-Spiel](screenshot-2-game.webp) |
+
+
 Eigenständiges, offline-fähiges Wurmspiel für die MuPiBox-NG. Vier Tempostufen
 (leicht: 230 ms, normal: 150 ms, schnell: 95 ms, turbo: 70 ms je Spielschritt), Bonuskrümel
 mit dreifacher Punktzahl, gespeicherter Rekord und eigene Garten-Grafiken.
