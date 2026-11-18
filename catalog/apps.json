@@ -214,13 +214,13 @@
     {
       "id": "community.mupi-wuerfelrennen",
       "name": "MuPis Würfelrennen",
-      "description": "Großes quadratisches 52-Felder-Brett für zwei bis vier Menschen oder KI-Spieler, mit deutlich größeren Touchzielen und flotteren Spielzügen.",
+      "description": "Würfelrennen mit 800×480-Design, Pflichtausfahrt bei Sechs, Freimachen des Startfelds und bis zu drei Wurfversuchen.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.3",
-      "releaseTag": "v0.1.0-preview.27",
+      "version": "0.2.4",
+      "releaseTag": "v0.1.0-preview.43",
       "asset": "mupi-wuerfelrennen.mupiapp",
-      "sha256": "e013e595a1e0a8daa5e4f27e29de08d6f8bbcb732ec840225f77f587dbe91ddf",
+      "sha256": "ca279160dfdec41ced9e4a9dfca2e43bd6721b9d1299afc70b1973b1ea885de0",
       "permissions": [
         "controller"
       ]
