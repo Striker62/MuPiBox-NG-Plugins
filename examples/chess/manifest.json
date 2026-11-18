@@ -2,13 +2,13 @@
   "apiVersion": "1",
   "id": "community.mupi-chess",
   "name": "MuPi Schach",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.png",
   "cover": "cover-clean-v2.jpg",
   "author": "MuPiBox Community",
-  "description": "Offline-Schach zu zweit oder gegen MuPi in vier Stärken, mit Zugzeit, Durchschnitt und optionaler Zugzeitbegrenzung. Mit neuem MuPi-Axolotl-Cover.",
+  "description": "Offline-Schach zu zweit oder gegen MuPi in vier Stärken – mit gold-türkisem Neon-Design, Zugzeit, Durchschnitt und optionalem Zeitlimit.",
   "permissions": [
     "controller"
   ],
@@ -20,6 +20,6 @@
     "showBackButton": false,
     "showSystemInfo": false,
     "fullScreen": true,
-    "background": "system"
+    "background": "app"
   }
 }

@@ -75,7 +75,7 @@ class ThemeIntegrationTests(unittest.TestCase):
             with self.subTest(slug=slug):
                 directory = ROOT / "examples" / slug
                 manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
-                self.assertEqual(manifest["display"]["background"], "app" if slug == "tic-tac-toe" else "system")
+                self.assertEqual(manifest["display"]["background"], "app" if slug in ("tic-tac-toe", "chess") else "system")
                 self.assertFalse(manifest["display"]["showBackButton"])
                 self.assertFalse(manifest["display"]["showSystemInfo"])
                 self.assertTrue(manifest["display"]["fullScreen"])
