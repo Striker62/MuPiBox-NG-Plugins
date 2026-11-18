@@ -274,13 +274,13 @@
     {
       "id": "community.funny-mupi",
       "name": "Funny MuPi",
-      "description": "50 deutsche und 12 englische Kinderwitze offline. Neuer freigestellter oranger MuPi, Vorlesen und CC0-Lachen nach dem Witz.",
+      "description": "50 deutsche und 12 englische Kinderwitze offline. Freigestellter oranger MuPi, Vorlesen und direkt anschließendes CC0-Lachen.",
       "category": "other",
       "author": "MuPiBox Community",
-      "version": "0.1.2",
-      "releaseTag": "v0.1.0-preview.35",
+      "version": "0.1.3",
+      "releaseTag": "v0.1.0-preview.37",
       "asset": "funny-mupi.mupiapp",
-      "sha256": "d580a937ee6009c25042a4d7764b00dff1d3bd256bf82696da354efd5159c988",
+      "sha256": "04e45439825932fb75bf0984d28b3698d925aee813cb0a1900b44741332871c6",
       "permissions": [
         "audio",
         "controller"
