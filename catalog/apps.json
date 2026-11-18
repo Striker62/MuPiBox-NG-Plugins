@@ -217,10 +217,10 @@
       "description": "Würfelrennen mit gut sichtbarer Sechs, korrigierter Startfeldregel und zuverlässigem Schlagen im Hochglanz-Design.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.9",
-      "releaseTag": "v0.1.0-preview.51",
+      "version": "0.2.10",
+      "releaseTag": "v0.1.0-preview.52",
       "asset": "mupi-wuerfelrennen.mupiapp",
-      "sha256": "1d494f78159c42c9d7814171c7914c181cc14743ee2a57f2a3dde5c6054a4944",
+      "sha256": "9c18e0e6eb96312a1d671782384e66182b3abf067941f8d40d90ef8048c0f332",
       "permissions": [
         "controller"
       ]
