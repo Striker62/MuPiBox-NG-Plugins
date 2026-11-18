@@ -65,6 +65,47 @@
   // Standalone browser previews synthesize tones locally instead.
   let previewAudioContext = null;
   const audio = Object.freeze({
+    // Native file playback is mediated by the host and restricted to bundled
+    // app assets. The host decodes into its own PipeWire mixer and enforces
+    // the existing game/parental and maximum-volume policies.
+    async playSample(asset, volume = 40, options = {relative:true}) {
+      if (typeof asset !== 'string' || asset.length > 180 ||
+          !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+          asset.split('/').some(part => part === '..' || part.startsWith('.')))
+        throw new TypeError('audio sample must be a bundled assets/*.ogg, .mp3 or .wav file');
+      if (!Number.isInteger(volume) || volume < 0 || volume > 100)
+        throw new TypeError('sample volume must be 0..100');
+      if (options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.relative !== undefined && typeof options.relative !== 'boolean'))
+        throw new TypeError('sample options must contain a boolean relative field');
+      if (!bridge) return false;
+      return invoke('audio.sample.play', {asset, volume, relative:options.relative!==false});
+    },
+    async playMusic(asset, volume = 20, options = {relative:true}) {
+      if (typeof asset !== 'string' || asset.length > 180 ||
+          !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+          asset.split('/').some(part => part === '..' || part.startsWith('.')))
+        throw new TypeError('music must be a bundled assets/*.ogg, .mp3 or .wav file');
+      if (!Number.isInteger(volume) || volume < 0 || volume > 100)
+        throw new TypeError('music volume must be 0..100');
+      if (options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.relative !== undefined && typeof options.relative !== 'boolean'))
+        throw new TypeError('music options must contain a boolean relative field');
+      if (!bridge) return false;
+      return invoke('audio.music.play', {asset, volume, relative:options.relative!==false});
+    },
+    async stopMusic() {return bridge ? invoke('audio.music.stop', {}) : false;},
+    async stopSamples() {return bridge ? invoke('audio.sample.stop', {}) : false;},
+    async playClip(asset) {
+      // Only local, bundled audio assets may be requested. The host checks
+      // that the asset belongs to the installed app and audio was granted.
+      if (typeof asset !== 'string' || asset.length > 180 ||
+          !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+          asset.split('/').some(part => part === '..' || part.startsWith('.'))) {
+        throw new TypeError('audio clip must be a bundled assets/*.mp3, .ogg or .wav file');
+      }
+      return invoke('audio.clip', {asset});
+    },
     async playNote(note, volume = 30, instrument = 'musicbox', options = {}) {
       if (typeof note !== 'string' || !/^[A-G](?:#)?[45]$/.test(note))
         throw new TypeError('unsupported note');

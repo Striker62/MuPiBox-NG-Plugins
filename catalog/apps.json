@@ -258,13 +258,13 @@
     {
       "id": "community.mupi-wasserschlacht",
       "name": "MuPi Water Battle",
-      "description": "Quick, Classic und Max mit neuen orangefarbenen MuPi-Reaktionen, Trefferanimation, Kartenumschaltung sowie Original-Sounds/Musik in der Browser-Vorschau (Box: SDK-Tonfolgen).",
+      "description": "Drei Modi, freigestellte MuPi-Reaktionen, kräftiger Treffer-Shake und echte OGG-Spielgeräusche mit Musikloop über NG-PipeWire (ab Audio-SDK-Hostfreigabe).",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.2",
-      "releaseTag": "v0.1.0-preview.34",
+      "version": "0.2.3",
+      "releaseTag": "v0.1.0-preview.36",
       "asset": "mupi-wasserschlacht.mupiapp",
-      "sha256": "dcb90263050a4b13ef1c6e3a17dd9f420d993028afcce95b224162c215039a33",
+      "sha256": "603f5f9068883c8c49aa9bcb46f33d4ad80d772a7ce9b495a1133cb495ab085a",
       "permissions": [
         "controller",
         "audio",

@@ -2,12 +2,12 @@
 (()=>{"use strict";
 const E=WaterBattle, sdk=window.MuPiBoxSDK, $=id=>document.getElementById(id);
 const words={
- de:{audioTitle:"Toneinstellungen",volume:"Lautstärke",mute:"Ton aus",unmute:"Ton an",testSound:"Probeton",audioHint:"Dateisounds/Musik bisher nur im Browser hörbar; auf der Box laufen native Tonfolgen.",musicVolume:"Musik",musicOff:"Musik aus",musicOn:"Musik an",credits:"Soundquellen / Lizenz",mode:"Modus",quick:"Quick · 8×8",classic:"Classic · 10×10",max:"Max · 12×12",viewown:"Meine Karte",viewenemy:"Gegner",viewboth:"Beide",level:"MuPi-Stärke",easy:"Leicht",medium:"Mittel",hard:"Schlau",new:"Neu",opponent:"MuPis Versteck",own:"Deine Boote",
+ de:{audioTitle:"Toneinstellungen",volume:"Lautstärke",mute:"Ton aus",unmute:"Ton an",testSound:"Probeton",audioHint:"Echte Sounds/Musik brauchen die neue NG-Version. Hier sonst nur Tonfolgen.",audioHintNative:"Echte Sounds und Musik laufen über PipeWire. Lautstärke bleibt begrenzt.",musicVolume:"Musik",musicOff:"Musik aus",musicOn:"Musik an",credits:"Soundquellen / Lizenz",mode:"Modus",quick:"Quick · 8×8",classic:"Classic · 10×10",max:"Max · 12×12",viewown:"Meine Karte",viewenemy:"Gegner",viewboth:"Beide",level:"MuPi-Stärke",easy:"Leicht",medium:"Mittel",hard:"Schlau",new:"Neu",opponent:"MuPis Versteck",own:"Deine Boote",
  rotate:"↻ Drehen",random:"Zufall",start:"Los geht's!",again:"Nochmal!",help:"Boote rechts platzieren. Danach links ein Feld antippen.",
  controller:"Controller: Pfeile · A wählen · X drehen",ready:"Platziere deine Boote!",placed:"Alle Boote sind bereit!",next:"Boot mit {n} Feldern",invalid:"Hier ist zu wenig Platz.",yourTurn:"Du bist dran! Tippe links auf ein Feld.",
  botTurn:"MuPi sucht ein Feld …",miss:"Platsch! Nur Wasser!",hit:"Huch! MuPi bekommt nasse Füße!",sunk:"Oh nein! MuPi braucht den Rettungsring!",win:"Juhu, du hast gewonnen!",lose:"MuPi hat gewonnen. Nächste Runde?",
  ownMiss:"MuPi ist ins Wasser geplumpst!",ownHit:"Auweia! Dein Boot wurde getroffen!",ownSunk:"Blubb! Ein Boot ist untergegangen!",wait:"MuPi ist noch am Zug.",preview:"Vorschau: Fenster schließen"},
- en:{audioTitle:"Sound settings",volume:"Volume",mute:"Mute",unmute:"Unmute",testSound:"Test sound",audioHint:"Sample sounds/music currently play only in browser; box uses native note effects.",musicVolume:"Music",musicOff:"Music off",musicOn:"Music on",credits:"Audio credits / license",mode:"Mode",quick:"Quick · 8×8",classic:"Classic · 10×10",max:"Max · 12×12",viewown:"My board",viewenemy:"Opponent",viewboth:"Both",level:"MuPi skill",easy:"Easy",medium:"Normal",hard:"Clever",new:"New",opponent:"MuPi's hideout",own:"Your boats",
+ en:{audioTitle:"Sound settings",volume:"Volume",mute:"Mute",unmute:"Unmute",testSound:"Test sound",audioHint:"Original sounds/music require newer NG. Older hosts play note effects only.",audioHintNative:"Real sound effects and music play via PipeWire, within volume limits.",musicVolume:"Music",musicOff:"Music off",musicOn:"Music on",credits:"Audio credits / license",mode:"Mode",quick:"Quick · 8×8",classic:"Classic · 10×10",max:"Max · 12×12",viewown:"My board",viewenemy:"Opponent",viewboth:"Both",level:"MuPi skill",easy:"Easy",medium:"Normal",hard:"Clever",new:"New",opponent:"MuPi's hideout",own:"Your boats",
  rotate:"↻ Rotate",random:"Random",start:"Let's go!",again:"Play again!",help:"Place your boats on the right. Then tap the left ocean.",
  controller:"Controller: arrows · A select · X rotate",ready:"Place your boats!",placed:"All boats are ready!",next:"Boat with {n} squares",invalid:"Not enough room here.",yourTurn:"Your turn! Tap a square on the left.",
  botTurn:"MuPi is searching …",miss:"Splash! Just water!",hit:"Oops! MuPi's getting wet!",sunk:"Oh no! MuPi needs the lifebuoy!",win:"Hooray, you won!",lose:"MuPi won. Another round?",
@@ -15,13 +15,13 @@ const words={
 };
 let lang="de",player=E.empty(),computer=E.empty(),phase="place",turn="player",placed=0,vertical=false,selected=27,epoch=0,muted=false,volume=40,musicVolume=20,musicEnabled=true,reactionTimer=0,focusTarget="own",shakeTimer=0;
 const ui={enemy:[],own:[]};
-const soundPlayer=new WaterBattleAudio.Player(sdk.isHosted);
+const soundPlayer=new WaterBattleAudio.Player(sdk.isHosted,sdk.audio);
 function syncAudio(){soundPlayer.configure({volume,musicVolume,musicEnabled,muted});}
 
 const t=(key,arg)=>((words[lang]||words.de)[key]||words.de[key]||key).replace("{n}",String(arg??""));
 function translate(){
  document.documentElement.lang=lang;
- document.querySelectorAll("[data-i18n]").forEach(node=>node.textContent=t(node.dataset.i18n));
+ document.querySelectorAll("[data-i18n]").forEach(node=>node.textContent=t(node.dataset.i18n==="audioHint"&&soundPlayer.nativeAvailable?"audioHintNative":node.dataset.i18n));
  $("title").textContent="MuPi Water Battle";
  updateAudioControls();
 }
@@ -77,8 +77,11 @@ function draw(){
 }
 function sound(kind){
  if(muted||volume<=0)return;
- if(!sdk.isHosted){soundPlayer.sound(kind);return;}
- // Native Pi audio transport only exposes approved notes, not sample playback.
+ // New NG hosts decode Ogg samples into their bounded PipeWire mixer.
+ // On older NG alphas keep the existing note fallback (no silent action).
+ soundPlayer.sound(kind).then(played=>{if(!played&&sdk.isHosted)fallbackTone(kind);});
+}
+function fallbackTone(kind){
  const tones=kind==="miss"?["C4","G4"]:kind==="hit"?["G4","E4","C5"]:kind==="sunk"?["C4","E4","G4","C5"]:kind==="win"?["C4","E4","G4","C5"]:["G4","E4","C4"];
  const instrument=kind==="miss"?"marimba":kind==="hit"?"xylophone":"glockenspiel";
  tones.forEach((note,i)=>setTimeout(()=>{if(!muted&&volume>0)sdk.audio.playNote(note,volume,instrument,{relative:true}).catch(()=>{});},i*90));
@@ -90,13 +93,13 @@ function picture(kind){
 }
 function message(text){$("message").textContent=text;}
 function screenShake(){
- const node=document.querySelector(".play");
+ const node=$("app");
  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
  clearTimeout(shakeTimer);
- node.classList.remove("shake");
+ node.classList.remove("hit-shake");
  void node.offsetWidth;
- node.classList.add("shake");
- shakeTimer=setTimeout(()=>node.classList.remove("shake"),320);
+ node.classList.add("hit-shake");
+ shakeTimer=setTimeout(()=>node.classList.remove("shake"),550);
 }
 function announce(kind,key){picture(kind);sound(kind);message(t(key));}
 function newRound(){
@@ -221,5 +224,10 @@ sdk.on("input",({button,action})=>{
 });
 sdk.on("lifecycle.pause",()=>{soundPlayer.pause();epoch++;if(phase==="play"&&turn==="computer"){turn="player";draw();}});
 translate();newRound();
-sdk.getContext().then(ctx=>{const tag=String(ctx?.language||"de").toLowerCase();lang=tag.startsWith("en")?"en":"de";translate();draw();if(phase==="place")message(t("ready"));}).catch(()=>{});
+sdk.getContext().then(ctx=>{
+ const tag=String(ctx?.language||"de").toLowerCase();lang=tag.startsWith("en")?"en":"de";
+ // Older NG hosts omit these fields and only understand audio.note.
+ soundPlayer.setNativeAvailable(ctx?.audioSamples===true&&ctx?.audioMusic===true);
+ translate();draw();if(phase==="place")message(t("ready"));
+}).catch(()=>{});
 })();

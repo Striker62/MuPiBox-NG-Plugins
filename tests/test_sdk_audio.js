@@ -42,3 +42,23 @@ test('bundled audio clip uses the trusted audio bridge with strict asset validat
  }
  assert.equal(calls.length,1);
 });
+
+
+test('native PCM sound and loop requests are scoped to installed audio assets',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.playSample('assets/audio/hit.ogg',65,{relative:true});
+ await sdk.audio.playMusic('assets/audio/bg-music.ogg',20,{relative:true});
+ await sdk.audio.stopMusic();
+ await sdk.audio.stopSamples();
+ assert.deepEqual(calls.map(c=>c.method),['audio.sample.play','audio.music.play','audio.music.stop','audio.sample.stop']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{asset:'assets/audio/hit.ogg',volume:65,relative:true});
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[1].payload)),{asset:'assets/audio/bg-music.ogg',volume:20,relative:true});
+ for(const invalid of ['../evil.ogg','assets/../sound.ogg','https://example.org/tone.ogg','assets/foo.js','assets/.secret.wav']) {
+  await assert.rejects(()=>sdk.audio.playSample(invalid),{name:'TypeError'});
+  await assert.rejects(()=>sdk.audio.playMusic(invalid),{name:'TypeError'});
+ }
+ for(const invalid of [-1,101,1.5,'loud']) {
+  await assert.rejects(()=>sdk.audio.playSample('assets/audio/hit.ogg',invalid),{name:'TypeError'});
+ }
+ assert.equal(calls.length,4);
+});
