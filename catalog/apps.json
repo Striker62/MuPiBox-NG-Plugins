@@ -4,13 +4,13 @@
     {
       "id": "community.tictactoe",
       "name": "MuPi Kreuz & Kreis",
-      "description": "Kreuz & Kreis mit transparentem Spielhintergrund für das MuPiBox-Theme, 2-Spieler-Modus und drei KI-Stärken. MuPi-Axolotl-Cover für den Coverflow.",
+      "description": "Kreuz & Kreis im Cyan/Gold-Neonstil mit leuchtenden Spielsteinen, 2-Spieler-Modus und drei KI-Stärken. MuPi-Axolotl-Cover für den Coverflow.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.2.6",
-      "releaseTag": "v0.1.0-preview.26",
+      "version": "0.2.7",
+      "releaseTag": "v0.1.0-preview.44",
       "asset": "mupi-kreuz-kreis.mupiapp",
-      "sha256": "b9953eea6fa5e679e3c78b4ae75c093134bd01e817a18ae28d0ad6e80e2dd666",
+      "sha256": "ef0fd82c9ebe75dee7828927a30b5acc0c763bd84c5f0ea510fefaf042f92049",
       "permissions": [
         "storage",
         "controller"
