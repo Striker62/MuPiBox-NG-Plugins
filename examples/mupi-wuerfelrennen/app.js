@@ -100,32 +100,62 @@ function gradient(id,top,bottom){
  g.append(S("stop",{offset:"0%","stop-color":top}),S("stop",{offset:"100%","stop-color":bottom}));
  defs.append(g);
 }
-gradient("trackA","#477f9d","#1d4b69");
-gradient("trackB","#3c7192","#174160");
-gradient("centerGold","#22617b","#10283d");
-const shiny=["#ffadb3","#fff3a0","#77e9d4","#bec5ff"];
-const shaded=["#d63d59","#d79b35","#128878","#5367d8"];
+gradient("trackA","#4f91b1","#195474");
+gradient("trackB","#4383a5","#123f62");
+gradient("centerGold","#28677b","#092739");
+gradient("mupiFace","#ffdb95","#f38b37");
+const shiny=["#ffc0c6","#fff4a9","#83ffdf","#c4cbff"];
+const shaded=["#de3b57","#d89a22","#079c86","#5368e2"];
 for(let p=0;p<4;p++)gradient("piece"+p,shiny[p],shaded[p]);
 for(let i=0;i<52;i++){
  const [x,y]=pos(i),owner=DiceRace.starts.indexOf(i);
- const r=S("rect",{x:x-14.8,y:y-14.8,width:29.6,height:29.6,rx:5.8,fill:owner>=0?DiceRace.palette[owner]:i%2?"url(#trackA)":"url(#trackB)",stroke:owner>=0?"#fff2bd":"#91bfd2","stroke-width":1.25});
+ const r=S("rect",{x:x-14.8,y:y-14.8,width:29.6,height:29.6,rx:5.8,fill:owner>=0?DiceRace.palette[owner]:i%2?"url(#trackA)":"url(#trackB)",stroke:owner>=0?"#fff2bd":"#a6d4e7","stroke-width":1.5});
  staticLayer.append(r);
- staticLayer.append(S("path",{d:"M"+(x-10)+" "+(y-10)+"h20",stroke:"#e0f7fb","stroke-width":1.2,opacity:.24,"stroke-linecap":"round","pointer-events":"none"}));
+ staticLayer.append(S("path",{d:"M"+(x-10)+" "+(y-10)+"h20",stroke:"#e5faff","stroke-width":1.5,opacity:.36,"stroke-linecap":"round","pointer-events":"none"}));
 }
 for(let p=0;p<4;p++){
  for(let j=0;j<4;j++){
   const [x,y]=lane(p,j);
-  staticLayer.append(S("rect",{x:x-14,y:y-14,width:28,height:28,rx:6,fill:DiceRace.palette[p],opacity:.63,stroke:"#e4eef3","stroke-width":1.2}));
+  staticLayer.append(S("rect",{x:x-14,y:y-14,width:28,height:28,rx:6,fill:DiceRace.palette[p],opacity:.78,stroke:"#effbff","stroke-width":1.65}));
+  staticLayer.append(S("path",{d:"M"+(x-9)+" "+(y-10)+"h18",stroke:"#fff",opacity:.24,"stroke-width":1.6,"stroke-linecap":"round","pointer-events":"none"}));
   const [bx,by]=base(p,j);
-  staticLayer.append(S("circle",{cx:bx,cy:by,r:15.5,fill:"#10263b",stroke:DiceRace.palette[p],"stroke-width":2.2,opacity:.88}));
+  staticLayer.append(S("circle",{cx:bx,cy:by,r:15.5,fill:"#081f30",stroke:DiceRace.palette[p],"stroke-width":2.8,opacity:1}));
  }
 }
-staticLayer.append(S("circle",{cx:WIDTH/2,cy:WIDTH/2,r:27.5,fill:"#092b40",stroke:"#3e7a84","stroke-width":3}));
-staticLayer.append(S("circle",{cx:WIDTH/2,cy:WIDTH/2,r:25,fill:"url(#centerGold)",stroke:"#eaca76","stroke-width":2.5}));
-const star=S("text",{x:WIDTH/2,y:WIDTH/2-9,"text-anchor":"middle","font-size":11,fill:"#ffdf7d"});
-star.textContent="✦";staticLayer.append(star);
-const centerLabel=S("text",{x:WIDTH/2,y:WIDTH/2+9,"text-anchor":"middle","font-size":20,fill:"#ffe4ab","font-weight":"bold"});
-centerLabel.textContent="MuPi";staticLayer.append(centerLabel);
+// Compact, vector-drawn orange MuPi emblem; everything stays inside its round medallion.
+const badge=S("g",{transform:"translate("+WIDTH/2+" "+WIDTH/2+")","pointer-events":"none"});
+badge.append(S("circle",{r:36,fill:"#e5af4e",opacity:.15}));
+badge.append(S("circle",{r:34,fill:"#061b2b",stroke:"#a66a28","stroke-width":1.8}));
+badge.append(S("circle",{r:31.3,fill:"url(#centerGold)",stroke:"#ffdc89","stroke-width":2.4}));
+badge.append(S("circle",{r:28.6,fill:"none",stroke:"#80c8ca","stroke-width":.85,opacity:.7}));
+const inner=S("g");
+const clip=S("clipPath",{id:"mupi-badge-clip"});
+clip.append(S("circle",{r:29}));
+defs.append(clip);
+inner.setAttribute("clip-path","url(#mupi-badge-clip)");
+for(const sign of [-1,1]){
+ const flip=S("g",{transform:"scale("+sign+" 1)"});
+ // Exactly three orange, branching gill stalks per side.
+ for(const d of ["M12 -16 Q17 -20 22 -20","M13 -11 Q19 -12 24 -11","M12 -6 Q18 -2 22 -1"]){
+  flip.append(S("path",{d,fill:"none",stroke:"#f78964","stroke-width":3.5,"stroke-linecap":"round"}));
+ }
+ for(const [x,y] of [[22,-20],[24,-11],[22,-1]]){
+  flip.append(S("ellipse",{cx:x,cy:y,rx:3.1,ry:3.6,fill:"#ffaf83",stroke:"#c45f40","stroke-width":.8}));
+ }
+ inner.append(flip);
+}
+inner.append(S("ellipse",{cx:0,cy:-11,rx:14.7,ry:13.8,fill:"url(#mupiFace)",stroke:"#ffe5a9","stroke-width":1.2}));
+inner.append(S("ellipse",{cx:-5.5,cy:-19,rx:5.1,ry:2.8,fill:"#fff4c7",opacity:.5,transform:"rotate(-16 -5.5 -19)"}));
+for(const x of [-5.3,5.3]){
+ inner.append(S("circle",{cx:x,cy:-12,r:2.1,fill:"#183343"}));
+ inner.append(S("circle",{cx:x-.6,cy:-12.9,r:.65,fill:"#ffffff"}));
+ inner.append(S("ellipse",{cx:x*1.76,cy:-6.9,rx:2.5,ry:1.45,fill:"#ee765b",opacity:.52}));
+}
+inner.append(S("path",{d:"M-4.1 -5 Q0 -1.5 4.1 -5",fill:"none",stroke:"#543728","stroke-width":1.55,"stroke-linecap":"round"}));
+inner.append(S("path",{d:"M-16 9 Q0 6 16 9",fill:"none",stroke:"#f6c975","stroke-width":1.1,opacity:.65}));
+const centerLabel=S("text",{x:0,y:21,"text-anchor":"middle","font-family":"system-ui, sans-serif","font-size":15.5,"letter-spacing":-.55,fill:"#fff1bb","font-weight":900,stroke:"#06253b","stroke-width":.8,"paint-order":"stroke fill"});
+centerLabel.textContent="MuPi";inner.append(centerLabel);
+badge.append(inner);staticLayer.append(badge);
 let b,players=4,human=1,turn=0,die=0,ended=false,epoch=0,selectedPiece=0,aiTimer=0,attempts=0,maxAttempts=3;
 const active=()=>players===2?[0,2]:players===3?[0,1,2]:[0,1,2,3];
 const isHuman=()=>active().indexOf(turn)<human;

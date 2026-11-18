@@ -35,3 +35,12 @@ Optimiert für 800 × 480 Pixel, Touch und MuPiBox-Controller.
     python3 tools/mupiapp.py validate dist/mupi-wuerfelrennen.mupiapp
 
 Keine zusätzlichen Berechtigungen außer controller, keine Netzwerknutzung.
+
+## Spielfeld-Design (Version 0.2.5)
+
+Der Mittelpunkt enthält ein vollständig im runden Emblem liegendes,
+vektorbasiertes, orangefarbenes MuPi-Gesicht mit genau drei Kiemenästen
+je Seite und separatem MuPi-Schriftzug. Ein goldener Doppelring,
+kontrastreichere Spielfelder, kräftigere farbige Zielwege und dunklerer
+Brett-Hintergrund verbessern die Erkennbarkeit auf 800×480 Pixeln.
+Es werden keine externen Bildressourcen oder neuen Berechtigungen benötigt.
