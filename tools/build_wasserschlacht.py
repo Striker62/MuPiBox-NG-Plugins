@@ -12,7 +12,7 @@ def main():
     if STAGING.exists():
         rmtree(STAGING)
     STAGING.mkdir(parents=True)
-    for filename in ("index.html", "manifest.json", "app.js", "engine.js", "style.css", "icon.svg", "cover.png"):
+    for filename in ("index.html", "manifest.json", "app.js", "engine.js", "style.css", "icon.svg", "cover.jpg"):
         copy2(SOURCE / filename, STAGING / filename)
     copytree(SOURCE / "assets", STAGING / "assets")
     copy2(ROOT / "sdk" / "mupibox-sdk.js", STAGING / "mupibox-sdk.js")

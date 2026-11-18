@@ -8,7 +8,7 @@ Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SD
 
 ## MuPi Water Battle (Spielekatalog, November 2026)
 
-Eine kindgerechte, eigenständige Flottensuche-App für das 5-Zoll-Touchdisplay: **Quick 8×8 (2 Boote), Classic 10×10 (5 Boote), Max 12×12 (7 Boote)**, drei KI-Stufen, orangefarbener MuPi, Offline-Spiel und Sound. Die geprüfte Version **0.2.0** ist im offiziellen Spielekatalog verzeichnet und als GitHub-Release verfügbar.
+Eine kindgerechte, eigenständige Flottensuche-App für das 5-Zoll-Touchdisplay: **Quick 8×8 (2 Boote), Classic 10×10 (5 Boote), Max 12×12 (7 Boote)**, drei KI-Stufen, orangefarbener MuPi, Offline-Spiel und Sound. Die geprüfte Version **0.2.1** mit neuem Cover, korrekter Reaktionsanzeige und App-Lautstärkeregelung ist im offiziellen Spielekatalog verzeichnet und als GitHub-Release verfügbar.
 
 - [Quellcode und Anleitung](examples/mupi-wasserschlacht/README.md)
 - [Paket erzeugen](tools/build_wasserschlacht.py): python3 tools/build_wasserschlacht.py
