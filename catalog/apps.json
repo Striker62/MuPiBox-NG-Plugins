@@ -274,13 +274,13 @@
     {
       "id": "community.funny-mupi",
       "name": "Funny MuPi",
-      "description": "50 deutsche und 12 englische Kinderwitze offline. Oranger MuPi, Sprechblase und Vorlesen über Box-TTS oder in der Browser-Vorschau.",
+      "description": "50 deutsche und 12 englische Kinderwitze offline. Neuer freigestellter oranger MuPi, Vorlesen und CC0-Lachen nach dem Witz.",
       "category": "other",
       "author": "MuPiBox Community",
-      "version": "0.1.1",
-      "releaseTag": "v0.1.0-preview.33",
+      "version": "0.1.2",
+      "releaseTag": "v0.1.0-preview.35",
       "asset": "funny-mupi.mupiapp",
-      "sha256": "43bc251fe9cc1fee341d599e5858f8435584df37b48c5212cc82573f2883223c",
+      "sha256": "d580a937ee6009c25042a4d7764b00dff1d3bd256bf82696da354efd5159c988",
       "permissions": [
         "audio",
         "controller"
