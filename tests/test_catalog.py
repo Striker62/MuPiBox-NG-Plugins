@@ -67,7 +67,8 @@ class CatalogTests(unittest.TestCase):
             "official.klang-memory":"klang-memory",
             "official.webcam-preview":"webcam-preview",
             "community.fotospass":"fotospass",
-            "community.buecherkiste":"Buecherkiste"
+            "community.buecherkiste":"Buecherkiste",
+            "community.mupi-wasserschlacht":"mupi-wasserschlacht"
         }
         for app in validate(self.catalog):
             example = examples.get(app["id"], "")

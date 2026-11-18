@@ -254,6 +254,21 @@
       "releaseTag": "v0.1.0-preview.28",
       "asset": "mupi-klavier.mupiapp",
       "sha256": "890e0d0a04e7ebaf675db97bca8fa949248d766149444ada945d3494c6c79d1f"
+    },
+    {
+      "id": "community.mupi-wasserschlacht",
+      "name": "MuPi Water Battle",
+      "description": "Offline-Flottensuchspiel mit Quick 8×8 (2 Boote), Classic 10×10 (5 Boote) und Max 12×12 (7 Boote), KI und MuPi-Reaktionen.",
+      "category": "games",
+      "author": "MuPiBox Community",
+      "version": "0.2.0",
+      "releaseTag": "v0.1.0-preview.30",
+      "asset": "mupi-wasserschlacht.mupiapp",
+      "sha256": "4091ed47931cbe764e5718087096fa847bbdca3a58aac291de14aadd2c4c94a4",
+      "permissions": [
+        "controller",
+        "audio"
+      ]
     }
   ]
 }

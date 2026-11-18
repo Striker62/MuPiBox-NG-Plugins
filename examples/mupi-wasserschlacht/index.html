@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MuPi Water Battle</title><link rel="stylesheet" href="style.css"></head>
+<body><main id="app">
+<header class="header">
+ <button id="exit" class="back" aria-label="Zurück">‹</button>
+ <div class="brand"><span class="logo">〰</span><strong id="title">MuPi Water Battle</strong></div>
+ <label class="option"><span data-i18n="mode">Modus</span><select id="mode"><option value="quick" data-i18n="quick">Quick · 8×8</option><option value="classic" data-i18n="classic">Classic · 10×10</option><option value="max" data-i18n="max">Max · 12×12</option></select></label>
+ <label class="option"><span data-i18n="level">MuPi-Stärke</span><select id="level"><option value="easy" data-i18n="easy">Leicht</option><option value="medium" selected data-i18n="medium">Mittel</option><option value="hard" data-i18n="hard">Schlau</option></select></label>
+ <button id="view" class="pill" hidden data-i18n="viewown">Boote</button>
+ <button id="sound" class="round" aria-label="Ton umschalten" aria-pressed="true">♪</button>
+ <button id="restart" class="pill" data-i18n="new">Neu</button>
+</header>
+<section class="play">
+ <div class="panel enemy">
+  <div class="board-title"><strong data-i18n="opponent">MuPis Versteck</strong><span id="enemy-score">0 / 2</span></div>
+  <div class="grid" id="enemy" role="group" aria-label="Gegnerisches Wasser"></div>
+ </div>
+ <div class="panel own">
+  <div class="board-title"><strong data-i18n="own">Deine Boote</strong><span id="own-score">0 / 2</span></div>
+  <div class="grid" id="own" role="group" aria-label="Deine Boote"></div>
+ </div>
+ <div class="aside">
+  <div class="reaction" id="reaction" aria-hidden="true"><img id="reaction-img" src="assets/miss.svg" alt=""></div>
+  <div id="message" role="status" aria-live="polite"></div>
+  <div id="placement" class="placement">
+   <div id="ship-hint"></div>
+   <div class="actions"><button id="rotate" class="action" data-i18n="rotate">↻ Drehen</button><button id="auto" class="action" data-i18n="random">Zufall</button></div>
+   <button id="start" class="go" disabled data-i18n="start">Los geht's!</button>
+  </div>
+  <div id="game-controls" class="game-controls" hidden><div id="turn"></div><button id="again" class="go" hidden data-i18n="again">Nochmal!</button></div>
+ </div>
+</section>
+<footer><span data-i18n="help">Boote rechts platzieren. Danach links ein Feld antippen.</span><span class="controller" data-i18n="controller">Controller: Pfeile · A wählen · B zurück</span></footer>
+</main><script src="mupibox-sdk.js"></script><script src="engine.js"></script><script src="app.js"></script></body></html>
