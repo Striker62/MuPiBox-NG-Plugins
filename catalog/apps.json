@@ -49,13 +49,13 @@
     {
       "id": "community.mupi-chess",
       "name": "MuPi Schach",
-      "description": "Offline-Schach zu zweit oder gegen MuPi in vier Stärken – mit gold-türkisem Neon-Design, Zugzeit, Durchschnitt und optionalem Zeitlimit.",
+      "description": "Offline-Schach zu zweit oder gegen MuPi – mit Gold/Türkis-Neon-Design, neuer MuPi-Königsfigur, vier KI-Stärken und Zugzeitoptionen.",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.1.4",
-      "releaseTag": "v0.1.0-preview.46",
+      "version": "0.1.5",
+      "releaseTag": "v0.1.0-preview.49",
       "asset": "mupi-chess.mupiapp",
-      "sha256": "526c423c6cba1ddc4e538d55f3cdb0c61c23e00b530825e032cd675cc9883186",
+      "sha256": "45b3952afb5a0fb987e1ff7fb9cc12e4d47d2074bd6cdad92bc33eb4833bb8ce",
       "permissions": [
         "controller"
       ]
