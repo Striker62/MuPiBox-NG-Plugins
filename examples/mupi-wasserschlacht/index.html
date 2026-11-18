@@ -15,8 +15,12 @@
   <div class="audio-title"><strong data-i18n="audioTitle">Toneinstellungen</strong><button id="close-audio" type="button" aria-label="Schließen">×</button></div>
   <div class="audio-slider-label"><label for="volume" data-i18n="volume">Lautstärke</label><output id="volume-value" for="volume">40 %</output></div>
   <input id="volume" type="range" min="0" max="100" step="5" value="40" aria-label="Lautstärke">
+  <div class="audio-slider-label"><label for="music-volume" data-i18n="musicVolume">Musik</label><output id="music-volume-value" for="music-volume">20 %</output></div>
+  <input id="music-volume" type="range" min="0" max="100" step="5" value="20" aria-label="Musiklautstärke">
+  <div class="audio-actions"><button id="music-toggle" class="action" type="button" aria-pressed="true" data-i18n="musicOff">Musik aus</button></div>
   <div class="audio-actions"><button id="mute" class="action" type="button" aria-pressed="false" data-i18n="mute">Ton aus</button><button id="test-sound" class="action" type="button" data-i18n="testSound">Probeton</button></div>
-  <p class="audio-hint" data-i18n="audioHint">Gilt nur für dieses Spiel; die Lautstärkegrenze der Box bleibt erhalten.</p>
+  <p class="audio-hint" data-i18n="audioHint">Nur im Browser sind die Dateisounds hörbar; die Box nutzt bisher native Tonfolgen.</p>
+  <details class="audio-credits"><summary data-i18n="credits">Soundquellen / Lizenz</summary><p>Treffer: Big Explosion, Blender Foundation – CC BY 3.0, opengameart.org/content/big-explosion (in OGG konvertiert). Alle anderen Audios: CC0; Quellen in SOUND_CREDITS.txt.</p></details>
 </section>
 <section class="play">
  <div class="panel enemy">
@@ -39,4 +43,4 @@
  </div>
 </section>
 <footer><span data-i18n="help">Boote rechts platzieren. Danach links ein Feld antippen.</span><span class="controller" data-i18n="controller">Controller: Pfeile · A wählen · B zurück</span></footer>
-</main><script src="mupibox-sdk.js"></script><script src="engine.js"></script><script src="app.js"></script></body></html>
+</main><script src="mupibox-sdk.js"></script><script src="engine.js"></script><script src="audio-player.js"></script><script src="app.js"></script></body></html>

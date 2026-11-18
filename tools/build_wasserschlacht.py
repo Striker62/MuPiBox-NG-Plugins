@@ -12,11 +12,12 @@ def main():
     if STAGING.exists():
         rmtree(STAGING)
     STAGING.mkdir(parents=True)
-    for filename in ("index.html", "manifest.json", "app.js", "engine.js", "style.css", "icon.svg", "cover.jpg"):
+    for filename in ("index.html", "manifest.json", "app.js", "engine.js", "audio-player.js", "style.css", "icon.svg", "cover.jpg"):
         copy2(SOURCE / filename, STAGING / filename)
     copytree(SOURCE / "assets", STAGING / "assets")
     copy2(ROOT / "sdk" / "mupibox-sdk.js", STAGING / "mupibox-sdk.js")
     copy2(ROOT / "LICENSE", STAGING / "LICENSE.txt")
+    copy2(SOURCE / "SOUND_CREDITS.txt", STAGING / "SOUND_CREDITS.txt")
     sys.path.insert(0, str(ROOT / "tools"))
     from mupiapp import pack, validate_package
     manifest = pack(STAGING, OUTPUT)

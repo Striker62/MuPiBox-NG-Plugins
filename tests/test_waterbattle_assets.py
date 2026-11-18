@@ -10,7 +10,7 @@ class WaterBattleAssetTests(unittest.TestCase):
     def test_cover_is_raster_and_has_correct_manifest(self):
         m = json.loads((ROOT / "manifest.json").read_text())
         self.assertEqual(m["cover"], "cover.jpg")
-        self.assertEqual(m["version"], "0.2.1")
+        self.assertEqual(m["version"], "0.2.2")
         self.assertEqual(m["name"], "MuPi Water Battle")
         self.assertIn("storage", m["permissions"])
         cover = (ROOT / m["cover"]).read_bytes()
@@ -31,16 +31,36 @@ class WaterBattleAssetTests(unittest.TestCase):
             self.assertGreaterEqual(width, 440)
             self.assertGreaterEqual(height, 250)
 
+    def test_six_offline_audio_files_and_license_credits(self):
+        for name in ("bg-music", "miss", "hit", "sunk", "win", "lose"):
+            payload=(ROOT / "assets" / "audio" / (name+".ogg")).read_bytes()
+            self.assertGreater(len(payload), 10000)
+            self.assertEqual(payload[:4], b"OggS")
+        credits=(ROOT / "SOUND_CREDITS.txt").read_text()
+        self.assertIn("Blender Foundation", credits)
+        self.assertIn("CC BY 3.0", credits)
+        self.assertIn("Fisheefects", credits)
+        self.assertIn("CC0", credits)
+
     def test_volume_controls_use_scoped_sdk(self):
         html = (ROOT / "index.html").read_text()
         js = (ROOT / "app.js").read_text()
         self.assertIn('id="volume"', html)
+        self.assertIn('id="music-volume"', html)
+        self.assertIn('id="music-toggle"', html)
+        self.assertIn('src="audio-player.js"', html)
+        self.assertIn('class="audio-credits"', html)
         self.assertIn('id="test-sound"', html)
         self.assertIn('id="mute"', html)
-        self.assertIn('sdk.storage.set(VOLUME_KEY,{volume,muted})', js)
+        self.assertIn('sdk.storage.set(VOLUME_KEY,{volume,muted,musicVolume,musicEnabled})', js)
         self.assertIn('sdk.storage.get(VOLUME_KEY)', js)
         self.assertIn('sdk.audio.playNote(note,volume,instrument,{relative:true})', js)
         self.assertIn("if(muted||volume<=0)return;", js)
+        self.assertIn("screenShake()", js)
+        self.assertIn('sound(won?"win":"lose")', js)
+        css=(ROOT / "style.css").read_text()
+        self.assertIn(".cell.sunk::after", css)
+        self.assertIn(".play.shake", css)
 
 if __name__ == "__main__":
     unittest.main()

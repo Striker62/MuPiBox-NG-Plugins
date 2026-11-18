@@ -2,19 +2,22 @@
 (()=>{"use strict";
 const E=WaterBattle, sdk=window.MuPiBoxSDK, $=id=>document.getElementById(id);
 const words={
- de:{audioTitle:"Toneinstellungen",volume:"Lautstärke",mute:"Ton aus",unmute:"Ton an",testSound:"Probeton",audioHint:"Nur dieses Spiel; die Lautstärkegrenze der Box bleibt erhalten.",mode:"Modus",quick:"Quick · 8×8",classic:"Classic · 10×10",max:"Max · 12×12",viewown:"Boote",viewenemy:"Gegner",viewboth:"Beide",level:"MuPi-Stärke",easy:"Leicht",medium:"Mittel",hard:"Schlau",new:"Neu",opponent:"MuPis Versteck",own:"Deine Boote",
+ de:{audioTitle:"Toneinstellungen",volume:"Lautstärke",mute:"Ton aus",unmute:"Ton an",testSound:"Probeton",audioHint:"Dateisounds/Musik bisher nur im Browser hörbar; auf der Box laufen native Tonfolgen.",musicVolume:"Musik",musicOff:"Musik aus",musicOn:"Musik an",credits:"Soundquellen / Lizenz",mode:"Modus",quick:"Quick · 8×8",classic:"Classic · 10×10",max:"Max · 12×12",viewown:"Meine Karte",viewenemy:"Gegner",viewboth:"Beide",level:"MuPi-Stärke",easy:"Leicht",medium:"Mittel",hard:"Schlau",new:"Neu",opponent:"MuPis Versteck",own:"Deine Boote",
  rotate:"↻ Drehen",random:"Zufall",start:"Los geht's!",again:"Nochmal!",help:"Boote rechts platzieren. Danach links ein Feld antippen.",
  controller:"Controller: Pfeile · A wählen · X drehen",ready:"Platziere deine Boote!",placed:"Alle Boote sind bereit!",next:"Boot mit {n} Feldern",invalid:"Hier ist zu wenig Platz.",yourTurn:"Du bist dran! Tippe links auf ein Feld.",
  botTurn:"MuPi sucht ein Feld …",miss:"Platsch! Nur Wasser!",hit:"Huch! MuPi bekommt nasse Füße!",sunk:"Oh nein! MuPi braucht den Rettungsring!",win:"Juhu, du hast gewonnen!",lose:"MuPi hat gewonnen. Nächste Runde?",
  ownMiss:"MuPi ist ins Wasser geplumpst!",ownHit:"Auweia! Dein Boot wurde getroffen!",ownSunk:"Blubb! Ein Boot ist untergegangen!",wait:"MuPi ist noch am Zug.",preview:"Vorschau: Fenster schließen"},
- en:{audioTitle:"Sound settings",volume:"Volume",mute:"Mute",unmute:"Unmute",testSound:"Test sound",audioHint:"This game only; the box volume limit still applies.",mode:"Mode",quick:"Quick · 8×8",classic:"Classic · 10×10",max:"Max · 12×12",viewown:"Your boats",viewenemy:"Target",viewboth:"Both",level:"MuPi skill",easy:"Easy",medium:"Normal",hard:"Clever",new:"New",opponent:"MuPi's hideout",own:"Your boats",
+ en:{audioTitle:"Sound settings",volume:"Volume",mute:"Mute",unmute:"Unmute",testSound:"Test sound",audioHint:"Sample sounds/music currently play only in browser; box uses native note effects.",musicVolume:"Music",musicOff:"Music off",musicOn:"Music on",credits:"Audio credits / license",mode:"Mode",quick:"Quick · 8×8",classic:"Classic · 10×10",max:"Max · 12×12",viewown:"My board",viewenemy:"Opponent",viewboth:"Both",level:"MuPi skill",easy:"Easy",medium:"Normal",hard:"Clever",new:"New",opponent:"MuPi's hideout",own:"Your boats",
  rotate:"↻ Rotate",random:"Random",start:"Let's go!",again:"Play again!",help:"Place your boats on the right. Then tap the left ocean.",
  controller:"Controller: arrows · A select · X rotate",ready:"Place your boats!",placed:"All boats are ready!",next:"Boat with {n} squares",invalid:"Not enough room here.",yourTurn:"Your turn! Tap a square on the left.",
  botTurn:"MuPi is searching …",miss:"Splash! Just water!",hit:"Oops! MuPi's getting wet!",sunk:"Oh no! MuPi needs the lifebuoy!",win:"Hooray, you won!",lose:"MuPi won. Another round?",
  ownMiss:"MuPi splashed into the sea!",ownHit:"Oh dear! Your boat was hit!",ownSunk:"Glug! A boat went down!",wait:"MuPi's turn.",preview:"Preview: close this window"}
 };
-let lang="de",player=E.empty(),computer=E.empty(),phase="place",turn="player",placed=0,vertical=false,selected=27,epoch=0,muted=false,volume=40,reactionTimer=0,focusTarget="own";
+let lang="de",player=E.empty(),computer=E.empty(),phase="place",turn="player",placed=0,vertical=false,selected=27,epoch=0,muted=false,volume=40,musicVolume=20,musicEnabled=true,reactionTimer=0,focusTarget="own",shakeTimer=0;
 const ui={enemy:[],own:[]};
+const soundPlayer=new WaterBattleAudio.Player(sdk.isHosted);
+function syncAudio(){soundPlayer.configure({volume,musicVolume,musicEnabled,muted});}
+
 const t=(key,arg)=>((words[lang]||words.de)[key]||words.de[key]||key).replace("{n}",String(arg??""));
 function translate(){
  document.documentElement.lang=lang;
@@ -37,7 +40,7 @@ function makeGrid(which){
 }
 function toggleView(){
  if($("mode").value!=="max")return;
- const cycle=phase==="place"?["own","both"]:["enemy","own","both"];
+ const cycle=phase==="place"?["own","both"]:["enemy","own"];
  focusTarget=cycle[(cycle.indexOf(focusTarget)+1)%cycle.length];draw();
 }
 function draw(){
@@ -45,7 +48,9 @@ function draw(){
  $("app").dataset.mode=$("mode").value;
  $("app").dataset.focus=focusTarget;
  $("view").hidden=$("mode").value!=="max";
- $("view").textContent=t("view"+focusTarget);
+ const target=phase==="place"?(focusTarget==="own"?"both":"own"):(focusTarget==="enemy"?"own":"enemy");
+ $("view").textContent=t("view"+target);
+ $("view").setAttribute("aria-label",t("view"+target));
  const fleetSize=player.fleet.length;
  for(const which of ["enemy","own"]){
   const board=which==="enemy"?computer:player;
@@ -67,44 +72,14 @@ function draw(){
  $("ship-hint").textContent=placed===player.fleet.length?t("placed"):t("next",player.fleet[placed])+" "+(vertical?"↕":"↔");
  $("rotate").setAttribute("aria-pressed",String(vertical));
  $("turn").textContent=phase==="play"&&turn==="computer"?t("botTurn"):"";
-}
-let audioContext;
-function browserSound(kind){
- try{
-  const AC=window.AudioContext||window.webkitAudioContext;
-  if(!AC)return;
-  audioContext=audioContext||new AC();
-  if(audioContext.state==="suspended")audioContext.resume().catch(()=>{});
-  const now=audioContext.currentTime;
-  // Realistic synthetic watery splash: decaying filtered noise + bubble chirps.
-  const duration=kind==="sunk"?.6:kind==="hit"?.34:.22;
-  const length=Math.floor(audioContext.sampleRate*duration);
-  const buffer=audioContext.createBuffer(1,length,audioContext.sampleRate);
-  const data=buffer.getChannelData(0);
-  for(let i=0;i<length;i++){
-   const d=i/length;data[i]=(Math.random()*2-1)*Math.pow(1-d,2)*(kind==="sunk"?.6:.38);
-  }
-  const noise=audioContext.createBufferSource(),low=audioContext.createBiquadFilter(),gain=audioContext.createGain();
-  noise.buffer=buffer;low.type="lowpass";low.frequency.value=kind==="miss"?930:1500;
-  gain.gain.value=.32*volume/100;noise.connect(low);low.connect(gain);gain.connect(audioContext.destination);
-  noise.start(now);
-  const notes=kind==="miss"?[280,390]:kind==="hit"?[480,330,540]:[390,290,210,170];
-  for(let i=0;i<notes.length;i++){
-   const osc=audioContext.createOscillator(),g=audioContext.createGain();
-   osc.type="sine";osc.frequency.setValueAtTime(notes[i],now+i*.085);
-   osc.frequency.exponentialRampToValueAtTime(Math.max(110,notes[i]*.68),now+i*.085+.12);
-   g.gain.setValueAtTime(.0001,now+i*.085);
-   g.gain.exponentialRampToValueAtTime(Math.max(.0001,.065*volume/100),now+i*.085+.018);
-   g.gain.exponentialRampToValueAtTime(.0001,now+i*.085+.16);
-   osc.connect(g);g.connect(audioContext.destination);osc.start(now+i*.085);osc.stop(now+i*.085+.17);
-  }
- }catch(error){console.warn("Preview audio",error);}
+ const help=document.querySelector("footer [data-i18n='help']");
+ if(help)help.textContent=phase==="place"?t("help"):phase==="finished"?t("again"):t("yourTurn");
 }
 function sound(kind){
  if(muted||volume<=0)return;
- if(!sdk.isHosted){browserSound(kind);return;}
+ if(!sdk.isHosted){soundPlayer.sound(kind);return;}
  // Native Pi audio transport only exposes approved notes, not sample playback.
- const tones=kind==="miss"?["C4","G4"]:kind==="hit"?["G4","E4","C5"]:["C4","E4","G4","C5"];
+ const tones=kind==="miss"?["C4","G4"]:kind==="hit"?["G4","E4","C5"]:kind==="sunk"?["C4","E4","G4","C5"]:kind==="win"?["C4","E4","G4","C5"]:["G4","E4","C4"];
  const instrument=kind==="miss"?"marimba":kind==="hit"?"xylophone":"glockenspiel";
  tones.forEach((note,i)=>setTimeout(()=>{if(!muted&&volume>0)sdk.audio.playNote(note,volume,instrument,{relative:true}).catch(()=>{});},i*90));
 }
@@ -114,6 +89,15 @@ function picture(kind){
  clearTimeout(reactionTimer);reactionTimer=setTimeout(()=>node.classList.remove("pop"),500);
 }
 function message(text){$("message").textContent=text;}
+function screenShake(){
+ const node=document.querySelector(".play");
+ if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+ clearTimeout(shakeTimer);
+ node.classList.remove("shake");
+ void node.offsetWidth;
+ node.classList.add("shake");
+ shakeTimer=setTimeout(()=>node.classList.remove("shake"),320);
+}
 function announce(kind,key){picture(kind);sound(kind);message(t(key));}
 function newRound(){
  epoch++;
@@ -121,33 +105,37 @@ function newRound(){
  phase="place";turn="player";placed=0;vertical=false;
  selected=E.index(Math.floor(player.size/2),Math.floor(player.size/2),player);
  focusTarget="own";makeGrid("enemy");makeGrid("own");
- $("reaction-img").src="assets/sunk.png";message(t("ready"));draw();
+ $("reaction-img").src="assets/sunk.png";soundPlayer.startMusic();message(t("ready"));draw();
 }
 function tryPlace(i){
  if(phase!=="place"||placed>=player.fleet.length)return;
- selected=i;const [x,y]=E.xy(i,player);
+ soundPlayer.startMusic();selected=i;const [x,y]=E.xy(i,player);
  if(!E.place(player,x,y,player.fleet[placed],vertical)){message(t("invalid"));draw();return;}
  placed++;message(t(placed===player.fleet.length?"placed":"ready"));draw();
 }
 function randomPlacement(){
  if(phase!=="place")return;
- player=E.randomFleet($("mode").value);placed=player.fleet.length;message(t("placed"));draw();
+ soundPlayer.startMusic();player=E.randomFleet($("mode").value);placed=player.fleet.length;message(t("placed"));draw();
 }
 function begin(){
  if(phase!=="place"||placed!==player.fleet.length)return;
+ soundPlayer.startMusic();
  computer=E.randomFleet($("mode").value);phase="play";turn="player";
  focusTarget="enemy";selected=E.index(Math.floor(player.size/2),Math.floor(player.size/2),player);message(t("yourTurn"));draw();
 }
 function finish(won){
  phase="finished";turn=won?"player":"computer";
  // The final shot has already played its reaction; do not duplicate the sound.
+ const run=epoch;
+ soundPlayer.stopMusic();
+ setTimeout(()=>{if(epoch===run&&phase==="finished")sound(won?"win":"lose");},420);
  message(t(won?"win":"lose"));draw();
 }
 function tryFire(i){
  if(phase!=="play"||turn!=="player")return;
  selected=i;const hit=E.fire(computer,i);
  if(!hit){draw();return;}
- announce(hit.type,hit.type);draw();
+ announce(hit.type,hit.type);if(hit.type!=="miss")screenShake();draw();
  if(hit.win){finish(true);return;}
  turn="computer";draw();
  const run=epoch;
@@ -162,7 +150,7 @@ function tryFire(i){
   turn="player";draw();
  },680);
 }
-$("exit").onclick=()=>{epoch++;sdk.exit().then(ok=>{if(ok===false)message(t("preview"));}).catch(()=>{});};
+$("exit").onclick=()=>{epoch++;soundPlayer.stopMusic();sdk.exit().then(ok=>{if(ok===false)message(t("preview"));}).catch(()=>{});};
 $("restart").onclick=newRound;$("again").onclick=newRound;
 $("start").onclick=begin;$("auto").onclick=randomPlacement;
 $("rotate").onclick=()=>{vertical=!vertical;draw();};
@@ -170,13 +158,18 @@ const VOLUME_KEY="waterbattle.audio.v1";
 function updateAudioControls(){
  $("volume").value=String(volume);
  $("volume-value").textContent=String(volume)+" %";
+ $("music-volume").value=String(musicVolume);
+ $("music-volume-value").textContent=String(musicVolume)+" %";
+ $("music-toggle").textContent=t(musicEnabled?"musicOff":"musicOn");
+ $("music-toggle").setAttribute("aria-pressed",String(musicEnabled));
+ syncAudio();
  $("mute").textContent=t(muted?"unmute":"mute");
  $("mute").setAttribute("aria-pressed",String(muted));
  $("sound").textContent=muted||volume===0?"♫̸":"♫";
  $("sound").setAttribute("aria-label",t("audioTitle"));
 }
 function saveAudio(){
- sdk.storage.set(VOLUME_KEY,{volume,muted}).catch(()=>{});
+ sdk.storage.set(VOLUME_KEY,{volume,muted,musicVolume,musicEnabled}).catch(()=>{});
 }
 function openAudio(open){
  $("audio-popover").hidden=!open;
@@ -192,12 +185,17 @@ $("volume").oninput=()=>{
  updateAudioControls();
 };
 $("volume").onchange=()=>{saveAudio();sound("miss");};
+$("music-volume").oninput=()=>{musicVolume=Number($("music-volume").value);updateAudioControls();};
+$("music-volume").onchange=()=>{saveAudio();soundPlayer.startMusic();};
+$("music-toggle").onclick=()=>{musicEnabled=!musicEnabled;updateAudioControls();saveAudio();if(musicEnabled)soundPlayer.startMusic();};
 $("mute").onclick=()=>{muted=!muted;updateAudioControls();saveAudio();if(!muted)sound("miss");};
 $("test-sound").onclick=()=>sound("hit");
 sdk.storage.get(VOLUME_KEY).then(data=>{
  if(!data||typeof data!=="object")return;
  if(Number.isInteger(data.volume)&&data.volume>=0&&data.volume<=100)volume=data.volume;
  if(typeof data.muted==="boolean")muted=data.muted;
+ if(Number.isInteger(data.musicVolume)&&data.musicVolume>=0&&data.musicVolume<=100)musicVolume=data.musicVolume;
+ if(typeof data.musicEnabled==="boolean")musicEnabled=data.musicEnabled;
  updateAudioControls();
 }).catch(()=>{});
 $("level").onchange=newRound;$("mode").onchange=newRound;$("view").onclick=toggleView;
@@ -205,7 +203,7 @@ sdk.on("input",({button,action})=>{
  if(action!=="press")return;
  if(button==="BACK"||button==="B"){
   if(!$("audio-popover").hidden){openAudio(false);return;}
-  epoch++;sdk.exit().catch(()=>{});return;
+  epoch++;soundPlayer.stopMusic();sdk.exit().catch(()=>{});return;
  }
  if(button==="X"&&phase==="place"){vertical=!vertical;draw();return;}
  if(button==="Y"&&phase==="place"){randomPlacement();return;}
@@ -221,7 +219,7 @@ sdk.on("input",({button,action})=>{
   if(phase==="place")tryPlace(selected);else if(phase==="play")tryFire(selected);else newRound();
  }
 });
-sdk.on("lifecycle.pause",()=>{epoch++;if(phase==="play"&&turn==="computer"){turn="player";draw();}});
+sdk.on("lifecycle.pause",()=>{soundPlayer.pause();epoch++;if(phase==="play"&&turn==="computer"){turn="player";draw();}});
 translate();newRound();
 sdk.getContext().then(ctx=>{const tag=String(ctx?.language||"de").toLowerCase();lang=tag.startsWith("en")?"en":"de";translate();draw();if(phase==="place")message(t("ready"));}).catch(()=>{});
 })();

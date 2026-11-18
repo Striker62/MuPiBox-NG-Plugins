@@ -46,3 +46,24 @@ footer{height:27px;flex:0 0 27px;background:#00172779;display:flex;align-items:c
 .audio-actions .action{min-height:32px}
 .audio-hint{margin:8px 0 0;font-size:11px;line-height:1.3;color:#c8e6ed;text-align:left}
 @media(max-width:850px){.audio-popover{top:48px;right:7px}}
+
+
+/* Distinguish a mere hit from a completely revealed ship at a glance. */
+.cell.hit::after{content:"★";color:#ffd978;text-shadow:0 0 6px #e69b4c,0 1px 3px #532e3e}
+.cell.sunk{background:linear-gradient(140deg,#863c62,#5b294f)}
+.cell.sunk::after{content:"★";color:#ff6f9d;-webkit-text-stroke:.7px #fff9ec;text-shadow:0 0 7px #ff9ac7,0 2px 2px #452c46}
+.cell.ship.sunk::before{background:#773d62;border-color:#ffbcd1}
+.cell.last-hit{box-shadow:inset 0 0 0 3px #ffe6aa,0 0 10px 5px #ffba7380;z-index:2}
+.play.shake{animation:waterbattle-shake .28s ease-out}
+@keyframes waterbattle-shake{
+ 0%,100%{transform:translate(0,0)}
+ 17%{transform:translate(-4px,2px)}
+ 38%{transform:translate(4px,-2px)}
+ 58%{transform:translate(-3px,1px)}
+ 80%{transform:translate(2px,0)}
+}
+@media(prefers-reduced-motion:reduce){.play.shake{animation:none}}
+.audio-popover{max-height:calc(100dvh - 60px);overflow-y:auto}
+.audio-credits{font-size:10px;color:#b6d6e0;margin-top:6px}
+.audio-credits summary{cursor:pointer}
+.audio-credits p{line-height:1.35}

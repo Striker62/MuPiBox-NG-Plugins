@@ -53,7 +53,8 @@ jobs:
         run: |
           node --check examples/mupi-wasserschlacht/engine.js
           node --check examples/mupi-wasserschlacht/app.js
-          node --test tests/mupi_wasserschlacht.test.cjs
+          node --check examples/mupi-wasserschlacht/audio-player.js
+          node --test tests/mupi_wasserschlacht.test.cjs tests/waterbattle_audio.test.cjs
           python3 tools/build_wasserschlacht.py
           python3 tools/mupiapp.py validate dist/mupi-wasserschlacht.mupiapp
       - name: Build independent Klang Memory preview

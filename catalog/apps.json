@@ -258,13 +258,13 @@
     {
       "id": "community.mupi-wasserschlacht",
       "name": "MuPi Water Battle",
-      "description": "Kindgerechtes Offline-Flottensuchspiel mit Quick 8x8, Classic 10x10 und Max 12x12, neuem MuPi-Cover, Reaktionsgrafiken und einstellbarer Effektlautstärke.",
+      "description": "Quick, Classic und Max mit neuen orangefarbenen MuPi-Reaktionen, Trefferanimation, Kartenumschaltung sowie Original-Sounds/Musik in der Browser-Vorschau (Box: SDK-Tonfolgen).",
       "category": "games",
       "author": "MuPiBox Community",
-      "version": "0.2.1",
-      "releaseTag": "v0.1.0-preview.32",
+      "version": "0.2.2",
+      "releaseTag": "v0.1.0-preview.34",
       "asset": "mupi-wasserschlacht.mupiapp",
-      "sha256": "93d0efe4d24b44fe7b485c5e8efaa589562b010906c744c5c91f6c253056150d",
+      "sha256": "dcb90263050a4b13ef1c6e3a17dd9f420d993028afcce95b224162c215039a33",
       "permissions": [
         "controller",
         "audio",
