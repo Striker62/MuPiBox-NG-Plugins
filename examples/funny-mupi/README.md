@@ -49,3 +49,6 @@ MuPi wird orangefarben angezeigt. Die Spitze der Sprechblase weist rechts auf Mu
 ## Schnellere Wiedergabe ab 0.1.3
 
 Auf Boxen mit NG-Hostunterstützung für after_clip hängt die Sprachausgabe den lokal mitgelieferten CC0-Lacher (24-kHz-Mono-WAV) an den gesprochenen Witz an. Beide Teile werden ohne erneuten Audioplayer-Start abgespielt; eine kurze Sprechpause bleibt erhalten. Die Stimme bleibt unverändert. Ältere NG-Versionen nutzen weiterhin die separate MP3-Wiedergabe über audio.clip. Die Browser-Vorschau nutzt weiterhin die bisherige Browser-Sprachausgabe und MP3.
+
+## Qt-Startkachel (0.1.4)
+Das Cover für Admin-Oberfläche und Qt stammt aus derselben **assets/cover.png** (PNG, 416×325). Das bisherige WebP-Bild konnte auf dem abgespeckten Qt/DietPi-System nicht dekodiert werden und löste die generische „Weitere Apps“-Illustration aus.

@@ -16,6 +16,16 @@ class FunnyMuPiTests(unittest.TestCase):
         for path in ("entry", "icon", "cover"):
             self.assertTrue((APP / manifest[path]).is_file())
 
+    def test_cover_is_identical_qt_compatible_png(self):
+        manifest = json.loads((APP / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["cover"], "assets/cover.png")
+        # Qt on lean DietPi builds often cannot decode WebP. Verify a real
+        # PNG image is declared rather than relying on the file extension.
+        data = (APP / manifest["cover"]).read_bytes()
+        self.assertEqual(data[:8], bytes([137, 80, 78, 71, 13, 10, 26, 10]))
+        import struct
+        self.assertEqual(struct.unpack(">II", data[16:24]), (416, 325))
+
     def test_50_german_jokes(self):
         data = json.loads((APP / "jokes/de.json").read_text(encoding="utf-8"))
         self.assertEqual(data["language"], "de")

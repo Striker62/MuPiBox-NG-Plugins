@@ -4,7 +4,7 @@
   "name": "Funny MuPi",
   "description": "Kinderwitze mit neuem freigestelltem MuPi und direkt folgendem Lachen nach der Sprachausgabe.",
   "author": "MuPiBox Community",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "runtime": "web",
   "entry": "index.html",
   "icon": "assets/mupi-laugh-refined.png",
@@ -22,5 +22,5 @@
     "fullScreen": true,
     "background": "app"
   },
-  "cover": "assets/cover.webp"
+  "cover": "assets/cover.png"
 }
