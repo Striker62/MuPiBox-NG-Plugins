@@ -5,6 +5,8 @@ checks that its 800x480 board is initialized by the actual DOM runtime.
 """
 import os
 import re
+import math
+import itertools
 import shutil
 import socket
 import subprocess
@@ -18,7 +20,7 @@ APPS={
     "mupi-muehle":("circles",48),
     "mupi-reversi":("cells",64),
     "mupi-dame":("cells",64),
-    "mupi-wuerfelrennen":("rects",68),
+    "mupi-wuerfelrennen":("finish-circles",16),
     "mupi-hnefatafl":("rects",121),
 }
 
@@ -61,6 +63,22 @@ class BoardGamesBrowserSmoke(unittest.TestCase):
                     self.assertEqual(len(re.findall(r'class="cell"',result.stdout)),required)
                 elif kind=="circles":
                     self.assertGreaterEqual(result.stdout.count("<circle"),required)
+                elif kind=="finish-circles":
+                    # The 16 target cells must be visually distinct: no pair overlaps.
+                    cells=re.findall(r'<circle\b[^>]*class="finish-cell"[^>]*>',result.stdout)
+                    self.assertEqual(len(cells),required)
+                    positions=[]
+                    for cell in cells:
+                        def attr(name):
+                            found=re.search(rf'\b{name}="([0-9.]+)"',cell)
+                            self.assertIsNotNone(found)
+                            return float(found.group(1))
+                        positions.append((attr("cx"),attr("cy"),attr("r")))
+                    for (x1,y1,r1),(x2,y2,r2) in itertools.combinations(positions,2):
+                        self.assertGreater(
+                            math.hypot(x1-x2,y1-y2),r1+r2,
+                            "Overlapping target circles in "+name,
+                        )
                 else:
                     self.assertGreaterEqual(result.stdout.count("<rect"),required)
 

@@ -84,15 +84,18 @@ const pos=i=>{
  return [OFFSET+c*CELL,OFFSET+r*CELL];
 };
 const corners=[[0,0],[13,0],[13,13],[0,13]];
+// Four separate circular home lanes: the diagonal step leaves a visible gap
+// between adjacent 13.4px-radius fields, including the four inner fields.
 const lane=(p,j)=>{
  const [x,y]=corners[p];
- const xx=x===0?1:-1,yy=y===0?1:-1,delta=122+j*16;
+ const xx=x===0?1:-1,yy=y===0?1:-1,delta=111+j*22;
  return [OFFSET+x*CELL+xx*delta,OFFSET+y*CELL+yy*delta];
 };
+// Push the four start homes slightly outward, away from the new finish lanes.
 const base=(p,j)=>{
  const [x,y]=corners[p];
  const xx=x===0?1:-1,yy=y===0?1:-1;
- return [OFFSET+x*CELL+xx*(54+(j%2)*30),OFFSET+y*CELL+yy*(54+Math.floor(j/2)*30)];
+ return [OFFSET+x*CELL+xx*(46+(j%2)*30),OFFSET+y*CELL+yy*(46+Math.floor(j/2)*30)];
 };
 const S=(tag,attrs={})=>{const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));return e;};
 const defs=S("defs");svg.insertBefore(defs,staticLayer);
@@ -124,8 +127,10 @@ for(let i=0;i<52;i++){
 for(let p=0;p<4;p++){
  for(let j=0;j<4;j++){
   const [x,y]=lane(p,j);
-  staticLayer.append(S("rect",{x:x-14,y:y-14,width:28,height:28,rx:6,fill:DiceRace.palette[p],opacity:.78,stroke:"#effbff","stroke-width":1.65}));
-  staticLayer.append(S("path",{d:"M"+(x-9)+" "+(y-10)+"h18",stroke:"#fff",opacity:.24,"stroke-width":1.6,"stroke-linecap":"round","pointer-events":"none"}));
+  // Glossy circular target cells; unlike the former squares they never overlap.
+  staticLayer.append(S("circle",{cx:x,cy:y,r:14.1,"class":"finish-cell",fill:"#071e31",stroke:DiceRace.palette[p],"stroke-width":2.3,opacity:.92}));
+  staticLayer.append(S("circle",{cx:x,cy:y,r:12.5,fill:DiceRace.palette[p],opacity:.74,stroke:"#e5f5f5","stroke-width":.95}));
+  staticLayer.append(S("ellipse",{cx:x-3.2,cy:y-5.6,rx:6.2,ry:2.4,fill:"#fff",opacity:.21,"pointer-events":"none"}));
   const [bx,by]=base(p,j);
   staticLayer.append(S("circle",{cx:bx,cy:by,r:15.5,fill:"#081f30",stroke:DiceRace.palette[p],"stroke-width":2.8,opacity:1}));
  }
@@ -133,7 +138,7 @@ for(let p=0;p<4;p++){
 // Small premium isometric die. Top=5, left=3, right=1; the 2 is opposite 5
 // on the hidden bottom. Drawn behind the target paths and pieces.
 const decorativeDie=S("g",{
- transform:"translate("+WIDTH/2+" "+WIDTH/2+") scale(.88)",
+ transform:"translate("+WIDTH/2+" "+WIDTH/2+") scale(.73)",
  "pointer-events":"none",
  "aria-label":"Goldener Spielwürfel mit korrekten Würfelseiten"
 });

@@ -56,3 +56,14 @@ Der Würfel wird in einer eigenen SVG-Hintergrundebene **vor** den
 Spielzielen gezeichnet und liegt damit **hinter** den farbigen
 Zielfeldern, Bewegungsmarkierungen und Spielfiguren. Die Spieldaten
 und Regeln bleiben unverändert.
+
+## Spielfeld-Geometrie (Version 0.2.7)
+
+Die vier Start-Häuser stehen nun jeweils 8 SVG-Einheiten weiter außen.
+Die Zielgänge bestehen aus vier kreisförmigen Feldern je Farbe, mit einem
+diagonalen Schritt von 22 Einheiten in X und Y; benachbarte Kreise mit
+Radius 14,1 überlappen dadurch nicht. Die vier innersten Zielfelder
+bleiben ebenfalls voneinander getrennt. Der dekorative 3D-Würfel ist
+zusätzlich verkleinert (SVG-Skalierung 0,73 statt 0,88) und weiterhin
+hinter den Zielfeldern und Spielfiguren angeordnet. Die Zuglogik und
+Positionen im Spielzustand bleiben unverändert.
