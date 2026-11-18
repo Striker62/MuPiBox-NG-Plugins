@@ -11,10 +11,14 @@
   const bestText = document.getElementById('best');
   const exit = document.getElementById('exit');
   let locale = null, best = 0, level = 'normal', ticker = null, pausedByHost = false;
-  let design = 'garden';
+  let design = 'neon';
   const themeToggle = document.getElementById('theme-toggle');
   const speedSelect = document.getElementById('speed-select');
   let exiting = false;
+  const garden = document.querySelector('.garden');
+  const particles = [];
+  let effectFrame = null;
+  let flashTimer = null;
   let pointerStart = null;
   const t = (key,args) => locale ? locale.t(key,args) : key;
   // Keep stored easy/normal/hard preferences compatible with older versions.
@@ -29,11 +33,15 @@
     stopClock();
     if (engine.snapshot().phase !== 'playing' || pausedByHost) return;
     ticker = window.setInterval(() => {
+      const before = engine.snapshot();
       const state = engine.tick();
+      if (state.meals > before.meals) emitSparks(before.food.position,before.food.gold);
       if (state.points > best) {
         best = state.points;
         void sdk.storage.set('best', best).catch(() => {});
+        flashRecord();
       }
+      if (state.phase === 'over' && before.phase === 'playing') flashImpact();
       if (state.phase !== 'playing') stopClock();
       paint(state);
     }, delays[level]);
@@ -77,97 +85,144 @@
     }
     paint(engine.snapshot());
   }
-  // Original, offline 600x400 canvas art: electric cyan/white lightcycle
-  // worm on a dark blue arena with restrained red grid accents. Canvas glow
-  // is intentionally bounded: Raspberry Pi 4/5 software GPU paths must keep
-  // the 70ms Turbo interval playable even with a long worm.
+  // Pure Canvas2D art: no external image downloads, keeping the game offline
+  // and responsive on the Pi 4/5 even at the 70 ms Turbo setting.
   function paintNeon(state) {
-    const w = canvas.width, h = canvas.height;
+    const w=canvas.width, h=canvas.height, now=performance.now();
     ctx.save();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#030a20';
-    ctx.fillRect(0, 0, w, h);
+    ctx.shadowBlur=0;
+    const bg=ctx.createLinearGradient(0,0,w,h);
+    bg.addColorStop(0,'#052c42');bg.addColorStop(.52,'#062137');
+    bg.addColorStop(1,'#021827');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
 
-    // An illuminated circuit grid: fine blue wires + red lane markers.
-    ctx.lineWidth = 1;
-    for (let x = 0; x <= rules.WIDTH; x++) {
-      ctx.strokeStyle = x % 4 === 0 ? '#216cbb' : '#17385f';
+    // Aquarium light shafts and subdued tiled game grid.
+    for(let n=0;n<3;n++){
+      ctx.fillStyle='rgba(6,185,215,.045)';
       ctx.beginPath();
-      ctx.moveTo(x * cell + .5, 0);
-      ctx.lineTo(x * cell + .5, h);
-      ctx.stroke();
+      const top=80+n*195;
+      ctx.moveTo(top,0);ctx.lineTo(top+53,0);
+      ctx.lineTo(top+122,h);ctx.lineTo(top+49,h);ctx.closePath();ctx.fill();
     }
-    for (let y = 0; y <= rules.HEIGHT; y++) {
-      ctx.strokeStyle = y % 4 === 0 ? '#a62e66' : '#194b82';
-      ctx.beginPath();
-      ctx.moveTo(0, y * cell + .5);
-      ctx.lineTo(w, y * cell + .5);
-      ctx.stroke();
+    ctx.strokeStyle='rgba(31,161,194,.22)';ctx.lineWidth=.8;
+    for(let x=0;x<=rules.WIDTH;x++){
+      ctx.beginPath();ctx.moveTo(x*cell+.5,0);ctx.lineTo(x*cell+.5,h);ctx.stroke();
     }
-
-    // Dark playing surface, with a thin two-tone light rail on its edge.
-    ctx.strokeStyle = '#ff477c';
-    ctx.lineWidth = 2.5;
-    ctx.strokeRect(2, 2, w - 4, h - 4);
-    ctx.strokeStyle = '#34ddff';
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(6, 6, w - 12, h - 12);
-
-    if (state.food) {
-      const fx = (state.food.position % rules.WIDTH) * cell + cell / 2;
-      const fy = Math.floor(state.food.position / rules.WIDTH) * cell + cell / 2;
-      ctx.shadowColor = state.food.gold ? '#ffca4e' : '#ff366d';
-      ctx.shadowBlur = 13;
-      ctx.fillStyle = state.food.gold ? '#ffe984' : '#ff4b6e';
-      ctx.beginPath();
-      ctx.arc(fx, fy, cell * (state.food.gold ? .37 : .32), 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = '#fff4ca';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(fx, fy, cell * .11, 0, Math.PI * 2);
-      ctx.fill();
+    for(let y=0;y<=rules.HEIGHT;y++){
+      ctx.beginPath();ctx.moveTo(0,y*cell+.5);ctx.lineTo(w,y*cell+.5);ctx.stroke();
     }
-
-    // Neon body: all segments stay cyan/electric blue (no red body pieces).
-    // Outer glow is painted once per segment; tiny light cores preserve
-    // readability even when the worm overlaps a bright part of the grid.
-    for (let i = state.body.length - 1; i >= 0; i--) {
-      const pos = state.body[i];
-      const x = (pos % rules.WIDTH) * cell;
-      const y = Math.floor(pos / rules.WIDTH) * cell;
-      const head = i === 0;
-      const pad = 3;
-      const size = cell - 2 * pad;
-      ctx.shadowColor = '#22dfff';
-      ctx.shadowBlur = head ? 15 : Math.min(9, 5 + (state.body.length - i) / 8);
-      ctx.fillStyle = head ? '#eaffff' : (i % 2 ? '#19b7fa' : '#55dfff');
-      ctx.fillRect(x + pad, y + pad, size, size);
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = head ? '#ffffff' : '#acf9ff';
-      ctx.lineWidth = head ? 2.5 : 1.5;
-      ctx.strokeRect(x + pad + 1, y + pad + 1, size - 2, size - 2);
-      if (head) {
-        // White center, forward-facing cyan visor; keep direction legible.
-        let vx = 0, vy = 0;
-        if (state.direction === 'up') vy = -4;
-        if (state.direction === 'down') vy = 4;
-        if (state.direction === 'left') vx = -4;
-        if (state.direction === 'right') vx = 4;
-        ctx.fillStyle = '#0c4f8b';
-        for (const eyeX of [-5, 5])
-          ctx.fillRect(x + cell / 2 + eyeX + vx - 2, y + cell / 2 - 2 + vy, 4, 4);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(x + cell / 2 - 3 + vx, y + cell / 2 + 5 + vy, 6, 2);
-      } else {
-        ctx.fillStyle = 'rgba(234,255,255,.7)';
-        ctx.fillRect(x + 8, y + 8, cell - 16, 3);
+    // Ambient tiny bubbles, stable across frames to avoid visual jitter.
+    for(let n=0;n<27;n++){
+      const x=13+((n*151+37)%574), y=10+((n*73+41)%379);
+      ctx.fillStyle='rgba(104,232,237,.25)';
+      ctx.beginPath();ctx.arc(x,y,n%4===0?1.9:1,0,Math.PI*2);ctx.fill();
+    }
+    // Aquarium plants stay behind the playable characters.
+    ctx.lineCap='round';
+    for(const side of [0,1]){
+      ctx.strokeStyle='rgba(25,215,139,.31)';
+      ctx.lineWidth=4;
+      for(let j=0;j<3;j++){
+        const x=side===0 ? 4+j*10 : w-4-j*10;
+        ctx.beginPath();ctx.moveTo(x,h);
+        ctx.quadraticCurveTo(x+(side===0?-18:18),h-48,x+(side===0?13:-13),h-83+j*12);ctx.stroke();
       }
     }
+    if(state.food){
+      const fx=(state.food.position%rules.WIDTH)*cell+cell/2;
+      const fy=Math.floor(state.food.position/rules.WIDTH)*cell+cell/2;
+      const pulse=1+.09*Math.sin(now/160);
+      const rad=cell*(state.food.gold?.41:.34)*pulse;
+      const halo=ctx.createRadialGradient(fx,fy,1,fx,fy,cell*.78);
+      halo.addColorStop(0,state.food.gold?'rgba(255,244,125,.85)':'rgba(255,193,60,.9)');
+      halo.addColorStop(.45,'rgba(253,171,37,.32)');halo.addColorStop(1,'rgba(244,164,11,0)');
+      ctx.fillStyle=halo;ctx.beginPath();ctx.arc(fx,fy,cell*.8,0,Math.PI*2);ctx.fill();
+      const crumb=ctx.createRadialGradient(fx-3,fy-4,0,fx,fy,rad);
+      crumb.addColorStop(0,'#fffad0');crumb.addColorStop(.3,'#ffe878');
+      crumb.addColorStop(1,state.food.gold?'#f89814':'#d97809');
+      ctx.fillStyle=crumb;ctx.beginPath();ctx.arc(fx,fy,rad,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#fff8c9';ctx.lineWidth=1;ctx.stroke();
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(fx-3,fy-3,2,0,Math.PI*2);ctx.fill();
+      // Golden crumbs produce a clear four-point sparkle.
+      if(state.food.gold){
+        ctx.strokeStyle='#fff1a0';ctx.lineWidth=1.7;
+        ctx.beginPath();ctx.moveTo(fx,fy-rad-7);ctx.lineTo(fx,fy-rad+1);
+        ctx.moveTo(fx-4,fy-rad-3);ctx.lineTo(fx+4,fy-rad-3);ctx.stroke();
+      }
+    }
+    // Rounded glossy mint-green segments; head is a cheerful cartoon face.
+    for(let i=state.body.length-1;i>=0;i--){
+      const pos=state.body[i], x=(pos%rules.WIDTH)*cell+cell/2;
+      const y=Math.floor(pos/rules.WIDTH)*cell+cell/2;
+      const head=i===0, r=cell*(head?.46:.43);
+      const fill=ctx.createRadialGradient(x-5,y-6,1,x,y,r);
+      fill.addColorStop(0,head?'#c5ff9a':'#83ffc0');
+      fill.addColorStop(.56,head?'#70ef64':'#36da80');
+      fill.addColorStop(1,head?'#19b64c':'#11976a');
+      ctx.shadowColor=head?'#84ff4f':'#20e0a1';
+      ctx.shadowBlur=head?10:4;
+      ctx.fillStyle=fill;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.strokeStyle=head?'#cbffb5':'#89ffd1';ctx.lineWidth=1.2;ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,.38)';
+      ctx.beginPath();ctx.ellipse(x-3,y-5,r*.41,r*.22,-.4,0,Math.PI*2);ctx.fill();
+      if(head){
+        ctx.save();ctx.translate(x,y);
+        const angle={right:0,down:Math.PI/2,left:Math.PI,up:-Math.PI/2}[state.direction]||0;
+        ctx.rotate(angle);
+        // Eyes look forward; cheeks and smile are legible at 5 inches.
+        for(const ey of [-5.1,5.1]){
+          ctx.fillStyle='#fffef2';ctx.beginPath();ctx.ellipse(2.3,ey,3.7,3.1,0,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle='#173d3b';ctx.beginPath();ctx.arc(3.5,ey,.0+1.9,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(4.1,ey-.8,.85,0,Math.PI*2);ctx.fill();
+        }
+        ctx.fillStyle='#ff809b';
+        ctx.beginPath();ctx.arc(-2,-8,1.8,0,Math.PI*2);ctx.arc(-2,8,1.8,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#245c31';ctx.lineWidth=1.7;ctx.beginPath();ctx.arc(-1,0,5,-.85,.85);ctx.stroke();
+        ctx.restore();
+      }
+    }
+    // Sparkle fragments from pickups, slightly larger on bonus crumbs.
+    for(const p of particles){
+      const age=(now-p.at)/620;
+      if(age<0||age>=1) continue;
+      const x=p.x+p.dx*age, y=p.y+p.dy*age+age*age*12;
+      ctx.globalAlpha=1-age;
+      ctx.fillStyle=p.gold?'#fff0a7':'#a2ffac';
+      ctx.beginPath();ctx.arc(x,y,p.radius*(1-age*.6),0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=1;
+    }
     ctx.restore();
+  }
+  function animateSparks(){
+    effectFrame=null;
+    const now=performance.now();
+    for(let i=particles.length-1;i>=0;i--) if(now-particles[i].at>620) particles.splice(i,1);
+    paint(engine.snapshot());
+    if(particles.length) effectFrame=requestAnimationFrame(animateSparks);
+  }
+  function emitSparks(position,gold){
+    if(position==null) return;
+    const x=(position%rules.WIDTH)*cell+cell/2;
+    const y=Math.floor(position/rules.WIDTH)*cell+cell/2;
+    const at=performance.now();
+    for(let j=0;j<9;j++){
+      const a=(j/9)*Math.PI*2;
+      particles.push({x,y,at,dx:Math.cos(a)*(18+(j%3)*6),
+        dy:Math.sin(a)*(16+(j%3)*6),radius:gold?3.2:2.5,gold});
+    }
+    if(!effectFrame) effectFrame=requestAnimationFrame(animateSparks);
+  }
+  function flashImpact(){
+    garden.classList.remove('shake');
+    void garden.offsetWidth; // restart the animation on consecutive impacts
+    garden.classList.add('shake');
+    window.setTimeout(()=>garden.classList.remove('shake'),540);
+  }
+  function flashRecord(){
+    garden.classList.add('record');
+    if(flashTimer!==null) clearTimeout(flashTimer);
+    flashTimer=window.setTimeout(()=>garden.classList.remove('record'),420);
   }
   function applyDesign(value,save) {
     design=value==='neon'?'neon':'garden';
@@ -322,6 +377,8 @@
   (async () => {
     locale = await window.MuPiGamesI18n.create(sdk);
     document.title=t('wormTitle')+' – MuPiBox-NG';
+    // Set the visible theme label and neon CSS even on a fresh install.
+    applyDesign('neon',false);
     try {
       const saved = await sdk.storage.get('best');
       if (Number.isSafeInteger(saved) && saved>=0) best=saved;

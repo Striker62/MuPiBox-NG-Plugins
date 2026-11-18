@@ -25,14 +25,30 @@
         <span aria-hidden="true">▼</span>
       </button>
     </nav>
+    <svg class="mascot" viewBox="0 0 90 90" aria-hidden="true" focusable="false">
+      <defs><radialGradient id="mupiFace" cx=".42" cy=".27" r=".75"><stop stop-color="#fff2b8"/><stop offset=".58" stop-color="#ffb142"/><stop offset="1" stop-color="#df5c12"/></radialGradient></defs>
+      <g stroke="#db541e" stroke-width="1.3" fill="#ff8e27">
+        <path d="M23 38 5 25 11 42 1 45 21 49M23 52 8 57 15 63 8 73 30 65"/>
+        <path d="M67 38 85 25 79 42 89 45 69 49M67 52 82 57 75 63 82 73 60 65"/>
+        <path d="M23 46 4 44 11 51 3 60 29 55M67 46 86 44 79 51 87 60 61 55"/>
+      </g>
+      <ellipse cx="45" cy="51" rx="30" ry="29" fill="url(#mupiFace)" stroke="#ffdc75" stroke-width="2"/>
+      <ellipse cx="34" cy="43" rx="7" ry="9" fill="#f5ffff"/><ellipse cx="56" cy="43" rx="7" ry="9" fill="#f5ffff"/>
+      <ellipse cx="35" cy="45" rx="4" ry="6" fill="#183248"/><ellipse cx="57" cy="45" rx="4" ry="6" fill="#183248"/>
+      <circle cx="36" cy="42" r="2" fill="#fff"/><circle cx="58" cy="42" r="2" fill="#fff"/>
+      <path d="M34 62 Q45 75 57 62" stroke="#78351f" stroke-width="3" fill="#6e2833" stroke-linecap="round"/>
+      <path d="M40 69 Q45 66 50 69" fill="none" stroke="#ff7c8b" stroke-width="3" stroke-linecap="round"/>
+    </svg>
     <section class="play-area" aria-label="MuPi Krümelwurm">
+      <!-- HUD lives outside the board: no counters cover playable cells. -->
+      <div class="scoreboard" role="status" aria-label="Spielstand">
+        <span class="hud-title" aria-hidden="true">KRÜMELWURM</span>
+        <div><span class="hud-symbol" aria-hidden="true">★</span><span data-i18n="wormScore">Punkte</span><strong id="points">0</strong></div>
+        <div><span class="hud-symbol" aria-hidden="true">◆</span><span data-i18n="wormBest">Rekord</span><strong id="best">0</strong></div>
+      </div>
       <div class="garden">
         <canvas id="garden" width="600" height="400" role="img"
                 data-i18n-aria="gardenBoard" aria-label="Garten-Spielfeld"></canvas>
-        <div class="scoreboard">
-          <div><span data-i18n="wormScore">Punkte</span><strong id="points">0</strong></div>
-          <div><span data-i18n="wormBest">Rekord</span><strong id="best">0</strong></div>
-        </div>
         <p id="status" class="status" aria-live="polite"></p>
       </div>
       <div class="action-bar">
