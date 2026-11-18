@@ -41,6 +41,31 @@ Alle Bedienelemente bleiben touch-freundlich und per Controller erreichbar.
 Die KI und Go/WASM-Spielregeln sind unverändert; es sind keine neuen
 Berechtigungen, Netzwerkressourcen oder externen Assets erforderlich.
 
+## Screenshots (800 × 480)
+
+Die folgenden Aufnahmen zeigen die **tatsächlich laufende Version 0.2.7** im
+Chromium-Browser bei 800 × 480 Pixeln (keine Design-Mockups). Die Bilder liegen
+direkt im Verzeichnis dieser Community-App.
+
+### Startbildschirm
+
+Spielmodus „Normal“, leeres Spielfeld und hervorgehobenes Auswahlfeld.
+
+![MuPi Kreuz und Kreis – Neon-Startbildschirm mit leerem 3×3-Spielfeld](./screenshot-1-neon-start.png)
+
+### Spiel gegen MuPi
+
+Eine laufende Partie mit leuchtendem cyanfarbenem X und goldenem O.
+
+![MuPi Kreuz und Kreis – Spiel gegen MuPi mit Neon-X und Neon-O](./screenshot-2-neon-ingame.png)
+
+### Gewinnsituation
+
+Zwei-Spieler-Modus: Spieler X gewinnt mit drei Kreuzen in einer Reihe;
+die Gewinnfelder leuchten golden.
+
+![MuPi Kreuz und Kreis – Sieg von Spieler X mit goldener Hervorhebung](./screenshot-3-neon-win.png)
+
 ## Native Darstellung (NG alpha.34+)
 
 Die Entwickler-Voreinstellungen sind im Manifest unabhängig wählbar:
