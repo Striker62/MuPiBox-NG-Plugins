@@ -8,8 +8,11 @@ Audio-, Speicher- und Controller-Berechtigung werden über den Host freigegeben.
 Keine privaten Core-Quellen oder Bilder übernommen. Die drei traditionellen
 Melodien sind eigene Transkriptionen gemeinfreier Melodien; kein Liedtext enthalten.
 Notenwerte sind eine einfache Lernhilfe, kein vollständiger Notensatz.
-Oberfläche ab 0.1.1: dunkles MuPi-Design mit kontrastreichen Tasten, vergrößerten Zielnoten, skalierbarer Notenanzeige, aus Canvas gezeichnetem Notenschlüssel und integriertem MuPi-Symbol mit genau drei Kiemenästen je Seite. Die bisherigen Spielmodi, Songs, Instrumente und Controller-Tasten bleiben unverändert.\nBuild: python3 tools/build_mupi_klavier.py
-Browseransichten bei 800×480 für Freispiel, Notenblatt und fallende Noten geprüft.\nHardwaretest auf Raspberry Pi / 5-Zoll-Touchscreen steht aus.
+Oberfläche ab 0.1.1: dunkles MuPi-Design mit kontrastreichen Tasten, vergrößerten Zielnoten, skalierbarer Notenanzeige, aus Canvas gezeichnetem Notenschlüssel und integriertem MuPi-Symbol mit genau drei Kiemenästen je Seite. Die bisherigen Spielmodi, Songs, Instrumente und Controller-Tasten bleiben unverändert.
+Cover ab 0.1.2: freigegebenes MuPi-Klavier-Motiv mit je drei Kiemenästen pro Kopfseite; im Paket enthalten als assets/cover.jpg (832×650) und assets/icon.png (192×192), damit Qt und Admin dasselbe Motiv verwenden können.
+Build: python3 tools/build_mupi_klavier.py
+Browseransichten bei 800×480 für Freispiel, Notenblatt und fallende Noten geprüft.
+Hardwaretest auf Raspberry Pi / 5-Zoll-Touchscreen steht aus.
 Lizenz: wie das Repository (MIT).
 
 Prüfungen: 35 Python-Tests erfolgreich (1 übersprungen), 2 Musiklogik-Tests,

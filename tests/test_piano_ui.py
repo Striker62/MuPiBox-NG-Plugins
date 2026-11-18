@@ -26,8 +26,9 @@ class PianoUiTests(unittest.TestCase):
         self.assertIn('src="assets/mupi-head.svg"', html)
         self.assertIn("#keyboard", css)
         self.assertIn("Draw the clef as vector curves", js)
-        self.assertEqual(manifest["version"], "0.1.1")
-        self.assertEqual(manifest["icon"], "assets/mupi-head.svg")
+        self.assertEqual(manifest["version"], "0.1.2")
+        self.assertEqual(manifest["icon"], "assets/icon.png")
+        self.assertEqual(manifest["cover"], "assets/cover.jpg")
         self.assertEqual(manifest["display"]["minWidth"], 800)
         self.assertEqual(manifest["display"]["minHeight"], 480)
 
