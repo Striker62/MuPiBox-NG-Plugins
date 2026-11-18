@@ -67,3 +67,17 @@ bleiben ebenfalls voneinander getrennt. Der dekorative 3D-Würfel ist
 zusätzlich verkleinert (SVG-Skalierung 0,73 statt 0,88) und weiterhin
 hinter den Zielfeldern und Spielfiguren angeordnet. Die Zuglogik und
 Positionen im Spielzustand bleiben unverändert.
+
+## Glanz-Design (Version 0.2.8)
+
+Die Dekoration in der Spielbrettmitte wurde komplett entfernt. Ein subtiler
+atmosphärischer Lichtverlauf und eine transparente Ringlinie sorgen für einen
+aufgeräumten Mittelpunkt. Die 52 Laufbahnfelder besitzen jetzt plastische
+Blautöne und Lichtkanten, die vier Startfelder eigene Farbverläufe.
+Die 16 getrennten, runden Zielfelder und die 16 nummerierten Spielfiguren
+erhalten abgestimmte Hochglanzoberflächen. Der goldene Würfeln-Button und
+die übrige Bedienoberfläche wurden ebenfalls optisch vereinheitlicht.
+Der Würfel im **Bedienbereich** bleibt natürlich vorhanden und zeigt
+wie bisher das Würfelergebnis. Alle Grafiken sind offlinefähige lokale
+SVG- und CSS-Elemente ohne zusätzliche Berechtigungen. Die Spiellogik,
+Touch- und Controllersteuerung bleiben unverändert.

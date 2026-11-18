@@ -64,6 +64,11 @@ class BoardGamesBrowserSmoke(unittest.TestCase):
                 elif kind=="circles":
                     self.assertGreaterEqual(result.stdout.count("<circle"),required)
                 elif kind=="finish-circles":
+                    # The visual-only center die is gone, but the die display in
+                    # the right-side controls remains available for actual rolls.
+                    self.assertNotIn('id="dieGlow"',result.stdout)
+                    self.assertIn('id="boardAtmosphere"',result.stdout)
+                    self.assertIn('id="dice"',result.stdout)
                     # The 16 target cells must be visually distinct: no pair overlaps.
                     cells=re.findall(r'<circle\b[^>]*class="finish-cell"[^>]*>',result.stdout)
                     self.assertEqual(len(cells),required)

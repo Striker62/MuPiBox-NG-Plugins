@@ -70,9 +70,10 @@ if(typeof document!=="undefined")(()=>{
 const sdk=window.MuPiBoxSDK,$=id=>document.getElementById(id),NS="http://www.w3.org/2000/svg";
 const board=$("board"),svg=document.createElementNS(NS,"svg");
 svg.setAttribute("viewBox","0 0 442 442");svg.setAttribute("aria-label","Großes Würfelrennen-Brett");board.append(svg);
-const dieLayer=document.createElementNS(NS,"g"),staticLayer=document.createElementNS(NS,"g"),highlightLayer=document.createElementNS(NS,"g"),pieceLayer=document.createElementNS(NS,"g");
-// The decorative die is deliberately behind every board tile, highlight and piece.
-svg.append(dieLayer,staticLayer,highlightLayer,pieceLayer);
+const backdropLayer=document.createElementNS(NS,"g"),staticLayer=document.createElementNS(NS,"g");
+const highlightLayer=document.createElementNS(NS,"g"),pieceLayer=document.createElementNS(NS,"g");
+// Keep every decorative element behind all selectable targets and moving pieces.
+svg.append(backdropLayer,staticLayer,highlightLayer,pieceLayer);
 const WIDTH=442,CELL=30.4,OFFSET=23,SPACE=13;
 const names=DiceRace.names,faces=["⚀","⚁","⚂","⚃","⚄","⚅"],cache={};
 const pos=i=>{
@@ -98,77 +99,67 @@ const base=(p,j)=>{
  return [OFFSET+x*CELL+xx*(46+(j%2)*30),OFFSET+y*CELL+yy*(46+Math.floor(j/2)*30)];
 };
 const S=(tag,attrs={})=>{const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));return e;};
-const defs=S("defs");svg.insertBefore(defs,staticLayer);
+const defs=S("defs");svg.insertBefore(defs,backdropLayer);
 function gradient(id,top,bottom){
  const g=S("linearGradient",{id,x1:"0%",y1:"0%",x2:"15%",y2:"100%"});
  g.append(S("stop",{offset:"0%","stop-color":top}),S("stop",{offset:"100%","stop-color":bottom}));
  defs.append(g);
 }
-gradient("trackA","#4f91b1","#195474");
-gradient("trackB","#4383a5","#123f62");
-gradient("dieTop","#fff9db","#efc17b");
-gradient("dieGold","#fff6c0","#a6631c");
-gradient("dieLeft","#315a77","#071b30");
-gradient("dieRight","#20445d","#06182a");
-const glow=S("radialGradient",{id:"dieGlow"});
-glow.append(S("stop",{offset:"0%","stop-color":"#f9cb67","stop-opacity":.55}));
-glow.append(S("stop",{offset:"60%","stop-color":"#daa64b","stop-opacity":.16}));
-glow.append(S("stop",{offset:"100%","stop-color":"#b88538","stop-opacity":0}));
-defs.append(glow);
-const shiny=["#ffc0c6","#fff4a9","#83ffdf","#c4cbff"];
-const shaded=["#de3b57","#d89a22","#079c86","#5368e2"];
-for(let p=0;p<4;p++)gradient("piece"+p,shiny[p],shaded[p]);
+gradient("trackA","#64bad4","#124765");
+gradient("trackB","#49a3c2","#0a3d5d");
+const shiny=["#ffbacb","#fff3a4","#91ffe6","#c2d2ff"];
+const shaded=["#d92f50","#d99210","#08ac86","#4768d9"];
+const goalTop=["#ffe0e8","#fff7c7","#b5ffef","#e2e6ff"];
+const goalMid=["#ff6f8b","#ffd44e","#32e2bd","#7fa2ff"];
+const cornerTop=["#ffb3be","#ffedaa","#98ffe0","#bdc9ff"];
+for(let p=0;p<4;p++){
+ gradient("piece"+p,shiny[p],shaded[p]);
+ gradient("corner"+p,cornerTop[p],shaded[p]);
+ const g=S("radialGradient",{id:"goal"+p,cx:"30%",cy:"19%",r:"88%"});
+ g.append(S("stop",{offset:"0%","stop-color":goalTop[p]}));
+ g.append(S("stop",{offset:"38%","stop-color":goalMid[p]}));
+ g.append(S("stop",{offset:"100%","stop-color":shaded[p]}));
+ defs.append(g);
+}
+const light=S("radialGradient",{id:"boardAtmosphere",cx:"50%",cy:"48%",r:"65%"});
+light.append(S("stop",{offset:"0%","stop-color":"#0d7997","stop-opacity":.75}));
+light.append(S("stop",{offset:"57%","stop-color":"#0b4b68","stop-opacity":.55}));
+light.append(S("stop",{offset:"100%","stop-color":"#06273e","stop-opacity":0}));
+defs.append(light);
+// Atmospheric spotlight and a discreet circular accent, never a center mascot/die.
+backdropLayer.append(S("circle",{cx:WIDTH/2,cy:WIDTH/2,r:202,fill:"url(#boardAtmosphere)","pointer-events":"none"}));
+backdropLayer.append(S("circle",{cx:WIDTH/2,cy:WIDTH/2,r:160.5,fill:"none",stroke:"#37b9d6","stroke-width":1.15,opacity:.33,"pointer-events":"none"}));
+backdropLayer.append(S("path",{d:"M62 226 A159 159 0 0 1 221 62",fill:"none",stroke:"#64dcf4","stroke-width":1,opacity:.38,"pointer-events":"none"}));
+backdropLayer.append(S("path",{d:"M380 216 A159 159 0 0 1 221 380",fill:"none",stroke:"#5bd1eb","stroke-width":1.2,opacity:.42,"pointer-events":"none"}));
 for(let i=0;i<52;i++){
  const [x,y]=pos(i),owner=DiceRace.starts.indexOf(i);
- const r=S("rect",{x:x-14.8,y:y-14.8,width:29.6,height:29.6,rx:5.8,fill:owner>=0?DiceRace.palette[owner]:i%2?"url(#trackA)":"url(#trackB)",stroke:owner>=0?"#fff2bd":"#a6d4e7","stroke-width":1.5});
+ const r=S("rect",{x:x-14.8,y:y-14.8,width:29.6,height:29.6,rx:5.8,
+  fill:owner>=0?"url(#corner"+owner+")":i%2?"url(#trackA)":"url(#trackB)",
+  stroke:owner>=0?"#ffedb7":"#80d8eb","stroke-width":owner>=0?2.1:1.6});
+ staticLayer.append(S("rect",{x:x-13.5,y:y-12.4,width:27,height:25.7,rx:5,
+  fill:"#001324",opacity:.2,"pointer-events":"none"}));
  staticLayer.append(r);
- staticLayer.append(S("path",{d:"M"+(x-10)+" "+(y-10)+"h20",stroke:"#e5faff","stroke-width":1.5,opacity:.36,"stroke-linecap":"round","pointer-events":"none"}));
+ staticLayer.append(S("path",{d:"M"+(x-10)+" "+(y-10)+"Q"+x+" "+(y-12)+" "+(x+10)+" "+(y-10),
+  stroke:"#f5ffff","stroke-width":1.9,opacity:.6,fill:"none","stroke-linecap":"round","pointer-events":"none"}));
+ staticLayer.append(S("path",{d:"M"+(x-9)+" "+(y+11)+"h18",stroke:"#03172a","stroke-width":1.6,
+  opacity:.3,"stroke-linecap":"round","pointer-events":"none"}));
 }
 for(let p=0;p<4;p++){
  for(let j=0;j<4;j++){
   const [x,y]=lane(p,j);
   // Glossy circular target cells; unlike the former squares they never overlap.
-  staticLayer.append(S("circle",{cx:x,cy:y,r:14.1,"class":"finish-cell",fill:"#071e31",stroke:DiceRace.palette[p],"stroke-width":2.3,opacity:.92}));
-  staticLayer.append(S("circle",{cx:x,cy:y,r:12.5,fill:DiceRace.palette[p],opacity:.74,stroke:"#e5f5f5","stroke-width":.95}));
-  staticLayer.append(S("ellipse",{cx:x-3.2,cy:y-5.6,rx:6.2,ry:2.4,fill:"#fff",opacity:.21,"pointer-events":"none"}));
+  staticLayer.append(S("circle",{cx:x,cy:y,r:14.1,"class":"finish-cell",fill:"#09293d",
+   stroke:DiceRace.palette[p],"stroke-width":2.1}));
+  staticLayer.append(S("circle",{cx:x,cy:y,r:12.2,fill:"url(#goal"+p+")",
+   stroke:goalTop[p],"stroke-width":1.2}));
+  staticLayer.append(S("ellipse",{cx:x-3.3,cy:y-5.9,rx:6.2,ry:3,fill:"#fff",opacity:.47,"pointer-events":"none"}));
+  staticLayer.append(S("path",{d:"M"+(x-7)+" "+(y+8)+"Q"+x+" "+(y+12)+" "+(x+7)+" "+(y+8),
+   stroke:"#061d2e",opacity:.37,"stroke-width":1.5,fill:"none","pointer-events":"none"}));
   const [bx,by]=base(p,j);
-  staticLayer.append(S("circle",{cx:bx,cy:by,r:15.5,fill:"#081f30",stroke:DiceRace.palette[p],"stroke-width":2.8,opacity:1}));
+  staticLayer.append(S("circle",{cx:bx,cy:by,r:15.5,fill:"#051929",stroke:DiceRace.palette[p],"stroke-width":2.8}));
+  staticLayer.append(S("circle",{cx:bx,cy:by,r:13.2,fill:"#0a3043",stroke:goalTop[p],"stroke-width":.75,opacity:.68}));
  }
 }
-// Small premium isometric die. Top=5, left=3, right=1; the 2 is opposite 5
-// on the hidden bottom. Drawn behind the target paths and pieces.
-const decorativeDie=S("g",{
- transform:"translate("+WIDTH/2+" "+WIDTH/2+") scale(.73)",
- "pointer-events":"none",
- "aria-label":"Goldener Spielwürfel mit korrekten Würfelseiten"
-});
-decorativeDie.append(S("ellipse",{cx:0,cy:13,rx:41,ry:34,fill:"url(#dieGlow)"}));
-decorativeDie.append(S("ellipse",{cx:0,cy:31,rx:24,ry:6.5,fill:"#031421",opacity:.64}));
-decorativeDie.append(S("path",{d:"M0 -30Q3 -30 6 -28L26 -17Q29 -15 29 -11V15Q29 19 25 21L5 32Q0 35 -5 32L-25 21Q-29 19 -29 15V-11Q-29 -15 -26 -17L-6 -28Q-3 -30 0 -30Z",fill:"url(#dieGold)",stroke:"#ad6d28","stroke-width":1.2,"stroke-linejoin":"round"}));
-// Gold-framed deep-blue side facets, slightly inset to expose the bevel.
-decorativeDie.append(S("path",{d:"M-25 -13L-1 0V27Q-1 29 -4 27L-23 17Q-25 16 -25 13Z",fill:"url(#dieLeft)",stroke:"#ffdb81","stroke-width":1.65,"stroke-linejoin":"round"}));
-decorativeDie.append(S("path",{d:"M1 0L25 -13V13Q25 16 23 17L4 27Q1 29 1 27Z",fill:"url(#dieRight)",stroke:"#ffda83","stroke-width":1.65,"stroke-linejoin":"round"}));
-decorativeDie.append(S("path",{d:"M-24 -10L-24 12M24 -10L24 12",stroke:"#f6ca67","stroke-width":.9,opacity:.7,"stroke-linecap":"round"}));
-// Ivory top with embossed golden border and subtle specular reflection.
-decorativeDie.append(S("path",{d:"M0 -26Q2 -26 4 -25L24 -14Q26 -13 23 -11L3 0Q0 2 -3 0L-23 -11Q-26 -13 -24 -14L-4 -25Q-2 -26 0 -26Z",fill:"url(#dieTop)",stroke:"#fff5c0","stroke-width":1.8,"stroke-linejoin":"round"}));
-decorativeDie.append(S("path",{d:"M-17 -15L-2 -23Q0 -24 2 -23L18 -14",fill:"none",stroke:"#fff","stroke-width":1.1,opacity:.84,"stroke-linecap":"round"}));
-decorativeDie.append(S("path",{d:"M-23 14L-4 25Q0 28 0 25L0 1M4 25L23 14",fill:"none",stroke:"#f8bf56","stroke-width":1,"opacity":.7,"stroke-linecap":"round"}));
-// Pips: top is five, left is three, right is one. Opposite faces sum to seven.
-function pip(cx,cy,rx,ry,light=false){
- decorativeDie.append(S("ellipse",{cx,cy:cy+.65,rx:rx+1.25,ry:ry+.95,fill:light?"#12263b":"#a46a26",opacity:.9}));
- decorativeDie.append(S("ellipse",{cx,cy,rx,ry,fill:light?"#ffd475":"#1b3344",stroke:light?"#fff1b7":"#c99843","stroke-width":.85}));
- decorativeDie.append(S("ellipse",{cx:cx-rx*.25,cy:cy-ry*.35,rx:rx*.35,ry:ry*.28,fill:light?"#fff2ca":"#adc0c5",opacity:.78}));
-}
-// Five pips mapped into the diamond top face.
-for(const [u,v] of [[-.65,-.65],[-.65,.65],[.65,-.65],[.65,.65],[0,0]]){
- pip((u-v)*10.5,-13+(u+v)*6.5,2.4,1.75);
-}
-for(const [cx,cy] of [[-18,-4],[-13,7],[-7,17]])pip(cx,cy,2.25,3.15,true);
-pip(14,7.5,3.1,4.1,true);
-// A restrained sparkle on the gold trim, behind all playable content.
-decorativeDie.append(S("path",{d:"M23 -23L24.6 -17L30 -15L24.6 -13.4L23 -8L21.5 -13.4L16 -15L21.5 -17Z",fill:"#fff5ba",opacity:.95}));
-decorativeDie.append(S("circle",{cx:23,cy:-15,r:1.4,fill:"#ffffff"}));
-dieLayer.append(decorativeDie);
 let b,players=4,human=1,turn=0,die=0,ended=false,epoch=0,selectedPiece=0,aiTimer=0,attempts=0,maxAttempts=3;
 const active=()=>players===2?[0,2]:players===3?[0,1,2]:[0,1,2,3];
 const isHuman=()=>active().indexOf(turn)<human;
@@ -195,7 +186,7 @@ function render(){
  for(const p of active())for(let k=0;k<4;k++){
   const e=nodes[p+"-"+k],v=b[p][k];const [x,y]=locate(p,k);
   e.g.setAttribute("transform","translate("+x+" "+y+")");
-  const show=p===turn&&k===selectedPiece;
+  const show=die>0&&p===turn&&k===selectedPiece;
   e.c.setAttribute("stroke",show?"#ffffff":"#10263c");
   e.c.setAttribute("stroke-width",show?4.6:2.7);
   e.c.setAttribute("r",show?15.4:14.3);
