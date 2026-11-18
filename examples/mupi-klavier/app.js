@@ -3,6 +3,9 @@ const sdk = window.MuPiBoxSDK, music = window.PianoMusic;
 const $ = id => document.getElementById(id);
 let index=0, progress=0, demo=false, paused=false, last=0, selected=0, generation=0;
 const buttons=new Map();
+// A real vector engraving instead of approximating a G-clef with freehand curves.
+const trebleClef=new Image();
+trebleClef.src='assets/treble-clef.svg';
 const song=()=>music.songs[Number($('song').value)||0];
 const mode=()=>$('mode').value;
 const target=()=>mode()==='free' ? null : song().notes[index];
@@ -79,20 +82,12 @@ function draw() {
       const y=bottom-j*gap;
       g.beginPath();g.moveTo(lineLeft,y);g.lineTo(lineRight,y);g.stroke();
     }
-    // Draw the clef as vector curves: Qt images can lack the Unicode music font.
-    g.save();g.translate(40,bottom-gap*1.65);g.scale(gap/16,gap/16);
-    g.strokeStyle='#e2f3ff';g.lineWidth=2.8;g.lineCap='round';g.lineJoin='round';
-    g.beginPath();
-    g.moveTo(6,48);
-    g.bezierCurveTo(4,22,-5,-8,5,-33);
-    g.bezierCurveTo(17,-58,9,-62,-2,-49);
-    g.bezierCurveTo(-15,-31,8,-12,8,10);
-    g.bezierCurveTo(9,31,-8,42,-20,28);
-    g.bezierCurveTo(-29,17,-17,1,-5,1);
-    g.bezierCurveTo(12,1,19,23,7,33);
-    g.bezierCurveTo(-3,42,-14,35,-12,26);
-    g.stroke();
-    g.fillStyle='#e2f3ff';g.beginPath();g.arc(-11,27,3.5,0,Math.PI*2);g.fill();g.restore();
+    // Original score engraving aligns its staff lines at y=16,22,28,34,40.
+    // Align the second line from the bottom (G4) with the clef's inner spiral.
+    if(trebleClef.complete&&trebleClef.naturalWidth){
+      const scale=gap/6;
+      g.drawImage(trebleClef,5,bottom-40*scale,20*scale,60*scale);
+    }
     const noteWidth=(w-112)/8;
     for(let j=start;j<Math.min(s.notes.length,start+8);j++){
       const i=music.white.indexOf(s.notes[j]);
