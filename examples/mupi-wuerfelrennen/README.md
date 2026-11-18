@@ -1,14 +1,14 @@
 # MuPis Würfelrennen
 
 Eigenständiges, offline spielbares Würfel-Brettspiel für zwei bis vier Personen
-oder KI-Spieler. Die aktuelle **Hochglanz-Edition 0.2.8** kombiniert ein
+oder KI-Spieler. Die aktuelle **Hochglanz-Edition 0.2.9** kombiniert ein
 goldgerahmtes Spielfeld mit 52 äußeren Feldern, vier Startbereichen und
 16 getrennten, kreisförmigen Zielfeldern. Optimiert für die **5-Zoll-MuPiBox
 (800 × 480 Pixel)** mit Touch- und Controllerbedienung.
 
 ## Screenshots (800 × 480)
 
-Diese Bilder stammen direkt aus der **laufenden Community-Web-App v0.2.8**,
+Diese Bilder stammen direkt aus der **laufenden Community-Web-App v0.2.9**,
 aufgenommen mit Chromium bei 800 × 480 Pixeln. Für die Spielsituationen
 wurden nachvollziehbare Spielstände aus einer vollständig durch die
 Spiel-Engine simulierten Partie verwendet. Es sind **keine KI-Mockups**
@@ -29,11 +29,16 @@ direkt im Ordner dieser Anwendung.
 
 - Eine **6** bringt eine Figur verpflichtend aus dem Haus, sofern dies möglich
   ist. Eine gegnerische Figur auf dem Startfeld wird dabei geschlagen.
-- Die eigene Figur auf dem Startfeld muss bei nächster legaler Gelegenheit
-  weiterziehen; eine Blockade lässt einen anderen gültigen Zug zu.
+- Solange noch Figuren im Haus warten, muss das eigene Startfeld bei nächster
+  legaler Gelegenheit frei werden. Sind alle vier Figuren draußen, entfällt
+  dieser Zwang und es dürfen alle sonst erlaubten Figuren ziehen.
 - Wenn keine bereits ausgezogene Figur einen legalen Zug ausführen kann,
   gibt es bis zu **drei Wurfversuche**.
-- Eine 6 nach einem gültigen Zug gibt einen **Extrawurf**.
+- Eine 6 wird deutlich sichtbar angezeigt und bei automatischer Pflichtausfahrt
+  mindestens eine Sekunde gezeigt. Eine 6 nach einem gültigen Zug gibt einen **Extrawurf**.
+- Nach einem Schlag kehrt **nur die geschlagene Figur** ins eigene Haus zurück;
+  die angreifende Figur steht auf dem Schlagfeld. Die Anzeige pausiert kurz,
+  bevor der nächste Zug beginnt.
 - Eigene Figuren dürfen keine Felder doppelt belegen, und im Zielgang darf
   nicht über andere eigene Figuren gezogen werden. Der Zieleinlauf verlangt
   die passende Augenzahl.
@@ -74,6 +79,6 @@ node --test tests/community_board_games.test.cjs
 Der Builder schließt `README.md` und alle
 `screenshot-*.webp`-Dateien ausdrücklich aus dem installierbaren
 `.mupiapp`-Archiv aus, damit die Galerie keinen Speicherplatz auf der Box
-belegt. Offizielle Katalogversion: **0.2.8**, Community Preview 50.
+belegt. Offizielle Katalogversion: **0.2.8**, Community Preview 50 (0.2.9 im Quellcode, noch nicht veröffentlicht).
 Die App benötigt nur die `controller`-Berechtigung, keine Netzverbindung.
 Quellcode unter MIT-Lizenz.

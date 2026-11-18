@@ -27,7 +27,7 @@ SCENES = (
 )
 SIMULATE = r"""
 const g = require(process.argv[1]);
-let seed = 290584;
+let seed = 2; // deterministic game where Rot reaches the finish after all scene types
 Math.random = () => {
   seed ^= seed << 13;
   seed ^= seed >>> 17;
@@ -61,7 +61,7 @@ for (let roll = 0; roll < 12000; roll++) {
     }
     b = g.apply(b, turn, chosen);
     if (b[turn].every(v => v >= 52)) {
-      victory = { board: clone(), turn, die: 0, selected: 0 };
+      victory = { board: clone(), turn, die: 0, lastRoll: die, selected: 0 };
       break;
     }
     if (die === 6) {
@@ -99,6 +99,8 @@ window.__setScreenshotState = scene => {
   b = item.board.map(row => row.slice());
   turn = item.turn;
   die = item.die;
+  lastRoll = item.lastRoll || item.die || 0;
+  settling = false;
   ended = scene === "win";
   selectedPiece = item.selected;
   attempts = item.attempts || 1;

@@ -9,6 +9,7 @@ import math
 import itertools
 import shutil
 import socket
+import tempfile
 import subprocess
 import time
 import unittest
@@ -86,6 +87,43 @@ class BoardGamesBrowserSmoke(unittest.TestCase):
                         )
                 else:
                     self.assertGreaterEqual(result.stdout.count("<rect"),required)
+
+
+    def test_dicerace_six_is_visible_during_automatic_exit(self):
+        # Use the real browser and runtime, with only a deterministic die roll.
+        app=ROOT/"examples"/"mupi-wuerfelrennen"
+        with tempfile.TemporaryDirectory(prefix="mupi-dicerace-") as tmp:
+            dest=Path(tmp)
+            for name in ("index.html","app.js","style.css","mupibox-sdk.js"):
+                shutil.copy2(app/name,dest/name)
+            html=(dest/"index.html").read_text(encoding="utf-8")
+            probe="""<script>
+              Math.random=()=>0.99;
+              document.getElementById('roll').click();
+              document.body.dataset.first=document.getElementById('dice').dataset.value;
+              setTimeout(()=>{
+                document.body.dataset.hold=document.getElementById('dice').dataset.value;
+                document.body.dataset.message=document.getElementById('status').textContent;
+              },650);
+              setTimeout(()=>{
+                document.body.dataset.after=document.getElementById('dice').dataset.value;
+                document.body.dataset.next=document.getElementById('status').textContent;
+              },1450);
+            </script>"""
+            (dest/"index.html").write_text(
+                html.replace("</body>",probe+"</body>"),encoding="utf-8")
+            run=subprocess.run([
+                BROWSER,"--headless","--no-sandbox","--disable-gpu",
+                "--disable-dev-shm-usage","--disable-background-networking",
+                "--virtual-time-budget=1700","--window-size=800,480",
+                "--dump-dom",(dest/"index.html").as_uri(),
+            ],capture_output=True,text=True,timeout=22)
+            self.assertEqual(run.returncode,0,run.stderr[-500:])
+            self.assertRegex(run.stdout,r'data-first="6"')
+            self.assertRegex(run.stdout,r'data-hold="6"')
+            self.assertRegex(run.stdout,r'data-message="Sechs!')
+            self.assertRegex(run.stdout,r'data-after="6"')
+            self.assertRegex(run.stdout,r'data-next="[^"]*Extrawurf!')
 
 
 if __name__=="__main__":

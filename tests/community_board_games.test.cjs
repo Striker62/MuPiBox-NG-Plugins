@@ -90,9 +90,50 @@ test('Würfelrennen: eigenes Startfeld muss bei nächstmöglichem Wurf frei werd
  board[0]=[0,1,-1,-1];
  assert.ok(!L.possible(board,0,1).some(m=>m.piece===0));
  assert.ok(L.possible(board,0,1).some(m=>m.piece===1));
- // Ohne wartende Figuren muss eine Figur am Start trotzdem Platz machen.
+ // Sind alle vier Figuren draußen, ist das Startfeld kein Pflichtzug mehr.
  board[0]=[0,10,20,30];
- assert.deepEqual(L.possible(board,0,2).map(m=>m.piece),[0]);
+ assert.deepEqual(L.possible(board,0,2).map(m=>m.piece),[0,1,2,3]);
+ assert.deepEqual(L.possible(board,0,6).map(m=>m.piece),[0,1,2,3]);
+});
+
+test('Würfelrennen: bei jedem Spieler schlägt nur die Zielfigur, niemand teleportiert',()=>{
+ for(let p=0;p<4;p++){
+  const q=(p+1)%4;
+  const board=L.state(4),target=(L.starts[p]+5)%52;
+  board[p]=[0,12,22,32]; // all four out: no mandatory start move
+  board[q][2]=(target-L.starts[q]+52)%52;
+  const before=board.map(row=>row.slice());
+  const move=L.possible(board,p,5).find(m=>m.piece===0);
+  assert.ok(move,'moving piece must be selectable');
+  assert.deepEqual(move.captured,[{player:q,piece:2}]);
+  const after=L.apply(board,p,move);
+  assert.equal(after[p][0],5);
+  assert.equal(after[q][2],-1);
+  for(let player=0;player<4;player++)for(let piece=0;piece<4;piece++){
+   if(player===p&&piece===0||player===q&&piece===2)continue;
+   assert.equal(after[player][piece],before[player][piece],
+     'all other pieces must stay put');
+  }
+  assert.deepEqual(board,before,'the original game state must stay immutable');
+  assert.throws(()=>L.apply(after,p,move),/veralteter/);
+  // A caller cannot suppress or replace a capture by corrupting the move data.
+  assert.equal(L.apply(board,p,{...move,captured:[]})[q][2],-1);
+ }
+});
+
+test('Würfelrennen: ein Schlag beim Herauskommen setzt den Gegner zurück ins Haus',()=>{
+ for(let p=0;p<4;p++){
+  const q=(p+1)%4,b=L.state(4);
+  b[q][1]=(L.starts[p]-L.starts[q]+52)%52;
+  const move=L.possible(b,p,6).find(x=>x.piece===0);
+  assert.deepEqual(move.captured,[{player:q,piece:1}]);
+  const after=L.apply(b,p,move);
+  assert.equal(after[p][0],0);
+  assert.equal(after[q][1],-1);
+  for(let player=0;player<4;player++)for(let piece=0;piece<4;piece++)
+   if(!(player===p&&piece===0||player===q&&piece===1))
+    assert.equal(after[player][piece],b[player][piece]);
+ }
 });
 
 test('Würfelrennen: bis zu drei Startwürfe ohne ziehbare Figur auf dem Feld',()=>{
