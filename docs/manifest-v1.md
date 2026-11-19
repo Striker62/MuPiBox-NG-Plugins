@@ -352,3 +352,24 @@ try {
   // Fallback: the older host may decode on first play.
 }
 ```
+
+
+### Optional full-gamepad input (NG controller bridge update)
+
+The trusted, local-only runner continues to publish the original
+`input` events (including `A`, `B`, directional keys and `START`).
+On upgraded hosts, it additionally sends distinct pressed/released
+`input` events for `MUSIC` (physical face B), `SPRINT` (right shoulder)
+and `MUTE` (face X). The original `B` alias for right-shoulder/sprint
+is **preserved** for compatibility with existing community games.
+
+The optional `controller.connection` event carries
+`{connected: boolean, bluetooth: boolean}`. Listen with
+`sdk.on('controller.connection', handler)`; always treat missing events
+on older hosts as an unknown connection state, not proof that a controller
+exists. Host polls physical HID only on trusted loopback routes and forwards
+button edges. No plugin receives raw evdev device handles.
+
+Applications with controller-required gameplay must explicitly refuse to
+start until connection is confirmed. Distinct keys and the connection event
+require an updated NG host; older versions do not provide these additions.
