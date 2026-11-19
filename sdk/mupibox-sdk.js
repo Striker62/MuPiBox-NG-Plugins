@@ -389,7 +389,7 @@
   if (bridge && typeof bridge.subscribe === 'function') {
     bridge.subscribe((message) => {
       if (!message || typeof message.event !== 'string') return;
-      if (['input', 'lifecycle.pause', 'lifecycle.resume', 'camera.stopped'].includes(message.event)) {
+      if (['input', 'controller.connection', 'lifecycle.pause', 'lifecycle.resume', 'camera.stopped'].includes(message.event)) {
         emit(message.event, message.payload || {});
       }
     });
