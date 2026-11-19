@@ -221,3 +221,31 @@ test('a long music decode allows pickup and pause drains late native voices', as
   await Promise.all([music,paused]);
   assert.deepEqual(calls.slice(4),['stopMusic','stopSamples']);
 });
+
+test('menu music starts once, survives game menus, and stops when the app leaves the screen',()=>{
+  const vm=require('node:vm'), fs=require('node:fs'), path=require('node:path');
+  const dir=path.join(__dirname,'../examples/mupi-run');
+  const listeners=new Map(), buttons=new Map(), changes=[];
+  function target(scope) {
+    return {addEventListener:(event,fn)=>listeners.set(scope+event,fn)};
+  }
+  for(const id of ['sound','menu-sound']) buttons.set(id,{...target(id),setAttribute(){}});
+  const document={...target('doc'),getElementById:id=>buttons.get(id),hidden:false};
+  const window={...target('win'),MuPiRunAudioFiles:{music:'music.ogg'},
+    MuPiBoxSDK:{isHosted:true,on:(event,fn)=>listeners.set(event,fn)},
+    createRunAudio:()=>({active:value=>changes.push(value),play(){}})};
+  vm.runInNewContext(fs.readFileSync(path.join(dir,'audio-session.js'),'utf8'),{window,document});
+  assert.deepEqual(changes,[true]);
+  listeners.get('menu-soundclick')();
+  assert.equal(changes.at(-1),false);
+  listeners.get('soundclick')();
+  listeners.get('lifecycle.pause')();
+  document.hidden=true; listeners.get('docvisibilitychange')();
+  listeners.get('lifecycle.resume')();
+  assert.equal(changes.at(-1),false);
+  document.hidden=false; listeners.get('docvisibilitychange')();
+  assert.equal(changes.at(-1),true);
+  window.MuPiRunSession.exit();
+  listeners.get('lifecycle.resume')();
+  assert.equal(changes.at(-1),false);
+});

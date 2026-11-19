@@ -5,7 +5,7 @@ Happy Trancin' (Looping) · Creative Commons Attribution 3.0 Unported
 https://opengameart.org/content/happy-trancin-looping
 https://creativecommons.org/licenses/by/3.0/
 The complete loop was tempo-adjusted by +4.4% with pitch preservation, mixed
-to mono and re-encoded as Ogg Vorbis for native playback (assets/audio/music.ogg).
+to 48 kHz mono and re-encoded as Ogg Vorbis (quality 0) for native playback (assets/audio/music.ogg).
 
 Huh.mp3 by LittleRainySeasons · Creative Commons Attribution 4.0 International
 https://freesound.org/people/LittleRainySeasons/sounds/334049/

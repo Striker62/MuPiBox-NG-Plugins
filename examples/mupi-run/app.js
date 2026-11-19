@@ -7,7 +7,7 @@
   const ctx = canvas.getContext('2d', {alpha: false});
   const art = Object.create(null);
   const atlas = window.MuPiPoses;
-  const audio = window.createRunAudio(sdk, window.MuPiRunAudioFiles);
+  const audio = window.MuPiRunSession;
   const loading = window.MuPiRunArt.map(file => new Promise((resolve, reject) => {
     const img = new Image();
     art[file.split('.')[0]] = img;
@@ -15,7 +15,7 @@
     img.onerror = () => reject(new Error(file));
     img.src = './art/' + file;
   }));
-  const world = window.createRunWorld(ctx, art, game);
+  const world = window.createRunWorld(ctx, game);
   const overlay = document.getElementById('overlay');
   const headline = document.getElementById('headline');
   const message = document.getElementById('message');
@@ -24,9 +24,7 @@
   const bestLabel = document.getElementById('best');
   const distanceLabel = document.getElementById('distance');
   const noteLabel = document.getElementById('notes');
-  let ready = false, muted = false;
-  const soundButton = document.getElementById('sound');
-  soundButton.hidden = !Object.keys(window.MuPiRunAudioFiles).length;
+  let ready = false;
   const toast = document.getElementById('toast');
   let state = game.fresh((Date.now() ^ 0x643bd8) >>> 0);
   let best = 0, lang = 'de', lastFrame = 0, lastLevel = 1, toastUntil = 0;
@@ -59,28 +57,10 @@
     renderOverlay();
   }
 
-  function rounded(x,y,w,h,r,color,stroke) {
-    r = Math.min(r,w/2,h/2);
-    ctx.beginPath();
-    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
-    ctx.closePath();
-    if (color) {ctx.fillStyle = color;ctx.fill();}
-    if (stroke) {ctx.strokeStyle=stroke;ctx.lineWidth=2.4;ctx.stroke();}
+  function ellipse(x,y,rx,ry,color) {
+    ctx.beginPath(); ctx.ellipse(x,y,Math.max(0.01,rx),Math.max(0.01,ry),0,0,Math.PI*2);
+    ctx.fillStyle=color;ctx.fill();
   }
-  function ellipse(x,y,rx,ry,color,paint=ctx) {
-    paint.beginPath(); paint.ellipse(x,y,Math.max(0.01,rx),Math.max(0.01,ry),0,0,Math.PI*2);
-    paint.fillStyle=color;paint.fill();
-  }
-  function centeredText(text,x,y,size,color,stroke) {
-    ctx.font='1000 '+size+'px "Trebuchet MS", sans-serif';
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    if(stroke){ctx.lineWidth=4;ctx.strokeStyle=stroke;ctx.strokeText(text,x,y);}
-    ctx.fillStyle=color;ctx.fillText(text,x,y);
-  }
-
   function pose() {
     const age = state.jumpAge >= 0 ? state.jumpAge : state.duckAge;
     if (age < 0) return {name:'run', frame:Math.floor(state.runPose)};
@@ -111,7 +91,7 @@
     log:['windfall',117,38], root:['branch',100,31], stump:['stump',104,91], reeds:['reeds',96,94],
     'stepping-stones':['stepping-stones',125,41], branch:['branch',151,67], vine:['vine',130,103], willow:['vine',130,103]
   };
-  function hazard(ob,p,paint) {
+  function hazard(ob,p) {
     const s=p.s;
     const bridge=ob.item==='low-bridge';
     const overhead=ob.kind==='duck';
@@ -122,24 +102,22 @@
     } else {
       const [name,w,h]=hazards[ob.item] || hazards.rock;
       const bottom=overhead ? 112 : 0;
-      ellipse(p.x,p.y+1,Math.max(1,w*s*.34),Math.max(1,5*s),'#26352350',paint);
+      world.shadow(p.x,p.y+1,Math.max(1,w*s*.34),Math.max(1,5*s));
       world.sprite(name,p.x,p.y-bottom*s,w*s,h*s);
       top=h+bottom;
     }
     if(!ob.checked && ob.z < state.speed*.93+2 && ob.z>3){
       const y=p.y-(top+12)*s;
-      rounded(p.x-12*s,y-12*s,24*s,24*s,7*s,'#324238ee','#f4ddac');
-      centeredText(overhead?'↓':ob.kind==='jump'?'↑':'↔',p.x,y,18*s,'#fff4cc');
+      world.hint(overhead?'↓':ob.kind==='jump'?'↑':'↔',p.x,y,s);
     }
   }
   let sparkleAt=-10;
   let displayedMeters=-1, displayedBest=-1, displayedNotes=-1;
   function render(){
-    ctx.save();
     const since=performance.now()-crashAt;
-    if(state.phase==='over' && since<330) ctx.translate(Math.sin(since*.1)*(1-since/330)*5,0);
+    const shake=state.phase==='over' && since<330 ? Math.sin(since*.1)*(1-since/330)*5 : 0;
+    if(shake || canvas.style.transform) canvas.style.transform=shake?'translateX('+shake.toFixed(1)+'px)':'';
     world.render(state, runner, hazard);
-    ctx.restore();
     const meters=Math.floor(state.distance);
     if(meters!==displayedMeters){distanceLabel.textContent=meters.toLocaleString(lang); displayedMeters=meters;}
     if(best!==displayedBest){bestLabel.textContent=best.toLocaleString(lang)+' m'; displayedBest=best;}
@@ -164,7 +142,6 @@
   }
   function renderOverlay(){
     const phase=state.phase;
-    audio.active(phase==='running' && !muted);
     if(phase==='running'){overlay.classList.add('hidden');pauseButton.textContent='Ⅱ';return;}
     overlay.classList.remove('hidden');
     if(phase==='ready'){
@@ -237,7 +214,7 @@
     }
   }
   function control(action){
-    if(action==='exit'){ audio.active(false); void sdk.exit().catch(()=>{});return; }
+    if(action==='exit'){ audio.exit(); void sdk.exit().catch(()=>{});return; }
     if(action==='pause'){
       if(state.phase==='ready'||state.phase==='over') begin();
       else togglePause();
@@ -252,7 +229,8 @@
       const phase=Math.floor(state.runPose);
       if(game.act(state,action,atlas.actions[name].resume[phase])){
         audio.play(name);
-        nextPaint=0;
+        render();
+        nextPaint=performance.now()+paintInterval;
       }
     } else game.act(state,action);
   }
@@ -311,12 +289,6 @@
     });
   }
   document.getElementById('exit').addEventListener('click',()=>control('exit'));
-  soundButton.addEventListener('click',()=>{
-    muted=!muted;
-    soundButton.setAttribute('aria-pressed',String(muted));
-    soundButton.textContent=muted?'🔇':'♫';
-    audio.active(state.phase==='running' && !muted);
-  });
   window.addEventListener('blur',()=>{if(state.phase==='running')togglePause();});
   window.addEventListener('pagehide',()=>{if(state.phase==='running')togglePause();});
   pauseButton.addEventListener('click',()=>control('pause'));
@@ -376,10 +348,10 @@
     });
   }
   primary.disabled=true;
-  Promise.all(loading).then(()=>{
+  Promise.all([...loading,world.ready]).then(()=>{
     ready=true;primary.disabled=false;render();
   }).catch(error=>{message.textContent='Grafik konnte nicht geladen werden: '+error.message;});
-  window.addEventListener('resize',()=>{resize();render();});
+  window.addEventListener('resize',()=>{resize();if(ready)render();});
   resize();renderOverlay();
   window.requestAnimationFrame(frame);
 

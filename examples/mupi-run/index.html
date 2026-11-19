@@ -33,6 +33,7 @@
       </div>
     </div>
     <section id="overlay" class="overlay" role="dialog" aria-modal="true">
+      <button id="menu-sound" class="small" type="button" aria-label="Ton stummschalten" aria-pressed="false">♫</button>
       <div class="panel">
         <h1 id="headline">MuPi <em>RUN</em></h1>
         <p id="message" data-i18n="intro">Springen, ducken, ausweichen – wie weit kommst du?</p>
@@ -41,7 +42,7 @@
           <span>A / ↑ <small data-i18n="jump">SPRUNG</small></span>
           <span>B / ↓ <small data-i18n="duck">DUCKEN</small></span>
         </div>
-        <button id="primary" type="button" class="primary" data-i18n="start">LOS GEHT'S!</button>
+        <button id="primary" disabled type="button" class="primary" data-i18n="start">LOS GEHT'S!</button>
         <details class="credits">
           <summary>Audio-Credits</summary>
           <p>„Happy Trancin“ by Eric Matyas · www.soundimage.org · CC BY 3.0<br>
@@ -55,13 +56,16 @@
     <div id="toast" class="toast" aria-live="polite"></div>
   </main>
   <script src="./mupibox-sdk.js"></script>
+  <script src="./audio-files.js"></script>
+  <script src="./sound.js"></script>
+  <script src="./audio-session.js"></script>
   <script src="./logic.js"></script>
   <script src="./ground-data.js"></script>
   <script src="./art-files.js"></script>
   <script src="./poses.js"></script>
+  <script src="./scenery-data.js"></script>
+  <script src="./scene-pixels.js"></script>
   <script src="./world.js"></script>
-  <script src="./audio-files.js"></script>
-  <script src="./sound.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

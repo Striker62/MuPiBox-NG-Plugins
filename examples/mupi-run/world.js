@@ -1,22 +1,22 @@
 /* Forest runner renderer. Camera and all moving objects share one world-distance axis. */
-window.createRunWorld = function (screen, art, game) {
+window.createRunWorld = function (ctx, game) {
   'use strict';
-  let ctx = screen;
+  const surface = window.createScenePixels(ctx);
+  let buffering = false;
   const HORIZON = 113, CONTACT = 1.9, FAR = 108, DEPTH = 17;
   // Paint a complete perspective road in one blit. Each scanline selects a
   // prefiltered texture level for the distance covered by a screen pixel.
-  const road = document.createElement('canvas');
-  road.width = 400; road.height = 162;
-  const top = 157, pixelHeight = (480 - top) / road.height;
-  const roadCtx = road.getContext('2d');
-  const pixels = roadCtx.createImageData(road.width, road.height);
-  const packed = new Uint32Array(pixels.data.buffer);
+  const top = 157;
   const widths = [128, 192, 256, 384, 512, 512, 512];
   const textures = Object.create(null);
   for (const [name, data] of Object.entries(window.MuPiGround)) {
     textures[name] = {
       palette: data.palette,
-      levels: data.levels.map(s => Uint8Array.from(atob(s), c => c.charCodeAt(0)))
+      levels: data.levels.map(encoded => {
+        const str=atob(encoded), bytes=new Uint8Array(str.length);
+        for(let i=0;i<bytes.length;i++) bytes[i]=str.charCodeAt(i);
+        return bytes;
+      })
     };
   }
   // Use the platform's own RGBA byte order for the fast 32-bit pixel writes.
@@ -32,20 +32,24 @@ window.createRunWorld = function (screen, art, game) {
     }
     return new Uint32Array(rgba.buffer);
   }
-  const rows = Array.from({length:road.height}, (_, ry) => {
-    const y = top + (ry + .5) * pixelHeight;
-    const s = (y - HORIZON) / 322;
-    const z = CONTACT + DEPTH * (1/s - 1);
-    const depthPerPixel = DEPTH * 322 * pixelHeight / ((y-HORIZON) ** 2);
-    const level = Math.max(0, Math.min(6, Math.round(Math.log2(24 / depthPerPixel)) - 2));
-    const texWidth = widths[level], texHeight = 4 << level;
-    const width = 4.8 * 333 * s * road.width/800;
-    const styles = {};
-    for (const [name, tex] of Object.entries(textures)) {
-      styles[name] = {indices:tex.levels[level], colors:colorsForRow(tex.palette, y)};
-    }
-    return {z, width, styles, texWidth, texHeight, step:Math.round(texWidth/width*65536)};
-  });
+  let rows, lastWidth=0, lastHeight=0;
+  function buildRows(width,height,first) {
+    const pixelHeight=480/height;
+    return Array.from({length:height-first}, (_, ry) => {
+      const y = (ry+first+.5) * pixelHeight;
+      const s = (y - HORIZON) / 322;
+      const z = CONTACT + DEPTH * (1/s - 1);
+      const depthPerPixel = DEPTH * 322 * pixelHeight / ((y-HORIZON) ** 2);
+      const level = Math.max(0, Math.min(6, Math.round(Math.log2(24 / depthPerPixel)) - 2));
+      const texWidth = widths[level], texHeight = 4 << level;
+      const bandWidth = 4.8 * 333 * s * width/800;
+      const styles = {};
+      for (const [name, tex] of Object.entries(textures)) {
+        styles[name] = {indices:tex.levels[level], colors:colorsForRow(tex.palette, y)};
+      }
+      return {z, width:bandWidth, styles, texWidth, texHeight, step:Math.round(texWidth/bandWidth*65536)};
+    });
+  }
 
   function scale(z) { return DEPTH / (DEPTH + Math.max(-8, z) - CONTACT); }
   function center(z, distance) {
@@ -56,52 +60,42 @@ window.createRunWorld = function (screen, art, game) {
     const s = scale(z);
     return {x:center(z, distance) + lateral * 333 * s, y:HORIZON + 322 * s, s};
   }
-  function sprite(name, x, y, w, h, opacity = 1) {
-    if (x+w/2 < 0 || x-w/2 > 800 || y < 0 || y-h > 480 || opacity <= 0) return;
-    const img = art[name];
-    if (!img || !img.naturalWidth) return;
-    ctx.globalAlpha = Math.min(1, opacity);
-    ctx.drawImage(img, x-w/2, y-h, w, h);
-    ctx.globalAlpha = 1;
-  }
-
-  const backdrop = document.createElement('canvas');
-  let backdropWidth = 0, backdropHeight = 0;
-  function ground(state) {
-    const bg = art.woodland;
-    if (bg.naturalWidth) {
-      const shift = 12 * Math.sin(state.distance * .012);
-      if (backdropWidth !== ctx.canvas.width || backdropHeight !== ctx.canvas.height) {
-        backdropWidth = ctx.canvas.width; backdropHeight = ctx.canvas.height;
-        backdrop.width = Math.ceil(876 * backdropWidth/800); backdrop.height = backdropHeight;
-        backdrop.getContext('2d', {alpha:false}).drawImage(bg,0,-124*backdropHeight/480,backdrop.width,604*backdropHeight/480);
-      }
-      ctx.save();
-      ctx.resetTransform();
-      ctx.drawImage(backdrop, Math.round((-38 + shift) * backdropWidth/800), 0);
-      ctx.restore();
-    } else {
-      ctx.fillStyle = '#55735a'; ctx.fillRect(0,0,800,480);
+  function stamp(texture,x,y,w,h,opacity=1) {
+    if (x+w<0 || x>800 || y+h<0 || y>480 || opacity<=0) return;
+    if(buffering) surface.stamp(texture,x,y,w,h,opacity);
+    else {
+      ctx.globalAlpha=Math.min(1,opacity);
+      ctx.drawImage(texture.source,...texture.levels[0],x,y,w,h);
+      ctx.globalAlpha=1;
     }
-    const dist = state.distance;
-    packed.fill(0);
+  }
+  function sprite(name,x,y,w,h,opacity=1) {
+    stamp(surface.assets[name],x-w/2,y-h,w,h,opacity);
+  }
+  function ground(state) {
+    const dist=state.distance, width=ctx.canvas.width, height=ctx.canvas.height;
+    const packed=surface.begin(12*Math.sin(dist*.012));
+    const first=Math.ceil(top*height/480);
+    if(width!==lastWidth || height!==lastHeight){
+      rows=buildRows(width,height,first); lastWidth=width; lastHeight=height;
+    }
     for (let y = 0; y < rows.length; y++) {
       const row = rows[y], world = dist + row.z;
-      const left = center(row.z, dist) * road.width/800 - row.width/2;
+      const left = center(row.z, dist) * width/800 - row.width/2;
       const start = Math.max(0, Math.ceil(left - .5));
-      const end = Math.min(road.width, Math.ceil(left + row.width - .5));
+      const end = Math.min(width, Math.ceil(left + row.width - .5));
       const phase = -world/24;
       const v = Math.floor((phase - Math.floor(phase)) * row.texHeight);
       const offset = v * row.texWidth;
       const {indices, colors} = row.styles[game.terrainAt(world)];
       let u = Math.floor((start + .5 - left) * row.texWidth/row.width * 65536);
-      let out = y * road.width + start;
+      let out = (first+y) * width + start;
       for (let x = start; x < end; x++, u += row.step) {
-        packed[out++] = colors[indices[offset + Math.min(row.texWidth-1, u >>> 16)]];
+        const color=colors[indices[offset + Math.min(row.texWidth-1, u >>> 16)]];
+        packed[out]=(color>>>24)===255 ? color : surface.blend(packed[out],color,color>>>24);
+        out++;
       }
     }
-    roadCtx.putImageData(pixels,0,0);
-    ctx.drawImage(road,0,top,800,480-top);
   }
 
   // The ring recycles 16 world segments. A segment's contents are stable until it leaves view.
@@ -165,14 +159,28 @@ window.createRunWorld = function (screen, art, game) {
       bg.fillStyle='#44392f';bg.beginPath();bg.ellipse(0,-1,1.6,7,.16,0,Math.PI*2);bg.fill();bg.restore();
     }
   });
-  // Beyond 30 m a metre of travel moves the ground contact only a few pixels.
-  // Cache the far band by world coordinate so objects cross its boundary once.
-  const horizonLayer = document.createElement('canvas');
-  const horizonCtx = horizonLayer.getContext('2d');
-  let farStart = NaN, farDistance = -Infinity, farTime = -Infinity, farSeed;
+  const notes=Array.from({length:12},(_,i)=>surface.frame(gold,i*64,0,64,64));
+  const butterflies=Array.from({length:24},(_,i)=>surface.frame(butterflyAtlas,i%8*64,Math.floor(i/8)*48,64,48));
+  const shadowCanvas=document.createElement('canvas');
+  shadowCanvas.width=80; shadowCanvas.height=16;
+  const shadowCtx=shadowCanvas.getContext('2d');
+  shadowCtx.fillStyle='#26352350';shadowCtx.beginPath();shadowCtx.ellipse(40,8,40,8,0,0,Math.PI*2);shadowCtx.fill();
+  const shade=surface.frame(shadowCanvas,0,0,80,16);
+  function shadow(x,y,rx,ry){stamp(shade,x-rx,y-ry,2*rx,2*ry);}
+  const hints={};
+  for(const glyph of ['↑','↓','↔']){
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=36;
+    const g=canvas.getContext('2d');
+    g.fillStyle='#324238ee';g.strokeStyle='#f4ddac';g.lineWidth=3;
+    g.beginPath();g.roundRect(2,2,32,32,9);g.fill();g.stroke();
+    g.fillStyle='#fff4cc';g.font='bold 24px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(glyph,18,18);
+    hints[glyph]=surface.frame(canvas,0,0,36,36);
+  }
+  function hint(glyph,x,y,s){stamp(hints[glyph],x-13*s,y-13*s,26*s,26*s);}
   const drawList=[];
   function render(state, runner, hazard) {
     const distance=state.distance;
+    buffering=true;
     ground(state);
     drawList.length=0;
     const first=Math.floor((distance-8)/8), last=Math.floor((distance+FAR)/8);
@@ -191,61 +199,43 @@ window.createRunWorld = function (screen, art, game) {
     for(const note of state.notes) if(note.z>=-5) drawList.push(note);
     drawList.push({kind:'runner',z:CONTACT});
     drawList.sort((a,b)=>b.z-a.z);
-    const boundary = 4*Math.ceil((distance+30)/4);
-    const bandHeight = Math.ceil(screen.canvas.height*.55);
-    const resized = horizonLayer.width!==screen.canvas.width || horizonLayer.height!==bandHeight;
-    if (resized) {
-      horizonLayer.width=screen.canvas.width; horizonLayer.height=bandHeight;
-      horizonCtx.setTransform(screen.canvas.width/800,0,0,screen.canvas.height/480,0,0);
-    }
-    const refresh = resized || farStart!==boundary || farSeed!==state.scenerySeed ||
-      Math.abs(distance-farDistance)>=1.6 || Math.abs(state.time-farTime)>=.15;
-    let near = 0;
-    while (near<drawList.length && drawList[near].z+distance>=boundary) near++;
-    if (refresh) {
-      farStart=boundary; farDistance=distance; farTime=state.time; farSeed=state.scenerySeed;
-      ctx=horizonCtx;
-      ctx.clearRect(0,0,800,265);
-      drawRange(0,near);
-      ctx=screen;
-    }
-    screen.drawImage(horizonLayer,0,0,800,bandHeight*480/screen.canvas.height);
-    drawRange(near,drawList.length);
-
-    function drawRange(start,end) {
-      for(let index=start;index<end;index++){
-        const obj=drawList[index];
-        const z=obj.z, p=position(z,obj.lateral || 0,distance), s=p.s;
-        if (obj.kind==='runner') { runner(position(CONTACT,state.visualLane*.555,distance)); continue; }
-        if (obj.item) {
-          hazard(obj,position(z,(obj.lane || 0)*.555,distance),ctx); continue;
-        }
-        if ('lane' in obj) {
-          const q=position(z,obj.lane*.555,distance);
-          const frame=(Math.floor(state.time*13)+Math.floor(distance+z))%12;
-          const size=49*s;
-          ctx.drawImage(gold,frame*64,0,64,64,q.x-size/2,q.y-(80+3*Math.sin(state.time*3+z*.12))*s-size/2,size,size);
-        } else if(obj.kind==='railing'){
-          for(const side of [-1,1]){
-            const q=position(z,side*1.04,distance);
-            if(game.terrainAt(obj.world+8)==='boardwalk'){
-              const far=position(z+8,side*1.04,distance);
+    for (const obj of drawList) {
+      const z=obj.z, p=position(z,obj.lateral || 0,distance), s=p.s;
+      if (obj.kind==='runner') {
+        surface.present();buffering=false;
+        runner(position(CONTACT,state.visualLane*.555,distance));continue;
+      }
+      if (obj.item) {
+        hazard(obj,position(z,(obj.lane || 0)*.555,distance)); continue;
+      }
+      if ('lane' in obj) {
+        const q=position(z,obj.lane*.555,distance);
+        const frame=(Math.floor(state.time*13)+Math.floor(distance+z))%12;
+        const size=49*s;
+        stamp(notes[frame],q.x-size/2,q.y-(80+3*Math.sin(state.time*3+z*.12))*s-size/2,size,size);
+      } else if(obj.kind==='railing'){
+        for(const side of [-1,1]){
+          const q=position(z,side*1.04,distance);
+          if(game.terrainAt(obj.world+8)==='boardwalk'){
+            const far=position(z+8,side*1.04,distance);
+            if(buffering) surface.rope(q.x,q.y-53*s,(q.x+far.x)/2,(q.y+far.y)/2-39*s,far.x,far.y-53*far.s,3*s);
+            else {
               ctx.strokeStyle='#72533b';ctx.lineWidth=Math.max(1,3*s);ctx.beginPath();
               ctx.moveTo(q.x,q.y-53*s);ctx.quadraticCurveTo((q.x+far.x)/2,(q.y+far.y)/2-39*s,far.x,far.y-53*far.s);ctx.stroke();
             }
-            sprite('rail-post',q.x,q.y+5*s,51*s,70*s);
           }
-        } else if(obj.kind==='butterfly'){
-          const a=state.time*2+obj.phase;
-          const f=Math.floor((state.time*11+obj.phase)*1.6)%8;
-          ctx.drawImage(butterflyAtlas,f*64,obj.variant*48,64,48,p.x+(Math.sin(a)*17-21)*s,p.y+(-obj.height+Math.cos(a*1.43)*12)*s,42*s,31*s);
-        } else {
-          const h=obj.height*s;
-          const img=art[obj.kind];
-          if(img.naturalWidth) sprite(obj.kind,p.x,p.y,h*img.naturalWidth/img.naturalHeight,h,Math.min(1,(FAR-z)/10));
+          sprite('rail-post',q.x,q.y+5*s,51*s,70*s);
         }
+      } else if(obj.kind==='butterfly'){
+        const a=state.time*2+obj.phase;
+        const f=Math.floor((state.time*11+obj.phase)*1.6)%8;
+        stamp(butterflies[obj.variant*8+f],p.x+(Math.sin(a)*17-21)*s,p.y+(-obj.height+Math.cos(a*1.43)*12)*s,42*s,31*s);
+      } else {
+        const h=obj.height*s;
+        const rect=surface.assets[obj.kind].levels[0];
+        sprite(obj.kind,p.x,p.y,h*rect[2]/rect[3],h,Math.min(1,(FAR-z)/10));
       }
     }
   }
-  return {render,sprite};
+  return {render,sprite,shadow,hint,ready:surface.ready};
 };

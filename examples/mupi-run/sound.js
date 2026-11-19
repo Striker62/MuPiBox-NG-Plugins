@@ -49,7 +49,7 @@
         player.volume = volume / 100;
         players.set(name, player);
       }
-      player.currentTime = 0;
+      if (!music) player.currentTime = 0;
       return player.play().catch(error => report(name,error));
     }
     function active(value) {
@@ -70,6 +70,10 @@
       }
       for (const player of players.values()) player.pause();
     }
-    return {active, play};
+    function unlock() {
+      const music=players.get('music');
+      if(running && music && music.paused) music.play().catch(error=>report('music',error));
+    }
+    return {active, play, unlock};
   };
 })(window);

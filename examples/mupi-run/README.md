@@ -1,4 +1,4 @@
-# MuPi Run 0.8.1
+# MuPi Run 0.8.2
 
 Sammle goldene Noten im Flussbett, auf dem Holzsteg und auf dem Waldpfad. Spring über den umgestürzten Stamm, grätsche unter dem Querbalken durch und wechsle die Spur, wenn ein Fuchs auf dem Weg schläft. Die Distanz bestimmt den Rekord. Die Noten zählen für den jeweiligen Lauf.
 
@@ -24,7 +24,7 @@ MuPi übernimmt beim Tastendruck die aktuell sichtbare der 24 Laufposen. Beide A
 
 ## Streckenaufbau und Grafik
 
-Alle Streckenobjekte sind in Metern relativ zur Kamera platziert. Dieselbe Projektion bestimmt Spur, Tiefe, Größe und Kontaktpunkt. Für jeden Bildpunkt des Bodens wird eine nach Entfernung vorgefilterte Textur abgetastet. Der fertige Boden wird einmal pro Bild gezeichnet. Die entfernte Kulisse wird zwischengespeichert. Die Spielwelt rendert mit bis zu 560 Pixeln Breite und 30 Bildern pro Sekunde. Bedienelemente und Anzeigen nutzen die Displayauflösung. Ein Ring mit 16 wiederverwendeten Abschnitten hält nur die Umgebung in Sichtweite. Bäume, Steine, Farn und Schmetterlinge nähern sich mit der Strecke. Ein separater Zufallswert je Abschnitt bestimmt Position und Erscheinung. Schmetterlinge haben rote, violette oder gelbe Flügel und animierten Flügelschlag.
+Alle Streckenobjekte sind in Metern relativ zur Kamera platziert. Dieselbe Projektion bestimmt Spur, Tiefe, Größe und Kontaktpunkt. Für jeden Bildpunkt des Bodens wird eine nach Entfernung vorgefilterte Textur abgetastet. Boden, Pflanzen, Geländer, Schmetterlinge und Sammelnoten werden in Tiefenreihenfolge in einen gemeinsamen Bildpuffer gezeichnet. Ein lokaler WebP-Atlas enthält die Motive in mehreren Größen. Am Bodenanker von MuPi übergibt die App den Bildpuffer an das Canvas und zeichnet anschließend die Figur und nähere Objekte. Die Spielwelt rendert mit bis zu 560 Pixeln Breite und 30 Bildern pro Sekunde. Bedienelemente und Anzeigen nutzen die Displayauflösung. Ein Ring mit 16 wiederverwendeten Abschnitten hält nur die Umgebung in Sichtweite. Bäume, Steine, Farn und Schmetterlinge nähern sich mit der Strecke. Ein separater Zufallswert je Abschnitt bestimmt Position und Erscheinung. Schmetterlinge haben rote, violette oder gelbe Flügel und animierten Flügelschlag.
 
 Notenreihen folgen in den Hinderniswellen einer passierbaren Spur. Animationsphasen für Goldreflex und Flügelschlag werden beim Start einmal gerendert. Das Spiel zeichnet die transparenten MuPi-Bilder aus sechs WebP-Seiten mit je 60 Kacheln. Jede Seite passt in eine 2048-Pixel-Textur. Das Paket enthält die verwendeten Grafiken lokal.
 
@@ -36,14 +36,14 @@ Eine Datei je belegtem Platz unter `examples/mupi-run/assets/audio/` ablegen und
 
 | Dateiname ohne Endung | Auslöser |
 | --- | --- |
-| `music` | Musik-Loop während des aktiven Laufs |
+| `music` | Durchgehender Loop ab dem Spielmenü |
 | `run` | Ein kurzer Schritt pro halbem Laufzyklus |
 | `jump` | Angenommener Sprung |
 | `slide` | Beginn der Grätsche |
 | `collect` | Einsammeln einer goldenen Note |
 | `kilometer` | Einmal beim Überschreiten jeder 1.000-Meter-Marke |
 
-Auf der Box verwendet die App die SDK-Funktionen für lokale Musik und Samples mit relativer Lautstärke. Im Browser übernimmt das Audioelement die Vorschau. Bei Pause, Fokusverlust, Spielende und Verlassen hält der Ton an. Der Stummschalter erscheint, sobald das Paket Audio enthält. Berechtigungen sind `storage`, `controller` und `audio`. Der vorhandene Distanzrekord bleibt unter `bestMeters` erhalten.
+Auf der Box verwendet die App die SDK-Funktionen für lokale Musik und Samples mit relativer Lautstärke. Im Browser übernimmt das Audioelement die Vorschau. Startmenü, Lauf, Spielpause, Ergebnis und neuer Versuch teilen sich denselben Musikloop. Stummschalten, Ausblenden und Verlassen stoppen den Ton. Menü und Lauf haben einen Stummschalter. Bei Browsern mit Autoplay-Sperre schaltet die erste Interaktion die Musik frei. Berechtigungen sind `storage`, `controller` und `audio`. Der vorhandene Distanzrekord bleibt unter `bestMeters` erhalten.
 
 ## Paket und Prüfungen
 
@@ -60,12 +60,14 @@ python3 tools/record_mupi_run_screencast.py
 
 Der Builder validiert `dist/mupi-run.mupiapp` mit dem Repository-Validator. Das Paket lässt sich im Pluginmanager manuell installieren. Screenshots und Screencast stammen aus Chromium bei 800 × 480. Die Galerie enthält auch gezielt eingestellte Testszenen. Der Screencast zeigt einen durchgehenden Lauf mit regulären Eingaben und dem aufgezeichneten Spielton.
 
-Ein separater Qt-WebEngine-Test auf einer Testbox (Raspberry Pi 4, 1 GB, 800 × 480, Software-Rendering, stumm) hat für dieselben drei Szenen folgende Zeichenraten gemessen. Je Szene wurden nach 300 ms Aufwärmzeit rund 2,2 Sekunden ausgewertet. Die Zahlen beziehen sich auf neu gezeichnete Spielbilder.
+Ein separater Qt-WebEngine-Test auf einem Raspberry Pi 4 mit 1 GB RAM verglich beide Spielpakete bei 800 × 480 Pixeln. In jeder der drei Szenen wurden vier Sekunden mit Musik, Sammelnoten, Sprung und Grätsche gemessen. Der native Box-Decoder und Mixer liefen auf demselben Pi. Der Test verwarf die PCM-Ausgabe vor dem Lautsprecher. Die Bildrate zählt tatsächlich gezeichnete Spielbilder. Einzelne Bilder brauchten länger als das Ziel von 33 ms.
 
 | Version | Flussbett | Holzsteg | Waldpfad |
 | --- | ---: | ---: | ---: |
-| 0.8.0 | 8,5 FPS | 7,5 FPS | 8,1 FPS |
-| 0.8.1 | 24,4 FPS | 19,9 FPS | 23,7 FPS |
+| 0.8.1 | 18,2 FPS | 17,3 FPS | 17,2 FPS |
+| 0.8.2 | 25,4 FPS | 27,7 FPS | 26,9 FPS |
+
+Den Landschaftsatlas generiert `python3 tools/prepare_mupi_run_scenery.py` mit Pillow aus den vorhandenen Motiven unter `art/`.
 
 Die Aktionsatlanten lassen sich aus dem entpackten Originalpaket mit `python3 tools/import_mupi_run_actions.py PFAD_ZUM_AKTIONSPAKET` erneut erstellen. Die Projektionstabellen werden mit `python3 tools/prepare_mupi_run_road.py` aus den drei Geländetexturen erzeugt. Für die Bodentexturen gibt es `python3 tools/render_mupi_run_ground.py` mit Pillow, NumPy und SciPy.
 

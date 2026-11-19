@@ -112,3 +112,5 @@ button:focus-visible { outline: 3px solid #fcef71; outline-offset: 3px; }
 .credits { margin-top:7px; color:#e4dfc5; font-size:12px; }
 .credits summary { cursor:pointer; display:list-item; width:max-content; padding:4px 0; }
 .credits p { font-size:12px; line-height:1.4; }
+
+#menu-sound { position:absolute; top:9px; right:10px; width:46px; height:44px; font-size:23px; background:#182e28ec; }
