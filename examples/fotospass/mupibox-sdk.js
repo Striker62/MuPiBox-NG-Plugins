@@ -81,6 +81,17 @@
       if (!bridge) return false;
       return invoke('audio.sample.play', {asset, volume, relative:options.relative!==false});
     },
+    // Optional NG alpha.68+ capability: decode a packaged short effect
+    // into the host's bounded PCM cache before the action needs it.
+    // The returned result is host-owned; no raw audio or filesystem access.
+    async prepareSample(asset) {
+      if (typeof asset !== 'string' || asset.length > 180 ||
+          !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+          asset.split('/').some(part => part === '..' || part.startsWith('.')))
+        throw new TypeError('audio sample must be a bundled assets/*.ogg, .mp3 or .wav file');
+      if (!bridge) return false;
+      return invoke('audio.sample.prepare', {asset, volume:0, relative:true});
+    },
     async playMusic(asset, volume = 20, options = {relative:true}) {
       if (typeof asset !== 'string' || asset.length > 180 ||
           !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
@@ -378,7 +389,7 @@
   if (bridge && typeof bridge.subscribe === 'function') {
     bridge.subscribe((message) => {
       if (!message || typeof message.event !== 'string') return;
-      if (['input', 'lifecycle.pause', 'lifecycle.resume', 'camera.stopped'].includes(message.event)) {
+      if (['input', 'controller.connection', 'lifecycle.pause', 'lifecycle.resume', 'camera.stopped'].includes(message.event)) {
         emit(message.event, message.payload || {});
       }
     });
