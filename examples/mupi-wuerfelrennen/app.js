@@ -39,8 +39,8 @@ const DiceRace=(()=>{
    const exits=moves.filter(m=>b[p][m.piece]===-1);
    if(exits.length)return exits;
   }
-  // Die eigene Startposition darf nicht unnötig besetzt bleiben.
-  const clearStart=moves.filter(m=>b[p][m.piece]===0);
+  // Nur solange Figuren warten, muss die eigene Startposition frei werden.
+  const clearStart=waiting?moves.filter(m=>b[p][m.piece]===0):[];
   if(clearStart.length)return clearStart;
   return moves;
  }
@@ -51,7 +51,17 @@ const DiceRace=(()=>{
    rawMoves(b,p,die).some(m=>b[p][m.piece]>=0));
   return canMoveOutside?1:3;
  }
- function apply(b,p,m){const out=b.map(row=>row.slice());out[p][m.piece]=m.to;for(const c of m.captured)out[c.player][c.piece]=-1;return out;}
+ // Always derive captures from the current board, never trust a delayed/stale move.
+ function apply(b,p,m){
+  const from=b[p]?.[m.piece];
+  const die=from===-1?6:m.to-from;
+  const legal=possible(b,p,die).find(x=>x.piece===m.piece&&x.to===m.to);
+  if(!legal)throw new Error("Ungültiger oder veralteter Würfelrennen-Zug");
+  const out=b.map(row=>row.slice());
+  out[p][legal.piece]=legal.to;
+  for(const c of legal.captured)out[c.player][c.piece]=-1;
+  return out;
+ }
  function choose(b,p,die,level){
   const ms=possible(b,p,die);if(!ms.length)return null;
   if(level==="easy")return ms[Math.floor(Math.random()*ms.length)];
@@ -160,7 +170,18 @@ for(let p=0;p<4;p++){
   staticLayer.append(S("circle",{cx:bx,cy:by,r:13.2,fill:"#0a3043",stroke:goalTop[p],"stroke-width":.75,opacity:.68}));
  }
 }
-let b,players=4,human=1,turn=0,die=0,ended=false,epoch=0,selectedPiece=0,aiTimer=0,attempts=0,maxAttempts=3;
+let b,players=4,human=1,turn=0,die=0,lastRoll=0,ended=false,settling=false,paused=false,epoch=0,selectedPiece=0,aiTimer=0,pendingTimer=null,pendingAdvance=null,attempts=0,maxAttempts=3;
+function schedule(delay,action){
+ clearTimeout(aiTimer);
+ pendingTimer={delay,action};
+ if(paused)return;
+ const id=epoch;
+ aiTimer=setTimeout(()=>{
+  if(id!==epoch||paused||ended)return;
+  pendingTimer=null;
+  action();
+ },delay);
+}
 const active=()=>players===2?[0,2]:players===3?[0,1,2]:[0,1,2,3];
 const isHuman=()=>active().indexOf(turn)<human;
 const locate=(p,k)=>{
@@ -208,41 +229,65 @@ function render(){
   scoreNodes.push(tag);
  }
  $("score").replaceChildren(...scoreNodes);
- $("attempts").textContent=ended?"Sieg":die?"Zug wählen":maxAttempts===3?"Wurf "+Math.min(attempts+1,3)+"/3":"Dein Zug";
- $("dice").textContent=die?faces[die-1]:"⚄";
- $("roll").disabled=ended||!isHuman()||die>0;
+ $("attempts").textContent=ended?"Sieg":settling?"Geschlagen!":die?"Zug wählen":maxAttempts===3?"Wurf "+Math.min(attempts+1,3)+"/3":"Dein Zug";
+ const visibleDie=die||lastRoll;
+ $("dice").textContent=visibleDie?faces[visibleDie-1]:"?";
+ $("dice").dataset.value=visibleDie?String(visibleDie):"";
+ $("dice").classList.toggle("six",visibleDie===6);
+ $("roll").disabled=ended||settling||!isHuman()||die>0;
  for(let k=0;k<4;k++){
-  const btn=pieceButtons[k];btn.disabled=ended||!isHuman()||!playable.has(k);
+  const btn=pieceButtons[k];btn.disabled=ended||settling||!isHuman()||!playable.has(k);
   btn.classList.toggle("active",selectedPiece===k&&playable.has(k)&&isHuman()&&!ended);
  }
 }
 function finishMove(m){
- b=DiceRace.apply(b,turn,m);
+ if(ended||settling||!die)return;
+ // Revalidate before applying: a timer must never move a piece for a later turn.
+ const legal=DiceRace.possible(b,turn,die).find(x=>x.piece===m.piece&&x.to===m.to);
+ if(!legal)return;
+ epoch++;clearTimeout(aiTimer);pendingTimer=null;pendingAdvance=null;
+ b=DiceRace.apply(b,turn,legal);
  const face=die;
- status(names[turn]+" zieht Stein "+(m.piece+1)+(m.captured.length?" – rausgeworfen!":""));
- if(b[turn].every(v=>v>=52)){ended=true;die=0;status(names[turn]+" GEWINNT!");render();return;}
- if(face===6){
-  attempts=0;maxAttempts=DiceRace.rollLimit(b,turn);die=0;
-  status(names[turn]+" hat eine Sechs – Extrawurf!");
-  render();computer();
- }else next();
+ const victimNames=legal.captured.map(c=>names[c.player]+" "+(c.piece+1)).join(", ");
+ status(legal.captured.length?
+  names[turn]+" schlägt "+victimNames+" – zurück ins Haus!":
+  names[turn]+" zieht Figur "+(legal.piece+1)+".");
+ if(b[turn].every(v=>v>=52)){
+  ended=true;die=0;status(names[turn]+" GEWINNT!");render();return;
+ }
+ const advance=()=>{
+  pendingAdvance=null;settling=false;die=0;
+  if(face===6){
+   attempts=0;maxAttempts=DiceRace.rollLimit(b,turn);
+   status(names[turn]+" hat eine Sechs – Extrawurf!");
+   render();computer();
+  }else next();
+ };
+ if(legal.captured.length){
+  // Hold the board so the beaten piece visibly returns home before the next turn.
+  settling=true;die=0;pendingAdvance=advance;render();
+  const id=epoch;
+  schedule(1000,()=>{if(id===epoch&&!ended)advance();});
+ }else advance();
 }
 function select(k,p=turn){
- selectedPiece=k;if(p!==turn||ended||!isHuman()||!die){render();return;}
+ if(p!==turn||ended||settling||!isHuman()||!die)return;
+ selectedPiece=k;
  const m=DiceRace.possible(b,turn,die).find(m=>m.piece===k);
  if(!m){status("Figur "+(k+1)+" kann mit "+die+" nicht ziehen.");render();return;}
  finishMove(m);
 }
 function next(){
- die=0;const list=active();turn=list[(list.indexOf(turn)+1)%list.length];
+ die=0;lastRoll=0;const list=active();turn=list[(list.indexOf(turn)+1)%list.length];
  attempts=0;maxAttempts=DiceRace.rollLimit(b,turn);selectedPiece=0;
  status(names[turn]+" ist dran."+(maxAttempts===3?" Drei Wurfversuche.":""));
  render();computer();
 }
 function rolled(){
- if(ended||die)return;
+ if(ended||die||settling||paused)return;
+ epoch++;clearTimeout(aiTimer);pendingTimer=null;
  attempts++;
- die=1+Math.floor(Math.random()*6);
+ die=1+Math.floor(Math.random()*6);lastRoll=die;
  const ms=DiceRace.possible(b,turn,die);
  if(ms.length&&!ms.some(m=>m.piece===selectedPiece))selectedPiece=ms[0].piece;
  const forcedExit=die===6&&ms.length&&ms.every(m=>b[turn][m.piece]===-1);
@@ -252,48 +297,56 @@ function rolled(){
  const diceEl=$("dice");diceEl.classList.remove("roll");void diceEl.offsetWidth;diceEl.classList.add("roll");
  render();
  if(!ms.length){
-  const id=epoch;aiTimer=setTimeout(()=>{
+  const id=epoch;schedule(die===6?1050:520,()=>{
    if(id!==epoch||ended)return;
    die=0;
    if(attempts<maxAttempts){
     status("Kein Zug möglich – nächster Versuch ("+(attempts+1)+"/"+maxAttempts+").");
     render();computer();
    }else{status("Kein Zug möglich – nächster Spieler.");next();}
-  },300);
+  });
  }else if(forcedExit){
   // Alle Basisfiguren sind gleichwertig: automatische Pflichtausfahrt.
-  const id=epoch;aiTimer=setTimeout(()=>{
+  const id=epoch;schedule(1150,()=>{
    if(id!==epoch||ended||die!==6)return;finishMove(ms[0]);
-  },260);
+  });
  }else if(!isHuman()){
-  const id=epoch;aiTimer=setTimeout(()=>{if(id!==epoch||ended)return;
+  const id=epoch;schedule(die===6?1050:450,()=>{if(id!==epoch||ended)return;
    const move=DiceRace.choose(b,turn,die,$("difficulty").value);if(move)finishMove(move);
-  },220);
+  });
  }
 }
 function computer(){
- if(!ended&&!isHuman()&&!die){
-  const id=epoch;aiTimer=setTimeout(()=>{if(id===epoch)rolled();},160);
+ if(!ended&&!isHuman()&&!die&&!paused){
+  const id=epoch;schedule(320,()=>{if(id===epoch&&!settling)rolled();});
  }
 }
 function reset(){
- epoch++;clearTimeout(aiTimer);
+ epoch++;clearTimeout(aiTimer);pendingTimer=null;pendingAdvance=null;
  players=+ $("playercount").value;human=Math.min(+ $("human").value,players);$("human").value=human;
- b=DiceRace.state(players);turn=active()[0];die=0;ended=false;selectedPiece=0;
+ b=DiceRace.state(players);turn=active()[0];die=0;lastRoll=0;ended=false;settling=false;selectedPiece=0;
  attempts=0;maxAttempts=DiceRace.rollLimit(b,turn);
  status("Du hast drei Versuche, eine Sechs zu würfeln.");render();computer();
 }
 $("roll").onclick=()=>{if(isHuman()&&!die)rolled();};
 $("restart").onclick=reset;
 for(const id of ["playercount","human","difficulty"])$(id).onchange=reset;
-$("exit").onclick=()=>{epoch++;clearTimeout(aiTimer);sdk.exit();};
-sdk.on("lifecycle.pause",()=>{epoch++;clearTimeout(aiTimer);});
+$("exit").onclick=()=>{epoch++;clearTimeout(aiTimer);pendingTimer=null;sdk.exit();};
+sdk.on("lifecycle.pause",()=>{paused=true;clearTimeout(aiTimer);});
+sdk.on("lifecycle.resume",()=>{
+ paused=false;
+ // Re-arm the exact interrupted action: missing rolls and pending AI moves
+ // must not leave a visible, but non-interactive die on the screen.
+ if(pendingTimer){const {delay,action}=pendingTimer;schedule(delay,action);return;}
+ if(pendingAdvance){pendingAdvance();return;}
+ if(!ended&&!die&&!settling)computer();
+});
 sdk.on("input",({button,action})=>{
  if(action!=="press")return;
  if(button==="BACK"){epoch++;clearTimeout(aiTimer);sdk.exit();return;}
  if(button==="LEFT"||button==="UP")selectedPiece=(selectedPiece+3)%4;
  if(button==="RIGHT"||button==="DOWN")selectedPiece=(selectedPiece+1)%4;
- if(button==="A"||button==="START"){if(!die&&isHuman())rolled();else if(die)select(selectedPiece);}
+ if(button==="A"||button==="START"){if(!die&&isHuman()&&!settling)rolled();else if(die)select(selectedPiece);}
  render();
 });
 reset();
