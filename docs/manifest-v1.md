@@ -327,3 +327,28 @@ verwendet werden: Erst bei `result.state === "completed"` wird der kurze
 Effekt mit `sdk.audio.playClip("assets/laugh.mp3")` gestartet. Die laufende
 Clip-Ausgabe kann über `sdk.tts.stop()` vorzeitig beendet werden. Ältere
 Hosts ohne `audio.clip` unterstützen weiterhin den restlichen App-Betrieb.
+
+
+### Optional short-sample preloading (NG alpha.68+)
+
+The host optionally supports `await MuPiBoxSDK.audio.prepareSample('assets/audio/jump.ogg')`.
+It uses the same `audio` permission, installed-package path validation, per-app
+rate limit, 2 MiB bounded PCM effect cache and PipeWire playback constraints as
+`audio.playSample`. The method only prepares a *short* MP3/OGG/WAV effect,
+returns a host response containing `prepared: true` on success and **never
+plays audio**. It does not preload looping music, return decoded buffers or
+unlock arbitrary filesystem access.
+
+Older NG hosts do not implement this optional bridge method: catch a rejected
+promise and continue with `playSample` without claiming that preloading
+succeeded. Browser-only previews return `false` and do not emulate the native
+PCM cache. Preload sparingly before gameplay (the server still rate-limits
+requests); don't call it on every animation frame.
+
+```js
+try {
+  await MuPiBoxSDK.audio.prepareSample('assets/audio/jump.ogg');
+} catch (error) {
+  // Fallback: the older host may decode on first play.
+}
+```
