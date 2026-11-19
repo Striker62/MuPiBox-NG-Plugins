@@ -78,3 +78,23 @@ test('native audio gain controls validate levels without replaying sample assets
  }
  assert.equal(calls.length,3);
 });
+
+
+test('sample preloading uses the trusted bounded PCM cache bridge without playing audio',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.prepareSample('assets/audio/jump.wav');
+ assert.deepEqual(calls.map(c=>c.method),['audio.sample.prepare']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{
+  asset:'assets/audio/jump.wav',volume:0,relative:true
+ });
+ for(const invalid of ['../secret.wav','assets/../secret.wav','assets/.hidden.wav',
+    'https://example.org/a.mp3','assets/test.js','assets/a.ogg?query=1']) {
+   await assert.rejects(()=>sdk.audio.prepareSample(invalid),{name:'TypeError'});
+ }
+ assert.equal(calls.length,1);
+});
+
+test('sample preloading in browser preview does not invent host PCM caching',async()=>{
+ const {sdk}=getSDK(false);
+ assert.equal(await sdk.audio.prepareSample('assets/audio/jump.wav'),false);
+});
