@@ -60,7 +60,7 @@ In `tts/pages.json` gehört der erste Eintrag zur ersten Bildseite und der zweit
 }
 ```
 
-Die Vorlesefunktion unterstützt bis zu 600 Zeichen je Seite. Halte die Reihenfolge ein und verwende für eine Seite ohne Vorlesetext einen leeren Eintrag wie `{"text":""}`. Bei einem reinen Bilderbuch kannst du den Ordner `tts/` und das Feld `tts` weglassen.
+Seitentexte werden ab Version 1.0.1 automatisch in Blöcke mit höchstens 500 Unicode-Zeichen aufgeteilt, bevorzugt an Satzgrenzen. Die Aufteilung erhält den vollständigen Text. Die Blöcke werden nacheinander über den MuPiBox-TTS-Dienst generiert, im hostseitigen Sprachcache gespeichert und abgespielt. Erst nach dem letzten Block wird automatisch weitergeblättert. Bei aktiviertem TTS-Pre-Rendering bereitet die App Blöcke im Hintergrund vor. Stopp, Seitenwechsel und Verlassen der App brechen die restliche Blockfolge ab. Eine vom Host pausierte Wiedergabe wartet weiterhin auf ihr Ende. Die drei Tasten und die Zuordnung in der pages.json bleiben gleich. Halte die Reihenfolge ein und verwende für eine Seite ohne Vorlesetext einen leeren Eintrag wie `{"text":""}`. Bei einem reinen Bilderbuch kannst du den Ordner `tts/` und das Feld `tts` weglassen.
 
 ### Text neben dem Bild und Urheberangaben
 

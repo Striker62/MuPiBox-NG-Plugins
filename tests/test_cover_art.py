@@ -11,7 +11,7 @@ APPS = (
     ("crumbworm", "cover.jpg", "icon.png", "0.2.2"),
     ("chess", "cover-clean-v2.jpg", "icon.png", "0.1.5"),
     ("klang-memory", "cover.jpg", "icon.png", "0.1.3"),
-    ("Buecherkiste", "cover-axolotl-v028.jpg", "icon-axolotl-v028.png", "1.0.0"),
+    ("Buecherkiste", "cover-axolotl-v028.jpg", "icon-axolotl-v028.png", "1.0.1"),
     ("fotospass", "cover.jpg", "icon.png", "0.5.7"),
     ("mupi-klavier", "assets/cover.jpg", "assets/icon.png", "0.1.2"),
 )

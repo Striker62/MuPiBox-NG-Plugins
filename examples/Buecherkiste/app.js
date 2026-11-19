@@ -2,7 +2,10 @@
 let shelfEntries=[],shelfPage=0,shelfCols=3,shelfRows=2;
 const bookInfo=Object.assign(Object.create(null),{ole:{pageCount:15,title:'Ole und der verschwundene Knopf',imagePattern:'images/{page:02d}.jpg',layout:'full-page'},henne:{pageCount:10,title:'Henne und Adler',imagePattern:'images/{page_plus_one:02d}.jpg',layout:'image-and-text'}});
 const bookFolder=Object.assign(Object.create(null),{ole:'ole',henne:'henne-und-adler'});const bookTexts=Object.create(null);
-const bookSpeech=Object.create(null);let speechAvailable=false,speechPreRendering=false,speechMode=null,speechRun=0;const preparedPages=new Set();
+const bookSpeech=Object.create(null);let speechAvailable=false,speechPreRendering=false,speechMode=null,speechRun=0;
+const preparedTexts=new Map();
+let preparationTimes=[];
+let preparationRunning=false;
 const pageFiles=Object.assign(Object.create(null),{ole:[],henne:[]});const MAX_PAGES=200;
 
 // SMB files remain content: no raw SMB/HTTP routes and no executable image formats.
@@ -54,7 +57,7 @@ function speechForPage(which,page){
  const lines=bookSpeech[which]||[];
  const fallback=bookInfo[which].layout==='image-and-text'?
   (bookTexts[which]||(!sharedBooks[which]&&which==='henne'?henText:[])):[];
- return String(lines[page-1]||fallback[page-1]||'').trim();
+ return String(lines[page-1]||fallback[page-1]||'');
 }
 function pageSpeechText(){
  return reader.hidden||isAttributionPage()?'':speechForPage(book,current);
@@ -66,7 +69,32 @@ const speechButtons = {
 };
 function readablePage(){
  const text=pageSpeechText();
- return speechAvailable&&text&&Array.from(text).length<=600;
+ return speechAvailable&&Boolean(text.trim());
+}
+// Preserve every character, including whitespace and Unicode surrogate pairs.
+function splitSpeechText(text){
+ const characters=Array.from(text),blocks=[];
+ let offset=0;
+ while(offset<characters.length){
+  const window=characters.slice(offset,offset+500).join('');
+  let length=Array.from(window).length;
+  if(offset+length<characters.length){
+   let sentenceEnd=0;
+   for(const match of window.matchAll(/[.!?…]+["'»”’\)\]]*\s+/gu)){
+    sentenceEnd=Array.from(window.slice(0,match.index+match[0].length)).length;
+   }
+   if(sentenceEnd)length=sentenceEnd;
+   else{
+    const whitespace=window.match(/\s+\S*$/u);
+    if(whitespace&&whitespace.index>0){
+     length=Array.from(window.slice(0,whitespace.index+whitespace[0].match(/^\s+/u)[0].length)).length;
+    }
+   }
+  }
+  blocks.push(characters.slice(offset,offset+length).join(''));
+  offset+=length;
+ }
+ return blocks;
 }
 function updateSpeakControl(){
  const readable=readablePage();
@@ -80,14 +108,30 @@ function updateSpeakControl(){
  }
  if(!reader.hidden)prepareFollowingPages();
 }
-function prepareFollowingPages(){
- if(!speechAvailable||!speechPreRendering||!window.MuPiBoxSDK?.tts?.prepare)return;
- for(let page=current;page<=Math.min(getImageTotal(book),current+2);page++){
-  const text=speechForPage(book,page),key=book+':'+page;
-  if(!text||Array.from(text).length>600||preparedPages.has(key))continue;
-  preparedPages.add(key);
-  void window.MuPiBoxSDK.tts.prepare(text).catch(e=>console.warn('TTS-Vorbereitung fehlgeschlagen:',e));
+async function prepareFollowingPages(){
+ if(preparationRunning||!speechAvailable||!speechPreRendering||!window.MuPiBoxSDK?.tts?.prepare)return;
+ preparationRunning=true;
+ try{
+ const selectedBook=book,selectedPage=current,version=speechRun;
+ let requested=0;
+ for(let page=selectedPage;page<=Math.min(getImageTotal(selectedBook),selectedPage+2);page++){
+  for(const block of splitSpeechText(speechForPage(selectedBook,page))){
+   if(version!==speechRun||book!==selectedBook||current!==selectedPage||reader.hidden)return;
+   if(!block.trim()||preparedTexts.has(block))continue;
+   preparationTimes=preparationTimes.filter(time=>Date.now()-time<60000);
+   // Keep speculative work below the host's ten-requests-per-minute limit.
+   // speak() generates and caches every remaining block on demand.
+   if(requested>=3||preparationTimes.length>=10)return;
+   requested++;
+   preparationTimes.push(Date.now());
+   const pending=window.MuPiBoxSDK.tts.prepare(block);
+   preparedTexts.set(block,pending);
+   try{await pending}
+   catch(e){preparedTexts.delete(block);console.warn('TTS-Vorbereitung fehlgeschlagen:',e)}
+   if(preparedTexts.size>128)preparedTexts.delete(preparedTexts.keys().next().value);
+  }
  }
+ }finally{preparationRunning=false}
 }
 async function refreshSpeechAvailability(){
  try{
@@ -108,12 +152,23 @@ function haltSpeech({keepMode=false}={}){
 }
 async function readPageAloud(version){
  if(version!==speechRun||!readablePage())return;
- const text=pageSpeechText();
+ const blocks=splitSpeechText(pageSpeechText());
  updateSpeakControl();
  let finished=false;
  try{
-  const outcome=await window.MuPiBoxSDK.tts.speak(text,{waitForCompletion:true});
-  finished=outcome?.state==='completed';
+  for(const block of blocks){
+   if(version!==speechRun||reader.hidden)return;
+   if(!block.trim())continue;
+   const pending=preparedTexts.get(block);
+   if(pending)await pending.catch(()=>{});
+   if(version!==speechRun||reader.hidden)return;
+   // Clearing the previous request also resets the host's short cooldown.
+   await window.MuPiBoxSDK.tts.stop();
+   if(version!==speechRun||reader.hidden)return;
+   const outcome=await window.MuPiBoxSDK.tts.speak(block,{waitForCompletion:true});
+   finished=outcome?.state==='completed';
+   if(!finished)break;
+  }
  }catch(e){
   console.warn('Vorlesen nicht verfügbar:',e);
  }
