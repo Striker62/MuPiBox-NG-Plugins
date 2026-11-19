@@ -1,0 +1,26 @@
+MuPi Run · Music and sound credits
+
+"Happy Trancin" by Eric Matyas · www.soundimage.org
+Happy Trancin' (Looping) · Creative Commons Attribution 3.0 Unported
+https://opengameart.org/content/happy-trancin-looping
+https://creativecommons.org/licenses/by/3.0/
+The supplied Ogg Vorbis attachment is bundled as assets/audio/music.ogg.
+
+Huh.mp3 by LittleRainySeasons · Creative Commons Attribution 4.0 International
+https://freesound.org/people/LittleRainySeasons/sounds/334049/
+https://creativecommons.org/licenses/by/4.0/
+Freesound HQ MP3 preview for jump · assets/audio/jump.mp3.
+
+slide_cup_16b_44k_0.747s.aif by willc2_45220 · Creative Commons Attribution 3.0 Unported
+https://freesound.org/people/willc2_45220/sounds/75143/
+https://creativecommons.org/licenses/by/3.0/
+Freesound HQ MP3 preview for slide · assets/audio/slide.mp3.
+
+Coin collect Sound by Gavynator · CC0 1.0 Universal
+https://freesound.org/people/Gavynator/sounds/691965/
+https://creativecommons.org/publicdomain/zero/1.0/
+Freesound HQ MP3 preview for note collection · assets/audio/collect.mp3.
+
+Audio files are redistributed as downloaded, with local filenames and per-event
+playback volume. The screencast records the game mix and excerpts the music.
+These audio assets retain the licenses listed above.

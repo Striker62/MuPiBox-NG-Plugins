@@ -1,0 +1,27 @@
+{
+  "apiVersion": "1",
+  "id": "community.mupi-run",
+  "name": "MuPi Run",
+  "version": "0.8.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "icon": "icon.png",
+  "cover": "cover.png",
+  "author": "MuPiBox-NG Community",
+  "description": "Sammle goldene Noten im Wald und Flussbett, spring über Stämme und grätsche unter Brücken hindurch.",
+  "permissions": [
+    "storage",
+    "controller",
+    "audio"
+  ],
+  "category": "games",
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": false,
+    "showSystemInfo": false,
+    "fullScreen": true,
+    "background": "app"
+  }
+}
