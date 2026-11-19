@@ -11,8 +11,22 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "examples/mupi-run"
 OUTPUT = ROOT / "dist/mupi-run.mupiapp"
 FILES = ("manifest.json", "index.html", "app.js", "logic.js", "world.js", "poses.js",
-         "art-files.js", "AUDIO-CREDITS.txt", "sound.js", "style.css", "icon.png", "cover.png")
+         "ground-data.js", "art-files.js", "AUDIO-CREDITS.txt", "sound.js", "style.css", "icon.png", "cover.png")
 AUDIO_SLOTS = ("music", "run", "jump", "slide", "collect", "kilometer")
+
+
+def validate_audio(path, slot):
+    # The box decodes to 48 kHz mono signed PCM before accepting an asset.
+    seconds = 45 if slot == "music" else 5
+    if not 1024 <= path.stat().st_size <= 2 * 1024**2:
+        raise ValueError(f"{path.name}: native audio requires 1 KiB to 2 MiB")
+    pcm = subprocess.check_output([
+        "ffmpeg", "-nostdin", "-v", "error", "-protocol_whitelist", "file,pipe",
+        "-i", str(path), "-vn", "-sn", "-dn", "-t", str(seconds + 0.1),
+        "-ac", "1", "-ar", "48000", "-f", "s16le", "pipe:1",
+    ], timeout=20)
+    if not 96 <= len(pcm) <= seconds * 48000 * 2:
+        raise ValueError(f"{path.name}: native {slot} audio must fit {seconds} seconds")
 
 
 def main():
@@ -32,6 +46,7 @@ def main():
             if len(matches) > 1:
                 raise ValueError(f"Choose one audio format for {slot}")
             if matches:
+                validate_audio(matches[0], slot)
                 relative = matches[0].relative_to(SOURCE)
                 (dest / relative.parent).mkdir(parents=True, exist_ok=True)
                 shutil.copy2(matches[0], dest / relative)

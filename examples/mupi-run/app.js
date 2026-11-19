@@ -70,9 +70,9 @@
     if (color) {ctx.fillStyle = color;ctx.fill();}
     if (stroke) {ctx.strokeStyle=stroke;ctx.lineWidth=2.4;ctx.stroke();}
   }
-  function ellipse(x,y,rx,ry,color) {
-    ctx.beginPath(); ctx.ellipse(x,y,Math.max(0.01,rx),Math.max(0.01,ry),0,0,Math.PI*2);
-    ctx.fillStyle=color;ctx.fill();
+  function ellipse(x,y,rx,ry,color,paint=ctx) {
+    paint.beginPath(); paint.ellipse(x,y,Math.max(0.01,rx),Math.max(0.01,ry),0,0,Math.PI*2);
+    paint.fillStyle=color;paint.fill();
   }
   function centeredText(text,x,y,size,color,stroke) {
     ctx.font='1000 '+size+'px "Trebuchet MS", sans-serif';
@@ -111,7 +111,7 @@
     log:['windfall',117,38], root:['branch',100,31], stump:['stump',104,91], reeds:['reeds',96,94],
     'stepping-stones':['stepping-stones',125,41], branch:['branch',151,67], vine:['vine',130,103], willow:['vine',130,103]
   };
-  function hazard(ob,p) {
+  function hazard(ob,p,paint) {
     const s=p.s;
     const bridge=ob.item==='low-bridge';
     const overhead=ob.kind==='duck';
@@ -122,7 +122,7 @@
     } else {
       const [name,w,h]=hazards[ob.item] || hazards.rock;
       const bottom=overhead ? 112 : 0;
-      ellipse(p.x,p.y+1,Math.max(1,w*s*.34),Math.max(1,5*s),'#26352350');
+      ellipse(p.x,p.y+1,Math.max(1,w*s*.34),Math.max(1,5*s),'#26352350',paint);
       world.sprite(name,p.x,p.y-bottom*s,w*s,h*s);
       top=h+bottom;
     }
@@ -157,7 +157,7 @@
     toast.classList.add('visible');
   }
   function resize(){
-    const r=canvas.getBoundingClientRect(), dpr=Math.min(1, 1000 / Math.max(1,r.width));
+    const r=canvas.getBoundingClientRect(), dpr=Math.min(1, 560 / Math.max(1,r.width));
     canvas.width=Math.max(1,Math.round(r.width*dpr));
     canvas.height=Math.max(1,Math.round(r.height*dpr));
     ctx.setTransform(canvas.width/800,0,0,canvas.height/480,0,0);
@@ -191,12 +191,16 @@
     }
     renderOverlay();
   }
+  const paintInterval = 1000/30;
+  let nextPaint = 0;
   function frame(now){
-    const delta=lastFrame ? Math.min(.075,(now-lastFrame)/1000) : 0;
+    const delta=lastFrame ? Math.min(.20,(now-lastFrame)/1000) : 0;
     lastFrame=now;
     if(state.phase==='running'){
       const notes=state.noteCount, steps=state.steps, kilometer=Math.floor(state.distance/1000);
-      game.step(state,delta);
+      // Keep collision and action timing in short steps after a slow paint.
+      const stepsDue=Math.ceil(delta*30);
+      for(let n=0;n<stepsDue;n++) game.step(state,delta/stepsDue);
       if (state.noteCount>notes) audio.play('collect');
       if (state.steps>steps) audio.play('run');
       if (Math.floor(state.distance/1000)>kilometer) audio.play('kilometer');
@@ -209,7 +213,10 @@
       if(state.phase==='over')finish();
     }
     pollGamepad();
-    if(state.phase==='running' || performance.now()-crashAt<360) render();
+    if ((state.phase==='running' || now-crashAt<360) && now+.5>=nextPaint) {
+      render();
+      nextPaint = now + paintInterval - (Math.max(0, now - nextPaint) % paintInterval);
+    }
     window.requestAnimationFrame(frame);
   }
   function begin(){
@@ -245,7 +252,7 @@
       const phase=Math.floor(state.runPose);
       if(game.act(state,action,atlas.actions[name].resume[phase])){
         audio.play(name);
-        render();
+        nextPaint=0;
       }
     } else game.act(state,action);
   }

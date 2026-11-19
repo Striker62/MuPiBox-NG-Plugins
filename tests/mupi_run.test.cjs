@@ -169,9 +169,10 @@ test('the low bridge collides before the glide and after rising',()=>{
   }
 });
 
-test('optional sound slots dispatch on the native SDK and silence on pause',()=>{
+test('optional sound slots dispatch on the native SDK and silence on pause',async()=>{
   const vm=require('node:vm'), fs=require('node:fs'), path=require('node:path');
-  const ctx={window:{}};
+  let clock=0;
+  const ctx={window:{}, performance:{now:()=>clock}, setTimeout(fn,ms){clock+=ms;fn();}};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../examples/mupi-run/sound.js'),'utf8'),ctx);
   const calls=[];
   const audio={};
@@ -182,9 +183,41 @@ test('optional sound slots dispatch on the native SDK and silence on pause',()=>
   const make=files=>ctx.window.createRunAudio({isHosted:true,audio},files);
   const silent=make({});silent.active(true);silent.play('jump');silent.active(false);
   assert.equal(calls.length,0);
-  const player=make(slots);player.active(true);player.active(true);
-  for(const name of ['run','jump','slide','collect','kilometer'])player.play(name);
-  player.active(false);player.play('run');
+  const player=make(slots);await player.active(true);player.active(true);
+  for(const name of ['run','jump','slide','collect','kilometer'])await player.play(name);
+  await player.active(false);player.play('run');
+  assert.ok(clock >= 5*75);
   assert.deepEqual(calls.map(c=>c[0]),['playMusic',...Array(5).fill('playSample'),'stopMusic','stopSamples']);
   assert.deepEqual(calls.slice(0,6).map(c=>c[1]),Object.values(slots));
+  calls.length=0;
+  await player.active(true);
+  player.play('collect');
+  player.active(false);
+  await player.active(true);
+  assert.deepEqual(calls.map(c=>c[0]),['playMusic','stopMusic','stopSamples','playMusic']);
+  await player.active(false);
+});
+
+test('a long music decode allows pickup and pause drains late native voices', async () => {
+  const vm=require('node:vm'), fs=require('node:fs'), path=require('node:path');
+  let clock=0, finishMusic;
+  const ctx={window:{},performance:{now:()=>clock},setTimeout(fn,ms){clock+=ms;fn();}};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../examples/mupi-run/sound.js'),'utf8'),ctx);
+  const calls=[];
+  const audio={
+    playMusic(){ calls.push('music'); return new Promise(resolve=>{finishMusic=resolve;}); },
+    async playSample(){ calls.push('collect'); },
+    async stopMusic(){ calls.push('stopMusic'); },
+    async stopSamples(){ calls.push('stopSamples'); }
+  };
+  const player=ctx.window.createRunAudio({isHosted:true,audio},{music:'music',collect:'pickup'});
+  const music=player.active(true);
+  await player.play('collect');
+  assert.deepEqual(calls,['music','collect']);
+  const paused=player.active(false);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.deepEqual(calls.slice(2),['stopMusic','stopSamples']);
+  finishMusic();
+  await Promise.all([music,paused]);
+  assert.deepEqual(calls.slice(4),['stopMusic','stopSamples']);
 });

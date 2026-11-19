@@ -1,17 +1,51 @@
 /* Forest runner renderer. Camera and all moving objects share one world-distance axis. */
-window.createRunWorld = function (ctx, art, game) {
+window.createRunWorld = function (screen, art, game) {
   'use strict';
+  let ctx = screen;
   const HORIZON = 113, CONTACT = 1.9, FAR = 108, DEPTH = 17;
-  const views = [];
-  for (let y = 157; y < 480;) {
-    const h = y < 215 ? 2 : 4;
-    const depthAt = py => CONTACT + DEPTH * (322 / (py - HORIZON) - 1);
-    views.push({y, h, far:depthAt(y), near:depthAt(y + h)});
-    y += h;
+  // Paint a complete perspective road in one blit. Each scanline selects a
+  // prefiltered texture level for the distance covered by a screen pixel.
+  const road = document.createElement('canvas');
+  road.width = 400; road.height = 162;
+  const top = 157, pixelHeight = (480 - top) / road.height;
+  const roadCtx = road.getContext('2d');
+  const pixels = roadCtx.createImageData(road.width, road.height);
+  const packed = new Uint32Array(pixels.data.buffer);
+  const widths = [128, 192, 256, 384, 512, 512, 512];
+  const textures = Object.create(null);
+  for (const [name, data] of Object.entries(window.MuPiGround)) {
+    textures[name] = {
+      palette: data.palette,
+      levels: data.levels.map(s => Uint8Array.from(atob(s), c => c.charCodeAt(0)))
+    };
   }
-  const haze = ctx.createLinearGradient(0, 156, 0, 213);
-  haze.addColorStop(0, 'rgba(219,203,155,.70)');
-  haze.addColorStop(1, 'rgba(219,203,155,0)');
+  // Use the platform's own RGBA byte order for the fast 32-bit pixel writes.
+  function colorsForRow(palette, y) {
+    const rgba = new Uint8ClampedArray(256 * 4);
+    const haze = .7 * Math.max(0, (213 - y) / 57);
+    const alpha = 255 * Math.min(1, (y - 155) / 25);
+    for (let i = 0; i < 256; i++) {
+      rgba[4*i]   = palette[3*i]   * (1 - haze) + 219 * haze;
+      rgba[4*i+1] = palette[3*i+1] * (1 - haze) + 203 * haze;
+      rgba[4*i+2] = palette[3*i+2] * (1 - haze) + 155 * haze;
+      rgba[4*i+3] = alpha;
+    }
+    return new Uint32Array(rgba.buffer);
+  }
+  const rows = Array.from({length:road.height}, (_, ry) => {
+    const y = top + (ry + .5) * pixelHeight;
+    const s = (y - HORIZON) / 322;
+    const z = CONTACT + DEPTH * (1/s - 1);
+    const depthPerPixel = DEPTH * 322 * pixelHeight / ((y-HORIZON) ** 2);
+    const level = Math.max(0, Math.min(6, Math.round(Math.log2(24 / depthPerPixel)) - 2));
+    const texWidth = widths[level], texHeight = 4 << level;
+    const width = 4.8 * 333 * s * road.width/800;
+    const styles = {};
+    for (const [name, tex] of Object.entries(textures)) {
+      styles[name] = {indices:tex.levels[level], colors:colorsForRow(tex.palette, y)};
+    }
+    return {z, width, styles, texWidth, texHeight, step:Math.round(texWidth/width*65536)};
+  });
 
   function scale(z) { return DEPTH / (DEPTH + Math.max(-8, z) - CONTACT); }
   function center(z, distance) {
@@ -31,37 +65,43 @@ window.createRunWorld = function (ctx, art, game) {
     ctx.globalAlpha = 1;
   }
 
+  const backdrop = document.createElement('canvas');
+  let backdropWidth = 0, backdropHeight = 0;
   function ground(state) {
     const bg = art.woodland;
     if (bg.naturalWidth) {
       const shift = 12 * Math.sin(state.distance * .012);
-      ctx.drawImage(bg, -38 + shift, -124, 876, 604);
+      if (backdropWidth !== ctx.canvas.width || backdropHeight !== ctx.canvas.height) {
+        backdropWidth = ctx.canvas.width; backdropHeight = ctx.canvas.height;
+        backdrop.width = Math.ceil(876 * backdropWidth/800); backdrop.height = backdropHeight;
+        backdrop.getContext('2d', {alpha:false}).drawImage(bg,0,-124*backdropHeight/480,backdrop.width,604*backdropHeight/480);
+      }
+      ctx.save();
+      ctx.resetTransform();
+      ctx.drawImage(backdrop, Math.round((-38 + shift) * backdropWidth/800), 0);
+      ctx.restore();
     } else {
       ctx.fillStyle = '#55735a'; ctx.fillRect(0,0,800,480);
     }
     const dist = state.distance;
-    for (const row of views) {
-      const z = (row.near + row.far) * .5;
-      const tile = art['ground-' + game.terrainAt(dist+z)];
-      if (!tile.naturalWidth) continue;
-      const w = 4.8 * 333 * scale(z);
-      const x = center(z,dist) - w/2;
-      // Map transverse texture scanlines to ground distance. Near texels travel faster.
-      const world = dist + row.far;
-      const period = 24;
-      const srcY = ((-world % period) + period) % period * tile.height / period;
-      const srcH = Math.max(.5, (row.far-row.near) * tile.height / period);
-      const first = Math.min(srcH, tile.height-srcY);
-      const split = row.h * first/srcH;
-      ctx.globalAlpha=Math.min(1,(row.y-155)/25);
-      ctx.drawImage(tile,0,srcY,tile.width,first,x,row.y,w,split+.55);
-      if (first < srcH) ctx.drawImage(tile,0,0,tile.width,srcH-first,x,row.y+split,w,row.h-split+.55);
-      if (row.y < 213) {
-        ctx.fillStyle = haze;
-        ctx.fillRect(x,row.y,w,row.h+.4);
+    packed.fill(0);
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y], world = dist + row.z;
+      const left = center(row.z, dist) * road.width/800 - row.width/2;
+      const start = Math.max(0, Math.ceil(left - .5));
+      const end = Math.min(road.width, Math.ceil(left + row.width - .5));
+      const phase = -world/24;
+      const v = Math.floor((phase - Math.floor(phase)) * row.texHeight);
+      const offset = v * row.texWidth;
+      const {indices, colors} = row.styles[game.terrainAt(world)];
+      let u = Math.floor((start + .5 - left) * row.texWidth/row.width * 65536);
+      let out = y * road.width + start;
+      for (let x = start; x < end; x++, u += row.step) {
+        packed[out++] = colors[indices[offset + Math.min(row.texWidth-1, u >>> 16)]];
       }
     }
-    ctx.globalAlpha=1;
+    roadCtx.putImageData(pixels,0,0);
+    ctx.drawImage(road,0,top,800,480-top);
   }
 
   // The ring recycles 16 world segments. A segment's contents are stable until it leaves view.
@@ -125,6 +165,11 @@ window.createRunWorld = function (ctx, art, game) {
       bg.fillStyle='#44392f';bg.beginPath();bg.ellipse(0,-1,1.6,7,.16,0,Math.PI*2);bg.fill();bg.restore();
     }
   });
+  // Beyond 30 m a metre of travel moves the ground contact only a few pixels.
+  // Cache the far band by world coordinate so objects cross its boundary once.
+  const horizonLayer = document.createElement('canvas');
+  const horizonCtx = horizonLayer.getContext('2d');
+  let farStart = NaN, farDistance = -Infinity, farTime = -Infinity, farSeed;
   const drawList=[];
   function render(state, runner, hazard) {
     const distance=state.distance;
@@ -146,35 +191,59 @@ window.createRunWorld = function (ctx, art, game) {
     for(const note of state.notes) if(note.z>=-5) drawList.push(note);
     drawList.push({kind:'runner',z:CONTACT});
     drawList.sort((a,b)=>b.z-a.z);
-    for(const obj of drawList){
-      const z=obj.z, p=position(z,obj.lateral || 0,distance), s=p.s;
-      if (obj.kind==='runner') { runner(position(CONTACT,state.visualLane*.555,distance)); continue; }
-      if (obj.item) {
-        hazard(obj,position(z,(obj.lane || 0)*.555,distance)); continue;
-      }
-      if ('lane' in obj) {
-        const q=position(z,obj.lane*.555,distance);
-        const frame=(Math.floor(state.time*13)+Math.floor(distance+z))%12;
-        const size=49*s;
-        ctx.drawImage(gold,frame*64,0,64,64,q.x-size/2,q.y-(80+3*Math.sin(state.time*3+z*.12))*s-size/2,size,size);
-      } else if(obj.kind==='railing'){
-        for(const side of [-1,1]){
-          const q=position(z,side*1.04,distance);
-          if(game.terrainAt(obj.world+8)==='boardwalk'){
-            const far=position(z+8,side*1.04,distance);
-            ctx.strokeStyle='#72533b';ctx.lineWidth=Math.max(1,3*s);ctx.beginPath();
-            ctx.moveTo(q.x,q.y-53*s);ctx.quadraticCurveTo((q.x+far.x)/2,(q.y+far.y)/2-39*s,far.x,far.y-53*far.s);ctx.stroke();
-          }
-          sprite('rail-post',q.x,q.y+5*s,51*s,70*s);
+    const boundary = 4*Math.ceil((distance+30)/4);
+    const bandHeight = Math.ceil(screen.canvas.height*.55);
+    const resized = horizonLayer.width!==screen.canvas.width || horizonLayer.height!==bandHeight;
+    if (resized) {
+      horizonLayer.width=screen.canvas.width; horizonLayer.height=bandHeight;
+      horizonCtx.setTransform(screen.canvas.width/800,0,0,screen.canvas.height/480,0,0);
+    }
+    const refresh = resized || farStart!==boundary || farSeed!==state.scenerySeed ||
+      Math.abs(distance-farDistance)>=1.6 || Math.abs(state.time-farTime)>=.15;
+    let near = 0;
+    while (near<drawList.length && drawList[near].z+distance>=boundary) near++;
+    if (refresh) {
+      farStart=boundary; farDistance=distance; farTime=state.time; farSeed=state.scenerySeed;
+      ctx=horizonCtx;
+      ctx.clearRect(0,0,800,265);
+      drawRange(0,near);
+      ctx=screen;
+    }
+    screen.drawImage(horizonLayer,0,0,800,bandHeight*480/screen.canvas.height);
+    drawRange(near,drawList.length);
+
+    function drawRange(start,end) {
+      for(let index=start;index<end;index++){
+        const obj=drawList[index];
+        const z=obj.z, p=position(z,obj.lateral || 0,distance), s=p.s;
+        if (obj.kind==='runner') { runner(position(CONTACT,state.visualLane*.555,distance)); continue; }
+        if (obj.item) {
+          hazard(obj,position(z,(obj.lane || 0)*.555,distance),ctx); continue;
         }
-      } else if(obj.kind==='butterfly'){
-        const a=state.time*2+obj.phase;
-        const f=Math.floor((state.time*11+obj.phase)*1.6)%8;
-        ctx.drawImage(butterflyAtlas,f*64,obj.variant*48,64,48,p.x+(Math.sin(a)*17-21)*s,p.y+(-obj.height+Math.cos(a*1.43)*12)*s,42*s,31*s);
-      } else {
-        const h=obj.height*s;
-        const img=art[obj.kind];
-        if(img.naturalWidth) sprite(obj.kind,p.x,p.y,h*img.naturalWidth/img.naturalHeight,h,Math.min(1,(FAR-z)/10));
+        if ('lane' in obj) {
+          const q=position(z,obj.lane*.555,distance);
+          const frame=(Math.floor(state.time*13)+Math.floor(distance+z))%12;
+          const size=49*s;
+          ctx.drawImage(gold,frame*64,0,64,64,q.x-size/2,q.y-(80+3*Math.sin(state.time*3+z*.12))*s-size/2,size,size);
+        } else if(obj.kind==='railing'){
+          for(const side of [-1,1]){
+            const q=position(z,side*1.04,distance);
+            if(game.terrainAt(obj.world+8)==='boardwalk'){
+              const far=position(z+8,side*1.04,distance);
+              ctx.strokeStyle='#72533b';ctx.lineWidth=Math.max(1,3*s);ctx.beginPath();
+              ctx.moveTo(q.x,q.y-53*s);ctx.quadraticCurveTo((q.x+far.x)/2,(q.y+far.y)/2-39*s,far.x,far.y-53*far.s);ctx.stroke();
+            }
+            sprite('rail-post',q.x,q.y+5*s,51*s,70*s);
+          }
+        } else if(obj.kind==='butterfly'){
+          const a=state.time*2+obj.phase;
+          const f=Math.floor((state.time*11+obj.phase)*1.6)%8;
+          ctx.drawImage(butterflyAtlas,f*64,obj.variant*48,64,48,p.x+(Math.sin(a)*17-21)*s,p.y+(-obj.height+Math.cos(a*1.43)*12)*s,42*s,31*s);
+        } else {
+          const h=obj.height*s;
+          const img=art[obj.kind];
+          if(img.naturalWidth) sprite(obj.kind,p.x,p.y,h*img.naturalWidth/img.naturalHeight,h,Math.min(1,(FAR-z)/10));
+        }
       }
     }
   }

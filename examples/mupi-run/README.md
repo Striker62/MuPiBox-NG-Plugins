@@ -1,4 +1,4 @@
-# MuPi Run 0.8.0
+# MuPi Run 0.8.1
 
 Sammle goldene Noten im Flussbett, auf dem Holzsteg und auf dem Waldpfad. Spring über den umgestürzten Stamm, grätsche unter dem Querbalken durch und wechsle die Spur, wenn ein Fuchs auf dem Weg schläft. Die Distanz bestimmt den Rekord. Die Noten zählen für den jeweiligen Lauf.
 
@@ -24,7 +24,7 @@ MuPi übernimmt beim Tastendruck die aktuell sichtbare der 24 Laufposen. Beide A
 
 ## Streckenaufbau und Grafik
 
-Alle Streckenobjekte sind in Metern relativ zur Kamera platziert. Dieselbe Projektion bestimmt Spur, Tiefe, Größe und Kontaktpunkt. Der Boden wird streifenweise aus drei vorberechneten Texturen abgetastet. Ein Ring mit 16 wiederverwendeten Abschnitten hält nur die Umgebung in Sichtweite. Bäume, Steine, Farn und Schmetterlinge nähern sich mit der Strecke. Ein separater Zufallswert je Abschnitt bestimmt Position und Erscheinung. Schmetterlinge haben rote, violette oder gelbe Flügel und animierten Flügelschlag.
+Alle Streckenobjekte sind in Metern relativ zur Kamera platziert. Dieselbe Projektion bestimmt Spur, Tiefe, Größe und Kontaktpunkt. Für jeden Bildpunkt des Bodens wird eine nach Entfernung vorgefilterte Textur abgetastet. Der fertige Boden wird einmal pro Bild gezeichnet. Die entfernte Kulisse wird zwischengespeichert. Die Spielwelt rendert mit bis zu 560 Pixeln Breite und 30 Bildern pro Sekunde. Bedienelemente und Anzeigen nutzen die Displayauflösung. Ein Ring mit 16 wiederverwendeten Abschnitten hält nur die Umgebung in Sichtweite. Bäume, Steine, Farn und Schmetterlinge nähern sich mit der Strecke. Ein separater Zufallswert je Abschnitt bestimmt Position und Erscheinung. Schmetterlinge haben rote, violette oder gelbe Flügel und animierten Flügelschlag.
 
 Notenreihen folgen in den Hinderniswellen einer passierbaren Spur. Animationsphasen für Goldreflex und Flügelschlag werden beim Start einmal gerendert. Das Spiel zeichnet die transparenten MuPi-Bilder aus sechs WebP-Seiten mit je 60 Kacheln. Jede Seite passt in eine 2048-Pixel-Textur. Das Paket enthält die verwendeten Grafiken lokal.
 
@@ -32,7 +32,7 @@ Notenreihen folgen in den Hinderniswellen einer passierbaren Spur. Animationspha
 
 Der Musik-Loop „Happy Trancin“ sowie Sprung, Grätsche und Notensammeln sind im Paket enthalten. Laufschritt und Kilometersignal sind für spätere Dateien vorbereitet. Urheber, Quellen, Lizenzlinks und die verwendeten Fassungen stehen in den [Audio-Credits](AUDIO-CREDITS.txt). Die Credits sind auch im Spielmenü einsehbar.
 
-Eine Datei je belegtem Platz unter `examples/mupi-run/assets/audio/` ablegen und das Paket neu bauen. Geeignete Endungen sind `.ogg`, `.mp3` oder `.wav`. Unbelegte Plätze bleiben still. Der Builder erzeugt die Dateizuordnung aus dem tatsächlichen Paketinhalt.
+Eine Datei je belegtem Platz unter `examples/mupi-run/assets/audio/` ablegen und das Paket neu bauen. Geeignete Endungen sind `.ogg`, `.mp3` oder `.wav`. Der Paketbau benötigt FFmpeg und prüft die Grenzen des nativen Players. Jede Datei darf 1 KiB bis 2 MiB groß sein. Die Musik darf dekodiert bis zu 45 Sekunden dauern, ein Effekt bis zu 5 Sekunden. Der Builder erzeugt die Dateizuordnung aus dem tatsächlichen Paketinhalt.
 
 | Dateiname ohne Endung | Auslöser |
 | --- | --- |
@@ -60,9 +60,14 @@ python3 tools/record_mupi_run_screencast.py
 
 Der Builder validiert `dist/mupi-run.mupiapp` mit dem Repository-Validator. Das Paket lässt sich im Pluginmanager manuell installieren. Screenshots und Screencast stammen aus Chromium bei 800 × 480. Die Galerie enthält auch gezielt eingestellte Testszenen. Der Screencast zeigt einen durchgehenden Lauf mit regulären Eingaben und dem aufgezeichneten Spielton.
 
-Die drei Geländeabschnitte wurden im ausgepackten Installationspaket jeweils drei Sekunden in Headless-Chromium auf dem Entwicklungs-LXC gemessen (800 × 480, Software-Rendering). Der Median der Bildabstände lag bei 16,7 ms, das 95. Perzentil bei 16,7–16,8 ms. Eine Messung des nativen Qt-Webviews auf dem Raspberry Pi steht aus. Der automatisierte Logiklauf erreichte 1.264 m.
+Ein separater Qt-WebEngine-Test auf einer Testbox (Raspberry Pi 4, 1 GB, 800 × 480, Software-Rendering, stumm) hat für dieselben drei Szenen folgende Zeichenraten gemessen. Je Szene wurden nach 300 ms Aufwärmzeit rund 2,2 Sekunden ausgewertet. Die Zahlen beziehen sich auf neu gezeichnete Spielbilder.
 
-Die Aktionsatlanten lassen sich aus dem entpackten Originalpaket mit `python3 tools/import_mupi_run_actions.py PFAD_ZUM_AKTIONSPAKET` erneut erstellen. Für die Bodentexturen gibt es `python3 tools/render_mupi_run_ground.py` mit Pillow, NumPy und SciPy.
+| Version | Flussbett | Holzsteg | Waldpfad |
+| --- | ---: | ---: | ---: |
+| 0.8.0 | 8,5 FPS | 7,5 FPS | 8,1 FPS |
+| 0.8.1 | 24,4 FPS | 19,9 FPS | 23,7 FPS |
+
+Die Aktionsatlanten lassen sich aus dem entpackten Originalpaket mit `python3 tools/import_mupi_run_actions.py PFAD_ZUM_AKTIONSPAKET` erneut erstellen. Die Projektionstabellen werden mit `python3 tools/prepare_mupi_run_road.py` aus den drei Geländetexturen erzeugt. Für die Bodentexturen gibt es `python3 tools/render_mupi_run_ground.py` mit Pillow, NumPy und SciPy.
 
 ## Bildnachweise und technische Vorbilder
 

@@ -253,7 +253,7 @@ async def main():
                     mix=audio_stop['result']['value']
                     (temp/'mix.webm').write_bytes(base64.b64decode(mix['data']))
                     print('Measured audio peaks:',mix['peaks'],flush=True)
-                    for asset in ('music.ogg','jump.mp3','slide.mp3','collect.mp3'):
+                    for asset in ('music.ogg','jump.mp3','slide.mp3','collect.wav'):
                         if mix['peaks'].get('assets/audio/'+asset,0) < .0005:
                             raise RuntimeError('Missing audible channel: '+asset)
                     await call('Page.stopScreencast')
