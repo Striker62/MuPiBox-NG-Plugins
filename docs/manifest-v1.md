@@ -405,3 +405,16 @@ Inspect `(await sdk.getContext()).audioMusicPauseResume === true` before
 using them; older hosts should fall back to stop/replay (which restarts
 the music), not claim position parity. Stopping paused music still fades
 out safely and revokes the voice on session teardown.
+
+### Optional music hold/restore (controller reconnection)
+
+On hosts reporting `audioMusicHoldRestore === true` from `getContext()`,
+`await sdk.audio.holdMusic()` suspends exactly one owner-owned music voice
+at its current PCM offset. The app may play its title music, then request
+`await sdk.audio.restoreMusic()` to replace that menu loop with the saved
+voice and exact playback position. Both return `{active:boolean}` and
+reject cross-owner restoration. The host holds at most **one** voice
+globally, never exposes PCM to the browser, and discards it on session
+revocation, expiry or displacement by another owner's hold. If `active`
+is false, fall back to normal `playMusic`. A browser preview and older
+hosts do not pretend that the previous position was restored.
