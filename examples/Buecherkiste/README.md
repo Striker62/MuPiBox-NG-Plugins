@@ -1,212 +1,83 @@
-# Bücherkiste für MuPiBox-NG
+# Bücherkiste für MuPiBox NG
 
-Version **0.2.30** · Community-App · Web-Runtime · App-ID `community.buecherkiste`
+Mit der Bücherkiste können Kinder Bilderbücher auswählen, durchblättern, vergrößern und vorlesen lassen. Die App bringt **Ole und der verschwundene Knopf** (16 Bildseiten) und **Henne und Adler** (10 Bild- und Textseiten plus eine Urheberseite) mit. Eigene Bücher erscheinen zusätzlich im Regal.
 
-Ab Version 0.2.28 verwendet die Kachel die neue Illustration mit großem
-orangefarbenem MuPi-Axolotl und aufgeschlagenem blauem Zauberbuch
-(`cover-axolotl-v028.jpg`, **832 × 650 Pixel**), mit eigenem
-`icon-axolotl-v028.png` (**192 × 192 Pixel**). Das Titelbanner ist auch
-im Coverflow vollständig erhalten; die quadratische Icon-Darstellung
-verzichtet auf das Abschneiden des Titels. Die neuen Dateinamen verhindern
-veraltete Bildcaches beim Upgrade von 0.2.27.
+## Installation und Bedienung
 
-Die Bücherkiste zeigt Bilderbücher in einer illustrierten Buchhandlung. Bücher
-lassen sich per Touch öffnen, durchblättern und vergrößern. Die zwei eingebauten
-Bücher funktionieren offline und bleiben unabhängig von zusätzlichen SMB-Büchern
-erhalten.
+Installiere das `.mupiapp`-Paket in der Community-App-Verwaltung. Erlaube **SMB-Inhalte** (`shared-assets`) für eigene Bücher und **Audio** für das Vorlesen. Öffne die Bücherkiste am Touchscreen. Mit **Regal** kommst du aus dem Buch zurück zur Bücherauswahl. Der Pfeil im Regal führt zurück zur MuPiBox.
 
-## TTS-Vorlesen (ab 0.2.29)
+Die Bücherkiste nutzt die Stimme, die unter **Admin → Text-to-Speech** eingestellt ist. Für alle drei Tasten braucht die MuPiBox die erweiterten TTS-Funktionen, die laut SDK-Dokumentation ab **NG Alpha 58** vorgesehen sind. Die Tasten erscheinen, wenn TTS verfügbar ist und die Seite einen Vorlesetext hat.
 
-Die Bücherkiste nutzt die **bereits im MuPiBox-NG-Admin unter Text-to-Speech**
-gewählte Sprache und Stimme. Eine separate Stimmenauswahl, Geschwindigkeits-
-oder Tonhöhensteuerung in der App ist nicht vorgesehen. Ist TTS deaktiviert
-oder nicht verfügbar, wird der Vorlesen-Knopf ausgeblendet.
+| Taste | Funktion |
+| --- | --- |
+| Buch mit Lautsprecher | Liest ab der aktuellen Seite vor und blättert selbst weiter. |
+| Seite mit Lautsprecher | Liest die aktuelle Seite und danach jede Seite, zu der du selbst blätterst. |
+| Lautsprecher | Liest die aktuelle Seite einmal vor. |
 
-Beim Öffnen einer Buchseite erscheint **▶ Vorlesen**, sofern Text für
-diese Seite vorhanden ist. Der Button lässt sich während der Wiedergabe auch
-als **■ Stopp** verwenden. Beim Seitenwechsel, beim Wechsel ins Regal und
-beim Verlassen der Community-App wird die bisherige Seite abgebrochen.
+Die aktive Taste zeigt ein **Stopp-Quadrat**. Tippe darauf, um den Modus zu beenden. Im Modus „Seite mit Lautsprecher“ bleibt das Quadrat auch zwischen den Seiten sichtbar. Beim Zurückgehen ins Regal endet das Vorlesen.
 
-Das Menü **Vorlesemodus** bietet drei Varianten:
-- **Einzelseite**: Vorlesen nur auf Tastendruck.
-- **Beim Blättern**: Nach einem manuellen Seitenwechsel automatisch vorlesen.
-- **Ganzes Buch**: Die aktuelle Seite vorlesen und erst nach dem bestätigten
-  Wiedergabeende zur nächsten Seite wechseln.
+## Eigene Bücher über das Netzwerk hinzufügen
 
-Seiten ohne TTS-Text und Urheber-/Lizenzseiten werden nicht vorgelesen.
-Der Modus „Ganzes Buch“ stoppt am Buchende. Beide eingebauten Bücher und
-zusätzliche SMB-Bücher verwenden dieselbe Steuerung.
-
-Wenn in NG das **automatische TTS-Pre-Rendering** aktiviert ist, werden
-die aktuelle und bis zu zwei nächste Seiten zur Synthese angemeldet.
-Das globale NG-Pre-Rendering erfasst die Bücherkiste nicht pauschal:
-Bereits vorgelesene Seiten können aus dem normalen generation- und
-stimmengebundenen TTS-Cache wiedergegeben werden. Die Vorbereitung ist
-auf maximal zehn Anforderungen pro App-Sitzung und Minute begrenzt.
-
-Voraussetzung für die drei Modi ist ein MuPiBox-NG-Host mit
-`tts.stop`, `tts.prepare` und `tts.wait` (vorgesehen ab Alpha.58).
-Ältere NG-Versionen unterstützen diese Erweiterungen nicht vollständig.
-
-Beim Plugin-Update ist zusätzlich zur bisherigen SMB-Freigabe die bestehende
-**`audio`-Berechtigung** zu bestätigen. Das ist auch die Berechtigung für
-andere Soundausgaben von Community-Apps; TTS braucht keine neuen Zugangsdaten
-und keine zweite Admin-Einstellung. Voraussetzung ist eine NG-Version mit
-`MuPiBoxSDK.tts.status()` und `.speak()`.
-
-## Funktionen
-
-- Responsive Buchhandlung mit farbigen Buchrücken und mehreren Regalseiten.
-- Regalseiten per Wischen, Pfeiltasten oder Seitenpunkten wechseln.
-- Buchseiten vorwärts/rückwärts blättern, Seitenanzeige und Zoom.
-- Vorlesen der jeweils aktuellen Seite mit der in NG konfigurierten TTS-Stimme.
-- Vollseitenformat (`full-page`) oder Bild mit getrenntem Text (`image-and-text`).
-- Zusätzliche Bücher aus dem eigenen SMB-Bereich, auch mit gleichen Titeln.
-- Automatische Erkennung von Buchordnern; eine SMB-`index.json` ist optional.
-- Zusätzliche Schlussseite mit Urheber- und Lizenzangaben bei Büchern, deren
-  Metadaten `author` und `license` enthalten.
-- Navigation: **Buch → Regal → MuPiBox**. Der MuPiBox-Pfeil ist nur im Regal
-  sichtbar und nutzt `MuPiBoxSDK.exit()`.
-
-## Installation und Navigation
-
-1. Das `.mupiapp`-Paket über die Community-App-Verwaltung installieren.
-2. Die Berechtigungen `shared-assets` (SMB-Inhalte) und `audio` (TTS) am lokalen
-   MuPiBox-Touchscreen erlauben. `shared-assets` gewährt ausschließlich lesenden
-   Zugriff auf den eigenen App-Bereich; `audio` gestattet die TTS-Ausgabe.
-3. Die Bücherkiste direkt auf der MuPiBox starten.
-
-Voraussetzung für SMB ist eine MuPiBox-NG-Version mit Unterstützung für
-`MuPiBoxSDK.shared`. Die entfernte Admin-Vorschau kann keine SMB-Bücher laden.
-Ohne Freigabe oder bei SMB-Fehlern bleiben die eingebauten Bücher verfügbar.
-
-Das Manifest setzt `display.showBackButton` auf `false`, damit der native
-Zurück-Button samt App-Titel ausgeblendet wird. Bereits gespeicherte
-Darstellungseinstellungen der MuPiBox können diese Vorgabe übersteuern; in
-diesem Fall den nativen Button in der App-Konfiguration der MuPiBox ausschalten.
-In einer eigenständigen Browser-Vorschau kann der SDK-Pfeil keine MuPiBox beenden.
-
-## Eingebaute Bücher
-
-- **Ole und der verschwundene Knopf:** 16 Bildseiten im Vollseitenformat.
-- **Henne und Adler:** 10 Bild-/Textseiten und eine zusätzliche Urheberseite.
-  Text: Ann Nduku; Illustrationen: Wiehan de Jager; deutsche Übersetzung:
-  Anna Westpfahl. Quelle: [Storybooks African Languages / African Storybook](https://storybooksafricanlanguages.net/stories/de/0158/).
-  Lizenz: [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
-  Diese Lizenz gilt für dieses Buch, nicht automatisch für andere App-Inhalte.
-
-Die vorhandenen TTS-Texte werden über das MuPiBox-NG-SDK vorgelesen.
-
-## Eigene Bücher über SMB hinzufügen
-
-Im vorhandenen MuPiBox-SMB-Laufwerk werden die Bücher in diesem Bereich abgelegt:
+Lege pro Buch einen eigenen Ordner unter `CommunityApps/community.buecherkiste/books/` in deiner MuPiBox-Freigabe an. Bei einem als `Q:` eingebundenen Laufwerk ist das beispielsweise `Q:\CommunityApps\community.buecherkiste\books\mein-buch`.
 
 ```text
 CommunityApps/
-  community.buecherkiste/
-    books/
-      mein-buch/
-        book.json
-        images/
-          01.jpg
-          02.jpg
-          03.jpg
+└── community.buecherkiste/
+    └── books/
+        └── mein-buch/
+            ├── book.json
+            ├── images/
+            │   ├── 01.jpg
+            │   └── 02.jpg
+            └── tts/
+                └── pages.json
 ```
 
-Bei einem als `Q:` eingebundenen Laufwerk lautet der Buchpfad beispielsweise
-`Q:\CommunityApps\community.buecherkiste\books\mein-buch`.
-Das Manifest deklariert `sharedDirectories: ["books"]`; gelesen wird nur unter
-diesem Ordner. Falls Bücher bisher direkt unter `community.buecherkiste/`
-liegen, muss der Besitzer sie vor dem Update in dessen `books/`-Unterordner
-verschieben. Die App verschiebt oder löscht keine Dateien.
-Es erfolgt keine rekursive Suche. Ordnernamen bestehen aus Buchstaben, Ziffern,
-Unterstrichen und Bindestrichen (maximal 80 Zeichen).
-
-Beispiel für `book.json`:
+Speichere die JSON-Dateien als UTF-8. Die Dateinamen in der `book.json` müssen zu den Dateien im Buchordner passen. Dieses Beispiel verwendet die erste Bildseite zugleich als Cover.
 
 ```json
 {
-  "id": "mein-buch",
   "title": "Mein Bilderbuch",
   "cover": "images/01.jpg",
   "imagePattern": "images/{page:02d}.jpg",
-  "firstPage": 1,
   "layout": "full-page",
   "tts": "tts/pages.json"
 }
 ```
 
-`tts/pages.json` ist optional und enthält `{"pages":[{"text":"Gesprochener
-Text für Seite 1"},{"text":"Text für Seite 2"}]}`. Ein Buch ohne
-Vorlesetexte bleibt vollständig nutzbar, zeigt aber keinen Vorlesen-Knopf.
-Pro Seite werden höchstens 600 Zeichen vorgelesen; längere Texte sollten
-bei der Bucherstellung auf mehrere Seiten aufgeteilt werden.
+`{page:02d}` erzeugt die Nummern `01`, `02` und so weiter. Nummeriere die Bilder lückenlos ab 1. Unterstützt werden JPEG, PNG, WebP und GIF. Pro Bild sind bis zu 8 MiB möglich, pro JSON-Datei bis zu 256 KiB. Die App durchsucht bis zu 60 zusätzliche Buchordner und bis zu 200 Seitennummern je Buch.
 
-Die Erkennung verwendet den Ordnerpfad; gleiche Titel oder IDs ersetzen keine
-anderen Bücher. Für das Layout `image-and-text` kann zusätzlich
-`"text": "text/pages.json"` angegeben werden. Diese Datei enthält zum Beispiel
-`{"pages":[{"text":"Text der ersten Seite"}]}`.
+### Vorlesetexte
 
-Die optionale Datei `books/index.json` kann eine bevorzugte Reihenfolge vorgeben:
+In `tts/pages.json` gehört der erste Eintrag zur ersten Bildseite und der zweite zur zweiten Bildseite.
 
 ```json
-{"books":["ole1","henne-und-adler1","mein-buch"]}
+{
+  "pages": [
+    { "text": "Mia findet einen roten Schlüssel." },
+    { "text": "Der Schlüssel passt zur kleinen Tür." }
+  ]
+}
 ```
 
-Weitere gefundene Buchordner werden ergänzt. Nach Änderungen die App neu starten
-oder aus einem Buch ins Regal zurückkehren. Ein Hintergrund-Watcher ist nicht
-aktiviert. Der SMB-Bereich ist vom installierten App-Paket getrennt; zusätzliche
-Bücher werden nicht in das Paket kopiert. Eigene Änderungen direkt im
-installierten Plugin-Verzeichnis können bei einem Update überschrieben werden.
+Die Vorlesefunktion unterstützt bis zu 600 Zeichen je Seite. Halte die Reihenfolge ein und verwende für eine Seite ohne Vorlesetext einen leeren Eintrag wie `{"text":""}`. Bei einem reinen Bilderbuch kannst du den Ordner `tts/` und das Feld `tts` weglassen.
 
-## Dateigrenzen
+### Text neben dem Bild und Urheberangaben
 
-Maximal 60 zusätzliche Buchordner insgesamt und 200 Bildseiten pro Buch.
-JSON-Dateien sind auf 256 KiB, Bilder auf 8 MiB begrenzt. Unterstützt werden
-JPEG, PNG, WebP und GIF direkt im Unterordner `images/`; SVG wird nicht geladen.
-Die Seiten werden ab 1 erkannt, der Scan endet nach zwei fehlenden Seitennummern.
-`pageCount` ist optional und ersetzt keine Bilddateien. Muster unterstützen
-`{page}`, `{page:02d}` und `{page_plus_one:02d}` mit höchstens vier Stellen.
+Für getrennte Bilder und sichtbare Texte setzt du `"layout": "image-and-text"` und ergänzt `"text": "text/pages.json"` in der `book.json`. Lege die Datei im Buchordner unter `text/pages.json` an. Sie verwendet dieselbe Seitenstruktur wie das Beispiel für Vorlesetexte. Der sichtbare Text kann auch als Vorlesetext dienen.
 
-SMB-Metadaten werden als Inhalt behandelt; Text wird nicht als HTML ausgeführt.
-Temporäre Bildadressen werden bei Seitenwechsel, Regal-Neuaufbau und Verlassen
-der App freigegeben. Der SDK-Zugriff schreibt oder löscht keine SMB-Dateien.
+Wenn `book.json` die Felder `author` und `license` enthält, ergänzt die Bücherkiste eine Schlussseite mit Urheber- und Lizenzangaben. Optional kannst du `illustrator`, `translator`, `source` und `license_url` angeben.
 
-## Paket bauen und prüfen
+### Bücher im Regal finden
 
-Vom Repository-Stamm aus:
+Die App erkennt die direkten Unterordner von `books/` automatisch. Verwende für Ordnernamen Buchstaben ohne Umlaute, Ziffern, Bindestriche oder Unterstriche und höchstens 80 Zeichen. Gleiche Buchtitel sind möglich, solange die Bücher in getrennten Ordnern liegen. Optional legt `books/index.json` mit beispielsweise `{"books":["mein-buch","zweites-buch"]}` eine bevorzugte Reihenfolge fest.
 
-```sh
-node --test tests/test_buecherkiste_shared.js tests/test_sdk_shared.js
-python tools/mupiapp.py pack examples/Buecherkiste dist/buecherkiste.mupiapp --exclude README.md
-python tools/mupiapp.py validate dist/buecherkiste.mupiapp
-```
+Kehre nach Änderungen aus einem Buch ins Regal zurück oder starte die App neu. Lege eigene Dateien in der Netzwerkfreigabe ab, damit sie unabhängig vom installierten App-Paket bleiben.
 
-Der Bücherkiste-Audit auf GitHub prüft außerdem CSS-Struktur, Paketintegrität,
-Dateitypen und die Grenze von 25 MB und führt einen ClamAV-Virenscan aus.
+## Quellen und Lizenzen
 
-Auf dem Gerät prüfen:
+**Henne und Adler**: Text von Ann Nduku, Illustrationen von Wiehan de Jager, deutsche Übersetzung von Anna Westpfahl. [Storybooks African Languages / African Storybook](https://storybooksafricanlanguages.net/stories/de/0158/) · [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
 
-1. Eingebaute und zusätzliche Bücher öffnen, durchblättern und zoomen.
-2. Ohne SMB-Freigabe müssen die eingebauten Bücher weiterhin funktionieren.
-3. Bei „Henne und Adler“ muss die Urheberseite als Seite 11 erscheinen.
-4. Im Buch ist nur „Regal“ sichtbar; erst im Regal führt der Pfeil zur MuPiBox.
+## Gerätetest
 
-Die zusätzlichen SMB-Bücher, die Urheberseite und die Navigation aus Version
-0.2.24 (Buch → Regal → MuPiBox, ohne MuPiBox-Pfeil im Buch) wurden vom Anwender
-auf der MuPiBox bestätigt. Entwicklungsreferenz ist ein Raspberry Pi 4 mit
-10,1-Zoll-Display. Displaytests mit 5 und 7 Zoll sind noch offen. Simulierte
-SDK-Tests ersetzen keinen Touchscreen-Test.
-
-Version 0.2.25 übernimmt die explizite SMB-Verzeichnisfreigabe aus dem aktuellen
-Upstream und beschränkt den Import auf `books/`. Dieser Integrationsstand muss
-auf der MuPiBox noch einmal getestet werden; die Gerätebestätigung oben bezieht
-sich auf Version 0.2.24.
-
-## Veröffentlichung
-
-Der Entwicklungscode kann neuer sein als das Paket im offiziellen Katalog.
-`catalog/apps.json` muss weiterhin das tatsächlich veröffentlichte Release-
-Paket samt Version, Berechtigungen und SHA-256 beschreiben. Erst nach einer
-offiziellen Veröffentlichung durch den Maintainer werden diese Angaben auf
-die neue Version umgestellt; ein Merge allein veröffentlicht kein Paket.
+Der App-Entwickler hat die drei Vorlesetasten und eigene SMB-Bücher auf MuPiBox NG Alpha 65 getestet.
