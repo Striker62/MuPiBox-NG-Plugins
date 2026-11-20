@@ -445,9 +445,17 @@ first step, **not yet a replacement for an arbitrary-QML game engine**.
   `fontSize`; `image` points to an existing bundled PNG/JPEG/WebP.
 - Optional `animateY:{"from":100,"to":130,"durationMs":1000}` on images
   and rectangles (150–20,000 ms).
-- Buttons support only `"action":"increment"`, `"reset"`, or `"exit"`.
-- No permissions or SDK access in this prototype, no persistence or
-  browser preview. The existing Web runtime stays unchanged.
+- Buttons support `increment`, `reset`, `exit`, `saveScore`, `loadScore`,
+  `playSample`, `playMusic`, `stopMusic`, `musicLouder`, `musicQuieter`,
+  `soundLouder`, `soundQuieter`. For `playSample` and `playMusic` set `asset`
+  to a bundled `.wav`, `.ogg`, or `.mp3` file. Other buttons must omit `asset`.
+- `storage`, `controller`, and `audio` are opt-in permissions. The trusted Qt
+  renderer uses the same rate-limited local SDK bridge as Web apps; persistence
+  uses the scoped key `qtquick-score`, audio respects the global box limits
+  and separates music/sound volumes. Jump increments the demo counter, Start
+  resets it. No general app-supplied QML code runs in the host.
+- No browser preview or arbitrary programmable game state. The existing Web
+  runtime stays unchanged.
 - An NG host without this runtime rejects the package.
 
 The host validates scene data **before extraction**, rejects active content,

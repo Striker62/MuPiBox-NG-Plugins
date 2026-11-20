@@ -64,6 +64,30 @@ class PackageTests(unittest.TestCase):
         with self.assertRaisesRegex(PackageError, 'executable'):
             pack(self.source, self.output)
 
+    def test_native_sdk_permissions_and_actions(self):
+        from mupiapp import validate_qt_scene
+        scene = {"sceneVersion":1,"background":"#102539","elements":[
+            {"type":"button","x":20,"y":30,"width":190,"height":70,
+             "text":"Sound","action":"playSample","asset":"assets/hit.wav"}]}
+        raw=json.dumps(scene).encode()
+        assets={"assets/hit.wav","scene.json"}
+        with self.assertRaises(PackageError):
+            validate_qt_scene(raw,assets,[])
+        self.assertEqual(validate_qt_scene(raw,assets,["audio"])["sceneVersion"],1)
+        scene["elements"][0]["fontSize"]=True
+        with self.assertRaises(PackageError):
+            validate_qt_scene(json.dumps(scene).encode(),assets,["audio"])
+        del scene["elements"][0]["fontSize"]
+        scene["elements"][0]["action"]="system.exec"
+        with self.assertRaises(PackageError):
+            validate_qt_scene(json.dumps(scene).encode(),assets,["audio"])
+        self.manifest.update(runtime="qtquick-scene",entry="scene.json",
+                             permissions=["storage","audio","controller"])
+        self.assertEqual(validate_manifest(self.manifest,assets)["runtime"],"qtquick-scene")
+        self.manifest["permissions"].append("camera")
+        with self.assertRaisesRegex(PackageError,"only scoped"):
+            validate_manifest(self.manifest,assets)
+
     def test_native_example_roundtrip(self):
         example = Path(__file__).resolve().parents[1] / 'examples' / 'qtquick-scene-demo'
         manifest = pack(example, self.output, excluded=['README.md'])

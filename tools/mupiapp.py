@@ -101,8 +101,8 @@ def validate_manifest(data: object, files: set[str]) -> dict:
     if len(set(perms)) != len(perms) or not set(perms).issubset(ALLOWED_PERMISSIONS):
         raise PackageError("permissions contain duplicates or unsupported values")
     if data["runtime"] == "qtquick-scene":
-        if perms or data.get("galleryDirectories") or data.get("sharedDirectories"):
-            raise PackageError("qtquick-scene preview cannot request any permissions")
+        if not set(perms).issubset({"storage", "audio", "controller"}) or data.get("galleryDirectories") or data.get("sharedDirectories"):
+            raise PackageError("qtquick-scene supports only scoped storage, audio and controller permissions")
         if any(PurePosixPath(name).suffix.lower() in {".html", ".htm", ".js", ".mjs", ".wasm", ".svg"} for name in files):
             raise PackageError("qtquick-scene packages must not contain executable/active assets")
     hosts = data.get("networkHosts")
@@ -171,7 +171,7 @@ def validate_manifest(data: object, files: set[str]) -> dict:
     return data
 
 
-def validate_qt_scene(data: bytes, files: set[str]) -> dict:
+def validate_qt_scene(data: bytes, files: set[str], permissions: list[str]) -> dict:
     """Validate passive scene data; never load arbitrary external QML in the host."""
     if not data or len(data) > 32 * 1024:
         raise PackageError("qtquick scene size exceeds 32 KiB")
@@ -202,9 +202,9 @@ def validate_qt_scene(data: bytes, files: set[str]) -> dict:
         typ, text, asset, action = [element.get(k, "") for k in ("type", "text", "asset", "action")]
         if (not isinstance(text, str) or len(text.encode("utf-8")) > 240 or "\0" in text
                 or not isinstance(asset, str) or not isinstance(action, str)
-                or not isinstance(element.get("fontSize", 0), int)
+                or type(element.get("fontSize", 0)) is not int
                 or not 0 <= element.get("fontSize", 0) <= 64
-                or element.get("color", "") and not color(element["color"])):
+                or ("color" in element and not color(element["color"]))):
             raise PackageError("qtquick element has invalid text or styling")
         if typ in ("text", "counter"):
             if not text or asset or action:
@@ -217,7 +217,22 @@ def validate_qt_scene(data: bytes, files: set[str]) -> dict:
                     or asset not in files or text or action):
                 raise PackageError("qtquick image must be a package asset")
         elif typ == "button":
-            if not text or asset or action not in ("increment", "reset", "exit"):
+            if not text:
+                raise PackageError("qtquick button must have text")
+            if action in ("increment", "reset", "exit"):
+                if asset:
+                    raise PackageError("qtquick built-in button must not have an asset")
+            elif action in ("saveScore", "loadScore"):
+                if asset or "storage" not in permissions:
+                    raise PackageError("qtquick score persistence needs storage permission")
+            elif action in ("playSample", "playMusic"):
+                if ("audio" not in permissions or asset not in files
+                        or not asset.lower().endswith((".wav", ".ogg", ".mp3"))):
+                    raise PackageError("qtquick audio playback needs permission and a packaged audio file")
+            elif action in ("stopMusic", "musicLouder", "musicQuieter", "soundLouder", "soundQuieter"):
+                if asset or "audio" not in permissions:
+                    raise PackageError("qtquick audio control needs audio permission")
+            else:
                 raise PackageError("qtquick scene action is not approved")
         else:
             raise PackageError("unknown qtquick scene element")
@@ -276,7 +291,7 @@ def validate_package(path: Path) -> dict:
             raise PackageError("manifest is not valid UTF-8 JSON") from exc
         validated = validate_manifest(manifest, names)
         if validated["runtime"] == "qtquick-scene":
-            validate_qt_scene(archive.read(validated["entry"]), names)
+            validate_qt_scene(archive.read(validated["entry"]), names, validated["permissions"])
         return validated
 
 
@@ -320,7 +335,7 @@ def pack(source: Path, destination: Path, excluded: tuple[str, ...] | list[str] 
         raise PackageError("manifest is not valid UTF-8 JSON") from exc
     validated = validate_manifest(manifest, {name for name, _ in paths})
     if validated["runtime"] == "qtquick-scene":
-        validate_qt_scene(source.joinpath(validated["entry"]).read_bytes(), {name for name, _ in paths})
+        validate_qt_scene(source.joinpath(validated["entry"]).read_bytes(), {name for name, _ in paths}, validated["permissions"])
     destination.parent.mkdir(parents=True, exist_ok=True)
     # Deterministic entries and timestamps for reproducible builds.
     with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
