@@ -293,10 +293,10 @@
       "description": "Sammle goldene Noten im Wald und Flussbett, spring über Stämme und grätsche unter Brücken hindurch.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.8.5",
-      "releaseTag": "v0.1.0-preview.57",
+      "version": "0.8.6",
+      "releaseTag": "v0.1.0-preview.58",
       "asset": "mupi-run.mupiapp",
-      "sha256": "afd81e3ea3a19082b14ea7a2186ff0ab884ec0a80fa558e18a86957289edb8d6",
+      "sha256": "b2a352933cb4f11f0b28c917ecf26bf6e88c4a3c8103875694d2b461f90093de",
       "permissions": [
         "storage",
         "controller",
