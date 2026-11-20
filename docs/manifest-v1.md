@@ -47,7 +47,7 @@ Example manifest:
 | `runtime` | Only `"web"` for v1; Go must be compiled to WASM |
 | `entry`, `icon` | Relative paths inside the package, no absolute paths or `..` |
 | `cover` | Optional raster home-tile image (PNG/JPG/JPEG/WebP) relative to the package root; not the app background |
-| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `shared-assets`, `links`, `homeassistant` (`network` is not supported by the current host) |
+| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `shared-assets`, `links`, `homeassistant`, `device-status`, `playback`, `playback-control` (`network` is reserved in the packaging schema for backwards compatibility but not supported by the host; see [SDK API reference](sdk-api-reference.md)) |
 | `networkHosts` | Explicit hostname allowlist **required** when requesting `network` |
 | `category` | Preferred native menu location: `games`, `creative`, `learning`, `tools`, or `other` (defaults to `games`) |
 | `display` | Preferred orientation, minimum size and optional native MuPiBox chrome settings |

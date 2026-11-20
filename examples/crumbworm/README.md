@@ -1,7 +1,16 @@
 # MuPi Krümelwurm
 
-Eigenständiges, offline-fähiges Wurmspiel für die MuPiBox-NG. Drei Tempostufen
-(leicht: 230 ms, normal: 150 ms, schwer: 95 ms je Spielschritt), Bonuskrümel
+## Screenshots (800 × 480 Pixel)
+
+Zwei echte Browser-Aufnahmen aus **Krümelwurm 0.3.0** (Neon-Design und laufende Partie). Die Bilddateien bleiben direkt im Anwendungsverzeichnis und werden nicht in das `.mupiapp`-Paket übernommen.
+
+| Startansicht | Spielszene |
+| :---: | :---: |
+| ![MuPi Krümelwurm – Start](screenshot-1-start.webp) | ![MuPi Krümelwurm – Neon-Spiel](screenshot-2-game.webp) |
+
+
+Eigenständiges, offline-fähiges Wurmspiel für die MuPiBox-NG. Vier Tempostufen
+(leicht: 230 ms, normal: 150 ms, schnell: 95 ms, turbo: 70 ms je Spielschritt), Bonuskrümel
 mit dreifacher Punktzahl, gespeicherter Rekord und eigene Garten-Grafiken.
 
 ## Bedienung
@@ -119,3 +128,24 @@ allen sieben unterstützten Sprachen lokalisiert.
 Die Positionen der Zwei-Hand-Steuerung und die 800×480-Vollbildansicht
 bleiben erhalten. Der Ausstieg bleibt innerhalb der App über den
 eigenen Zurück-Button möglich.
+
+## Unterwasser-Neon / freistehende Spielstand-Anzeige (v0.3.0)
+
+- Das HUD für Punkte und Rekord steht **außerhalb des Canvas**, direkt
+  oberhalb des Spielfelds. Alle 24 × 16 Spielfelder bleiben frei.
+- Das Arena-Canvas wird für die 800 × 480-Anzeige dynamisch so skaliert,
+  dass die Touch-Buttons, HUD und das Spielfeld nicht überlappen.
+- Der neue Neon-Skin hat einen grün leuchtenden, gerundeten Wurm mit
+  Gesicht, goldene Krümel, dezentes Unterwasser-Raster, Lichtstrahlen,
+  Blasen und Wasserpflanzen sowie kurze Funken beim Einsammeln.
+- Kollisionen rütteln die Arena kurz; neue Bestwerte lassen den Rahmen
+  kurz aufleuchten. Die Animation berücksichtigt Reduced-Motion.
+- Der Neon-Skin ist bei *neuen* Installationen voreingestellt. Bereits
+  gespeicherte Garten-/Neon-Auswahl bleibt bestehen.
+- Es sind **noch keine fremden Audiodateien eingebunden**. Der
+  [CC0-Soundvergleich](SOUND_OPTIONS.md) enthält drei bis vier
+  Hörbeispiele je Aktion inklusive Quellen und Vorschlägen für die
+  spätere Lautstärke-Abstimmung über die MuPiBox.
+
+Prüfungen: `node --test tests/test_crumbworm.js tests/test_crumbworm_ui.js`,
+`python3 tools/build_crumbworm.py` und Prüfung des 800×480-Layouts in Chromium.

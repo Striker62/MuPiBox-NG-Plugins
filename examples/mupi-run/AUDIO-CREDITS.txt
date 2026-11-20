@@ -10,12 +10,12 @@ to 48 kHz mono and re-encoded as Ogg Vorbis (quality 0) for native playback (ass
 Huh.mp3 by LittleRainySeasons · Creative Commons Attribution 4.0 International
 https://freesound.org/people/LittleRainySeasons/sounds/334049/
 https://creativecommons.org/licenses/by/4.0/
-Freesound HQ MP3 preview for jump · assets/audio/jump.mp3.
+Freesound HQ MP3 preview decoded to 48 kHz mono PCM · assets/audio/jump.wav.
 
 slide_cup_16b_44k_0.747s.aif by willc2_45220 · Creative Commons Attribution 3.0 Unported
 https://freesound.org/people/willc2_45220/sounds/75143/
 https://creativecommons.org/licenses/by/3.0/
-Freesound HQ MP3 preview for slide · assets/audio/slide.mp3.
+Freesound HQ MP3 preview decoded to 48 kHz mono PCM · assets/audio/slide.wav.
 
 Coin collect Sound by Gavynator · CC0 1.0 Universal
 https://freesound.org/people/Gavynator/sounds/691965/

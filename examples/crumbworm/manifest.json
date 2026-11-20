@@ -2,12 +2,12 @@
   "apiVersion": "1",
   "id": "community.mupi-kruemelwurm",
   "name": "MuPi Krümelwurm",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.png",
   "author": "MuPiBox-NG Community",
-  "description": "Vollbild-Wurmspiel mit weiß-blauem Tron-Neon, Garten-Design, vier speicherbaren Tempostufen und Zwei-Hand-Touchsteuerung. Mit neuem MuPi-Axolotl-Cover.",
+  "description": "Unterwasser-Neon-Arcade mit leuchtenden Krümeln, animiertem Smiley-Wurm, separater Punkte- und Rekordleiste, vier Geschwindigkeiten und Touch-/Controllersteuerung.",
   "permissions": [
     "storage",
     "controller"

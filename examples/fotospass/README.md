@@ -17,7 +17,7 @@ FotoSpaß ist ein kindgerechtes Fotobox-Plugin für MuPiBox-NG.
 
 ## Eigene Accessoires (ab 0.5.3)
 
-Ausgangspunkt ist das vom Anwender bereitgestellte, funktionierende Paket
+Ausgangspunkt ist das vom App-Entwickler bereitgestellte, funktionierende Paket
 `FotoSpass-0.5.2.mupiapp`. Kategorien, Darstellung und Kamerabedienung werden
 beibehalten. Die verkürzte SDK-Datei dieses Pakets wird durch das offizielle
 SDK aus `sdk/mupibox-sdk.js` ersetzt.
@@ -102,7 +102,7 @@ Die Aktionen für Größe, Fertig/Entfernen, Rückgängig, Speichern und Neues F
 bleiben außerhalb der scrollenden Auswahl sichtbar. Die Kategorien bleiben
 bildbasiert; alle bestehenden PNG-Import- und Bearbeitungsfunktionen bleiben
 erhalten. Layout und Bedienung wurden in einer Browser-Vorschau mit simuliertem
-Host bei 800 × 480 geprüft. Anschließend hat der Anwender Version 0.5.5 auf
+Host bei 800 × 480 geprüft. Anschließend hat der App-Entwickler Version 0.5.5 auf
 MuPiBox NG Alpha 41 vollständig getestet und bestätigt: neue Oberfläche und
 Touchbedienung, Kameraaufnahme, SMB-Accessoires, Bearbeitung, Speichern,
 Galerie und Rücknavigation einschließlich des Schutzes ungespeicherter Fotos.
@@ -125,7 +125,7 @@ MuPiBox bleiben unter Kontrolle des Hosts.
 
 SMB-Import, Platzierung, Skalierung und Mitspeichern aus Version 0.5.3 sowie
 die Navigation und der Schutz ungespeicherter Fotos aus Version 0.5.4 wurden
-vom Anwender auf MuPiBox NG Alpha 41 bestätigt.
+vom App-Entwickler auf MuPiBox NG Alpha 41 bestätigt.
 
 ## Prüfungen und Gerätetest
 
@@ -160,11 +160,11 @@ Direkter Fotodruck, beispielsweise über einen Canon SELPHY CP1500. Dafür wird 
 
 Der Countdown verdunkelt die Kameravorschau nicht mehr. Zahl und Hinweis
 liegen ohne deckenden Hintergrund über dem Bild; ein Textschatten hält sie lesbar.
-Der Anwender hat den transparenten Countdown mit echter Kamera auf der MuPiBox bestätigt.
+Der App-Entwickler hat den transparenten Countdown mit echter Kamera auf der MuPiBox bestätigt.
 
 ## Korrektur 0.5.7
 
 Die Accessoire-Schaltflächen verwenden einfache Zeichen für Vergrößern (+),
 Fertig (Häkchen) und Entfernen (×), um die fehlerhafte Symbolanzeige auf der
 MuPiBox zu vermeiden. Der transparente Countdown aus 0.5.6 ist enthalten.
-Der Anwender hat die korrekte Darstellung auf der MuPiBox bestätigt.
+Der App-Entwickler hat die korrekte Darstellung auf der MuPiBox bestätigt.

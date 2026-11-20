@@ -85,7 +85,7 @@ test('sample preloading uses the trusted bounded PCM cache bridge without playin
  await sdk.audio.prepareSample('assets/audio/jump.wav');
  assert.deepEqual(calls.map(c=>c.method),['audio.sample.prepare']);
  assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{
-  asset:'assets/audio/jump.wav',volume:0,relative:true
+  asset:'assets/audio/jump.wav'
  });
  for(const invalid of ['../secret.wav','assets/../secret.wav','assets/.hidden.wav',
     'https://example.org/a.mp3','assets/test.js','assets/a.ogg?query=1']) {

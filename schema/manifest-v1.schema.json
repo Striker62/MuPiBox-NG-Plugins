@@ -68,10 +68,13 @@
           "shared-assets",
           "network",
           "links",
-          "homeassistant"
+          "homeassistant",
+          "device-status",
+          "playback",
+          "playback-control"
         ]
       },
-      "maxItems": 8
+      "maxItems": 12
     },
     "networkHosts": {
       "type": "array",

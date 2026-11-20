@@ -12,6 +12,7 @@ window.createRunWorld = function (ctx, game) {
   for (const [name, data] of Object.entries(window.MuPiGround)) {
     textures[name] = {
       palette: data.palette,
+      opaque: [],
       levels: data.levels.map(encoded => {
         const str=atob(encoded), bytes=new Uint8Array(str.length);
         for(let i=0;i<bytes.length;i++) bytes[i]=str.charCodeAt(i);
@@ -45,7 +46,13 @@ window.createRunWorld = function (ctx, game) {
       const bandWidth = 4.8 * 333 * s * width/800;
       const styles = {};
       for (const [name, tex] of Object.entries(textures)) {
-        styles[name] = {indices:tex.levels[level], colors:colorsForRow(tex.palette, y)};
+        // Near rows have the same opaque palette at every screen position.
+        if (y >= 213 && !tex.opaque[level]) {
+          const palette = colorsForRow(tex.palette, 213);
+          tex.opaque[level] = Uint32Array.from(tex.levels[level], index => palette[index]);
+        }
+        styles[name] = y >= 213 ? {pixels:tex.opaque[level]} :
+          {indices:tex.levels[level], colors:colorsForRow(tex.palette, y)};
       }
       return {z, width:bandWidth, styles, texWidth, texHeight, step:Math.round(texWidth/bandWidth*65536)};
     });
@@ -87,9 +94,16 @@ window.createRunWorld = function (ctx, game) {
       const phase = -world/24;
       const v = Math.floor((phase - Math.floor(phase)) * row.texHeight);
       const offset = v * row.texWidth;
-      const {indices, colors} = row.styles[game.terrainAt(world)];
+      const style = row.styles[game.terrainAt(world)];
       let u = Math.floor((start + .5 - left) * row.texWidth/row.width * 65536);
       let out = (first+y) * width + start;
+      if (style.pixels) {
+        const source = style.pixels, step = row.step, last = row.texWidth - 1;
+        for (let x = start; x < end; x++, u += step)
+          packed[out++] = source[offset + Math.min(last, u >>> 16)];
+        continue;
+      }
+      const {indices, colors} = style;
       for (let x = start; x < end; x++, u += row.step) {
         const color=colors[indices[offset + Math.min(row.texWidth-1, u >>> 16)]];
         packed[out]=(color>>>24)===255 ? color : surface.blend(packed[out],color,color>>>24);

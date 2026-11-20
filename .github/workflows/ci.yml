@@ -57,6 +57,13 @@ jobs:
           node --test tests/mupi_wasserschlacht.test.cjs tests/waterbattle_audio.test.cjs
           python3 tools/build_wasserschlacht.py
           python3 tools/mupiapp.py validate dist/mupi-wasserschlacht.mupiapp
+      - name: Test MuPi Run physics, timing and packed poses
+        run: |
+          node --test tests/mupi_run.test.cjs tests/mupi_run_autopilot.test.cjs tests/mupi_run_timing.test.cjs tests/mupi_run_slow_audio.test.cjs
+          python3 -m pip install pillow
+          python3 tests/mupi_run_atlases_test.py
+          python3 tests/mupi_run_sheet_test.py
+          python3 tests/mupi_run_sprite_test.py
       - name: Build independent Klang Memory preview
         run: python3 tools/build_klang_memory.py
       - name: Build USB webcam preview
@@ -73,7 +80,7 @@ jobs:
           node --test tests/test_sdk_camera_volume.js
           node --check examples/klang-memory/app.js
           node --check sdk/mupibox-sdk.js
-          node --test tests/test_sdk_audio.js
+          node --test tests/test_sdk_audio.js tests/test_sdk_platform.js
       - name: Validate FotoSpaß community plugin and shared SDK
         run: |
           node --check examples/fotospass/app.js

@@ -2,7 +2,7 @@
 let shelfEntries=[],shelfPage=0,shelfCols=3,shelfRows=2;
 const bookInfo=Object.assign(Object.create(null),{ole:{pageCount:15,title:'Ole und der verschwundene Knopf',imagePattern:'images/{page:02d}.jpg',layout:'full-page'},henne:{pageCount:10,title:'Henne und Adler',imagePattern:'images/{page_plus_one:02d}.jpg',layout:'image-and-text'}});
 const bookFolder=Object.assign(Object.create(null),{ole:'ole',henne:'henne-und-adler'});const bookTexts=Object.create(null);
-const bookSpeech=Object.create(null);let speechAvailable=false,speechPreRendering=false,speechMode='manual',speechRun=0,speaking=false;const preparedPages=new Set();
+const bookSpeech=Object.create(null);let speechAvailable=false,speechPreRendering=false,speechMode=null,speechRun=0;const preparedPages=new Set();
 const pageFiles=Object.assign(Object.create(null),{ole:[],henne:[]});const MAX_PAGES=200;
 
 // SMB files remain content: no raw SMB/HTTP routes and no executable image formats.
@@ -59,11 +59,25 @@ function speechForPage(which,page){
 function pageSpeechText(){
  return reader.hidden||isAttributionPage()?'':speechForPage(book,current);
 }
+const speechButtons = {
+ continuous: ['read-book', 'Ganzes Buch vorlesen'],
+ 'on-turn': ['read-turn', 'Beim Blättern vorlesen'],
+ manual: ['read-aloud', 'Diese Seite vorlesen']
+};
+function readablePage(){
+ const text=pageSpeechText();
+ return speechAvailable&&text&&Array.from(text).length<=600;
+}
 function updateSpeakControl(){
- const button=$('read-aloud'),text=pageSpeechText();
- button.hidden=!speechAvailable||!text||Array.from(text).length>600;
- button.textContent=speaking?'■ Stopp':'▶ Vorlesen';
- $('read-mode').hidden=!speechAvailable;
+ const readable=readablePage();
+ $('speech-controls').hidden=reader.hidden||(!readable&&!speechMode);
+ for(const [mode,[id,label]] of Object.entries(speechButtons)){
+  const button=$(id),active=speechMode===mode;
+  button.disabled=!readable&&!active;
+  button.setAttribute('aria-pressed',String(active));
+  button.setAttribute('aria-label',active?'Vorlesen stoppen':label);
+  button.title=active?'Vorlesen stoppen':label;
+ }
  if(!reader.hidden)prepareFollowingPages();
 }
 function prepareFollowingPages(){
@@ -83,34 +97,41 @@ async function refreshSpeechAvailability(){
  }catch(e){speechAvailable=false;speechPreRendering=false}
  updateSpeakControl();
 }
-function haltSpeech(){
+function haltSpeech({keepMode=false}={}){
  const version=++speechRun;
- speaking=false;
+ if(!keepMode)speechMode=null;
  updateSpeakControl();
  const stop=window.MuPiBoxSDK?.tts?.stop;
  return {version,done:Promise.resolve(typeof stop==='function'?stop():null).catch(e=>{
   console.warn('Vorlesen konnte nicht gestoppt werden:',e);
  })};
 }
-async function readPageAloud(version=speechRun){
- const button=$('read-aloud'),text=pageSpeechText();
- if(speaking){await haltSpeech().done;return}
- if(button.hidden||!text||version!==speechRun)return;
- const sdk=window.MuPiBoxSDK?.tts;
- // Stop also clears the host's three-second anti-flood cooldown.
- if(typeof sdk?.stop==='function')await sdk.stop();
- if(version!==speechRun||reader.hidden)return;
- speaking=true;updateSpeakControl();
+async function readPageAloud(version){
+ if(version!==speechRun||!readablePage())return;
+ const text=pageSpeechText();
+ updateSpeakControl();
  let finished=false;
  try{
-  const outcome=await sdk.speak(text,{waitForCompletion:true});
+  const outcome=await window.MuPiBoxSDK.tts.speak(text,{waitForCompletion:true});
   finished=outcome?.state==='completed';
  }catch(e){
-  if(version===speechRun){console.warn('Vorlesen nicht verfügbar:',e);button.title='Vorlesen derzeit nicht verfügbar'}
- }finally{
-  if(version===speechRun){speaking=false;updateSpeakControl()}
+  console.warn('Vorlesen nicht verfügbar:',e);
  }
- if(finished&&version===speechRun&&speechMode==='continuous'&&current<getTotal()&&!reader.hidden)turn(1);
+ if(version!==speechRun)return;
+ if(finished&&speechMode==='continuous'&&current<getImageTotal(book)){
+  turn(1);
+  return;
+ }
+ if(!finished||speechMode!=='on-turn')speechMode=null;
+ updateSpeakControl();
+}
+async function selectSpeechMode(mode){
+ if(speechMode===mode){await haltSpeech().done;return}
+ if(!readablePage())return;
+ speechMode=mode;
+ const state=haltSpeech({keepMode:true});
+ await state.done;
+ return readPageAloud(state.version);
 }
 
 async function loadSharedShelf(generation){
@@ -393,22 +414,23 @@ $('app-exit').onclick=async()=>{
 };
 loadShelf();void refreshSpeechAvailability();
 window.MuPiBoxSDK?.on?.('lifecycle.pause',()=>{void haltSpeech()});
-$('read-aloud').onclick=()=>readPageAloud();
-$('read-mode').onchange=()=>{
- speechMode=$('read-mode').value||'manual';
- const state=haltSpeech();
- if(speechMode==='continuous')void state.done.then(()=>{if(state.version===speechRun&&!reader.hidden)readPageAloud(state.version)});
-};
+for(const [mode,[id]] of Object.entries(speechButtons)){
+ $(id).onclick=()=>selectSpeechMode(mode);
+}
 $('back').onclick=()=>{void haltSpeech();releasePage();$('page').removeAttribute('src');$('henne-image').removeAttribute('src');$('backdrop').style.backgroundImage='none';reader.hidden=true;shelf.hidden=false;$('app-exit').hidden=false;loadShelf()};
 function turn(d){
  const n=Math.max(1,Math.min(getTotal(),current+d));
  if(n===current)return;
- const state=haltSpeech();
+ const autoRead=speechMode==='continuous'||speechMode==='on-turn';
+ const state=haltSpeech({keepMode:autoRead});
  current=n;show();
- if(speechMode!=='manual')void state.done.then(()=>{
+ if(autoRead)void state.done.then(()=>{
   if(state.version!==speechRun||reader.hidden)return;
-  if(pageSpeechText())void readPageAloud(state.version);
-  else if(speechMode==='continuous'&&current<getTotal())turn(1);
+  if(readablePage())void readPageAloud(state.version);
+  else if(speechMode==='continuous'){
+   if(current<getImageTotal(book))turn(1);
+   else{speechMode=null;updateSpeakControl()}
+  }
  });
 }
 $('prev').onclick=()=>turn(-1);$('next').onclick=()=>turn(1);$('zoom').onclick=()=>zoom(!zoomed);window.addEventListener('resize',()=>{requestAnimationFrame(fitHenneText);if(!shelf.hidden)renderShelf()});if(window.ResizeObserver){new ResizeObserver(()=>requestAnimationFrame(fitHenneText)).observe($('viewport'));}if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>requestAnimationFrame(fitHenneText));document.addEventListener('keydown',e=>{if(reader.hidden){if(e.key==='ArrowRight')changeShelfPage(1);if(e.key==='ArrowLeft')changeShelfPage(-1);return;}if(e.key==='ArrowRight')turn(1);if(e.key==='ArrowLeft')turn(-1);if(e.key==='Escape')$('back').click()})})();

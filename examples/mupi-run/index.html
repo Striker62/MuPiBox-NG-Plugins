@@ -32,9 +32,11 @@
         <button type="button" id="duck" class="pad action duck" aria-label="Ducken"><span>↓</span><small data-i18n="duck">DUCKEN</small></button>
       </div>
     </div>
-    <section id="overlay" class="overlay" role="dialog" aria-modal="true">
+    <section id="overlay" class="overlay intro-art" role="dialog" aria-modal="true">
+      <button id="menu-exit" class="small" type="button" aria-label="Spiel verlassen">‹</button>
       <button id="menu-sound" class="small" type="button" aria-label="Ton stummschalten" aria-pressed="false">♫</button>
       <div class="panel">
+        <img class="forest-title" src="./title.webp" alt="">
         <h1 id="headline">MuPi <em>RUN</em></h1>
         <p id="message" data-i18n="intro">Springen, ducken, ausweichen – wie weit kommst du?</p>
         <div class="keyhints">
@@ -63,6 +65,7 @@
   <script src="./ground-data.js"></script>
   <script src="./art-files.js"></script>
   <script src="./poses.js"></script>
+  <script src="./tile-layout.js"></script>
   <script src="./scenery-data.js"></script>
   <script src="./scene-pixels.js"></script>
   <script src="./world.js"></script>
