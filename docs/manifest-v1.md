@@ -373,3 +373,22 @@ button edges. No plugin receives raw evdev device handles.
 Applications with controller-required gameplay must explicitly refuse to
 start until connection is confirmed. Distinct keys and the connection event
 require an updated NG host; older versions do not provide these additions.
+
+### Optional bounded music preloading (NG host audio-cache draft)
+
+An updated NG host implements `await MuPiBoxSDK.audio.prepareMusic('assets/audio/level.wav')`.
+It uses the existing explicit `audio` permission, only bundled app-owned
+MP3/OGG/WAV assets, the same sandbox, and no file handles or raw PCM access.
+The host has a strict **6 MiB packaged music asset / 125-second decoded
+duration** limit and a shared **20 MiB / two-track LRU cache**. Effects
+retain their separate 2 MiB / five-second limit and cache. Music cache
+entries are owner-scoped, checked against the actual source file and
+evicted on owner revocation. Successful prepare returns
+`{prepared:true}` but plays nothing; `audio.playMusic` reuses the
+cached PCM when possible. The music cache is an optimization, not a
+guarantee that a track will stay cached after other apps run.
+
+Feature-detect via `(await sdk.getContext()).audioMusicPreload === true`
+before invoking it. Older hosts reject unsupported methods; catch and
+continue with regular `audio.playMusic`. Standalone browser previews
+return `false` without pretending to cache audio.
