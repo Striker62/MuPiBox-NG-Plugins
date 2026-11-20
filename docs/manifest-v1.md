@@ -327,3 +327,13 @@ verwendet werden: Erst bei `result.state === "completed"` wird der kurze
 Effekt mit `sdk.audio.playClip("assets/laugh.mp3")` gestartet. Die laufende
 Clip-Ausgabe kann über `sdk.tts.stop()` vorzeitig beendet werden. Ältere
 Hosts ohne `audio.clip` unterstützen weiterhin den restlichen App-Betrieb.
+
+### Optional short-effect preload
+
+When `(await sdk.getContext()).audioSamplePreload` is true, an app with the
+existing `audio` permission may await `sdk.audio.prepareSample("assets/audio/hit.wav")`
+before starting a game. This prepares one local effect silently. Subsequent
+`playSample` calls use the same decoded PCM while it is cached. The host applies
+the usual asset, session and rate limits, caps the cache at 16 effects and 2 MiB
+across owners, and releases the touch session's entries on exit. Older hosts
+continue to support normal playback without a preparation step.

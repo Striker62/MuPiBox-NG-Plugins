@@ -10,6 +10,8 @@ Dieses Verzeichnis dokumentiert freiwillige Beiträge aus der MuPiBox-NG-Communi
 
 | 2026-11-16 | [@splitti](https://github.com/splitti) | **Cover-Korrekturen**: eigenes Würfelrennen-Rennmotiv und weiße Unterkanten bei Schach, Kreuz & Kreis und 4er-Reihe entfernt | [#29](https://github.com/splitti/MuPiBox-NG-Plugins/pull/29) | Würfelrennen 0.2.2 / Schach 0.1.3 / Kreuz & Kreis 0.2.6 / 4er-Reihe 0.1.5 |
 
+| 2026-11-19 | [@splitti](https://github.com/splitti) | **MuPi Run**: phasenabhängige Aktionssprites, Waldstrecke, goldene Noten und lokale Audio-Plätze | [#72](https://github.com/splitti/MuPiBox-NG-Plugins/pull/72) | 0.8.0 |
+
 ## Sicherheit und Aufnahme
 
 Der Quellcode aus PR [#4](https://github.com/splitti/MuPiBox-NG-Plugins/pull/4) wurde am 06.11.2026 statisch auf verdächtige Netzwerkzugriffe, eingebettete Ressourcen und Host-API-Aufrufe geprüft. Es fanden sich keine unbeabsichtigten Internet-Datenübertragungen im eingereichten Code. Benötigte Host-Berechtigungen: `camera` und `photo-save` (keine `network`-Berechtigung). Nach der Aufnahme wurde die lokale SDK-Kopie an das öffentliche Haupt-SDK mit strenger Foto-ID-Prüfung angeglichen.

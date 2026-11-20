@@ -1,4 +1,32 @@
 # MuPi Klavier
+
+## Screenshots (800 × 480)
+
+Die Aufnahmen zeigen die **tatsächlich laufende Web-App** im Chromium-Browser
+mit simuliertem MuPiBox-SDK. Die dargestellten Noten und Tasten stammen aus
+der App; es handelt sich nicht um Design-Mockups oder Aufnahmen vom Raspberry Pi.
+
+### Frei spielen
+
+![MuPi Klavier – Frei spielen mit hervorgehobener Taste E4](screenshots/frei-spielen.png)
+
+### Notenblatt
+
+![MuPi Klavier – Notenblatt mit Violinschlüssel und hervorgehobener G4-Taste](screenshots/notenblatt.png)
+
+### Fallende Noten
+
+![MuPi Klavier – Fallende Noten mit Xylophon und hervorgehobener G4-Taste](screenshots/fallende-noten.png)
+
+Screenshots erneut erstellen (Chromium erforderlich, aus dem Repository-Wurzelverzeichnis):
+
+```bash
+python3 tools/capture_mupi_klavier_screenshots.py
+```
+
+Die Screenshots liegen direkt bei der Anwendung unter `examples/mupi-klavier/screenshots/`.
+Sie gehören zur Dokumentation und **nicht** zum installierbaren `.mupiapp`-Paket.
+
 Eigenständige Community-App unter Lernen, optimiert für 800×480 (5 Zoll).
 Freies Spielen, fallende Noten mit Wartefunktion und horizontaler Notenausschnitt.
 Vorspielen, Tempo, sieben Instrumente, relative Lautstärke inklusive Stumm.
@@ -16,7 +44,7 @@ Browseransichten bei 800×480 für Freispiel, Notenblatt und fallende Noten gepr
 Hardwaretest auf Raspberry Pi / 5-Zoll-Touchscreen steht aus.
 Lizenz: wie das Repository (MIT).
 
-Prüfungen: 35 Python-Tests erfolgreich (1 übersprungen), 2 Musiklogik-Tests,
+Prüfungen: Python-Tests (inklusive Screenshot-Prüfungen), 2 Musiklogik-Tests,
 Chromium bei 800×480: 13 Tasten, Layout ohne Überlauf, richtige/falsche Note,
 Ansichtswechsel, Neustart und Vorspielen/Stopp mit simuliertem Host geprüft.
 Browserprobe: tests/piano_browser_probe.html in .build/mupi-klavier/ kopieren

@@ -15,7 +15,7 @@
     },
     "community.mupi-chess": {
       "publishedAt": "2026-11-08T22:05:31Z",
-      "updatedAt": "2026-11-16T14:02:17Z"
+      "updatedAt": "2026-11-18T14:25:03Z"
     },
     "official.klang-memory": {
       "publishedAt": "2026-11-03T17:04:10Z",
@@ -59,7 +59,7 @@
     },
     "community.mupi-wuerfelrennen": {
       "publishedAt": "2026-11-14T01:33:14Z",
-      "updatedAt": "2026-11-16T14:11:04Z"
+      "updatedAt": "2026-11-18T21:17:32Z"
     },
     "community.mupi-hnefatafl": {
       "publishedAt": "2026-11-14T06:37:19Z",
@@ -76,6 +76,10 @@
     "community.funny-mupi": {
       "publishedAt": "2026-11-18T07:32:00Z",
       "updatedAt": "2026-11-18T12:24:31Z"
+    },
+    "community.mupi-run": {
+      "publishedAt": "2026-11-19T13:08:01Z",
+      "updatedAt": "2026-11-20T20:14:31Z"
     }
   }
 }

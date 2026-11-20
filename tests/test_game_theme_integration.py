@@ -22,7 +22,7 @@ class Markup(HTMLParser):
 
 class ThemeIntegrationTests(unittest.TestCase):
     def test_native_back_theme_and_game_only_layout(self):
-        for slug, version in (("four-in-a-row", "0.1.5"), ("tic-tac-toe", "0.2.6")):
+        for slug, version, wallpaper in (("four-in-a-row", "0.1.5", "system"), ("tic-tac-toe", "0.2.7", "app")):
             with self.subTest(slug=slug):
                 directory = ROOT / "examples" / slug
                 manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
@@ -32,14 +32,18 @@ class ThemeIntegrationTests(unittest.TestCase):
                 self.assertTrue((directory / manifest["cover"]).is_file())
                 self.assertEqual(manifest["icon"], "assets/icon.png")
                 self.assertTrue((directory / manifest["icon"]).is_file())
-                self.assertEqual(manifest["display"]["background"], "system")
+                self.assertEqual(manifest["display"]["background"], wallpaper)
                 self.assertIs(manifest["display"]["showBackButton"], False)
                 self.assertIs(manifest["display"]["showSystemInfo"], False)
                 self.assertIs(manifest["display"]["fullScreen"], True)
 
                 css = (directory / "web/style.css").read_text(encoding="utf-8")
-                for selector in (r":root", r"html,body", r"body", r"\.screen"):
-                    self.assertRegex(css, selector + r"\s*\{[^}]*background:\s*transparent\s*;")
+                if wallpaper == "system":
+                    for selector in (r":root", r"html,body", r"body", r"\.screen"):
+                        self.assertRegex(css, selector + r"\s*\{[^}]*background:\s*transparent\s*;")
+                else:
+                    self.assertIn("linear-gradient(", css)
+                    self.assertIn(".board button.selected", css)
                 markup = Markup()
                 markup.feed((directory / "web/index.html").read_text(encoding="utf-8"))
                 self.assertTrue({"board", "mode", "status", "reset"}.issubset(markup.ids))
@@ -50,24 +54,28 @@ class ThemeIntegrationTests(unittest.TestCase):
                 self.assertIn("sdk.exit()", js)
                 self.assertIn("exit.addEventListener", js)
 
-    def test_tic_tac_toe_board_and_menu_reveal_wallpaper(self):
+    def test_tic_tac_toe_neon_marks_are_bundled_and_accessible(self):
         directory = ROOT / "examples" / "tic-tac-toe"
         css = (directory / "web/style.css").read_text(encoding="utf-8")
-        # The outer page and large settings block must never paint a solid
-        # layer over the selected MuPiBox theme. Board cells retain a subtle
-        # touch target with visible wallpaper passing underneath.
-        self.assertRegex(css, r"\.info\s*\{[^}]*background:\s*transparent\s*;")
-        self.assertRegex(css, r"\.board button\s*\{[^}]*background:\s*rgba\(13, 39, 67, \.27\)")
-        self.assertRegex(css, r"\.board button:not\(:disabled\):active\s*\{[^}]*background:\s*rgba\(")
-        self.assertIn("text-shadow:", css)
-        self.assertNotIn("background:#1b3757", css)
+        js = (directory / "web/app.js").read_text(encoding="utf-8")
+        manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["display"]["background"], "app")
+        self.assertIn("--grid-size: min(66vh, 43.5vw, 326px)", css)
+        self.assertIn("prefers-reduced-motion", css)
+        self.assertIn("aria-hidden", js)
+        self.assertIn("cell.replaceChildren", js)
+        for mark in ("neon-x.svg", "neon-o.svg"):
+            asset = (directory / "web" / mark).read_text(encoding="utf-8")
+            self.assertIn("<svg", asset)
+            self.assertIn("viewBox", asset)
+            self.assertIn(mark, js)
 
     def test_all_four_games_use_fullscreen_and_their_own_back_button(self):
         for slug in ("tic-tac-toe", "four-in-a-row", "chess", "crumbworm"):
             with self.subTest(slug=slug):
                 directory = ROOT / "examples" / slug
                 manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
-                self.assertEqual(manifest["display"]["background"], "system")
+                self.assertEqual(manifest["display"]["background"], "app" if slug in ("tic-tac-toe", "chess") else "system")
                 self.assertFalse(manifest["display"]["showBackButton"])
                 self.assertFalse(manifest["display"]["showSystemInfo"])
                 self.assertTrue(manifest["display"]["fullScreen"])

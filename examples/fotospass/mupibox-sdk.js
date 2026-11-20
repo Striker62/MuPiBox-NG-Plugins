@@ -64,15 +64,23 @@
   // The trusted host enforces the audio permission and device volume ceiling.
   // Standalone browser previews synthesize tones locally instead.
   let previewAudioContext = null;
+  function checkSampleAsset(asset) {
+    if (typeof asset !== 'string' || asset.length > 180 ||
+        !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+        asset.split('/').some(part => part === '..' || part.startsWith('.')))
+      throw new TypeError('audio sample must be a bundled assets/*.ogg, .mp3 or .wav file');
+  }
   const audio = Object.freeze({
     // Native file playback is mediated by the host and restricted to bundled
     // app assets. The host decodes into its own PipeWire mixer and enforces
     // the existing game/parental and maximum-volume policies.
+    async prepareSample(asset) {
+      checkSampleAsset(asset);
+      if (!bridge) return false;
+      return invoke('audio.sample.prepare', {asset});
+    },
     async playSample(asset, volume = 40, options = {relative:true}) {
-      if (typeof asset !== 'string' || asset.length > 180 ||
-          !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
-          asset.split('/').some(part => part === '..' || part.startsWith('.')))
-        throw new TypeError('audio sample must be a bundled assets/*.ogg, .mp3 or .wav file');
+      checkSampleAsset(asset);
       if (!Number.isInteger(volume) || volume < 0 || volume > 100)
         throw new TypeError('sample volume must be 0..100');
       if (options === null || typeof options !== 'object' || Array.isArray(options) ||

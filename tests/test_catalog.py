@@ -104,7 +104,7 @@ class CatalogTests(unittest.TestCase):
         self.assertGreaterEqual(version_tuple(manifest['version']), version_tuple(chess['version']))
         self.assertEqual(chess['permissions'], manifest['permissions'])
         self.assertEqual(manifest['cover'], 'cover-clean-v2.jpg')
-        self.assertEqual(manifest['display']['background'], 'system')
+        self.assertEqual(manifest['display']['background'], 'app')
         self.assertFalse(manifest['display']['showBackButton'])
         self.assertFalse(manifest['display']['showSystemInfo'])
         self.assertTrue(manifest['display']['fullScreen'])

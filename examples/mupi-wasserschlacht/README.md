@@ -2,6 +2,32 @@
 
 Eigenständig gestaltetes, kindgerechtes Offline-Suchspiel mit drei Modi: Quick 8×8 (2 Boote mit 3/2 Feldern), Classic 10×10 (5 Boote mit 5/4/3/3/2 Feldern) und Max 12×12 (7 Boote mit 5/4/4/3/3/2/2 Feldern). Keine Verbindung zu Hasbro, Battleship oder kommerziellen Ausgaben. Spiellogik, Bildschirmtexte und Illustrationen wurden eigenständig für MuPiBox erstellt. Die ausgewählten Audiodateien stammen von externen, in SOUND_CREDITS.txt genannten Urhebern und haben eigene Lizenzen.
 
+
+## Screenshots (800 × 480)
+
+Die folgenden Aufnahmen zeigen die **echte Web-Spieloberfläche** in der für die
+MuPiBox vorgesehenen 5-Zoll-Auflösung. Sie wurden mit Chromium und
+reproduzierbaren Touch-Eingaben erstellt (Browser-Vorschau, keine Aufnahme
+von der Testbox).
+
+| Quick – zwei Boote platzieren | Classic – ein Boot versenkt |
+| :---: | :---: |
+| ![Quick 8×8: zwei Boote sind platziert und der Startknopf ist aktiv](screenshots/01-quick-aufbau.webp) | ![Classic 10×10: Treffer, Wasserfelder und ein versenktes Boot](screenshots/02-classic-treffer.webp) |
+| **Max 12×12 – gegnerisches Spielfeld** | **Max 12×12 – eigene Flotte** |
+| ![Max 12×12: Treffer und versenktes Boot auf der gegnerischen Karte](screenshots/03-max-gegner.webp) | ![Max 12×12: eigene Boote, Treffer und verfehlte Schüsse auf der eigenen Karte](screenshots/04-max-eigene-karte.webp) |
+| **Toneinstellungen** | **Spiel gewonnen** |
+| ![Getrennte Lautstärkeregler für Effekte und Hintergrundmusik](screenshots/05-ton-einstellungen.webp) | ![Quick-Spiel gewonnen: beide gegnerischen Boote sind versenkt](screenshots/06-quick-gewonnen.webp) |
+
+Screenshots bei UI-Änderungen neu erzeugen:
+
+```bash
+python3 tools/capture_waterbattle_screenshots.py
+```
+
+Erforderlich sind Chromium und Pillow (`PIL`). Der Generator erstellt das
+installierbare App-Staging, spielt die Szenen im Browser durch und speichert
+die optimierten WebP-Dateien unter `examples/mupi-wasserschlacht/screenshots/`.
+
 ## Spielen
 1. Die Boote des gewählten Modus rechts mit Touch platzieren, über **Drehen** ausrichten. Boote dürfen sich auch diagonal nicht berühren. **Zufall** platziert die ganze Flotte automatisch.
 2. **Los geht's!** drücken. Jetzt links ein unbekanntes Feld antippen.

@@ -10,9 +10,24 @@ Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SD
 
 Eine kindgerechte, eigenständige Flottensuche-App für das 5-Zoll-Touchdisplay: **Quick 8×8 (2 Boote), Classic 10×10 (5 Boote), Max 12×12 (7 Boote)**, drei KI-Stufen, orangefarbener MuPi, Offline-Spiel und Sound. Die geprüfte Version **0.2.5** enthält das neue drei-Kiemenäste-Cover, einen eine Sekunde langen Treffer-Ruckler sowie getrennte Musik- und Effektlautstärke. Das gleiche Cover erscheint im Spiele-Coverflow und im Admin-Katalog (mit NG-Cover-Sync).
 
-- [Quellcode und Anleitung](examples/mupi-wasserschlacht/README.md)
+| Quick 8×8 – Aufbau | Max 12×12 – gegnerisches Spielfeld |
+| :---: | :---: |
+| ![MuPi Water Battle: zwei Boote im Quick-Modus](examples/mupi-wasserschlacht/screenshots/01-quick-aufbau.webp) | ![MuPi Water Battle: Max-Modus mit Treffern](examples/mupi-wasserschlacht/screenshots/03-max-gegner.webp) |
+
+- [Alle sechs Spiel-Screenshots und Anleitung](examples/mupi-wasserschlacht/README.md)
 - [Paket erzeugen](tools/build_wasserschlacht.py): python3 tools/build_wasserschlacht.py
 - [Automatisierte Tests](tests/mupi_wasserschlacht.test.cjs)
+
+## MuPi Klavier (Lernen)
+
+Die Community-Lern-App **MuPi Klavier** bietet freies Spielen, Notenblatt und
+fallende Noten auf dem 5-Zoll-Touchdisplay (800 × 480). Das überarbeitete
+Design verwendet einen richtigen Violinschlüssel und das freigegebene
+MuPi-Klavier-Cover.
+
+[![MuPi Klavier – Notenblatt mit hervorgehobener G4-Taste](examples/mupi-klavier/screenshots/notenblatt.png)](examples/mupi-klavier/README.md)
+
+[**Anleitung und alle drei Screenshots**](examples/mupi-klavier/README.md)
 
 ## Neue Community-App-Vorschauen (November 2026)
 
