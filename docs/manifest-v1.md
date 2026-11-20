@@ -392,3 +392,16 @@ Feature-detect via `(await sdk.getContext()).audioMusicPreload === true`
 before invoking it. Older hosts reject unsupported methods; catch and
 continue with regular `audio.playMusic`. Standalone browser previews
 return `false` without pretending to cache audio.
+
+### Optional position-preserving music pause/resume
+
+`MuPiBoxSDK.audio.pauseMusic()` and `MuPiBoxSDK.audio.resumeMusic()`
+are optional NG-host features guarded by the existing `audio` permission.
+They operate **only on the active audio voice belonging to this app/session**.
+Pause silences the track without advancing its PCM position; resume continues
+at that precise offset without redecoding. The operations do not disclose
+the buffer, device or underlying file path and do not change volume limits.
+Inspect `(await sdk.getContext()).audioMusicPauseResume === true` before
+using them; older hosts should fall back to stop/replay (which restarts
+the music), not claim position parity. Stopping paused music still fades
+out safely and revokes the voice on session teardown.
