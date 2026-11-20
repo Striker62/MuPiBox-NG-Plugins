@@ -126,3 +126,15 @@ test('music pause and resume keep the owner-scoped host event, without sending p
  assert.equal(await preview.audio.pauseMusic(),false);
  assert.equal(await preview.audio.resumeMusic(),false);
 });
+
+test('music hold/restore uses the session-scoped trusted bridge, never raw audio',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.holdMusic();
+ await sdk.audio.restoreMusic();
+ assert.deepEqual(calls.map(c=>c.method),['audio.music.hold','audio.music.restore']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{});
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[1].payload)),{});
+ const preview=getSDK(false).sdk;
+ assert.equal(await preview.audio.holdMusic(),false);
+ assert.equal(await preview.audio.restoreMusic(),false);
+});
