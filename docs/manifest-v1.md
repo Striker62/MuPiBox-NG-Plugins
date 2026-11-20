@@ -328,12 +328,105 @@ Effekt mit `sdk.audio.playClip("assets/laugh.mp3")` gestartet. Die laufende
 Clip-Ausgabe kann über `sdk.tts.stop()` vorzeitig beendet werden. Ältere
 Hosts ohne `audio.clip` unterstützen weiterhin den restlichen App-Betrieb.
 
-### Optional short-effect preload
 
-When `(await sdk.getContext()).audioSamplePreload` is true, an app with the
-existing `audio` permission may await `sdk.audio.prepareSample("assets/audio/hit.wav")`
-before starting a game. This prepares one local effect silently. Subsequent
-`playSample` calls use the same decoded PCM while it is cached. The host applies
-the usual asset, session and rate limits, caps the cache at 16 effects and 2 MiB
-across owners, and releases the touch session's entries on exit. Older hosts
-continue to support normal playback without a preparation step.
+### Optional short-sample preloading (NG alpha.68+)
+
+The host optionally supports `await MuPiBoxSDK.audio.prepareSample('assets/audio/jump.ogg')`.
+It uses the same `audio` permission, installed-package path validation, per-app
+rate limit, 2 MiB bounded PCM effect cache and PipeWire playback constraints as
+`audio.playSample`. The method only prepares a *short* MP3/OGG/WAV effect,
+returns a host response containing `prepared: true` on success and **never
+plays audio**. It does not preload looping music, return decoded buffers or
+unlock arbitrary filesystem access.
+
+Older NG hosts do not implement this optional bridge method: catch a rejected
+promise and continue with `playSample` without claiming that preloading
+succeeded. Browser-only previews return `false` and do not emulate the native
+PCM cache. Preload sparingly before gameplay (the server still rate-limits
+requests); don't call it on every animation frame.
+
+```js
+try {
+  await MuPiBoxSDK.audio.prepareSample('assets/audio/jump.ogg');
+} catch (error) {
+  // Fallback: the older host may decode on first play.
+}
+```
+
+
+### Optional full-gamepad input (NG controller bridge update)
+
+The trusted, local-only runner continues to publish the original
+`input` events (including `A`, `B`, directional keys and `START`).
+On upgraded hosts, it additionally sends distinct pressed/released
+`input` events for `MUSIC` (physical face B), `SPRINT` (right shoulder)
+and `MUTE` (face X). The original `B` alias for right-shoulder/sprint
+is **preserved** for compatibility with existing community games.
+
+The optional `controller.connection` event carries
+`{connected: boolean, bluetooth: boolean}`. Listen with
+`sdk.on('controller.connection', handler)`; always treat missing events
+on older hosts as an unknown connection state, not proof that a controller
+exists. Host polls physical HID only on trusted loopback routes and forwards
+button edges. No plugin receives raw evdev device handles.
+
+Applications with controller-required gameplay must explicitly refuse to
+start until connection is confirmed. Distinct keys and the connection event
+require an updated NG host; older versions do not provide these additions.
+
+### Optional bounded music preloading (NG host audio-cache draft)
+
+An updated NG host implements `await MuPiBoxSDK.audio.prepareMusic('assets/audio/level.wav')`.
+It uses the existing explicit `audio` permission, only bundled app-owned
+MP3/OGG/WAV assets, the same sandbox, and no file handles or raw PCM access.
+The host has a strict **6 MiB packaged music asset / 125-second decoded
+duration** limit and a shared **20 MiB / two-track LRU cache**. Effects
+retain their separate 2 MiB / five-second limit and cache. Music cache
+entries are owner-scoped, checked against the actual source file and
+evicted on owner revocation. Successful prepare returns
+`{prepared:true}` but plays nothing; `audio.playMusic` reuses the
+cached PCM when possible. The music cache is an optimization, not a
+guarantee that a track will stay cached after other apps run.
+
+Feature-detect via `(await sdk.getContext()).audioMusicPreload === true`
+before invoking it. Older hosts reject unsupported methods; catch and
+continue with regular `audio.playMusic`. Standalone browser previews
+return `false` without pretending to cache audio.
+
+### Optional position-preserving music pause/resume
+
+`MuPiBoxSDK.audio.pauseMusic()` and `MuPiBoxSDK.audio.resumeMusic()`
+are optional NG-host features guarded by the existing `audio` permission.
+They operate **only on the active audio voice belonging to this app/session**.
+Pause silences the track without advancing its PCM position; resume continues
+at that precise offset without redecoding. The operations do not disclose
+the buffer, device or underlying file path and do not change volume limits.
+Inspect `(await sdk.getContext()).audioMusicPauseResume === true` before
+using them; older hosts should fall back to stop/replay (which restarts
+the music), not claim position parity. Stopping paused music still fades
+out safely and revokes the voice on session teardown.
+
+### Optional music hold/restore (controller reconnection)
+
+On hosts reporting `audioMusicHoldRestore === true` from `getContext()`,
+`await sdk.audio.holdMusic()` suspends exactly one owner-owned music voice
+at its current PCM offset. The app may play its title music, then request
+`await sdk.audio.restoreMusic()` to replace that menu loop with the saved
+voice and exact playback position. Both return `{active:boolean}` and
+reject cross-owner restoration. The host holds at most **one** voice
+globally, never exposes PCM to the browser, and discards it on session
+revocation, expiry or displacement by another owner's hold. If `active`
+is false, fall back to normal `playMusic`. A browser preview and older
+hosts do not pretend that the previous position was restored.
+
+### Bounded non-looping victory and game-over music (optional)
+
+Updated NG hosts accept an explicit `loop:false` in
+`MuPiBoxSDK.audio.playMusic('assets/audio/victory.wav', 40,
+{relative:true, loop:false})`. Playback uses the same owner-scoped
+PipeWire voice, volume ceilings, 6MiB packaged file and 125-second PCM
+limits; it stops after the recording ends rather than repeating forever.
+Omitting `loop` keeps historical music behavior and payloads unchanged.
+Use this for level-finish fanfares and game-over themes; never use the
+5-second `playSample` route for long recordings. Older hosts ignore
+unknown `loop` fields, so one-shot parity requires the updated NG host.

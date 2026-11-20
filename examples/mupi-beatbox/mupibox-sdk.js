@@ -97,10 +97,25 @@
       if (!Number.isInteger(volume) || volume < 0 || volume > 100)
         throw new TypeError('music volume must be 0..100');
       if (options === null || typeof options !== 'object' || Array.isArray(options) ||
-          (options.relative !== undefined && typeof options.relative !== 'boolean'))
-        throw new TypeError('music options must contain a boolean relative field');
+          (options.relative !== undefined && typeof options.relative !== 'boolean') ||
+          (options.loop !== undefined && typeof options.loop !== 'boolean'))
+        throw new TypeError('music options must contain boolean relative and loop fields');
       if (!bridge) return false;
-      return invoke('audio.music.play', {asset, volume, relative:options.relative!==false});
+      const payload = {asset, volume, relative:options.relative!==false};
+      // Keep legacy payload byte-for-byte compatible unless one-shot is
+      // explicitly requested by a newer plugin.
+      if (options.loop === false) payload.loop = false;
+      return invoke('audio.music.play', payload);
+    },
+    // Optional trusted host feature: preload a *bounded* packaged music
+    // loop into its 20MiB/two-slot LRU PCM cache without starting playback.
+    async prepareMusic(asset) {
+      if (typeof asset !== 'string' || asset.length > 180 ||
+          !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+          asset.split('/').some(part => part === '..' || part.startsWith('.')))
+        throw new TypeError('music must be a bundled assets/*.ogg, .mp3 or .wav file');
+      if (!bridge) return false;
+      return invoke('audio.music.prepare', {asset, volume:0, relative:true});
     },
     async setMusicVolume(volume, options = {relative:true}) {
       if (!Number.isInteger(volume) || volume < 0 || volume > 100 ||
@@ -116,6 +131,13 @@
         throw new TypeError('sample volume must be 0..100 with valid options');
       return bridge ? invoke('audio.sample.volume', {volume, relative:options.relative!==false}) : false;
     },
+    // Optional NG host capability: retain the exact loop position on pause.
+    async pauseMusic() {return bridge ? invoke('audio.music.pause', {}) : false;},
+    async resumeMusic() {return bridge ? invoke('audio.music.resume', {}) : false;},
+    // Preserve one owner-owned music voice while the menu uses the same mixer.
+    // The host keeps at most one suspended voice globally (bounded PCM).
+    async holdMusic() {return bridge ? invoke('audio.music.hold', {}) : false;},
+    async restoreMusic() {return bridge ? invoke('audio.music.restore', {}) : false;},
     async stopMusic() {return bridge ? invoke('audio.music.stop', {}) : false;},
     async stopSamples() {return bridge ? invoke('audio.sample.stop', {}) : false;},
     async playClip(asset) {
@@ -425,7 +447,7 @@
   if (bridge && typeof bridge.subscribe === 'function') {
     bridge.subscribe((message) => {
       if (!message || typeof message.event !== 'string') return;
-      if (['input', 'lifecycle.pause', 'lifecycle.resume', 'camera.stopped'].includes(message.event)) {
+      if (['input', 'controller.connection', 'lifecycle.pause', 'lifecycle.resume', 'camera.stopped'].includes(message.event)) {
         emit(message.event, message.payload || {});
       }
     });
