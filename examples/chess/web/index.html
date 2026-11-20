@@ -26,7 +26,7 @@
       </div>
     </section>
     <aside class="panel">
-      <header class="panel-header"><h1 id="title">Schach</h1><span id="level-badge">MuPi</span></header>
+      <header class="panel-header"><div class="brandmark"><span class="brand-piece" aria-hidden="true">♛</span><span class="brand-name">MuPi</span><h1 id="title">Schach</h1></div><span id="level-badge">NG</span></header>
       <div class="clocks">
         <div class="clock-card" id="card-white">
           <div class="clock-head"><span id="name-white">Weiß</span><strong id="timer-white">00:00</strong></div>
@@ -57,7 +57,10 @@
         <button id="claim" type="button" class="minor hidden">Remis fordern</button>
       </div>
       <div class="history-block"><span id="history-label">Zugfolge</span><div id="history" aria-live="off">–</div></div>
-      <div class="help" id="help">Figur antippen, dann markiertes Zielfeld wählen. Pfeiltasten/A: Auswahl; B: Abbruch.</div>
+      <div class="bottom-strip">
+        <div class="help" id="help">Figur antippen, dann markiertes Zielfeld wählen. Pfeiltasten/A: Auswahl; B: Abbruch.</div>
+        <div class="mascot-deco" aria-hidden="true"></div>
+      </div>
     </aside>
   </main>
   <script src="./mupibox-sdk.js"></script>

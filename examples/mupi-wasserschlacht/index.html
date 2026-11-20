@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MuPi Water Battle</title><link rel="stylesheet" href="style.css"></head>
+<body><main id="app">
+<header class="header">
+ <button id="exit" class="back" aria-label="Zurück">‹</button>
+ <div class="brand"><strong id="title">MuPi Water Battle</strong></div>
+ <label class="option"><span data-i18n="mode">Modus</span><select id="mode"><option value="quick" data-i18n="quick">Quick · 8×8</option><option value="classic" data-i18n="classic">Classic · 10×10</option><option value="max" data-i18n="max">Max · 12×12</option></select></label>
+ <label class="option"><span data-i18n="level">MuPi-Stärke</span><select id="level"><option value="easy" data-i18n="easy">Leicht</option><option value="medium" selected data-i18n="medium">Mittel</option><option value="hard" data-i18n="hard">Schlau</option></select></label>
+ <button id="view" class="pill" hidden data-i18n="viewown">Boote</button>
+ <button id="sound" class="round" type="button" aria-label="Toneinstellungen" aria-expanded="false" aria-controls="audio-popover">♫</button>
+ <button id="restart" class="pill" data-i18n="new">Neu</button>
+</header>
+<section id="audio-popover" class="audio-popover" role="dialog" aria-label="Toneinstellungen" hidden>
+  <div class="audio-title"><strong data-i18n="audioTitle">Toneinstellungen</strong><button id="close-audio" type="button" aria-label="Schließen">×</button></div>
+  <div class="audio-slider-label"><label for="volume" data-i18n="volume">Lautstärke</label><output id="volume-value" for="volume">40 %</output></div>
+  <input id="volume" type="range" min="0" max="100" step="5" value="40" aria-label="Lautstärke">
+  <div class="audio-slider-label"><label for="music-volume" data-i18n="musicVolume">Musik</label><output id="music-volume-value" for="music-volume">20 %</output></div>
+  <input id="music-volume" type="range" min="0" max="100" step="5" value="20" aria-label="Musiklautstärke">
+  <div class="audio-actions"><button id="music-toggle" class="action" type="button" aria-pressed="true" data-i18n="musicOff">Musik aus</button></div>
+  <div class="audio-actions"><button id="mute" class="action" type="button" aria-pressed="false" data-i18n="mute">Ton aus</button><button id="test-sound" class="action" type="button" data-i18n="testSound">Probeton</button></div>
+  <p class="audio-hint" data-i18n="audioHint">Echte Sounds/Musik brauchen die neue NG-Version. Sonst laufen Tonfolgen.</p>
+  <details class="audio-credits"><summary data-i18n="credits">Soundquellen / Lizenz</summary><p>Treffer: Big Explosion, Blender Foundation – CC BY 3.0, opengameart.org/content/big-explosion (in OGG konvertiert). Alle anderen Audios: CC0; Quellen in SOUND_CREDITS.txt.</p></details>
+</section>
+<div id="impact-flash" class="impact-flash" aria-hidden="true"></div>
+<section class="play">
+ <div class="panel enemy">
+  <div class="board-title"><strong data-i18n="opponent">MuPis Versteck</strong><span id="enemy-score">0 / 2</span></div>
+  <div class="grid" id="enemy" role="group" aria-label="Gegnerisches Wasser"></div>
+ </div>
+ <div class="panel own">
+  <div class="board-title"><strong data-i18n="own">Deine Boote</strong><span id="own-score">0 / 2</span></div>
+  <div class="grid" id="own" role="group" aria-label="Deine Boote"></div>
+ </div>
+ <div class="aside">
+  <div class="reaction" id="reaction" aria-hidden="true"><img id="reaction-img" src="assets/sunk.png" alt=""></div>
+  <div id="message" role="status" aria-live="polite"></div>
+  <div id="placement" class="placement">
+   <div id="ship-hint"></div>
+   <div class="actions"><button id="rotate" class="action" data-i18n="rotate">↻ Drehen</button><button id="auto" class="action" data-i18n="random">Zufall</button></div>
+   <button id="start" class="go" disabled data-i18n="start">Los geht's!</button>
+  </div>
+  <div id="game-controls" class="game-controls" hidden><div id="turn"></div><button id="again" class="go" hidden data-i18n="again">Nochmal!</button></div>
+ </div>
+</section>
+<footer><span data-i18n="help">Boote rechts platzieren. Danach links ein Feld antippen.</span><span class="controller" data-i18n="controller">Controller: Pfeile · A wählen · B zurück</span></footer>
+</main><script src="mupibox-sdk.js"></script><script src="engine.js"></script><script src="audio-player.js"></script><script src="app.js"></script></body></html>

@@ -35,7 +35,7 @@ class CommunitySuiteTests(unittest.TestCase):
      self.assertEqual(set(meta["permissions"]),permissions)
      self.assertEqual(meta["display"]["minWidth"],800)
      self.assertEqual(meta["display"]["minHeight"],480)
-     self.assertTrue((folder/"cover.png").is_file())
+     self.assertTrue((folder/meta["cover"]).is_file())
      self.assertNotIn("network",meta["permissions"])
      self.assertNotIn("networkHosts",meta)
      target=Path(td)/slug
@@ -43,10 +43,16 @@ class CommunitySuiteTests(unittest.TestCase):
      shutil.copyfile(ROOT/"sdk"/"mupibox-sdk.js",target/"mupibox-sdk.js")
      shutil.copyfile(ROOT/"LICENSE",target/"LICENSE.txt")
      out=Path(td)/(slug+".mupiapp")
-     self.assertEqual(pack(target,out)["id"],meta["id"])
+     # Markdown gallery and documentation screenshots belong in the Git
+     # repository, not in installable host-validated .mupiapp archives.
+     docs=[p.name for p in target.iterdir()
+           if p.is_file() and (p.name=="README.md" or
+           (p.name.startswith("screenshot-") and p.suffix.lower()==".webp"))]
+     self.assertEqual(pack(target,out,excluded=docs)["id"],meta["id"])
      self.assertEqual(validate_package(out)["version"],meta["version"])
      with zipfile.ZipFile(out) as z:
       self.assertEqual(z.read("LICENSE.txt"), (ROOT/"LICENSE").read_bytes())
+      for filename in docs:self.assertNotIn(filename,z.namelist())
  def test_scripts_parse(self):
   if shutil.which("node") is None:self.skipTest("node unavailable")
   for slug in APPS:

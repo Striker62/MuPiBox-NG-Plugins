@@ -64,7 +64,70 @@
   // The trusted host enforces the audio permission and device volume ceiling.
   // Standalone browser previews synthesize tones locally instead.
   let previewAudioContext = null;
+  function checkSampleAsset(asset) {
+    if (typeof asset !== 'string' || asset.length > 180 ||
+        !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+        asset.split('/').some(part => part === '..' || part.startsWith('.')))
+      throw new TypeError('audio sample must be a bundled assets/*.ogg, .mp3 or .wav file');
+  }
   const audio = Object.freeze({
+    // Native file playback is mediated by the host and restricted to bundled
+    // app assets. The host decodes into its own PipeWire mixer and enforces
+    // the existing game/parental and maximum-volume policies.
+    async prepareSample(asset) {
+      checkSampleAsset(asset);
+      if (!bridge) return false;
+      return invoke('audio.sample.prepare', {asset});
+    },
+    async playSample(asset, volume = 40, options = {relative:true}) {
+      checkSampleAsset(asset);
+      if (!Number.isInteger(volume) || volume < 0 || volume > 100)
+        throw new TypeError('sample volume must be 0..100');
+      if (options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.relative !== undefined && typeof options.relative !== 'boolean'))
+        throw new TypeError('sample options must contain a boolean relative field');
+      if (!bridge) return false;
+      return invoke('audio.sample.play', {asset, volume, relative:options.relative!==false});
+    },
+    async playMusic(asset, volume = 20, options = {relative:true}) {
+      if (typeof asset !== 'string' || asset.length > 180 ||
+          !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+          asset.split('/').some(part => part === '..' || part.startsWith('.')))
+        throw new TypeError('music must be a bundled assets/*.ogg, .mp3 or .wav file');
+      if (!Number.isInteger(volume) || volume < 0 || volume > 100)
+        throw new TypeError('music volume must be 0..100');
+      if (options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.relative !== undefined && typeof options.relative !== 'boolean'))
+        throw new TypeError('music options must contain a boolean relative field');
+      if (!bridge) return false;
+      return invoke('audio.music.play', {asset, volume, relative:options.relative!==false});
+    },
+    async setMusicVolume(volume, options = {relative:true}) {
+      if (!Number.isInteger(volume) || volume < 0 || volume > 100 ||
+          options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.relative !== undefined && typeof options.relative !== 'boolean'))
+        throw new TypeError('music volume must be 0..100 with valid options');
+      return bridge ? invoke('audio.music.volume', {volume, relative:options.relative!==false}) : false;
+    },
+    async setSampleVolume(volume, options = {relative:true}) {
+      if (!Number.isInteger(volume) || volume < 0 || volume > 100 ||
+          options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.relative !== undefined && typeof options.relative !== 'boolean'))
+        throw new TypeError('sample volume must be 0..100 with valid options');
+      return bridge ? invoke('audio.sample.volume', {volume, relative:options.relative!==false}) : false;
+    },
+    async stopMusic() {return bridge ? invoke('audio.music.stop', {}) : false;},
+    async stopSamples() {return bridge ? invoke('audio.sample.stop', {}) : false;},
+    async playClip(asset) {
+      // Only local, bundled audio assets may be requested. The host checks
+      // that the asset belongs to the installed app and audio was granted.
+      if (typeof asset !== 'string' || asset.length > 180 ||
+          !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+          asset.split('/').some(part => part === '..' || part.startsWith('.'))) {
+        throw new TypeError('audio clip must be a bundled assets/*.mp3, .ogg or .wav file');
+      }
+      return invoke('audio.clip', {asset});
+    },
     async playNote(note, volume = 30, instrument = 'musicbox', options = {}) {
       if (typeof note !== 'string' || !/^[A-G](?:#)?[45]$/.test(note))
         throw new TypeError('unsupported note');
@@ -121,17 +184,53 @@
   // Speech uses the owner's existing Admin > TTS configuration. Applications
   // never select a provider or receive credentials. An approved "audio"
   // permission is required, just as for native note playback.
+  function speechText(text) {
+    if (typeof text !== 'string' || !text.trim() || Array.from(text).length > 600 || text.includes('\0'))
+      throw new TypeError('speech text must contain 1..600 characters and no NUL');
+    return text.trim();
+  }
   const tts = Object.freeze({
     async status() {
       if (!bridge) return {enabled: false, available: false, language: global.navigator.language || 'de'};
       const result = await invoke('tts.status', {});
-      return {enabled: result?.enabled === true, available: result?.available === true,
+      const out = {enabled: result?.enabled === true, available: result?.available === true,
         language: typeof result?.language === 'string' ? result.language : ''};
+      if (typeof result?.state === 'string') out.state = result.state;
+      if (typeof result?.speaking === 'boolean') out.speaking = result.speaking;
+      if (typeof result?.canPause === 'boolean') out.canPause = result.canPause;
+      if (typeof result?.preRenderingEnabled === 'boolean') out.preRenderingEnabled = result.preRenderingEnabled;
+      return out;
     },
-    async speak(text) {
-      if (typeof text !== 'string' || !text.trim() || Array.from(text).length > 600 || text.includes('\0'))
-        throw new TypeError('speech text must contain 1..600 characters and no NUL');
-      return invoke('tts.speak', {text: text.trim()});
+    async prepare(text) {
+      return invoke('tts.prepare', {text: speechText(text)});
+    },
+    async stop() {
+      return invoke('tts.stop', {});
+    },
+    async speak(text, options = {}) {
+      if (options === null || typeof options !== 'object' || Array.isArray(options) ||
+          (options.waitForCompletion !== undefined && typeof options.waitForCompletion !== 'boolean'))
+        throw new TypeError('speech options must contain a boolean waitForCompletion');
+      const payload = {text: speechText(text)};
+      if (options.afterClip !== undefined) {
+        const asset = options.afterClip;
+        if (typeof asset !== 'string' || asset.length > 180 ||
+            !/^assets\/[a-zA-Z0-9_/-]+\.wav$/.test(asset) ||
+            asset.split('/').some(part => part === '..' || part.startsWith('.'))) {
+          throw new TypeError('afterClip must be a bundled assets/*.wav file');
+        }
+        payload.after_clip = asset;
+      }
+      const result = await invoke('tts.speak', payload);
+      if (options.waitForCompletion !== true) return result; // existing immediate-start contract
+      if (typeof result?.request_id !== 'string')
+        throw new Error('MuPiBox host does not support speech completion');
+      // The host long-polls up to 15 seconds per call, avoiding constant
+      // status traffic; only the owning app session can wait on this clip.
+      for (;;) {
+        const state = await invoke('tts.wait', {request_id: result.request_id});
+        if (state?.done === true) return {...result, ...state};
+      }
     }
   });
 
@@ -261,8 +360,29 @@
     }
   });
 
+  // API parity is a reviewed capability list, not a generic HTTP gateway.
+  // The trusted host identifies the installed app and enforces permission,
+  // parental control and local touch-session checks on every call.
+  const device = Object.freeze({
+    async info() { return invoke('device.info', {}); },
+    async system() { return invoke('device.system', {}); },
+    async display() { return invoke('device.display', {}); },
+    async audio() { return invoke('device.audio', {}); }
+  });
+
+  const playback = Object.freeze({
+    async status() { return invoke('playback.status', {}); },
+    async queue() { return invoke('playback.queue', {}); },
+    async transport(action) {
+      if (!['play_pause', 'next', 'previous', 'volume_up', 'volume_down'].includes(action))
+        throw new TypeError('unsupported playback transport action');
+      return invoke('playback.transport', {action});
+    }
+  });
+
   const sdk = Object.freeze({
     apiVersion: '1',
+    sdkRevision: '1.1',
     isHosted: Boolean(bridge),
     on,
     storage,
@@ -273,6 +393,24 @@
     shared,
     links,
     homeassistant,
+    device,
+    playback,
+    async capabilities() {
+      if (bridge) return invoke('host.capabilities', {});
+      return {apiVersion: '1', sdkRevision: '1.1', methods: [], preview: true};
+    },
+    async supports(method) {
+      if (typeof method !== 'string' || !/^[a-z][a-z.]+$/.test(method))
+        throw new TypeError('invalid SDK method');
+      let capabilities;
+      try {capabilities = await sdk.capabilities();}
+      catch (error) {
+        if (/unsupported plugin bridge method|HTTP 400/i.test(String(error?.message || error))) return false;
+        throw error;
+      }
+      return Array.isArray(capabilities.methods) && capabilities.methods.some(
+        capability => capability.method === method && capability.available === true);
+    },
     async getContext() {
       if (bridge) return invoke('host.context', {});
       return { apiVersion: '1', preview: true, language: global.navigator.language || 'de' };

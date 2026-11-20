@@ -5,8 +5,11 @@ checks that its 800x480 board is initialized by the actual DOM runtime.
 """
 import os
 import re
+import math
+import itertools
 import shutil
 import socket
+import tempfile
 import subprocess
 import time
 import unittest
@@ -18,7 +21,7 @@ APPS={
     "mupi-muehle":("circles",48),
     "mupi-reversi":("cells",64),
     "mupi-dame":("cells",64),
-    "mupi-wuerfelrennen":("rects",68),
+    "mupi-wuerfelrennen":("finish-circles",16),
     "mupi-hnefatafl":("rects",121),
 }
 
@@ -61,8 +64,126 @@ class BoardGamesBrowserSmoke(unittest.TestCase):
                     self.assertEqual(len(re.findall(r'class="cell"',result.stdout)),required)
                 elif kind=="circles":
                     self.assertGreaterEqual(result.stdout.count("<circle"),required)
+                elif kind=="finish-circles":
+                    # The visual-only center die is gone, but the die display in
+                    # the right-side controls remains available for actual rolls.
+                    self.assertNotIn('id="dieGlow"',result.stdout)
+                    self.assertIn('id="boardAtmosphere"',result.stdout)
+                    self.assertIn('id="dice"',result.stdout)
+                    # The 16 target cells must be visually distinct: no pair overlaps.
+                    cells=re.findall(r'<circle\b[^>]*class="finish-cell"[^>]*>',result.stdout)
+                    self.assertEqual(len(cells),required)
+                    positions=[]
+                    for cell in cells:
+                        def attr(name):
+                            found=re.search(rf'\b{name}="([0-9.]+)"',cell)
+                            self.assertIsNotNone(found)
+                            return float(found.group(1))
+                        positions.append((attr("cx"),attr("cy"),attr("r")))
+                    for (x1,y1,r1),(x2,y2,r2) in itertools.combinations(positions,2):
+                        self.assertGreater(
+                            math.hypot(x1-x2,y1-y2),r1+r2,
+                            "Overlapping target circles in "+name,
+                        )
                 else:
                     self.assertGreaterEqual(result.stdout.count("<rect"),required)
+
+
+    def test_dicerace_six_is_visible_during_automatic_exit(self):
+        # Use the real browser and runtime, with only a deterministic die roll.
+        app=ROOT/"examples"/"mupi-wuerfelrennen"
+        with tempfile.TemporaryDirectory(prefix="mupi-dicerace-") as tmp:
+            dest=Path(tmp)
+            for name in ("index.html","app.js","style.css","mupibox-sdk.js"):
+                shutil.copy2(app/name,dest/name)
+            html=(dest/"index.html").read_text(encoding="utf-8")
+            probe="""<script>
+              Math.random=()=>0.99;
+              document.getElementById('roll').click();
+              document.body.dataset.first=document.getElementById('dice').dataset.value;
+              setTimeout(()=>{
+                document.body.dataset.hold=document.getElementById('dice').dataset.value;
+                document.body.dataset.message=document.getElementById('status').textContent;
+              },650);
+              setTimeout(()=>{
+                document.body.dataset.after=document.getElementById('dice').dataset.value;
+                document.body.dataset.next=document.getElementById('status').textContent;
+              },1450);
+            </script>"""
+            (dest/"index.html").write_text(
+                html.replace("</body>",probe+"</body>"),encoding="utf-8")
+            run=subprocess.run([
+                BROWSER,"--headless","--no-sandbox","--disable-gpu",
+                "--disable-dev-shm-usage","--disable-background-networking",
+                "--virtual-time-budget=1700","--window-size=800,480",
+                "--dump-dom",(dest/"index.html").as_uri(),
+            ],capture_output=True,text=True,timeout=22)
+            self.assertEqual(run.returncode,0,run.stderr[-500:])
+            self.assertRegex(run.stdout,r'data-first="6"')
+            self.assertRegex(run.stdout,r'data-hold="6"')
+            self.assertRegex(run.stdout,r'data-message="Sechs!')
+            self.assertRegex(run.stdout,r'data-after="6"')
+            self.assertRegex(run.stdout,r'data-next="[^"]*Extrawurf!')
+
+
+    def test_dicerace_resume_interrupted_ai_actions(self):
+        # A real hosted SDK pause/resume event must restore the pending AI timer.
+        app=ROOT/"examples"/"mupi-wuerfelrennen"
+        for scenario,random_value in (("six",0.99),("no-move",0.01)):
+            with self.subTest(scenario=scenario):
+                with tempfile.TemporaryDirectory(prefix="mupi-dicerace-resume-") as tmp:
+                    dest=Path(tmp)
+                    for name in ("index.html","app.js","style.css","mupibox-sdk.js"):
+                        shutil.copy2(app/name,dest/name)
+                    js=(dest/"app.js").read_text(encoding="utf-8")
+                    trailer="reset();\n})();"
+                    self.assertIn(trailer,js)
+                    js=js.replace(trailer,
+                        f'$("playercount").value="2";reset();turn=2;Math.random=()=>{random_value};'
+                        "window.__boardSnapshot=()=>JSON.stringify(b);computer();\n})();")
+                    (dest/"app.js").write_text(js,encoding="utf-8")
+                    html=(dest/"index.html").read_text(encoding="utf-8")
+                    bridge=(
+                        '<script>window.__MUPIBOX_BRIDGE__={'
+                        'subscribe:fn=>{window.__emit=fn;},'
+                        'invoke:()=>Promise.resolve({})};</script>'
+                        '<script src="mupibox-sdk.js"></script>'
+                    )
+                    html=html.replace('<script src="mupibox-sdk.js"></script>',bridge)
+                    probe="""<script src="app.js"></script>
+                    <script>
+                    setTimeout(()=>{
+                      window.__emit({event:'lifecycle.pause',payload:{}});
+                      document.body.dataset.paused='yes';
+                    },400);
+                    setTimeout(()=>{
+                      window.__emit({event:'lifecycle.resume',payload:{}});
+                      document.body.dataset.resumed='yes';
+                    },500);
+                    setTimeout(()=>{
+                      document.body.dataset.result=document.getElementById('turn').textContent;
+                      document.body.dataset.board=window.__boardSnapshot();
+                    },2900);
+                    </script>"""
+                    html=html.replace('<script src="app.js"></script>',probe)
+                    (dest/"index.html").write_text(html,encoding="utf-8")
+                    run=subprocess.run([
+                        BROWSER,"--headless","--no-sandbox","--disable-gpu",
+                        "--disable-dev-shm-usage","--disable-background-networking",
+                        "--virtual-time-budget=3300","--window-size=800,480",
+                        "--dump-dom",(dest/"index.html").as_uri(),
+                    ],capture_output=True,text=True,timeout=22)
+                    self.assertEqual(run.returncode,0,run.stderr[-500:])
+                    self.assertIn('data-paused="yes"',run.stdout)
+                    self.assertIn('data-resumed="yes"',run.stdout)
+                    if scenario=="six":
+                        # Without resume, the AI is stuck on a 6 with all pieces home.
+                        self.assertIn(
+                          'data-board="[[-1,-1,-1,-1],[-1,-1,-1,-1],[0,-1,-1,-1],[-1,-1,-1,-1]]"',
+                          run.stdout)
+                    else:
+                        # Three invalid AI rolls must pass the turn back to Rot.
+                        self.assertIn('data-result="Rot · DU BIST DRAN"',run.stdout)
 
 
 if __name__=="__main__":

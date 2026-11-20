@@ -1,4 +1,4 @@
-# MuPi Schach 0.1.0
+# MuPi Schach 0.1.5
 
 Offline-Schach als unabhängige, touchscreenfreundliche Community-App für MuPiBox-NG.
 
@@ -14,7 +14,7 @@ Offline-Schach als unabhängige, touchscreenfreundliche Community-App für MuPiB
 
 ## Cover und Anzeige in der Spielebibliothek
 
-Die App gehört zur Kategorie `games` und erscheint in der MuPiBox-Spielebibliothek unter **MuPi Schach**. Die quadratische Kachel `web/cover.png` (512 × 512 PNG, Springer auf Schachbrett) wird beim Paketbau zu `cover.png` und über `manifest.cover` als App-Kachel angezeigt. Die Kachel ist **kein** App-Hintergrund: `display.background: "system"` und transparente CSS-Flächen lassen weiterhin das MuPiBox-Theme durchscheinen. `showBackButton: false`, `showSystemInfo: false` und `fullScreen: true` entfernen die nativen MuPiBox-Leisten; zum Verlassen gibt es die eigene SDK-Zurück-Schaltfläche.
+Die App gehört zur Kategorie `games` und erscheint als **MuPi Schach**. Das separate `cover-clean-v2.jpg` bleibt die Kachel in der Spielebibliothek; es wird nicht als festes Schachbrett eingesetzt. Seit v0.1.4 gibt es stattdessen eine adaptive, komplett lokale Gold/Türkis-Neon-Oberfläche mit hochkontrastigen Spielfeldern, plastisch schattierten Unicode-Figuren und klaren Markierungen. Die MuPi-Dekoration `mascot-deco.png` wurde ausschließlich aus dem bestehenden Cover abgeleitet. `display.background: "app"` wählt diesen absichtlich gestalteten Hintergrund. Die Oberfläche ist für 800 × 480 optimiert und behält Touch, Controller, Tastatur, Sprachen und das vollständige Schach-Regelwerk bei. `showBackButton: false`, `showSystemInfo: false` und `fullScreen: true` verbergen die nativen Leisten; der eigene Zurück-Knopf nutzt weiterhin `MuPiBoxSDK.exit()`.
 
 ## Bauen und testen
 
@@ -27,3 +27,6 @@ node --test tests/test_chess.js
 Der Builder bündelt die vorhandene öffentliche `sdk/mupibox-sdk.js`-Datei in das Paket. Der Code ist MIT-lizenziert und verwendet keine externe Schachbibliothek. Die KI ist eine lokal laufende, budgetierte Alpha-Beta-Suche, **keine** starke Stockfish-Engine. Schwierigkeit und Rechenzeit sind bewusst für Raspberry-Pi-Touchgeräte begrenzt. Uhren werden bei App-Pause und bei verborgenem Browser angehalten. Einstellungen starten eine neue Partie.
 
 **Offizieller Katalog:** `community.mupi-chess` ist seit [Preview 0.10](https://github.com/splitti/MuPiBox-NG-Plugins/releases/tag/v0.1.0-preview.10) mit dem überprüften GitHub-Release-Asset `mupi-chess.mupiapp` im `catalog/apps.json` unter `games` enthalten. Die Prüfsumme stammt aus einem erneuten Download des tatsächlich veröffentlichten Pakets. Die MuPiBox muss den Katalog neu laden, damit die neue Kachel angezeigt wird.
+## MuPi mit Königsfigur (v0.1.5)
+
+Im rechten unteren Panel steht ein eigens freigestellter oranger MuPi mit **drei Kiemenästen auf jeder Seite**, Kopfhörern, Umhang und goldener Schach-Königsfigur. Die lokal mitgelieferte Datei `web/mascot-king.webp` ist transparent; die Figur passt sich der verfügbaren Höhe im 800×480-Layout an. Die Bedienhilfe bleibt links daneben lesbar. Schach-Logik, Steuerung und Berechtigungen sind unverändert.

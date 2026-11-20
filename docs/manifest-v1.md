@@ -47,7 +47,7 @@ Example manifest:
 | `runtime` | Only `"web"` for v1; Go must be compiled to WASM |
 | `entry`, `icon` | Relative paths inside the package, no absolute paths or `..` |
 | `cover` | Optional raster home-tile image (PNG/JPG/JPEG/WebP) relative to the package root; not the app background |
-| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `shared-assets`, `links`, `homeassistant` (`network` is not supported by the current host) |
+| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `shared-assets`, `links`, `homeassistant`, `device-status`, `playback`, `playback-control` (`network` is reserved in the packaging schema for backwards compatibility but not supported by the host; see [SDK API reference](sdk-api-reference.md)) |
 | `networkHosts` | Explicit hostname allowlist **required** when requesting `network` |
 | `category` | Preferred native menu location: `games`, `creative`, `learning`, `tools`, or `other` (defaults to `games`) |
 | `display` | Preferred orientation, minimum size and optional native MuPiBox chrome settings |
@@ -310,3 +310,30 @@ An upgraded NG host implements `sdk.audio.playChord(notes, volume,
 device volume ceiling, parental controls and 75ms per-app call rate limit
 apply as with `playNote`. It does not accept raw audio samples or arbitrary
 note ranges and is not a sample-accurate song sequencer.
+
+
+### Wiedergabe kurzer App-eigener Soundeffekte
+
+Eine MuPiBox-NG-Version mit der optionalen Host-Bridge-Methode `audio.clip`
+kann kleine Audiodateien (MP3, OGG, WAV) direkt über die eingerichtete
+Box-Audioausgabe ausgeben. Die Datei muss als reguläre Datei im installierten
+App-Paket unter `assets/` liegen und maximal 2 MiB groß sein. Die vorhandene
+Berechtigung `audio`, Kindersicherung, per-App-Ratenlimit und die globale
+Lautstärkebegrenzung bleiben aktiv. Beliebige Dateipfade und Netzwerk-URLs
+werden nicht akzeptiert.
+
+Die Funktion kann z. B. nach `tts.speak(text, {waitForCompletion:true})`
+verwendet werden: Erst bei `result.state === "completed"` wird der kurze
+Effekt mit `sdk.audio.playClip("assets/laugh.mp3")` gestartet. Die laufende
+Clip-Ausgabe kann über `sdk.tts.stop()` vorzeitig beendet werden. Ältere
+Hosts ohne `audio.clip` unterstützen weiterhin den restlichen App-Betrieb.
+
+### Optional short-effect preload
+
+When `(await sdk.getContext()).audioSamplePreload` is true, an app with the
+existing `audio` permission may await `sdk.audio.prepareSample("assets/audio/hit.wav")`
+before starting a game. This prepares one local effect silently. Subsequent
+`playSample` calls use the same decoded PCM while it is cached. The host applies
+the usual asset, session and rate limits, caps the cache at 16 effects and 2 MiB
+across owners, and releases the touch session's entries on exit. Older hosts
+continue to support normal playback without a preparation step.

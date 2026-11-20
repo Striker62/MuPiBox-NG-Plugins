@@ -304,7 +304,24 @@
 #app-exit:disabled{opacity:.5;}
 #app-exit[hidden]{display:none!important;}
 
-/* 0.2.29: a single read-aloud action, using the host's configured TTS voice. */
-#reader #controls .bottom-center{bottom:12px;left:50%;transform:translateX(-50%);z-index:5;min-height:48px;font-size:16px;white-space:nowrap;}
-#reader #controls #read-aloud[hidden]{display:none!important;}
-@media(max-width:680px){#reader #controls .bottom-center{bottom:6px;min-height:44px;font-size:14px;}}
+#reader #controls #speech-controls {
+ position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+ z-index:5;display:flex;gap:8px;
+}
+#reader #controls #speech-controls[hidden]{display:none;}
+#reader #controls #speech-controls button{
+ position:static;width:64px;height:60px;min-width:0;min-height:0;padding:6px;
+ background:#0d1827e6;
+}
+#speech-controls button svg{display:block;width:40px;height:34px;}
+#speech-controls .speech-stop{display:none;width:20px;height:20px;border-radius:2px;background:currentColor;}
+#reader #controls #speech-controls button[aria-pressed="true"]{background:#14648c;}
+#speech-controls button[aria-pressed="true"] svg{display:none;}
+#speech-controls button[aria-pressed="true"] .speech-stop{display:block;}
+@media(max-width:680px){
+ #reader #controls #speech-controls{bottom:6px;}
+}
+@media(max-width:420px){
+ #reader #controls #speech-controls{left:8px;transform:none;gap:6px;}
+ #reader #controls #speech-controls button{width:60px;height:58px;}
+}

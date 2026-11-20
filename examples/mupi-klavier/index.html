@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#071d46">
+  <title>MuPi Klavier</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <button id="exit" class="back-button" aria-label="Klavier verlassen"><span aria-hidden="true">‹</span> Zurück</button>
+    <div class="brand" aria-label="MuPi Klavier">
+      <strong><span>MuPi</span> Klavier</strong>
+    </div>
+    <select id="mode" aria-label="Ansicht">
+      <option value="free">Frei spielen</option>
+      <option value="fall">Fallende Noten</option>
+      <option value="staff">Notenblatt</option>
+    </select>
+    <select id="song" aria-label="Lied"></select>
+  </header>
+  <nav class="toolbar" aria-label="Spielsteuerung">
+    <button id="demo" class="play-button">▶ Vorspielen</button>
+    <button id="reset" class="reset-button">↺ Neustart</button>
+    <label class="range-field">Tempo <input id="tempo" type="range" min="40" max="160" value="80" aria-label="Tempo"></label>
+    <select id="instrument" aria-label="Instrument">
+      <option value="piano">Klavier</option>
+      <option value="epiano">E-Piano</option>
+      <option value="glockenspiel">Glockenspiel</option>
+      <option value="xylophone">Xylophon</option>
+      <option value="marimba">Marimba</option>
+      <option value="musicbox">Spieluhr</option>
+      <option value="harp">Harfe</option>
+    </select>
+    <label class="range-field volume-field">Ton <input id="volume" type="range" min="0" max="100" value="70" aria-label="Lautstärke"></label>
+  </nav>
+  <main>
+    <div class="score-panel"><canvas id="score" aria-label="Notenanzeige"></canvas></div>
+    <div id="hint" role="status" aria-live="polite"></div>
+    <div id="keyboard" aria-label="Klaviatur"></div>
+  </main>
+  <script src="mupibox-sdk.js"></script>
+  <script src="music.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

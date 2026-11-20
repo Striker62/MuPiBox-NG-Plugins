@@ -30,3 +30,61 @@ test('browser standalone fallback stays available without a privileged bridge',a
  assert.equal(sdk.isHosted,false);
  assert.equal(await sdk.audio.playNote('G4',30,'musicbox'),false);
 });
+
+
+test('bundled audio clip uses the trusted audio bridge with strict asset validation',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.playClip('assets/laugh-ionakan-712055.mp3');
+ assert.equal(calls[0].method,'audio.clip');
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{asset:'assets/laugh-ionakan-712055.mp3'});
+ for(const invalid of ['../secret.wav','assets/../../secret.mp3','https://example.com/sound.mp3','assets/file.js','assets/.private.mp3','assets/foo.mp3?x']) {
+  await assert.rejects(()=>sdk.audio.playClip(invalid),{name:'TypeError'});
+ }
+ assert.equal(calls.length,1);
+});
+
+
+test('native PCM sound and loop requests are scoped to installed audio assets',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.playSample('assets/audio/hit.ogg',65,{relative:true});
+ await sdk.audio.playMusic('assets/audio/bg-music.ogg',20,{relative:true});
+ await sdk.audio.stopMusic();
+ await sdk.audio.stopSamples();
+ assert.deepEqual(calls.map(c=>c.method),['audio.sample.play','audio.music.play','audio.music.stop','audio.sample.stop']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{asset:'assets/audio/hit.ogg',volume:65,relative:true});
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[1].payload)),{asset:'assets/audio/bg-music.ogg',volume:20,relative:true});
+ for(const invalid of ['../evil.ogg','assets/../sound.ogg','https://example.org/tone.ogg','assets/foo.js','assets/.secret.wav']) {
+  await assert.rejects(()=>sdk.audio.playSample(invalid),{name:'TypeError'});
+  await assert.rejects(()=>sdk.audio.playMusic(invalid),{name:'TypeError'});
+ }
+ for(const invalid of [-1,101,1.5,'loud']) {
+  await assert.rejects(()=>sdk.audio.playSample('assets/audio/hit.ogg',invalid),{name:'TypeError'});
+ }
+ assert.equal(calls.length,4);
+});
+
+test('native audio gain controls validate levels without replaying sample assets',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.setMusicVolume(10,{relative:true});
+ await sdk.audio.setSampleVolume(80,{relative:true});
+ await sdk.audio.setMusicVolume(0,{relative:true});
+ assert.deepEqual(calls.map(c=>c.method),['audio.music.volume','audio.sample.volume','audio.music.volume']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{volume:10,relative:true});
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[1].payload)),{volume:80,relative:true});
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[2].payload)),{volume:0,relative:true});
+ for(const invalid of [-1,101,1.5,'loud']){
+  await assert.rejects(()=>sdk.audio.setMusicVolume(invalid),{name:'TypeError'});
+  await assert.rejects(()=>sdk.audio.setSampleVolume(invalid),{name:'TypeError'});
+ }
+ assert.equal(calls.length,3);
+});
+
+test('preparing an effect uses a silent native request and validates the path',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.prepareSample('assets/audio/collect.wav');
+ assert.equal(calls[0].method,'audio.sample.prepare');
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{asset:'assets/audio/collect.wav'});
+ await assert.rejects(()=>sdk.audio.prepareSample('../collect.wav'),{name:'TypeError'});
+ assert.equal(await getSDK(false).sdk.audio.prepareSample('assets/audio/collect.wav'),false);
+ assert.equal(calls.length,1);
+});

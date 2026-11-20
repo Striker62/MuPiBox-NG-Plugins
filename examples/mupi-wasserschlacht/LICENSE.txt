@@ -1,0 +1,3 @@
+MuPi Wasserschlacht – original community game implementation.
+Copyright (c) 2026 MuPiBox Community
+Licensed under the MIT License in the repository root.

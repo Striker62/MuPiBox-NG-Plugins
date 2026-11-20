@@ -6,6 +6,29 @@ Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SD
 
 > **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Native Qt-Touch-Apps und der offizielle, geprüfte App-Katalog sind inzwischen verfügbar. Vollständiger Audiofokus und unabhängige Publisher-Signaturen fehlen weiterhin; ältere NG-Versionen haben keinen Plugin-Manager.
 
+## MuPi Water Battle (Spielekatalog, November 2026)
+
+Eine kindgerechte, eigenständige Flottensuche-App für das 5-Zoll-Touchdisplay: **Quick 8×8 (2 Boote), Classic 10×10 (5 Boote), Max 12×12 (7 Boote)**, drei KI-Stufen, orangefarbener MuPi, Offline-Spiel und Sound. Die geprüfte Version **0.2.5** enthält das neue drei-Kiemenäste-Cover, einen eine Sekunde langen Treffer-Ruckler sowie getrennte Musik- und Effektlautstärke. Das gleiche Cover erscheint im Spiele-Coverflow und im Admin-Katalog (mit NG-Cover-Sync).
+
+| Quick 8×8 – Aufbau | Max 12×12 – gegnerisches Spielfeld |
+| :---: | :---: |
+| ![MuPi Water Battle: zwei Boote im Quick-Modus](examples/mupi-wasserschlacht/screenshots/01-quick-aufbau.webp) | ![MuPi Water Battle: Max-Modus mit Treffern](examples/mupi-wasserschlacht/screenshots/03-max-gegner.webp) |
+
+- [Alle sechs Spiel-Screenshots und Anleitung](examples/mupi-wasserschlacht/README.md)
+- [Paket erzeugen](tools/build_wasserschlacht.py): python3 tools/build_wasserschlacht.py
+- [Automatisierte Tests](tests/mupi_wasserschlacht.test.cjs)
+
+## MuPi Klavier (Lernen)
+
+Die Community-Lern-App **MuPi Klavier** bietet freies Spielen, Notenblatt und
+fallende Noten auf dem 5-Zoll-Touchdisplay (800 × 480). Das überarbeitete
+Design verwendet einen richtigen Violinschlüssel und das freigegebene
+MuPi-Klavier-Cover.
+
+[![MuPi Klavier – Notenblatt mit hervorgehobener G4-Taste](examples/mupi-klavier/screenshots/notenblatt.png)](examples/mupi-klavier/README.md)
+
+[**Anleitung und alle drei Screenshots**](examples/mupi-klavier/README.md)
+
 ## Neue Community-App-Vorschauen (November 2026)
 
 Zehn eigenständige Prototypen liegen unter `examples/mupi-*`:
@@ -43,6 +66,14 @@ python3 tools/mupitheme.py pack examples/themes/starfield dist/sternenreise.mupi
 **Status:** Die NG-Host-Änderungen liegen zunächst in einem separaten Entwicklungszweig, noch nicht in einer veröffentlichten Alpha. Der offizielle Theme-Katalog ist bis zur ersten geprüften Veröffentlichung leer.
 
 ## Für Entwickler
+
+**SDK Revision 1.1:** [Plattform-API, Capabilities, Berechtigungen und
+Codebeispiele](docs/sdk-api-reference.md). Geräte-/Systemstatus,
+Player-Status, Warteschlange und geschützte Transportsteuerung sind nun über
+die SDK-Fassade statt über eigene HTTP-Aufrufe verfügbar. Die Host-Version
+muss die Funktionen unterstützen und der Admin muss die jeweiligen Rechte
+freigeben.
+
 
 Voraussetzungen: Python 3.10+, Go 1.24+ (für das Go-Beispiel; das SDK selbst benötigt kein Go).
 

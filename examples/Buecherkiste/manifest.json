@@ -2,9 +2,9 @@
   "apiVersion": "1",
   "id": "community.buecherkiste",
   "name": "Bücherkiste",
-  "description": "Bücherkiste mit zusätzlichen Büchern aus dem eigenen SMB-Ordner",
+  "description": "Bilderbücher mit automatischem Vorlesen und eigenen SMB-Büchern",
   "author": "MuPiBox Community",
-  "version": "0.2.29",
+  "version": "1.0.0",
   "runtime": "web",
   "entry": "index.html",
   "permissions": [

@@ -10,7 +10,7 @@ VERSION = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$")
 TAG = re.compile(r"^v[0-9]+\.[0-9]+\.[0-9]+-preview\.[0-9]+$")
 ASSET = re.compile(r"^[a-z0-9][a-z0-9-]*\.mupiapp$")
 SHA = re.compile(r"^[0-9a-f]{64}$")
-PERMISSIONS = {"storage","controller","audio","camera","photo-save","shared-assets"}
+PERMISSIONS = {"storage","controller","audio","camera","photo-save","shared-assets","links","homeassistant","device-status","playback","playback-control"}
 
 def validate(catalog):
     if not isinstance(catalog, dict) or set(catalog) != {"schema", "apps"} or catalog["schema"] != 1:
@@ -20,10 +20,14 @@ def validate(catalog):
         raise ValueError("empty or oversized catalog")
     seen = set()
     for app in apps:
-        if not isinstance(app, dict) or set(app) != {"id","name","description","category","author","version","releaseTag","asset","sha256","permissions"}:
+        required={"id","name","description","category","author","version","releaseTag","asset","sha256","permissions"}
+        optional={"icon","publishedAt","updatedAt"}
+        if not isinstance(app,dict) or not required.issubset(app) or not set(app).issubset(required|optional):
             raise ValueError("unsupported app fields")
         if not all(isinstance(app[f], str) for f in ("id","name","description","category","author","version","releaseTag","asset","sha256")):
             raise ValueError("app metadata must be strings")
+        if "icon" in app and (not isinstance(app["icon"],str) or not re.fullmatch(r"examples/[A-Za-z0-9_-]+/(?:[A-Za-z0-9_-]+/){0,3}[A-Za-z0-9_.-]+\.(?:png|jpg|jpeg|webp)",app["icon"])):
+            raise ValueError("invalid catalog icon")
         if not APP_ID.fullmatch(app["id"]) or not VERSION.fullmatch(app["version"]):
             raise ValueError("invalid app id or version")
         if app["id"] in seen:
@@ -31,7 +35,7 @@ def validate(catalog):
         seen.add(app["id"])
         if not TAG.fullmatch(app["releaseTag"]) or not ASSET.fullmatch(app["asset"]) or not SHA.fullmatch(app["sha256"]):
             raise ValueError("unsafe artifact locator or checksum")
-        if not 1 <= len(app["name"]) <= 100 or len(app["description"]) > 1000 or len(app["author"]) > 100 or app["category"] not in ("games","learning","creative"):
+        if not 1 <= len(app["name"]) <= 100 or len(app["description"]) > 1000 or len(app["author"]) > 100 or app["category"] not in ("games","learning","creative","tools","other"):
             raise ValueError("invalid metadata")
         perms = app["permissions"]
         if not isinstance(perms, list) or len(perms) != len(set(perms)) or not set(perms) <= PERMISSIONS:
@@ -67,7 +71,8 @@ class CatalogTests(unittest.TestCase):
             "official.klang-memory":"klang-memory",
             "official.webcam-preview":"webcam-preview",
             "community.fotospass":"fotospass",
-            "community.buecherkiste":"Buecherkiste"
+            "community.buecherkiste":"Buecherkiste",
+            "community.mupi-wasserschlacht":"mupi-wasserschlacht"
         }
         for app in validate(self.catalog):
             example = examples.get(app["id"], "")
@@ -98,12 +103,12 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(chess['category'], 'games')
         self.assertGreaterEqual(version_tuple(manifest['version']), version_tuple(chess['version']))
         self.assertEqual(chess['permissions'], manifest['permissions'])
-        self.assertEqual(manifest['cover'], 'cover.jpg')
-        self.assertEqual(manifest['display']['background'], 'system')
+        self.assertEqual(manifest['cover'], 'cover-clean-v2.jpg')
+        self.assertEqual(manifest['display']['background'], 'app')
         self.assertFalse(manifest['display']['showBackButton'])
         self.assertFalse(manifest['display']['showSystemInfo'])
         self.assertTrue(manifest['display']['fullScreen'])
-        cover = (ROOT/'examples/chess/web/cover.jpg').read_bytes()
+        cover = (ROOT/'examples/chess/web/cover-clean-v2.jpg').read_bytes()
         self.assertTrue(cover.startswith(b'\xff\xd8\xff'))
         self.assertGreater(len(cover), 8000)
 

@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from math import sin,cos,pi
 ROOT=Path(__file__).resolve().parents[1]
-SRC=ROOT/"examples/chess/web/cover.jpg"
+SRC=ROOT/"examples/chess/web/cover-clean-v2.jpg"
 SIZE=(416,325)
 FONT="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 SCENES={
@@ -154,6 +154,11 @@ def mascot(im):
  mask=mask.filter(ImageFilter.GaussianBlur(12))
  im.paste(crop,(0,100),mask)
 def build(slug,title_,top,low):
+ import json
+ manifest=json.loads((ROOT/'examples'/slug/'manifest.json').read_text())
+ if manifest.get('cover') != 'cover.png':
+  print(slug, 'uses curated illustration; leaving artwork unchanged')
+  return
  im=background(top,low);d=ImageDraw.Draw(im)
  for i in range(25):
   x=(i*131+77)%420;y=(i*79+111)%320
