@@ -129,6 +129,9 @@
         throw new TypeError('sample volume must be 0..100 with valid options');
       return bridge ? invoke('audio.sample.volume', {volume, relative:options.relative!==false}) : false;
     },
+    // Optional NG host capability: retain the exact loop position on pause.
+    async pauseMusic() {return bridge ? invoke('audio.music.pause', {}) : false;},
+    async resumeMusic() {return bridge ? invoke('audio.music.resume', {}) : false;},
     async stopMusic() {return bridge ? invoke('audio.music.stop', {}) : false;},
     async stopSamples() {return bridge ? invoke('audio.sample.stop', {}) : false;},
     async playClip(asset) {
