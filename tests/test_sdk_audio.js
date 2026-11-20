@@ -114,3 +114,15 @@ test('music preloading validates the same scoped asset rules but never plays a l
  const standalone=getSDK(false);
  assert.equal(await standalone.sdk.audio.prepareMusic('assets/audio/level.wav'),false);
 });
+
+test('music pause and resume keep the owner-scoped host event, without sending playback files',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.pauseMusic();
+ await sdk.audio.resumeMusic();
+ assert.deepEqual(calls.map(c=>c.method),['audio.music.pause','audio.music.resume']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{});
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[1].payload)),{});
+ const preview=getSDK(false).sdk;
+ assert.equal(await preview.audio.pauseMusic(),false);
+ assert.equal(await preview.audio.resumeMusic(),false);
+});
