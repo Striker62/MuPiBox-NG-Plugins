@@ -105,6 +105,16 @@
       if (!bridge) return false;
       return invoke('audio.music.play', {asset, volume, relative:options.relative!==false});
     },
+    // Optional trusted host feature: preload a *bounded* packaged music
+    // loop into its 20MiB/two-slot LRU PCM cache without starting playback.
+    async prepareMusic(asset) {
+      if (typeof asset !== 'string' || asset.length > 180 ||
+          !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+          asset.split('/').some(part => part === '..' || part.startsWith('.')))
+        throw new TypeError('music must be a bundled assets/*.ogg, .mp3 or .wav file');
+      if (!bridge) return false;
+      return invoke('audio.music.prepare', {asset, volume:0, relative:true});
+    },
     async setMusicVolume(volume, options = {relative:true}) {
       if (!Number.isInteger(volume) || volume < 0 || volume > 100 ||
           options === null || typeof options !== 'object' || Array.isArray(options) ||
