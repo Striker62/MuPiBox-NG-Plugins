@@ -138,3 +138,23 @@ test('music hold/restore uses the session-scoped trusted bridge, never raw audio
  assert.equal(await preview.audio.holdMusic(),false);
  assert.equal(await preview.audio.restoreMusic(),false);
 });
+
+test('one-shot victory music sets loop:false without altering legacy loop payloads',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.playMusic('assets/audio/victory.wav',40,{relative:true,loop:false});
+ await sdk.audio.playMusic('assets/audio/level.wav',20,{relative:true});
+ await sdk.audio.playMusic('assets/audio/menu.wav',20);
+ assert.deepEqual(calls.map(c=>c.method),['audio.music.play','audio.music.play','audio.music.play']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{
+  asset:'assets/audio/victory.wav',volume:40,relative:true,loop:false
+ });
+ for(const call of calls.slice(1)) {
+  assert.ok(!Object.prototype.hasOwnProperty.call(call.payload,'loop'),
+    'legacy apps must keep default infinite loop');
+ }
+ for(const invalid of ['false',0,null,1]){
+  await assert.rejects(()=>sdk.audio.playMusic('assets/audio/victory.wav',40,
+    {relative:true,loop:invalid}),{name:'TypeError'});
+ }
+ assert.equal(calls.length,3);
+});
