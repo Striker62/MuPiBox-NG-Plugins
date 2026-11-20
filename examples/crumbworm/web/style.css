@@ -150,3 +150,56 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
   .screen.controller-mode .vertical-controls{display:none}
 }
 @media(prefers-reduced-motion:reduce){.back-button:active,.direction:active,.theme-toggle:active{transform:none}}
+
+/* Neon aquarium facelift: fixed 800x480 HUD, every scoring tile outside the arena. */
+.screen{background:radial-gradient(ellipse at 40% 0%,rgba(0,157,186,.15),transparent 65%),#061523}
+.play-area{--board-w:min(100%,calc((100dvh - 124px)*1.5));gap:5px}
+.play-area .garden,.play-area .action-bar,.play-area .scoreboard{width:var(--board-w)}
+.play-area .garden{border-radius:13px;border-color:#23e9e4;background:#041b2d;box-shadow:0 0 9px #00fff16e,inset 0 0 20px #00c4f322}
+.scoreboard{
+  position:relative;top:auto;right:auto;z-index:1;pointer-events:none;
+  height:34px;min-height:34px;flex:none;display:flex;align-items:center;
+  gap:7px;padding:0;background:transparent!important;border:0!important;
+  color:#dcfffc;text-shadow:0 0 5px #03cdde;border-radius:0;
+}
+.scoreboard .hud-title{font-size:12px;letter-spacing:1px;font-weight:900;margin-right:auto;color:#8af9f0;white-space:nowrap}
+.scoreboard>div{align-items:center;gap:5px;padding:4px 9px;border:1px solid #2fbed6;border-radius:19px;background:#071e32db;font-size:12px;box-shadow:0 0 8px #00f0f744}
+.scoreboard .hud-symbol{color:#ffdb65;text-shadow:0 0 7px #ffe652;font-size:15px}
+.scoreboard strong,.screen[data-design="neon"] .scoreboard strong{font-size:18px;color:#fff3a4;text-shadow:0 0 6px #e6b64d}
+.action-bar{height:52px}
+.direction,.back-button,.theme-toggle,.speed-control select{border-color:#37e5e3;box-shadow:0 0 11px #00e5e245,inset 0 0 10px #03a5c828;background:#082739e8;color:#e8fff9}
+.direction{border-radius:16px}
+.screen[data-design="neon"] .garden{
+  border-color:#00e9f3;border-radius:13px;background:#041b2d;
+  box-shadow:0 0 14px #00eaff91,inset 0 0 22px #008dee42
+}
+.screen[data-design="neon"] .direction,
+.screen[data-design="neon"] .direction-left,
+.screen[data-design="neon"] .direction-down,
+.screen[data-design="neon"] .back-button,
+.screen[data-design="neon"] .theme-toggle{border-color:#15ecf4;color:#e4fdff;background:#08243be8;box-shadow:0 0 11px #00dcf784,inset 0 0 9px #05a8db30}
+.screen[data-design="neon"] .speed-control select{border-color:#24eaff;background:#08243bea;box-shadow:0 0 8px #00bffb69}
+.screen[data-design="neon"] .status{border-color:#12e9cb;background:#041c2de8;color:#fff6bd}
+.mascot{position:absolute;bottom:5px;left:6px;width:67px;height:67px;pointer-events:none;filter:drop-shadow(0 0 8px #ff8a3388)}
+.garden.shake{animation:worm-hit .52s ease-out}
+@keyframes worm-hit{
+  0%,100%{transform:translate(0,0)}
+  12%,35%,61%{transform:translate(-5px,2px)}
+  23%,49%,76%{transform:translate(5px,-2px)}
+}
+.garden.record{box-shadow:0 0 25px #ffe96a,inset 0 0 18px #ffe96a}
+@media(max-height:420px) and (orientation:landscape){
+  .play-area{--board-w:min(100%,calc((100dvh - 116px)*1.5))}
+  .scoreboard{height:30px;min-height:30px}
+  .scoreboard .hud-title{font-size:10px}
+  .scoreboard>div{padding:3px 7px;font-size:10px}
+  .scoreboard strong{font-size:14px}
+  .mascot{width:51px;height:51px}
+}
+@media(orientation:portrait){
+  .play-area{--board-w:min(100%,calc((100dvh - 254px)*1.5))}
+  .scoreboard .hud-title{font-size:10px}
+  .scoreboard>div{padding:3px 6px;font-size:10px}
+  .mascot{display:none}
+}
+@media(prefers-reduced-motion:reduce){.garden.shake{animation:none}}
