@@ -132,6 +132,10 @@
     // Optional NG host capability: retain the exact loop position on pause.
     async pauseMusic() {return bridge ? invoke('audio.music.pause', {}) : false;},
     async resumeMusic() {return bridge ? invoke('audio.music.resume', {}) : false;},
+    // Preserve one owner-owned music voice while the menu uses the same mixer.
+    // The host keeps at most one suspended voice globally (bounded PCM).
+    async holdMusic() {return bridge ? invoke('audio.music.hold', {}) : false;},
+    async restoreMusic() {return bridge ? invoke('audio.music.restore', {}) : false;},
     async stopMusic() {return bridge ? invoke('audio.music.stop', {}) : false;},
     async stopSamples() {return bridge ? invoke('audio.sample.stop', {}) : false;},
     async playClip(asset) {
