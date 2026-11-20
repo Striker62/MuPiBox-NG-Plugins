@@ -64,15 +64,23 @@
   // The trusted host enforces the audio permission and device volume ceiling.
   // Standalone browser previews synthesize tones locally instead.
   let previewAudioContext = null;
+  function checkSampleAsset(asset) {
+    if (typeof asset !== 'string' || asset.length > 180 ||
+        !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
+        asset.split('/').some(part => part === '..' || part.startsWith('.')))
+      throw new TypeError('audio sample must be a bundled assets/*.ogg, .mp3 or .wav file');
+  }
   const audio = Object.freeze({
     // Native file playback is mediated by the host and restricted to bundled
     // app assets. The host decodes into its own PipeWire mixer and enforces
     // the existing game/parental and maximum-volume policies.
+    async prepareSample(asset) {
+      checkSampleAsset(asset);
+      if (!bridge) return false;
+      return invoke('audio.sample.prepare', {asset});
+    },
     async playSample(asset, volume = 40, options = {relative:true}) {
-      if (typeof asset !== 'string' || asset.length > 180 ||
-          !/^assets\/[a-zA-Z0-9_/-]+\.(mp3|ogg|wav)$/.test(asset) ||
-          asset.split('/').some(part => part === '..' || part.startsWith('.')))
-        throw new TypeError('audio sample must be a bundled assets/*.ogg, .mp3 or .wav file');
+      checkSampleAsset(asset);
       if (!Number.isInteger(volume) || volume < 0 || volume > 100)
         throw new TypeError('sample volume must be 0..100');
       if (options === null || typeof options !== 'object' || Array.isArray(options) ||
@@ -352,8 +360,29 @@
     }
   });
 
+  // API parity is a reviewed capability list, not a generic HTTP gateway.
+  // The trusted host identifies the installed app and enforces permission,
+  // parental control and local touch-session checks on every call.
+  const device = Object.freeze({
+    async info() { return invoke('device.info', {}); },
+    async system() { return invoke('device.system', {}); },
+    async display() { return invoke('device.display', {}); },
+    async audio() { return invoke('device.audio', {}); }
+  });
+
+  const playback = Object.freeze({
+    async status() { return invoke('playback.status', {}); },
+    async queue() { return invoke('playback.queue', {}); },
+    async transport(action) {
+      if (!['play_pause', 'next', 'previous', 'volume_up', 'volume_down'].includes(action))
+        throw new TypeError('unsupported playback transport action');
+      return invoke('playback.transport', {action});
+    }
+  });
+
   const sdk = Object.freeze({
     apiVersion: '1',
+    sdkRevision: '1.1',
     isHosted: Boolean(bridge),
     on,
     storage,
@@ -364,6 +393,24 @@
     shared,
     links,
     homeassistant,
+    device,
+    playback,
+    async capabilities() {
+      if (bridge) return invoke('host.capabilities', {});
+      return {apiVersion: '1', sdkRevision: '1.1', methods: [], preview: true};
+    },
+    async supports(method) {
+      if (typeof method !== 'string' || !/^[a-z][a-z.]+$/.test(method))
+        throw new TypeError('invalid SDK method');
+      let capabilities;
+      try {capabilities = await sdk.capabilities();}
+      catch (error) {
+        if (/unsupported plugin bridge method|HTTP 400/i.test(String(error?.message || error))) return false;
+        throw error;
+      }
+      return Array.isArray(capabilities.methods) && capabilities.methods.some(
+        capability => capability.method === method && capability.available === true);
+    },
     async getContext() {
       if (bridge) return invoke('host.context', {});
       return { apiVersion: '1', preview: true, language: global.navigator.language || 'de' };

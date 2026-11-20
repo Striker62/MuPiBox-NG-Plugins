@@ -53,6 +53,14 @@ deaktiviert. Details, Brettspiel-Regelvarianten und Lizenzprüfung:
 
 ## Für Entwickler
 
+**SDK Revision 1.1:** [Plattform-API, Capabilities, Berechtigungen und
+Codebeispiele](docs/sdk-api-reference.md). Geräte-/Systemstatus,
+Player-Status, Warteschlange und geschützte Transportsteuerung sind nun über
+die SDK-Fassade statt über eigene HTTP-Aufrufe verfügbar. Die Host-Version
+muss die Funktionen unterstützen und der Admin muss die jeweiligen Rechte
+freigeben.
+
+
 Voraussetzungen: Python 3.10+, Go 1.24+ (für das Go-Beispiel; das SDK selbst benötigt kein Go).
 
 ```bash

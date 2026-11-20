@@ -360,8 +360,29 @@
     }
   });
 
+  // API parity is a reviewed capability list, not a generic HTTP gateway.
+  // The trusted host identifies the installed app and enforces permission,
+  // parental control and local touch-session checks on every call.
+  const device = Object.freeze({
+    async info() { return invoke('device.info', {}); },
+    async system() { return invoke('device.system', {}); },
+    async display() { return invoke('device.display', {}); },
+    async audio() { return invoke('device.audio', {}); }
+  });
+
+  const playback = Object.freeze({
+    async status() { return invoke('playback.status', {}); },
+    async queue() { return invoke('playback.queue', {}); },
+    async transport(action) {
+      if (!['play_pause', 'next', 'previous', 'volume_up', 'volume_down'].includes(action))
+        throw new TypeError('unsupported playback transport action');
+      return invoke('playback.transport', {action});
+    }
+  });
+
   const sdk = Object.freeze({
     apiVersion: '1',
+    sdkRevision: '1.1',
     isHosted: Boolean(bridge),
     on,
     storage,
@@ -372,6 +393,24 @@
     shared,
     links,
     homeassistant,
+    device,
+    playback,
+    async capabilities() {
+      if (bridge) return invoke('host.capabilities', {});
+      return {apiVersion: '1', sdkRevision: '1.1', methods: [], preview: true};
+    },
+    async supports(method) {
+      if (typeof method !== 'string' || !/^[a-z][a-z.]+$/.test(method))
+        throw new TypeError('invalid SDK method');
+      let capabilities;
+      try {capabilities = await sdk.capabilities();}
+      catch (error) {
+        if (/unsupported plugin bridge method|HTTP 400/i.test(String(error?.message || error))) return false;
+        throw error;
+      }
+      return Array.isArray(capabilities.methods) && capabilities.methods.some(
+        capability => capability.method === method && capability.available === true);
+    },
     async getContext() {
       if (bridge) return invoke('host.context', {});
       return { apiVersion: '1', preview: true, language: global.navigator.language || 'de' };

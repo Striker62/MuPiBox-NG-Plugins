@@ -71,6 +71,13 @@ class PackageTests(unittest.TestCase):
         with self.assertRaises(PackageError):
             validate_manifest(self.manifest, {"index.html"})
 
+    def test_new_sdk_permissions_pack_and_validate(self):
+        self.manifest['permissions'] = ['device-status', 'playback', 'playback-control']
+        self.assertEqual(validate_manifest(self.manifest, {'index.html'})['permissions'], self.manifest['permissions'])
+        (self.source / 'manifest.json').write_text(json.dumps(self.manifest))
+        pack(self.source, self.output)
+        self.assertEqual(validate_package(self.output)['permissions'], self.manifest['permissions'])
+
     def test_photo_permission_is_explicit_and_supported(self):
         self.manifest["permissions"] = ["camera", "photo-save"]
         validated = validate_manifest(self.manifest, {"index.html"})
