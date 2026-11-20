@@ -7,7 +7,7 @@
   let muted=false, hostPaused=false, pageHidden=false, blurred=false, exiting=false;
 
   function sync() {
-    audio.active(!(muted || hostPaused || pageHidden || document.hidden || blurred || exiting));
+    return audio.active(!(muted || hostPaused || pageHidden || document.hidden || blurred || exiting));
   }
   for (const button of buttons) {
     button.hidden=!Object.keys(window.MuPiRunAudioFiles).length;
@@ -30,6 +30,6 @@
     // Desktop previews may require an actual gesture to unblock HTML audio.
     for(const event of ['click','keydown','pointerup']) document.addEventListener(event,audio.unlock);
   }
-  window.MuPiRunSession={play:audio.play,exit(){exiting=true;sync();}};
-  sync();
+  const opening=sync();
+  window.MuPiRunSession={opening:sdk.isHosted ? Promise.resolve(opening) : Promise.resolve(),play:audio.play,prepare:audio.prepare,exit(){exiting=true;sync();}};
 })();

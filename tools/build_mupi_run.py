@@ -10,7 +10,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "examples/mupi-run"
 OUTPUT = ROOT / "dist/mupi-run.mupiapp"
-FILES = ("manifest.json", "index.html", "app.js", "logic.js", "world.js", "poses.js",
+FILES = ("manifest.json", "index.html", "app.js", "logic.js", "world.js", "poses.js", "tile-layout.js",
          "scenery-data.js", "scene-pixels.js", "ground-data.js", "art-files.js", "AUDIO-CREDITS.txt", "sound.js", "audio-session.js", "style.css", "icon.png", "cover.png")
 AUDIO_SLOTS = ("music", "run", "jump", "slide", "collect", "kilometer")
 

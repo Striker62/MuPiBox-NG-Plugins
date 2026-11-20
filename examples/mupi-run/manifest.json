@@ -2,7 +2,7 @@
   "apiVersion": "1",
   "id": "community.mupi-run",
   "name": "MuPi Run",
-  "version": "0.8.2",
+  "version": "0.8.4",
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.png",

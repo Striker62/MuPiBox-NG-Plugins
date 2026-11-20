@@ -1,10 +1,10 @@
 window.MuPiRunArt = [
-  "mupi-running-24.webp",
-  "jump-0.webp",
-  "jump-1.webp",
-  "jump-2.webp",
-  "slide-0.webp",
-  "slide-1.webp",
-  "slide-2.webp",
+  "mupi-running-24.ready.webp",
+  "jump-0.ready.webp",
+  "jump-1.ready.webp",
+  "jump-2.ready.webp",
+  "slide-0.ready.webp",
+  "slide-1.ready.webp",
+  "slide-2.ready.webp",
   "logo-ui.png"
 ];

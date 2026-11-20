@@ -249,3 +249,18 @@ test('menu music starts once, survives game menus, and stops when the app leaves
   listeners.get('lifecycle.resume')();
   assert.equal(changes.at(-1),false);
 });
+
+test('native warmup prepares each effect once and skips old hosts',async()=>{
+  const vm=require('node:vm'), fs=require('node:fs'), path=require('node:path');
+  let time=0;const calls=[];
+  const ctx={window:{},performance:{now:()=>time},setTimeout(fn,ms){time+=ms;fn();}};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../examples/mupi-run/sound.js'),'utf8'),ctx);
+  const files={music:'music.ogg',jump:'jump.mp3',slide:'slide.mp3',collect:'collect.wav'};
+  const api={playMusic:async()=>{},prepareSample:async f=>calls.push(f)};
+  const player=ctx.window.createRunAudio({isHosted:true,audio:api},files);
+  await player.active(true);
+  await player.prepare({});
+  assert.deepEqual(calls,[]);
+  await player.prepare({audioSamplePreload:true});
+  assert.deepEqual(calls,[files.jump,files.slide,files.collect]);
+});

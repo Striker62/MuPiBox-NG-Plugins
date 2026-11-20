@@ -33,7 +33,7 @@
       phase: 'ready', distance: 0, speed: 13, lane: 0, visualLane: 0,
       jumpAge: -1, duckAge: -1, obstacles: [], spawnIn: 1.5,
       notes: [14, 20, 26].map(z => ({lane: 0, z})), noteCount: 0,
-      runPose: 0, entryPose: 0, resumePose: 0, steps: 0, stepPhase: 0,
+      simulationRemainder: 0, runPose: 0, entryPose: 0, resumePose: 0, steps: 0, stepPhase: 0,
       scenerySeed: seed >>> 0,
       seed: (seed >>> 0) || 0x1badc0de, waves: 0,
       time: 0, crash: null, completedDucks: 0, completedJumps: 0,
@@ -192,8 +192,17 @@
     return s;
   }
 
+  // Inputs and paints share this clock. Preserve the fractional tick across callbacks.
+  function advance(s, elapsed) {
+    if (s.phase !== 'running' || !Number.isFinite(elapsed) || elapsed <= 0) return;
+    const total = s.simulationRemainder + elapsed;
+    const ticks = Math.floor(total * 60 + 1e-9);
+    s.simulationRemainder = Math.max(0, total - ticks / 60);
+    for (let i = 0; i < ticks && s.phase === 'running'; i++) step(s, 1 / 60);
+  }
+
   return Object.freeze({
-    fresh, act, step, jumpHeight, ducking, speedAt, intervalAt,
+    fresh, act, step, advance, jumpHeight, ducking, speedAt, intervalAt,
     JUMP_DURATION, DUCK_DURATION, HIT_RADIUS, LANES, kinds, terrainAt, ZONES
   });
 });

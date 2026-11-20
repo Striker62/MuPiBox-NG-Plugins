@@ -70,10 +70,32 @@
       }
       for (const player of players.values()) player.pause();
     }
+    async function prepare(context) {
+      if (sdk.isHosted && !context?.audioSamplePreload) return;
+      for (const [name,file] of Object.entries(files)) {
+        if (name==='music') continue;
+        if (sdk.isHosted) {
+          await queue(name,async()=>{
+            if (!running) return;
+            const delay=nextNativePlay-performance.now();
+            if(delay>0) await new Promise(resolve=>setTimeout(resolve,delay));
+            if (!running) return;
+            nextNativePlay=performance.now()+90;
+            await sdk.audio.prepareSample(file);
+          });
+        } else if (!players.has(name)) {
+          const player=new Audio(file);
+          player.preload='auto';
+          player.volume=levels[name]/100;
+          players.set(name,player);
+          player.load();
+        }
+      }
+    }
     function unlock() {
       const music=players.get('music');
       if(running && music && music.paused) music.play().catch(error=>report('music',error));
     }
-    return {active, play, unlock};
+    return {active, play, prepare, unlock};
   };
 })(window);

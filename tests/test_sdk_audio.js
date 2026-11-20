@@ -78,3 +78,13 @@ test('native audio gain controls validate levels without replaying sample assets
  }
  assert.equal(calls.length,3);
 });
+
+test('preparing an effect uses a silent native request and validates the path',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.prepareSample('assets/audio/collect.wav');
+ assert.equal(calls[0].method,'audio.sample.prepare');
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{asset:'assets/audio/collect.wav'});
+ await assert.rejects(()=>sdk.audio.prepareSample('../collect.wav'),{name:'TypeError'});
+ assert.equal(await getSDK(false).sdk.audio.prepareSample('assets/audio/collect.wav'),false);
+ assert.equal(calls.length,1);
+});

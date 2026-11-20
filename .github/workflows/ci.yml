@@ -57,6 +57,13 @@ jobs:
           node --test tests/mupi_wasserschlacht.test.cjs tests/waterbattle_audio.test.cjs
           python3 tools/build_wasserschlacht.py
           python3 tools/mupiapp.py validate dist/mupi-wasserschlacht.mupiapp
+      - name: Test MuPi Run physics, timing and packed poses
+        run: |
+          node --test tests/mupi_run.test.cjs tests/mupi_run_autopilot.test.cjs tests/mupi_run_timing.test.cjs
+          python3 -m pip install pillow
+          python3 tests/mupi_run_atlases_test.py
+          python3 tests/mupi_run_sheet_test.py
+          python3 tests/mupi_run_sprite_test.py
       - name: Build independent Klang Memory preview
         run: python3 tools/build_klang_memory.py
       - name: Build USB webcam preview
