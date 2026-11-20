@@ -1,0 +1,22 @@
+{
+  "apiVersion": "1",
+  "id": "community.qtquick-scene-demo",
+  "name": "MuPi Native Demo",
+  "version": "0.1.0",
+  "runtime": "qtquick-scene",
+  "entry": "scene.json",
+  "icon": "assets/note.png",
+  "cover": "assets/note.png",
+  "permissions": [],
+  "category": "games",
+  "description": "GPU-gerenderte native Qt-Quick-Demoszene ohne Chromium.",
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 800,
+    "minHeight": 480,
+    "showBackButton": true,
+    "showSystemInfo": true,
+    "fullScreen": false,
+    "background": "app"
+  }
+}

@@ -44,7 +44,7 @@ Example manifest:
 | `id` | Stable reverse-domain-like lowercase identifier; cannot change after publication |
 | `name`, `description`, `author` | App-store-facing metadata, not trusted HTML |
 | `version` | Semantic release version, for update comparisons |
-| `runtime` | Only `"web"` for v1; Go must be compiled to WASM |
+| `runtime` | `"web"` or experimental `"qtquick-scene"` (declarative JSON; no QML code) |
 | `entry`, `icon` | Relative paths inside the package, no absolute paths or `..` |
 | `cover` | Optional raster home-tile image (PNG/JPG/JPEG/WebP) relative to the package root; not the app background |
 | `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `shared-assets`, `links`, `homeassistant`, `device-status`, `playback`, `playback-control` (`network` is reserved in the packaging schema for backwards compatibility but not supported by the host; see [SDK API reference](sdk-api-reference.md)) |
@@ -430,3 +430,34 @@ Omitting `loop` keeps historical music behavior and payloads unchanged.
 Use this for level-finish fanfares and game-over themes; never use the
 5-second `playSample` route for long recordings. Older hosts ignore
 unknown `loop` fields, so one-shot parity requires the updated NG host.
+
+## Native Qt Quick scene runtime (experimental host support)
+
+`"runtime":"qtquick-scene"` uses `"entry":"scene.json"`; the trusted NG
+Qt Quick renderer creates QML items from **passive, strictly validated JSON**.
+It does not load arbitrary downloaded `.qml`, JavaScript, HTML, WASM or native
+libraries inside the privileged UI process. This is intentionally a narrow
+first step, **not yet a replacement for an arbitrary-QML game engine**.
+
+- 800×480 logical scene; the host scales it and preserves the native header.
+- Up to 48 objects: `text`, `counter`, `image`, `rectangle`, `button`.
+- RGB colors `#RRGGBB`, coordinates `x`, `y`, `width`, `height`, optional
+  `fontSize`; `image` points to an existing bundled PNG/JPEG/WebP.
+- Optional `animateY:{"from":100,"to":130,"durationMs":1000}` on images
+  and rectangles (150–20,000 ms).
+- Buttons support only `"action":"increment"`, `"reset"`, or `"exit"`.
+- No permissions or SDK access in this prototype, no persistence or
+  browser preview. The existing Web runtime stays unchanged.
+- An NG host without this runtime rejects the package.
+
+The host validates scene data **before extraction**, rejects active content,
+and serves immutable app-local assets through the existing scoped routes.
+Unknown properties are rejected. The Qt main process never interprets
+plugin-supplied source code. Allowing arbitrary QML later requires a
+separate sandboxed process and an appropriate display/compositor integration;
+NG currently runs under EGLFS rather than as a Wayland compositor.
+
+Reference source: `examples/qtquick-scene-demo` (package with
+`python3 tools/mupiapp.py pack examples/qtquick-scene-demo dist/qtquick-scene-demo.mupiapp --exclude README.md`).
+Do not add the demo to the public catalog until its NG host version and real
+Raspberry Pi UI behavior have been verified.
