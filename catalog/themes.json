@@ -1,4 +1,15 @@
 {
   "schema": 1,
-  "themes": []
+  "themes": [
+    {
+      "id": "community.sternenreise",
+      "name": "Sternenreise",
+      "description": "Nachtblaues Community-Theme mit türkisfarbenen Bedienelementen, asymmetrischen Cover-Karten und eigenen Icons (Preview; benötigt einen aktuellen NG-Theme-Host).",
+      "author": "MuPiBox Community",
+      "version": "1.5.0",
+      "releaseTag": "v0.1.0-preview.61",
+      "asset": "sternenreise.mupitheme",
+      "sha256": "6a9666e7cb53d891ad88ce4a4aa6ac9716ebbb68153a5a4642e28e6d59997eca"
+    }
+  ]
 }
