@@ -1,10 +1,10 @@
-# MuPi Run 0.8.6
+# MuPi Run 0.8.7
 
 Sammle goldene Noten im Flussbett, auf dem Holzsteg und auf dem Waldpfad. Spring über den umgestürzten Stamm, grätsche unter dem Querbalken durch und wechsle die Spur, wenn ein Fuchs auf dem Weg schläft. Die Distanz bestimmt den Rekord. Die Noten zählen für den jeweiligen Lauf.
 
 ## Startbildschirm
 
-MuPi folgt goldenen Noten über einen Holzsteg. Das quadratische Motiv erscheint auf der Home-Kachel und im Katalog. Im Startmenü liegen Schriftzug, Steuerung und Starttaste links, sodass MuPi rechts sichtbar bleibt. Wenn die Bildausgabe während des Laufs länger als eine Sekunde aussetzt, pausiert das Spiel. Mit „Weiterlaufen“ geht es an der letzten Position weiter.
+MuPi folgt goldenen Noten über einen Holzsteg. Das quadratische Motiv erscheint auf der Home-Kachel und im Katalog. Im Startmenü liegen Schriftzug, Steuerung und Starttaste links, sodass MuPi rechts sichtbar bleibt. Derselbe geschwungene Schriftzug aus dem Startmenü erscheint jetzt statt des alten Banners im HUD des laufenden Spiels. Wenn die Bildausgabe während des Laufs länger als eine Sekunde aussetzt, pausiert das Spiel. Mit „Weiterlaufen“ geht es an der letzten Position weiter.
 
 ![Startbildschirm mit dem neuen MuPi-Run-Motiv](screenshot-start.webp)
 
@@ -53,7 +53,7 @@ Eine Datei je belegtem Platz unter `examples/mupi-run/assets/audio/` ablegen und
 | `collect` | Einsammeln einer goldenen Note |
 | `kilometer` | Einmal beim Überschreiten jeder 1.000-Meter-Marke |
 
-Auf der Box verwendet die App die SDK-Funktionen für lokale Musik und Samples mit relativer Lautstärke. Im Browser übernimmt das Audioelement die Vorschau. Startmenü, Lauf, Spielpause, Ergebnis und neuer Versuch teilen sich denselben Musikloop. Stummschalten, Ausblenden und Verlassen stoppen den Ton. Menü und Lauf haben einen Stummschalter. Bei Browsern mit Autoplay-Sperre schaltet die erste Interaktion die Musik frei. Berechtigungen sind `storage`, `controller` und `audio`. Der vorhandene Distanzrekord bleibt unter `bestMeters` erhalten.
+Auf der Box verwendet die App die SDK-Funktionen für lokale Musik und Samples mit relativer Lautstärke. Im Browser übernimmt das Audioelement die Vorschau. Startmenü, Lauf, Spielpause, Ergebnis und neuer Versuch teilen sich denselben Musikloop. Stummschalten, Ausblenden und Verlassen stoppen den Ton. Menü und Lauf haben einen Stummschalter. Über das Zahnrad im Start-, Pausen- und Ergebnismenü lassen sich Musik und Soundeffekte getrennt von 0 bis 100 % regeln. Die Einstellungen werden pro Box gespeichert und beim nächsten Start vor dem ersten Musikton geladen. Die Regler skalieren die bisherigen Lautstärken; die Lautstärkebegrenzung des Hosts bleibt wirksam. Im nativen Player wird die Musik nach Möglichkeit ohne Neustart per Mixerfunktion angepasst; ältere Hosts können den Loop beim Verstellen neu starten. Bei Browsern mit Autoplay-Sperre schaltet die erste Interaktion die Musik frei. Berechtigungen sind `storage`, `controller` und `audio`. Der vorhandene Distanzrekord bleibt unter `bestMeters` erhalten.
 
 ## Paket und Prüfungen
 
