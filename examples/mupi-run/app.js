@@ -176,6 +176,7 @@
     const phase=state.phase;
     if(phase==='running'){overlay.classList.add('hidden');pauseButton.textContent='Ⅱ';return;}
     overlay.classList.remove('hidden');
+    overlay.classList.toggle('intro-art', phase==='ready');
     if(phase==='ready'){
       headline.innerHTML='MuPi <em>RUN</em>';
       const loadingLabels={de:'Spiel wird geladen …',en:'Loading game …',fr:'Chargement …',es:'Cargando …',it:'Caricamento …',nl:'Spel laden …',sv:'Laddar …'};
