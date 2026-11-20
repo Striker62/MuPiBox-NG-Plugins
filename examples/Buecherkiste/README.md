@@ -37,6 +37,7 @@ Speichere die JSON-Dateien als UTF-8. Die Dateinamen in der `book.json` müssen 
 
 ```json
 {
+  "id": "mein-buch",
   "title": "Mein Bilderbuch",
   "cover": "images/01.jpg",
   "imagePattern": "images/{page:02d}.jpg",
@@ -67,6 +68,25 @@ Seitentexte werden ab Version 1.0.1 automatisch in Blöcke mit höchstens 500 Un
 Für getrennte Bilder und sichtbare Texte setzt du `"layout": "image-and-text"` und ergänzt `"text": "text/pages.json"` in der `book.json`. Lege die Datei im Buchordner unter `text/pages.json` an. Sie verwendet dieselbe Seitenstruktur wie das Beispiel für Vorlesetexte. Der sichtbare Text kann auch als Vorlesetext dienen.
 
 Wenn `book.json` die Felder `author` und `license` enthält, ergänzt die Bücherkiste eine Schlussseite mit Urheber- und Lizenzangaben. Optional kannst du `illustrator`, `translator`, `source` und `license_url` angeben.
+
+### Buchordner, ID und Titel benennen
+
+Für Buchordner sind ausschließlich `a–z`, `A–Z`, `0–9`, Unterstriche (`_`) und Bindestriche (`-`) erlaubt, insgesamt höchstens 80 Zeichen. Leerzeichen, Umlaute und andere Sonderzeichen im Ordnernamen verhindern die Erkennung des Buchs.
+
+Verwende der Übersicht halber für das optionale Feld `id` denselben Namen wie für den Buchordner. Die App erkennt SMB-Bücher aktuell anhand des Ordnernamens; `id` wird dabei nicht ausgewertet. Der angezeigte `title` darf Leerzeichen, Umlaute und Satzzeichen enthalten.
+
+Beispiel für den Ordner `leo-lausemaus-allein-bei-den-grosseltern`:
+
+```json
+{
+  "id": "leo-lausemaus-allein-bei-den-grosseltern",
+  "title": "Leo Lausemaus – Allein bei den Großeltern",
+  "cover": "images/00.jpg",
+  "imagePattern": "images/{page:02d}.jpg",
+  "layout": "full-page",
+  "tts": "tts/pages.json"
+}
+```
 
 ### Bücher im Regal finden
 
