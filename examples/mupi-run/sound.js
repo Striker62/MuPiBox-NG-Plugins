@@ -5,6 +5,15 @@
     const players = new Map();
     const warned = new Set();
     const levels = {music:34, run:26, jump:62, slide:62, collect:90, kilometer:52};
+    // Separate user settings scale the established per-sound mix without bypassing
+    // the host's device/parental volume ceiling.
+    const userLevels = {music:100, effects:100};
+    function clamp(value) {
+      return Number.isFinite(value) ? Math.max(0,Math.min(100,Math.round(value))) : 100;
+    }
+    function volumeFor(name) {
+      return Math.round(levels[name] * userLevels[name==='music'?'music':'effects'] / 100);
+    }
     let running = false, generation = 0, nextNativePlay = 0;
     let nativeQueue = Promise.resolve();
     const decoding = new Set();
@@ -22,7 +31,7 @@
       const file = files[name];
       if (!running || !file) return;
       const music = name === 'music';
-      const volume = levels[name];
+      const volume = volumeFor(name);
       if (sdk.isHosted) {
         // A slow native decoder can otherwise accumulate old collection sounds.
         if (!music && pendingEffects.has(name)) return;
@@ -52,9 +61,9 @@
       if (!player) {
         player = new Audio(file);
         player.loop = music;
-        player.volume = volume / 100;
         players.set(name, player);
       }
+      player.volume = volume / 100;
       if (!music) player.currentTime = 0;
       return player.play().catch(error => report(name,error));
     }
@@ -93,16 +102,39 @@
         } else if (!players.has(name)) {
           const player=new Audio(file);
           player.preload='auto';
-          player.volume=levels[name]/100;
+          player.volume=volumeFor(name)/100;
           players.set(name,player);
           player.load();
         }
       }
     }
+    function setLevels(next) {
+      const oldMusic=userLevels.music;
+      userLevels.music=clamp(next.music);
+      userLevels.effects=clamp(next.effects);
+      for (const [name,player] of players) player.volume=volumeFor(name)/100;
+      if (!sdk.isHosted || !running || !files.music || oldMusic===userLevels.music) return Promise.resolve();
+      const ticket=generation;
+      // Prefer in-place mixer gain changes; old hosts can still apply the
+      // setting by restarting only the music loop, never the short effects.
+      return queue('music volume',async()=>{
+        if (!running || ticket!==generation) return;
+        const volume=volumeFor('music');
+        if (typeof sdk.audio.setMusicVolume==='function') {
+          try {
+            await sdk.audio.setMusicVolume(volume,{relative:true});
+            return;
+          } catch (error) { report('music volume fallback',error); }
+        }
+        if (!running || ticket!==generation) return;
+        await sdk.audio.stopMusic();
+        if (running && ticket===generation) await sdk.audio.playMusic(files.music,volume,{relative:true});
+      });
+    }
     function unlock() {
       const music=players.get('music');
       if(running && music && music.paused) music.play().catch(error=>report('music',error));
     }
-    return {active, play, prepare, unlock};
+    return {active, play, prepare, unlock, setLevels};
   };
 })(window);
