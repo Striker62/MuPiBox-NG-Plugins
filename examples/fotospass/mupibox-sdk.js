@@ -100,10 +100,15 @@
       if (!Number.isInteger(volume) || volume < 0 || volume > 100)
         throw new TypeError('music volume must be 0..100');
       if (options === null || typeof options !== 'object' || Array.isArray(options) ||
-          (options.relative !== undefined && typeof options.relative !== 'boolean'))
-        throw new TypeError('music options must contain a boolean relative field');
+          (options.relative !== undefined && typeof options.relative !== 'boolean') ||
+          (options.loop !== undefined && typeof options.loop !== 'boolean'))
+        throw new TypeError('music options must contain boolean relative and loop fields');
       if (!bridge) return false;
-      return invoke('audio.music.play', {asset, volume, relative:options.relative!==false});
+      const payload = {asset, volume, relative:options.relative!==false};
+      // Keep legacy payload byte-for-byte compatible unless one-shot is
+      // explicitly requested by a newer plugin.
+      if (options.loop === false) payload.loop = false;
+      return invoke('audio.music.play', payload);
     },
     // Optional trusted host feature: preload a *bounded* packaged music
     // loop into its 20MiB/two-slot LRU PCM cache without starting playback.
