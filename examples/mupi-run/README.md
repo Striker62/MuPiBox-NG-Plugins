@@ -1,10 +1,10 @@
-# MuPi Run 0.8.5
+# MuPi Run 0.8.6
 
 Sammle goldene Noten im Flussbett, auf dem Holzsteg und auf dem Waldpfad. Spring über den umgestürzten Stamm, grätsche unter dem Querbalken durch und wechsle die Spur, wenn ein Fuchs auf dem Weg schläft. Die Distanz bestimmt den Rekord. Die Noten zählen für den jeweiligen Lauf.
 
-## Neues Cover und Startmenü in 0.8.5
+## Startbildschirm
 
-Das Cover aus der Work-Session vom 20. November 2026 erscheint in der Home-Kachel und im Community-App-Katalog. Das neue Wald-/Noten-Motiv füllt ausschließlich den Startbildschirm; Pause und Spielergebnis zeigen weiterhin die Spielwelt. Grafik und Eingabefelder sind für 800 × 480 angeordnet. Die Musik und die bisherige Spielmechanik bleiben erhalten.
+MuPi folgt goldenen Noten über einen Holzsteg. Das quadratische Motiv erscheint auf der Home-Kachel und im Katalog. Im Startmenü liegen Schriftzug, Steuerung und Starttaste links, sodass MuPi rechts sichtbar bleibt. Wenn die Bildausgabe während des Laufs länger als eine Sekunde aussetzt, pausiert das Spiel. Mit „Weiterlaufen“ geht es an der letzten Position weiter.
 
 ![Startbildschirm mit dem neuen MuPi-Run-Motiv](screenshot-start.webp)
 

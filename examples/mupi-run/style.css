@@ -116,36 +116,51 @@ button:focus-visible { outline: 3px solid #fcef71; outline-offset: 3px; }
 #menu-sound { position:absolute; top:9px; right:10px; width:46px; height:44px; font-size:23px; background:#182e28ec; }
 
 
-/* mupi-run-work-splash-v1 */
-/* Nur das Startmenü erhält die Illustration; Pause/Ergebnis behalten die Spielwelt. */
+/* Title screen: keep the bridge and its runner clear on the right. */
+.forest-title { display: none; }
 .overlay.intro-art {
-  justify-items: end;
-  padding: 12px 16px;
-  background:
-    linear-gradient(90deg, #0d2a1b00 0%, #0d2a1b00 37%, #102b1ca8 58%, #0b211ce8 68%, #0b201df8 100%),
-    url("./splash.webp") left center / auto 100% no-repeat #0c241b;
+  background: linear-gradient(90deg,#061911ba,transparent 62%), url("./splash.webp") center / cover no-repeat #103027;
+  justify-items: start;
+  padding: 12px clamp(16px,5vw,52px);
 }
-.overlay.intro-art .panel {
-  width: min(316px, 43vw);
+.intro-art .panel {
+  width: min(41vw,370px);
   max-height: 100%;
-  overflow-y: auto;
-  padding: 15px 18px 12px;
-  text-align: left;
-  border: 1px solid #ecdbabc9;
-  border-radius: 17px;
-  background: #17362ac9;
-  box-shadow: 0 6px 22px #07181096;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  padding: 5px;
+  text-shadow: 0 1px 3px #03150c;
 }
-.overlay.intro-art .panel h1 { display: none; }
-.overlay.intro-art .panel p { font-size: 13px; line-height: 1.3; }
-.overlay.intro-art .keyhints { gap: 5px; margin: 9px 0; }
-.overlay.intro-art .keyhints span { font-size: 12px; padding: 5px 6px; }
-.overlay.intro-art .primary { width: 100%; min-height: 43px; }
-@media (max-width: 620px) {
-  .overlay.intro-art { padding: 7px; }
-  .overlay.intro-art .panel { width: 48%; padding: 8px; }
-  .overlay.intro-art .panel p { font-size: 11px; }
-  .overlay.intro-art .keyhints { gap: 3px; margin: 4px 0; }
-  .overlay.intro-art .keyhints span { font-size: 10px; padding: 3px; }
-  .overlay.intro-art .credits, .overlay.intro-art .hint { display: none; }
+.intro-art .forest-title { display: block; width: auto; height: clamp(80px,33vh,182px); max-width: 100%; object-fit: contain; object-position: left center; }
+.intro-art h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.intro-art #message { max-width: 29em; margin: 8px 0 10px; font-size: clamp(12px,2.9vh,17px); font-weight: 600; color: #fff7e3; }
+.intro-art .keyhints { margin: 0 0 12px; gap: 4px; }
+.intro-art .keyhints span { border: 1px solid #a9c7a14d; background: #10291fec; color: #fff4d2; }
+.intro-art .primary { min-width: min(100%,208px); min-height: 46px; border-radius: 24px; color: #38250d; border-color: #ffebaa; background: linear-gradient(#ffe7a0,#ffbf49); }
+.intro-art .primary:disabled { color: #3e351e; background: #d5c798; }
+.intro-art .credits { margin-top: 10px; }
+.intro-art .credits summary { min-height: 32px; padding: 7px 0; color: #f2e8c7; }
+.intro-art .credits[open] { background: #10251ff2; border-radius: 8px; padding: 0 8px 6px; }
+.intro-art .hint { margin: 0; color: #dce7cf; }
+@media (max-height: 380px) {
+  .intro-art .forest-title { height: 24vh; }
+  .intro-art .keyhints { margin-bottom: 6px; }
+  .intro-art .credits { margin-top: 4px; }
+}
+@media (max-aspect-ratio: 1/1) {
+  .overlay.intro-art { align-items: end; background-position: 70% top; padding-bottom: 3vh; }
+  .intro-art .panel { width: min(92vw,360px); border-radius: 14px; background: #10291fe6; padding: 12px; }
+  .intro-art .forest-title { height: 15vh; }
+}
+#menu-exit { position: absolute; top: 9px; left: 10px; width: 44px; height: 44px; background: #182e28ec; z-index: 1; }
+@media (max-height: 380px) and (min-aspect-ratio: 1/1) {
+  .overlay.intro-art { padding: 6px 14px 6px 58px; }
+  .intro-art .panel { width: min(50vw,330px); }
+  .intro-art .forest-title { height: 20vh; }
+  .intro-art #message { margin: 5px 0; font-size: 12px; }
+  .intro-art .keyhints { gap: 3px; margin: 4px 0 7px; }
+  .intro-art .keyhints span { padding: 3px 4px; font-size: 11px; }
+  .intro-art .primary { font-size: 16px; padding: 5px 16px; }
 }

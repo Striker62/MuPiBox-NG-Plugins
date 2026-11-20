@@ -59,7 +59,7 @@ jobs:
           python3 tools/mupiapp.py validate dist/mupi-wasserschlacht.mupiapp
       - name: Test MuPi Run physics, timing and packed poses
         run: |
-          node --test tests/mupi_run.test.cjs tests/mupi_run_autopilot.test.cjs tests/mupi_run_timing.test.cjs
+          node --test tests/mupi_run.test.cjs tests/mupi_run_autopilot.test.cjs tests/mupi_run_timing.test.cjs tests/mupi_run_slow_audio.test.cjs
           python3 -m pip install pillow
           python3 tests/mupi_run_atlases_test.py
           python3 tests/mupi_run_sheet_test.py

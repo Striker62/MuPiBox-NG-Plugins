@@ -8,6 +8,7 @@
     let running = false, generation = 0, nextNativePlay = 0;
     let nativeQueue = Promise.resolve();
     const decoding = new Set();
+    const pendingEffects = new Set();
 
     function report(name, error) {
       if (!warned.has(name)) console.warn('[MuPi Run] Audio '+name, String(error));
@@ -23,6 +24,9 @@
       const music = name === 'music';
       const volume = levels[name];
       if (sdk.isHosted) {
+        // A slow native decoder can otherwise accumulate old collection sounds.
+        if (!music && pendingEffects.has(name)) return;
+        if (!music) pendingEffects.add(name);
         const ticket = generation;
         let playback;
         const started = queue(name, async () => {
@@ -40,7 +44,9 @@
           decoding.add(playback);
           playback.then(() => decoding.delete(playback));
         });
-        return started.then(() => playback);
+        return started.then(() => playback).finally(() => {
+          if (!music && ticket === generation) pendingEffects.delete(name);
+        });
       }
       let player = players.get(name);
       if (!player) {
@@ -56,6 +62,7 @@
       if (value === running) return;
       running = value;
       generation++;
+      pendingEffects.clear();
       if (value) return play('music');
       if (sdk.isHosted && Object.keys(files).length) {
         return queue('stop', async () => {

@@ -174,9 +174,9 @@
   }
   function renderOverlay(){
     const phase=state.phase;
+    overlay.classList.toggle('intro-art', phase==='ready');
     if(phase==='running'){overlay.classList.add('hidden');pauseButton.textContent='Ⅱ';return;}
     overlay.classList.remove('hidden');
-    overlay.classList.toggle('intro-art', phase==='ready');
     if(phase==='ready'){
       headline.innerHTML='MuPi <em>RUN</em>';
       const loadingLabels={de:'Spiel wird geladen …',en:'Loading game …',fr:'Chargement …',es:'Cargando …',it:'Caricamento …',nl:'Spel laden …',sv:'Laddar …'};
@@ -212,6 +212,13 @@
     lastFrame=Math.max(now,lastFrame);
     if(state.phase==='running'){
       const notes=state.noteCount, steps=state.steps, kilometer=Math.floor(state.distance/1000);
+      // After the browser stalls, let the player resume from the last visible
+      // pose instead of advancing seconds of obstacles in one callback.
+      if(delta>1){
+        game.act(state,'pause');
+        renderOverlay();
+        return;
+      }
       game.advance(state,delta);
       if (state.noteCount>notes) audio.play('collect');
       if (state.steps>steps) audio.play('run');
@@ -252,7 +259,10 @@
   }
   function togglePause(){
     if(state.phase==='running'||state.phase==='paused'){
-      if(state.phase==='running')simulateUntil(performance.now());
+      if(state.phase==='running'){
+        simulateUntil(performance.now());
+        if(state.phase!=='running')return;
+      }
       lastFrame=performance.now();
       game.act(state,'pause');renderOverlay();
     }
@@ -334,7 +344,9 @@
       event.preventDefault();setControllerMode(false);control(id);
     });
   }
-  document.getElementById('exit').addEventListener('click',()=>control('exit'));
+  for(const id of ['exit','menu-exit']){
+    document.getElementById(id).addEventListener('click',()=>control('exit'));
+  }
   window.addEventListener('blur',()=>{if(state.phase==='running')togglePause();});
   window.addEventListener('pagehide',()=>{if(state.phase==='running')togglePause();});
   pauseButton.addEventListener('click',()=>control('pause'));
