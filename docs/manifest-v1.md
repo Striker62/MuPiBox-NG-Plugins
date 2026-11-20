@@ -418,3 +418,15 @@ globally, never exposes PCM to the browser, and discards it on session
 revocation, expiry or displacement by another owner's hold. If `active`
 is false, fall back to normal `playMusic`. A browser preview and older
 hosts do not pretend that the previous position was restored.
+
+### Bounded non-looping victory and game-over music (optional)
+
+Updated NG hosts accept an explicit `loop:false` in
+`MuPiBoxSDK.audio.playMusic('assets/audio/victory.wav', 40,
+{relative:true, loop:false})`. Playback uses the same owner-scoped
+PipeWire voice, volume ceilings, 6MiB packaged file and 125-second PCM
+limits; it stops after the recording ends rather than repeating forever.
+Omitting `loop` keeps historical music behavior and payloads unchanged.
+Use this for level-finish fanfares and game-over themes; never use the
+5-second `playSample` route for long recordings. Older hosts ignore
+unknown `loop` fields, so one-shot parity requires the updated NG host.
