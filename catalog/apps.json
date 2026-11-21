@@ -303,6 +303,23 @@
         "audio"
       ],
       "icon": "examples/mupi-run/cover.png"
+    },
+    {
+      "id": "community.mupi-run-native",
+      "name": "MuPi Run · Qt Preview",
+      "description": "Separate Qt-Quick-Preview für NG mit integriertem Runner. Goldene Noten, Waldpfad und Holzsteg mit der nativen 30-Hz-Darstellung.",
+      "category": "games",
+      "author": "MuPiBox-NG Community",
+      "version": "0.1.0",
+      "permissions": [
+        "storage",
+        "controller",
+        "audio"
+      ],
+      "releaseTag": "v0.1.0-preview.62",
+      "asset": "mupi-run-native-preview.mupiapp",
+      "sha256": "5627df102f98e924f45216a1e3fa64fd2874c09cd12b9c1219de0d43c6fb2dec",
+      "icon": "examples/mupi-run/cover.png"
     }
   ]
 }
