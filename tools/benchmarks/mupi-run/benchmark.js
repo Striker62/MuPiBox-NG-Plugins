@@ -34,7 +34,17 @@
     while(!state || document.querySelector('#primary').disabled) await sleep(20);
     output('READY',{ms:performance.timeOrigin+performance.now(),inPageMs:performance.now(),ua:navigator.userAgent,
       hosted:window.MuPiBoxSDK.isHosted,offscreen:typeof OffscreenCanvas==='function',canvas:document.getElementById('world').width});
+    if (window.benchCapture) {
+      output('SNAP','menu');
+      await sleep(1200);
+    }
     document.querySelector('#primary').click();
+    if (window.benchCapture) {
+      const deadline=performance.now()+10000;
+      while (state.phase!=='running' && performance.now()<deadline) await sleep(20);
+      if (state.phase!=='running') throw Error('start control did not begin play');
+      await sleep(1400);
+    }
     const specs=[['river',22,3.4],['boardwalk',208,3.4],['forest',372,3.4],['dense',430,3.4],['actions',36,4.1],['endurance',135,18]];
     for(const [label,start,seconds] of specs){
       scene(start,label==='dense'||label==='endurance');
