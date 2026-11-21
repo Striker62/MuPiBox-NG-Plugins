@@ -11,7 +11,7 @@
     },
     "community.mupi-kruemelwurm": {
       "publishedAt": "2026-11-04T04:47:19Z",
-      "updatedAt": "2026-11-09T23:20:27Z"
+      "updatedAt": "2026-11-20T22:58:27Z"
     },
     "community.mupi-chess": {
       "publishedAt": "2026-11-08T22:05:31Z",
@@ -27,11 +27,11 @@
     },
     "community.fotospass": {
       "publishedAt": "2026-11-06T21:32:35Z",
-      "updatedAt": "2026-11-11T20:10:07Z"
+      "updatedAt": "2026-11-20T22:58:27Z"
     },
     "community.buecherkiste": {
       "publishedAt": "2026-11-08T21:33:28Z",
-      "updatedAt": "2026-11-17T17:52:53Z"
+      "updatedAt": "2026-11-20T22:58:27Z"
     },
     "community.mupi-beatbox": {
       "publishedAt": "2026-11-14T01:33:14Z",
@@ -59,7 +59,7 @@
     },
     "community.mupi-wuerfelrennen": {
       "publishedAt": "2026-11-14T01:33:14Z",
-      "updatedAt": "2026-11-18T14:49:32Z"
+      "updatedAt": "2026-11-18T21:17:32Z"
     },
     "community.mupi-hnefatafl": {
       "publishedAt": "2026-11-14T06:37:19Z",
@@ -76,6 +76,10 @@
     "community.funny-mupi": {
       "publishedAt": "2026-11-18T07:32:00Z",
       "updatedAt": "2026-11-18T12:24:31Z"
+    },
+    "community.mupi-run": {
+      "publishedAt": "2026-11-19T13:08:01Z",
+      "updatedAt": "2026-11-20T20:14:31Z"
     }
   }
 }

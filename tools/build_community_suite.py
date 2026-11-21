@@ -13,6 +13,10 @@ def main():
   shutil.copyfile(ROOT/'sdk'/'mupibox-sdk.js',source/'mupibox-sdk.js')
   shutil.copyfile(ROOT/'LICENSE',source/'LICENSE.txt')
   output=dist/f'{slug}.mupiapp'
-  metadata=pack(source,output)
+  # Screenshots and Markdown are repository documentation, never host assets.
+  docs=[file.name for file in source.iterdir() if file.is_file() and
+        (file.name=="README.md" or
+         (file.name.startswith("screenshot-") and file.suffix.lower()==".webp"))]
+  metadata=pack(source,output,excluded=docs)
   print(f'{slug}: {metadata["id"]} {metadata["version"]} -> {output.name} ({output.stat().st_size} B)')
 if __name__=='__main__':main()
