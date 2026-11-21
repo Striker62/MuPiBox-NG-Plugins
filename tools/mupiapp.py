@@ -76,6 +76,8 @@ def validate_manifest(data: object, files: set[str]) -> dict:
     if data["apiVersion"] != "1" or data["runtime"] not in ("web", "qtquick-scene"):
         raise PackageError("only API 1 web or qtquick-scene runtimes are supported")
     app_id = _string(data, "id", 5, 128, True)
+    if app_id == "community.mupi-run-native" and data["runtime"] != "qtquick-scene":
+        raise PackageError("runner preview ID requires its built-in engine")
     if not APP_ID.fullmatch(app_id):
         raise PackageError("id must be a lowercase reverse-domain-like identifier")
     _string(data, "name", 2, 80, True)
@@ -203,6 +205,8 @@ def validate_qt_scene(data: bytes, files: set[str], permissions: list[str], app_
         if missing := (set(art) | sounds) - files:
             raise PackageError(f"missing runner asset: {min(missing)}")
         return scene
+    if app_id == "community.mupi-run-native":
+        raise PackageError("runner preview ID requires its built-in engine")
     if "optionalSounds" in scene or not scene["elements"]:
         raise PackageError("empty Qt scene")
     def bounded(value, lo, hi):
