@@ -688,5 +688,496 @@
       "action": "left",
       "ms": 90
     }
-  ]
+  ],
+  "followup": {
+    "assetTag": "v0.1.0-preview.63",
+    "packageVersion": "0.1.1",
+    "packageSHA256": "b524477833bc46725bf328d864de142fc895e9e4a6c5d3a1e2e537a82195b951",
+    "hostWithStallFix": "0acd3a49",
+    "sdkWithStallFix": "7a181f4",
+    "janSoakPackage": "v0.1.0-preview.62",
+    "janSoakHost": "isolated connection-bound host; disk-backed TMPDIR, GOMEMLIMIT=32MiB",
+    "janAlpha71": {
+      "sampledQmlSeconds": 1257.5,
+      "completed": false,
+      "protectedStop": "Stopped test window 264163 AnonKiB 101948 MemAvailableKiB 165344",
+      "launchMs": 3049,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.music.play": {
+          "n": 1,
+          "median": 40.09,
+          "max": 40.09
+        },
+        "audio.music.volume": {
+          "n": 2,
+          "median": 1.25,
+          "max": 1.27
+        },
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 3.05,
+          "max": 7.57
+        },
+        "audio.sample.play": {
+          "n": 1713,
+          "median": 1.89,
+          "max": 36.75
+        }
+      },
+      "peakPssMiB": 232.1,
+      "peakRssMiB": 295.0,
+      "cpuPct": 108.3,
+      "v3dClientRenderSeconds": 331.29,
+      "minC": 50.147,
+      "maxC": 55.504,
+      "qmlPssByMinuteMiB": {
+        "1": 148.41,
+        "5": 144.4,
+        "10": 141.27,
+        "15": 142.23,
+        "20": 142.69
+      }
+    },
+    "janAlpha72": {
+      "sampledQmlSeconds": 1239.0,
+      "completed": false,
+      "protectedStop": "Stopped test window 78428 AnonKiB 103392 MemAvailableKiB 168168",
+      "launchMs": 1486,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.music.play": {
+          "n": 1,
+          "median": 27.99,
+          "max": 27.99
+        },
+        "audio.music.volume": {
+          "n": 3,
+          "median": 2.37,
+          "max": 3.16
+        },
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 1.48,
+          "max": 1.6
+        },
+        "audio.sample.play": {
+          "n": 1591,
+          "median": 1.88,
+          "max": 144.74
+        },
+        "audio.music.pause": {
+          "n": 1,
+          "median": 2.59,
+          "max": 2.59
+        }
+      },
+      "peakPssMiB": 217.5,
+      "peakRssMiB": 314.8,
+      "cpuPct": 101.3,
+      "v3dClientRenderSeconds": 301.86,
+      "minC": 47.225,
+      "maxC": 51.608,
+      "qmlPssByMinuteMiB": {
+        "1": 134.14,
+        "5": 134.78,
+        "10": 136.03,
+        "15": 137.11,
+        "20": 102.09
+      }
+    },
+    "box83Fixed011": {
+      "completed": true,
+      "protectedStop": "",
+      "complete": true,
+      "elapsed": 48005,
+      "distance": 1061.4402858598046,
+      "notes": 39,
+      "waves": 30,
+      "phase": "running",
+      "collisions": 0,
+      "frames": 1395,
+      "fps": 29.06,
+      "gapsMs": {
+        "p50": 28,
+        "p95": 57,
+        "p99": 92,
+        "maximum": 183,
+        "over100": 10,
+        "over33_33": 483
+      },
+      "launchMs": 1902,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.music.play": {
+          "n": 1,
+          "median": 33.3,
+          "max": 33.3
+        },
+        "audio.music.volume": {
+          "n": 2,
+          "median": 2.02,
+          "max": 2.27
+        },
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 1.66,
+          "max": 1.9
+        },
+        "audio.sample.play": {
+          "n": 49,
+          "median": 1.99,
+          "max": 3.39
+        }
+      },
+      "peakPssMiB": 246.4,
+      "peakRssMiB": 312.6,
+      "cpuPct": 114.9,
+      "v3dClientRenderSeconds": 12.54,
+      "minC": 56.478,
+      "maxC": 59.4
+    },
+    "softwareMixOrder": [
+      "toneA",
+      "muteA",
+      "muteB",
+      "toneB"
+    ],
+    "box83AudioPairs": {
+      "toneA": {
+        "completed": true,
+        "protectedStop": "",
+        "complete": true,
+        "elapsed": 48029,
+        "distance": 1061.4402858598046,
+        "notes": 39,
+        "waves": 30,
+        "phase": "running",
+        "collisions": 0,
+        "frames": 1398,
+        "fps": 29.11,
+        "gapsMs": {
+          "p50": 28,
+          "p95": 58,
+          "p99": 84,
+          "maximum": 160,
+          "over100": 7,
+          "over33_33": 478
+        },
+        "launchMs": 1615,
+        "httpErrors": 0,
+        "audioMs": {
+          "audio.music.play": {
+            "n": 1,
+            "median": 30.11,
+            "max": 30.11
+          },
+          "audio.music.volume": {
+            "n": 2,
+            "median": 1.46,
+            "max": 1.88
+          },
+          "audio.sample.prepare": {
+            "n": 3,
+            "median": 1.51,
+            "max": 1.59
+          },
+          "audio.sample.play": {
+            "n": 49,
+            "median": 1.76,
+            "max": 5.79
+          }
+        },
+        "peakPssMiB": 241.9,
+        "peakRssMiB": 307.7,
+        "cpuPct": 112.2,
+        "v3dClientRenderSeconds": 12.66,
+        "minC": 55.991,
+        "maxC": 58.913
+      },
+      "muteA": {
+        "completed": true,
+        "protectedStop": "",
+        "complete": true,
+        "elapsed": 48025,
+        "distance": 1061.4402858598046,
+        "notes": 39,
+        "waves": 30,
+        "phase": "running",
+        "collisions": 0,
+        "frames": 1388,
+        "fps": 28.9,
+        "gapsMs": {
+          "p50": 28,
+          "p95": 59,
+          "p99": 87,
+          "maximum": 171,
+          "over100": 6,
+          "over33_33": 487
+        },
+        "launchMs": 1413,
+        "httpErrors": 0,
+        "audioMs": {
+          "audio.sample.prepare": {
+            "n": 3,
+            "median": 1.55,
+            "max": 2.24
+          }
+        },
+        "peakPssMiB": 232.5,
+        "peakRssMiB": 298.2,
+        "cpuPct": 114.0,
+        "v3dClientRenderSeconds": 12.08,
+        "minC": 56.965,
+        "maxC": 59.887
+      },
+      "muteB": {
+        "completed": true,
+        "protectedStop": "",
+        "complete": true,
+        "elapsed": 48027,
+        "distance": 1061.4402858598046,
+        "notes": 39,
+        "waves": 30,
+        "phase": "running",
+        "collisions": 0,
+        "frames": 1394,
+        "fps": 29.03,
+        "gapsMs": {
+          "p50": 28,
+          "p95": 57,
+          "p99": 89,
+          "maximum": 133,
+          "over100": 7,
+          "over33_33": 480
+        },
+        "launchMs": 1429,
+        "httpErrors": 0,
+        "audioMs": {
+          "audio.sample.prepare": {
+            "n": 3,
+            "median": 1.6,
+            "max": 2.46
+          }
+        },
+        "peakPssMiB": 232.8,
+        "peakRssMiB": 298.6,
+        "cpuPct": 113.0,
+        "v3dClientRenderSeconds": 12.15,
+        "minC": 58.426,
+        "maxC": 60.861
+      },
+      "toneB": {
+        "completed": true,
+        "protectedStop": "",
+        "complete": true,
+        "elapsed": 48018,
+        "distance": 1061.4402858598046,
+        "notes": 39,
+        "waves": 30,
+        "phase": "running",
+        "collisions": 0,
+        "frames": 1388,
+        "fps": 28.91,
+        "gapsMs": {
+          "p50": 28,
+          "p95": 57,
+          "p99": 85,
+          "maximum": 214,
+          "over100": 9,
+          "over33_33": 492
+        },
+        "launchMs": 1384,
+        "httpErrors": 0,
+        "audioMs": {
+          "audio.music.play": {
+            "n": 1,
+            "median": 29.36,
+            "max": 29.36
+          },
+          "audio.music.volume": {
+            "n": 2,
+            "median": 1.17,
+            "max": 1.4
+          },
+          "audio.sample.prepare": {
+            "n": 3,
+            "median": 1.55,
+            "max": 1.85
+          },
+          "audio.sample.play": {
+            "n": 49,
+            "median": 1.86,
+            "max": 4.64
+          }
+        },
+        "peakPssMiB": 242.1,
+        "peakRssMiB": 307.9,
+        "cpuPct": 113.4,
+        "v3dClientRenderSeconds": 12.26,
+        "minC": 58.426,
+        "maxC": 61.348
+      }
+    },
+    "box83PrivatePipeWire": {
+      "stereoFrames": 2651648,
+      "nonzeroS16Samples": 4676500,
+      "peakS16": 4301,
+      "peakLast500ms": 0,
+      "completed": true,
+      "protectedStop": "",
+      "complete": true,
+      "elapsed": 48020,
+      "distance": 1061.4402858598046,
+      "notes": 39,
+      "waves": 30,
+      "phase": "running",
+      "collisions": 0,
+      "frames": 1392,
+      "fps": 28.99,
+      "gapsMs": {
+        "p50": 28,
+        "p95": 58,
+        "p99": 89,
+        "maximum": 159,
+        "over100": 6,
+        "over33_33": 483
+      },
+      "launchMs": 1382,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.music.play": {
+          "n": 1,
+          "median": 34.04,
+          "max": 34.04
+        },
+        "audio.music.volume": {
+          "n": 2,
+          "median": 1.71,
+          "max": 2.28
+        },
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 1.61,
+          "max": 1.77
+        },
+        "audio.sample.play": {
+          "n": 49,
+          "median": 1.99,
+          "max": 4.59
+        }
+      },
+      "peakPssMiB": 242.3,
+      "peakRssMiB": 308.5,
+      "cpuPct": 112.0,
+      "v3dClientRenderSeconds": 12.06,
+      "minC": 58.426,
+      "maxC": 61.348
+    },
+    "forcedRenderStopSeconds": 1.7,
+    "box83ForcedStall": {
+      "pausedOld": {
+        "completed": false,
+        "protectedStop": "",
+        "complete": false,
+        "elapsed": 4914,
+        "distance": 42.16210001126732,
+        "notes": 3,
+        "waves": 1,
+        "phase": "paused",
+        "collisions": 0,
+        "frames": 95,
+        "fps": 19.33,
+        "gapsMs": {
+          "p50": 27,
+          "p95": 53,
+          "p99": 56,
+          "maximum": 88,
+          "over100": 0,
+          "over33_33": 29
+        },
+        "launchMs": 1395,
+        "httpErrors": 0,
+        "audioMs": {
+          "audio.music.play": {
+            "n": 1,
+            "median": 24.38,
+            "max": 24.38
+          },
+          "audio.music.volume": {
+            "n": 2,
+            "median": 1.17,
+            "max": 1.22
+          },
+          "audio.sample.prepare": {
+            "n": 3,
+            "median": 1.59,
+            "max": 1.75
+          },
+          "audio.sample.play": {
+            "n": 3,
+            "median": 2.87,
+            "max": 2.92
+          }
+        },
+        "peakPssMiB": 229.9,
+        "peakRssMiB": 295.3,
+        "cpuPct": 73.4,
+        "v3dClientRenderSeconds": 0.91,
+        "minC": 58.426,
+        "maxC": 61.348
+      },
+      "resumeNew": {
+        "completed": true,
+        "protectedStop": "",
+        "complete": true,
+        "elapsed": 49736,
+        "distance": 1061.4402858598046,
+        "notes": 39,
+        "waves": 30,
+        "phase": "running",
+        "collisions": 0,
+        "frames": 1391,
+        "fps": 27.97,
+        "gapsMs": {
+          "p50": 28,
+          "p95": 58,
+          "p99": 92,
+          "maximum": 1754,
+          "over100": 10,
+          "over33_33": 487
+        },
+        "launchMs": 1391,
+        "httpErrors": 0,
+        "audioMs": {
+          "audio.music.play": {
+            "n": 1,
+            "median": 37.68,
+            "max": 37.68
+          },
+          "audio.music.volume": {
+            "n": 2,
+            "median": 1.22,
+            "max": 1.48
+          },
+          "audio.sample.prepare": {
+            "n": 3,
+            "median": 1.66,
+            "max": 1.73
+          },
+          "audio.sample.play": {
+            "n": 49,
+            "median": 1.79,
+            "max": 6.65
+          }
+        },
+        "peakPssMiB": 242.0,
+        "peakRssMiB": 307.6,
+        "cpuPct": 107.0,
+        "v3dClientRenderSeconds": 12.17,
+        "minC": 57.452,
+        "maxC": 61.348
+      }
+    }
+  }
 }
