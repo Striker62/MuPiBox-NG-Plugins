@@ -321,7 +321,10 @@ Item {
                     height:worldItem.height*(worldItem.wings?3:1)
                     x:worldItem.obj?-worldItem.obj.frame*worldItem.width:0
                     y:worldItem.obj?-worldItem.obj.row*worldItem.height:0
-                    source:worldItem.obj && !worldItem.rope ? gameView.art(worldItem.obj.source):""
+                    source: {
+                        const object = worldItem.obj
+                        return object && object.source !== "rope" ? gameView.art(object.source) : ""
+                    }
                     fillMode:Image.Stretch
                     cache:true
                 }
