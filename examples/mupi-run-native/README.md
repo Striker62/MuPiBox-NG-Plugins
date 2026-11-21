@@ -1,91 +1,33 @@
-# MuPi Run – native Qt Quick port, GPU hardware benchmark
+# MuPi Run · native Qt Quick preview
 
-**Experimental first-party renderer, not yet installable as a `qtquick-scene`
-Community App.** Work is on `feat/mupi-run-native-qt-benchmark-20261121`; it
-must not replace `community.mupi-run` 0.8.7 or bypass the NG security boundary.
+The preview has its own ID, `community.mupi-run-native`. It uses the Web game's fixed 60 Hz rules, the original 24-frame run and pose-dependent 35-frame action clips. A jump or slide starts at the next accepted input. The renderer updates the pose at 30 Hz. A static Qt shader projects the original road textures for riverbed, boardwalk and forest. The software backend uses precomputed road phases. Scenery uses culled, recycled Qt scene graph items. The gold notes, butterflies, obstacles, cover, splash and character pages come from the existing game.
 
-## What was ported
+## Installation and compatibility
 
-The native QML uses **the exact original gameplay rules** in
-`examples/mupi-run/logic.js`, wrapped into a generated QML-importable
-`RunLogic.js`: 60 Hz fixed-step simulation, collision and obstacle rules,
-scene/terrain transitions, deterministic wave generation, jumping, ducking,
-three lanes, notes and score. The original 24 running frames plus all 35
-jump and 35 slide frames in their 24 original transition patterns use
-**the very same pixel tiles / atlas metadata** as MuPi Run Web 0.8.7.
+Use **a development host containing the [trusted runner integration](https://github.com/splitti/MuPiBox-NG/pull/131)**. Stock NG 0.2.0-alpha.71 understands generic data scenes and rejects the new engine selector. The public catalog continues to offer the Web version 0.8.7.
 
-The graphics are displayed through Qt Quick `Image` scene nodes, instead of
-Chromium 2D Canvas. The original scenery placement and camera functions were
-ported to `RunWorld.js`; the 16-recycled-segment world is preserved. 36
-precomputed ground textures retain the original palette / perspective
-approximation, but discretize movement to 2 m per texture. Road/props,
-shadow, particles, butterfly appearance, UI and controller integration are
-**not yet pixel-for-pixel equivalent** to the Web game. Native touch
-controls (left/right/jump/duck), keyboard controls, pause/start/retry and HUD
-are implemented; the long benchmark uses an automated gamepad surrogate.
+On a compatible test host a parent can upload `mupi-run-native-preview.mupiapp` in the Community Apps admin, review the requested storage, audio and controller permissions and enable the separate game. The host checks the package ID, required assets and PNG dimensions before installing. The installed package supplies JSON, credits and local media. The host supplies the QML, shader, fixed-step simulation and SDK bridge. This pairing keeps executable files out of Community packages. The general-purpose isolation proposal is tracked in [NG #129](https://github.com/splitti/MuPiBox-NG/issues/129).
 
-The default `soundEnabled` is `false` and this prototype **never calls an
-audio output or SDK endpoint**. All Pi benchmarks were **0 % volume**, below
-the requested 5 % limit. Music/SFX volume settings and true physical
-controller events are still to be connected to the permissioned host SDK.
+The preview stores its own record and independent music/effect settings. The loop starts from the menu and the host pauses and resumes its voice. The three provided effects are prepared before the start control is enabled. The loop and effects use 48 kHz mono 16-bit PCM. Music encoding increases package bytes and avoids launching a decoder on the direct PCM path. Source attribution ships in `AUDIO-CREDITS.txt`. When provided, the builder also registers assets/audio/run.wav for footsteps and assets/audio/kilometer.wav for 1,000 m events. This release includes the three supplied effects.
 
-## Build and test
+## Build
 
-From the MuPiBox-NG-Plugins checkout:
+Requires Python 3, Pillow, FFmpeg and Node.js. Use a separate NG checkout if regenerating the trusted runtime.
 
-```bash
+```sh
 python3 tools/build_mupi_run_native.py
+python3 tools/package_mupi_run_scene.py
+python3 tools/mupiapp.py validate dist/mupi-run-native-preview.mupiapp
 node examples/mupi-run-native/test_logic_parity.cjs
-QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
-    /usr/lib/qt6/bin/qmlscene dist/mupi-run-native/NativeBench.qml
+node examples/mupi-run-native/test_world_replay.cjs
+# To stage the matching built-in code in an NG development checkout:
+python3 tools/package_mupi_run_scene.py --host ../MuPiBox-NG
+gofmt -w ../MuPiBox-NG/internal/pluginapps/runner_art.go
 ```
 
-The builder requires Python Pillow and converts the exact original WebP
-spritesheet pages to PNG, because lean Pi4 Qt6 QImageIO builds may lack the
-WebP decoder. Art is loaded locally from `dist/mupi-run-native/assets`.
-`RunLogic.js`, `RunTiles.js`, `RunPoses.js` are generated; do not edit them
-by hand. Generated binaries/images stay outside Git in `dist/`.
+The package writer fixes ZIP member order and timestamps. The engine's image layout is in `tools/runner-art-v1.json`. Regenerate `road.frag.qsb` after a shader change using Qt's matching `qsb --glsl '100 es,120,150' -o road.frag.qsb road.frag`. The effect atlas authoring utility uses the trusted Web artwork sources. Neither authoring tool runs on a child's box.
 
-### Benchmark limitations
+## Hardware checks
 
-Offscreen Qt with `QT_QUICK_BACKEND=software` is **not GPU acceleration**.
-For the real Pi test, use a separate headless **Weston OpenGL ES 3.1**
-compositor with Mesa V3D (`/dev/dri/renderD128`) and run native QML as a
-Wayland-EGL client. Do not change the box's existing EGLFS UI, install
-system packages, replace the compositor, or take over the physical panel to
-run this benchmark. The private Weston and QtWayland dependencies in the
-2026-11-21 hardware tests were extracted into a temporary directory and
-mounted only inside a disposable mount namespace; no production services
-were changed. This was **a headless GPU rendering test** – not the physical
-800×480 touch/display scanout or speaker test.
+The [hosted Pi 4 results, audio-only comparison and screenshots](benchmarks/pi4-hosted-preview.md) cover the installable preview. The [initial PR #107 experiment](benchmarks/pi4-2026-11-21.md) covers the standalone prototype. The hosted comparison uses private loopback, a throwaway NG database and package installation, a private 800 × 480 Weston Wayland/EGL surface and a test mixer draining PCM into memory. The regular EGLFS UI can keep running. The fixed replay in `tools/benchmarks/mupi-run` supplies both engines with seed 414 and the same inputs on the same simulation ticks. It checks 2,880 ticks, 1,061.44 m, 39 notes and 30 waves. GPU presentation, physical scanout and physical input are distinct measurements.
 
-Use `NativeBench.qml` for a seeded 15 s run; `NativeBenchZones.qml` for a
-45 s traversal across all three terrains. JSON logs are
-`MUPI_NATIVE_BENCH_JSON` and `MUPI_NATIVE_ZONES_JSON`.
-`benchmarks/monitor.py 22` samples the Qt and Weston processes' PSS/RSS,
-CPU ticks, and max temperature. The source is deliberately conservative:
-no claims of equal picture fidelity or of a Chromium/WebEngine 0.8.7 A/B
-until both packages are measured with the same input replay and compositor.
-
-**Results, Pi 4 diagnostics and comparison:**
-[benchmarks/pi4-2026-11-21.md](benchmarks/pi4-2026-11-21.md).
-
-## Security / future integration
-
-NG alpha.70's declarative `qtquick-scene` format **does not accept QML files,
-JavaScript files or native libraries from downloaded Community packages**.
-That is intentional: executing QML in NG's privileged GUI process would
-provide untrusted code with the main program's privileges. The native game
-source here has to be built as **trusted first-party runtime code** or run in
-a separate, OS-enforced, sandboxed Qt process with a real compositor and
-app-bound authenticated IPC. Neither route is delivered by this prototype.
-
-Before public catalog publication: implement the host integration, lifecycle
-and permissioned SDK (physical controller, separate music/SFX at <= user
-volume cap, bestMeters persistence, trusted back, update/disable revocation),
-benchmark direct Web 0.8.7 versus this port with identical input/graphics,
-verify Pi 4/5 with the real screen, and complete security review. Keep the
-existing Web 0.8.7 published and untouched until this is finished.
-
-See NG [issue #129](https://github.com/splitti/MuPiBox-NG/issues/129) and
-Plugins [issue #106](https://github.com/splitti/MuPiBox-NG-Plugins/issues/106).

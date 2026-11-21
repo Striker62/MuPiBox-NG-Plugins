@@ -76,6 +76,8 @@ def validate_manifest(data: object, files: set[str]) -> dict:
     if data["apiVersion"] != "1" or data["runtime"] not in ("web", "qtquick-scene"):
         raise PackageError("only API 1 web or qtquick-scene runtimes are supported")
     app_id = _string(data, "id", 5, 128, True)
+    if app_id == "community.mupi-run-native" and data["runtime"] != "qtquick-scene":
+        raise PackageError("runner preview ID requires its built-in engine")
     if not APP_ID.fullmatch(app_id):
         raise PackageError("id must be a lowercase reverse-domain-like identifier")
     _string(data, "name", 2, 80, True)
@@ -171,7 +173,7 @@ def validate_manifest(data: object, files: set[str]) -> dict:
     return data
 
 
-def validate_qt_scene(data: bytes, files: set[str], permissions: list[str]) -> dict:
+def validate_qt_scene(data: bytes, files: set[str], permissions: list[str], app_id: str = "") -> dict:
     """Validate passive scene data; never load arbitrary external QML in the host."""
     if not data or len(data) > 32 * 1024:
         raise PackageError("qtquick scene size exceeds 32 KiB")
@@ -179,7 +181,7 @@ def validate_qt_scene(data: bytes, files: set[str], permissions: list[str]) -> d
         scene = json.loads(data)
     except (UnicodeDecodeError, ValueError) as exc:
         raise PackageError("qtquick scene is not UTF-8 JSON") from exc
-    if not isinstance(scene, dict) or set(scene) - {"sceneVersion", "title", "background", "elements"}:
+    if not isinstance(scene, dict) or set(scene) - {"sceneVersion", "title", "background", "elements", "engine", "optionalSounds"}:
         raise PackageError("invalid qtquick scene fields")
     color = lambda value: isinstance(value, str) and re.fullmatch(r"#[0-9A-Fa-f]{6}", value) is not None
     if (type(scene.get("sceneVersion")) is not int or scene["sceneVersion"] != 1
@@ -187,8 +189,26 @@ def validate_qt_scene(data: bytes, files: set[str], permissions: list[str]) -> d
             or not isinstance(scene.get("title", ""), str)
             or len(scene.get("title", "")) > 120
             or not isinstance(scene.get("elements"), list)
-            or not 1 <= len(scene["elements"]) <= 48):
+            or len(scene["elements"]) > 48):
         raise PackageError("invalid qtquick scene metadata")
+    if "engine" in scene:
+        if (scene["engine"] != "mupi-run-v1" or app_id != "community.mupi-run-native" or
+                scene["elements"] or set(permissions) != {"audio", "controller", "storage"}):
+            raise PackageError("unsupported built-in engine, package ID or permissions")
+        art = json.loads(Path(__file__).with_name("runner-art-v1.json").read_text())
+        sounds = {"assets/audio/" + n + ".wav" for n in ("music", "jump", "slide", "collect")}
+        optional = scene.get("optionalSounds", [])
+        if (not isinstance(optional, list) or any(n not in ("run","kilometer") for n in optional)
+                or len(optional) != len(set(optional))):
+            raise PackageError("invalid optional runner samples")
+        sounds.update("assets/audio/" + n + ".wav" for n in optional)
+        if missing := (set(art) | sounds) - files:
+            raise PackageError(f"missing runner asset: {min(missing)}")
+        return scene
+    if app_id == "community.mupi-run-native":
+        raise PackageError("runner preview ID requires its built-in engine")
+    if "optionalSounds" in scene or not scene["elements"]:
+        raise PackageError("empty Qt scene")
     def bounded(value, lo, hi):
         return type(value) in (int, float) and math.isfinite(value) and lo <= value <= hi
     for element in scene["elements"]:
@@ -291,7 +311,15 @@ def validate_package(path: Path) -> dict:
             raise PackageError("manifest is not valid UTF-8 JSON") from exc
         validated = validate_manifest(manifest, names)
         if validated["runtime"] == "qtquick-scene":
-            validate_qt_scene(archive.read(validated["entry"]), names, validated["permissions"])
+            scene = validate_qt_scene(archive.read(validated["entry"]), names, validated["permissions"], validated["id"])
+            if scene.get("engine") == "mupi-run-v1":
+                art = json.loads(Path(__file__).with_name("runner-art-v1.json").read_text())
+                for name, size in art.items():
+                    with archive.open(name) as image:
+                        header = image.read(24)
+                    if (header[:16] != bytes.fromhex("89504e470d0a1a0a0000000d49484452") or
+                            [int.from_bytes(header[i:i+4], "big") for i in (16, 20)] != size):
+                        raise PackageError(f"invalid runner art dimensions: {name}")
         return validated
 
 
@@ -335,7 +363,7 @@ def pack(source: Path, destination: Path, excluded: tuple[str, ...] | list[str] 
         raise PackageError("manifest is not valid UTF-8 JSON") from exc
     validated = validate_manifest(manifest, {name for name, _ in paths})
     if validated["runtime"] == "qtquick-scene":
-        validate_qt_scene(source.joinpath(validated["entry"]).read_bytes(), {name for name, _ in paths}, validated["permissions"])
+        validate_qt_scene(source.joinpath(validated["entry"]).read_bytes(), {name for name, _ in paths}, validated["permissions"], validated["id"])
     destination.parent.mkdir(parents=True, exist_ok=True)
     # Deterministic entries and timestamps for reproducible builds.
     with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:

@@ -469,3 +469,5 @@ Reference source: `examples/qtquick-scene-demo` (package with
 `python3 tools/mupiapp.py pack examples/qtquick-scene-demo dist/qtquick-scene-demo.mupiapp --exclude README.md`).
 Do not add the demo to the public catalog until its NG host version and real
 Raspberry Pi UI behavior have been verified.
+
+The reserved first-party MuPi Run development preview pairs `community.mupi-run-native` with the fixed scene selector `mupi-run-v1`. Its matching NG development host ships the executable implementation. The package has an empty elements array, reviewed media and exactly storage/audio/controller permissions. The regular element-scene format remains available to other authors. Stock alpha.71 cannot install this preview. See [native runner](../examples/mupi-run-native/README.md).

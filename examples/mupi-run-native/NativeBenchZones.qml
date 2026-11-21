@@ -7,7 +7,7 @@ Window {
  property var bins: ({river:[],boardwalk:[],forest:[]})
  MuPiRunNative {
   id:run;anchors.fill:parent
-  autoStart:true;autoPilot:true;soundEnabled:false;showControls:false;seed:414
+  autoStart:true;autoPilot:true;measureTiming:true;soundEnabled:false;showControls:false;seed:414
   onFrameRecorded: (ms)=> {
    var name=run.state.lastTerrain
    if(benchWindow.bins[name])benchWindow.bins[name].push(ms)
