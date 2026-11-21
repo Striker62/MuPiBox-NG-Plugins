@@ -47,3 +47,12 @@ python3 tools/benchmarks/mupi-run/summarize-hosted.py "$LAB/native_a" "$LAB/web_
 ```
 
 For sampled input-to-swap timings add `--input` to the native client. Use `--capture` for matched frozen scene captures. Use `--soak` on native with `RuntimeMaxSec=1850` for 30 minutes of continuous simulation. Run one trial per device at a time. Each trial needs its own label. The observer records 2 s samples of process time, PSS/RSS and DRM file-descriptor render counters. The guard terminates the test window on low available memory. A protected stop is an incomplete run.
+
+For the fixed-replay audio comparison on the isolated NG host, pass
+`--setenv=RUN_TEST_MUTED_LEVELS=1` to systemd-run for the two muted trials
+in the order default, muted, muted, default. Verify that all four runs reach
+the fixed end state. Muted trials still prepare the three short effects but
+should log neither audio.music.play nor audio.sample.play. The Janbox
+follow-up used TMPDIR on a local ext4 directory writable only by the test
+user and GOMEMLIMIT=32MiB for the disposable host. Both options were local
+to the benchmark. A memory-guard stop invalidates the endurance run.

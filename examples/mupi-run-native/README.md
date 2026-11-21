@@ -4,7 +4,7 @@ The preview has its own ID, `community.mupi-run-native`. It uses the Web game's 
 
 ## Installation and compatibility
 
-Use **a development host containing the [trusted runner integration](https://github.com/splitti/MuPiBox-NG/pull/131)**. Stock NG 0.2.0-alpha.71 understands generic data scenes and rejects the new engine selector. The public catalog continues to offer the Web version 0.8.7.
+Use **a development host containing the [trusted runner integration](https://github.com/splitti/MuPiBox-NG/pull/131)**. Stock NG 0.2.0-alpha.71 and alpha.72 lack the runner integration. Preview 0.1.1 includes a German version hint and a working exit button for older generic scene renderers when an already installed preview survives a host rollback. The public catalog continues to offer the Web version 0.8.7.
 
 On a compatible test host a parent can upload `mupi-run-native-preview.mupiapp` in the Community Apps admin, review the requested storage, audio and controller permissions and enable the separate game. The host checks the package ID, required assets and PNG dimensions before installing. The installed package supplies JSON, credits and local media. The host supplies the QML, shader, fixed-step simulation and SDK bridge. This pairing keeps executable files out of Community packages. The general-purpose isolation proposal is tracked in [NG #129](https://github.com/splitti/MuPiBox-NG/issues/129).
 

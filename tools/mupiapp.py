@@ -193,7 +193,7 @@ def validate_qt_scene(data: bytes, files: set[str], permissions: list[str], app_
         raise PackageError("invalid qtquick scene metadata")
     if "engine" in scene:
         if (scene["engine"] != "mupi-run-v1" or app_id != "community.mupi-run-native" or
-                scene["elements"] or set(permissions) != {"audio", "controller", "storage"}):
+                set(permissions) != {"audio", "controller", "storage"}):
             raise PackageError("unsupported built-in engine, package ID or permissions")
         art = json.loads(Path(__file__).with_name("runner-art-v1.json").read_text())
         sounds = {"assets/audio/" + n + ".wav" for n in ("music", "jump", "slide", "collect")}
@@ -204,10 +204,9 @@ def validate_qt_scene(data: bytes, files: set[str], permissions: list[str], app_
         sounds.update("assets/audio/" + n + ".wav" for n in optional)
         if missing := (set(art) | sounds) - files:
             raise PackageError(f"missing runner asset: {min(missing)}")
-        return scene
-    if app_id == "community.mupi-run-native":
+    elif app_id == "community.mupi-run-native":
         raise PackageError("runner preview ID requires its built-in engine")
-    if "optionalSounds" in scene or not scene["elements"]:
+    elif "optionalSounds" in scene or not scene["elements"]:
         raise PackageError("empty Qt scene")
     def bounded(value, lo, hi):
         return type(value) in (int, float) and math.isfinite(value) and lo <= value <= hi
@@ -220,6 +219,8 @@ def validate_qt_scene(data: bytes, files: set[str], permissions: list[str], app_
                 and bounded(h, 1, 480) and x + w <= 800 and y + h <= 480):
             raise PackageError("qtquick element outside logical display")
         typ, text, asset, action = [element.get(k, "") for k in ("type", "text", "asset", "action")]
+        if "engine" in scene and typ != "text" and (typ, action) != ("button", "exit"):
+            raise PackageError("runner fallback allows only text and exit")
         if (not isinstance(text, str) or len(text.encode("utf-8")) > 240 or "\0" in text
                 or not isinstance(asset, str) or not isinstance(action, str)
                 or type(element.get("fontSize", 0)) is not int
