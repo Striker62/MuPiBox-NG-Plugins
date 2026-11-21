@@ -88,6 +88,28 @@ class PackageTests(unittest.TestCase):
         with self.assertRaisesRegex(PackageError,"only scoped"):
             validate_manifest(self.manifest,assets)
 
+    def test_runner_rollback_controls(self):
+        from mupiapp import validate_qt_scene
+        layout = Path(__file__).resolve().parents[1] / "tools/runner-art-v1.json"
+        assets = set(json.loads(layout.read_text()))
+        assets.update(f"assets/audio/{name}.wav" for name in ("music", "jump", "slide", "collect"))
+        scene = {"sceneVersion": 1, "engine": "mupi-run-v1", "background": "#112233", "elements": []}
+
+        def validate():
+            return validate_qt_scene(json.dumps(scene).encode(), assets, ["audio", "controller", "storage"],
+                                     "community.mupi-run-native")
+
+        validate()  # Existing 0.1.0 packages remain valid.
+        button = {"type": "button", "x": 20, "y": 100, "width": 200, "height": 70,
+                  "text": "Zurück", "action": "exit"}
+        scene["elements"] = [button]
+        validate()
+        for action in ("increment", "saveScore"):
+            with self.subTest(action=action):
+                button["action"] = action
+                with self.assertRaisesRegex(PackageError, "only text and exit"):
+                    validate()
+
     def test_native_example_roundtrip(self):
         example = Path(__file__).resolve().parents[1] / 'examples' / 'qtquick-scene-demo'
         manifest = pack(example, self.output, excluded=['README.md'])

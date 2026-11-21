@@ -212,10 +212,22 @@ Item {
     onPhaseChanged: simulationDebt=0
     onVisibleChanged: if(!visible && phase==="running") act("pause")
 
+    function advanceFrame(elapsed) {
+        // A stalled renderer cannot show obstacles or accept timely input.
+        // Resume at the same pose instead of replaying an unseen second.
+        if (elapsed > 1) {
+            simulationDebt = 0
+            return
+        }
+        simulationDebt += Math.max(0, elapsed)
+        const slice = Math.min(.125, simulationDebt)
+        simulationDebt -= slice
+        advance(slice)
+    }
+
     FrameAnimation {
         running:gameView.visible && gameView.phase==="running" && !gameView.loading
         onTriggered: {
-            if(frameTime>1){gameView.act("pause");return}
             gameView.guiFrames++
             var now=Date.now()
             if(gameView.measureTiming && gameView.lastMeasuredFrameMs>0) {
@@ -224,11 +236,7 @@ Item {
                 gameView.frameRecorded(dt)
             }
             gameView.lastMeasuredFrameMs=now
-            // Bound work on the GUI thread after a missed swap; retain owed ticks.
-            gameView.simulationDebt+=Math.max(0,frameTime)
-            let slice=Math.min(.125,gameView.simulationDebt)
-            gameView.simulationDebt-=slice
-            gameView.advance(slice)
+            gameView.advanceFrame(frameTime)
         }
     }
 

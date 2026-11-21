@@ -39,6 +39,25 @@ Die PCM-Datei spart beim ersten Musikaufruf mehrere Sekunden. Sie ist größer u
 - **Software-Eingabe auf Box 83.** 24 injizierte Aktionen für Sprung, Grätsche und beide Spurrichtungen bis zum nächsten Fenster-Swap mit neuer Revision: Median 27 ms, Spannweite 11–133 ms. Physischer Touch, Controllertransport und Panelreaktion kommen im normalen Betrieb hinzu.
 - **Freigabegrenzen.** Die Messungen liefen mit echtem V3D auf einer privaten Weston-Fläche neben EGLFS. Physischer Touch und Controller mit Trennen/Verbinden, hörbare Ausgabe, Rückkehr auf dem sichtbaren Panel und ein vollständiger Geräte-Rollback benötigen eigene Abnahme. Ein Raspberry Pi 5 stand nicht zur Verfügung.
 
+## Nachtest mit Preview 0.1.1
+
+**Bildstillstand.** Auf Box 83 wurde ausschließlich der Qt-Prozess der isolierten Spielinstanz nach drei Sekunden Laufzeit für 1,7 s angehalten und wieder freigegeben. Die bisherige Version wechselte bei 42,16 m in Pause. Die korrigierte Version lief selbstständig weiter und beendete denselben Parcours nach 49,736 s mit 1.061,44 m, 39 Noten und 30 Wellen. Der längste gemessene Bildabstand betrug einschließlich der Unterbrechung 1.754 ms. Ein zusätzlicher Qt-Test unterbricht einen laufenden Sprung und prüft dessen Position und Alter vor und nach dem nächsten Physiktakt. Bewusstes Pausieren und Fortsetzen wurden ebenfalls geprüft.
+
+**Ton gegen stumm.** Vier Durchläufe auf Box 83 in der Tabellenreihenfolge mit derselben Preview, derselben V3D-Ausgabe, demselben Seed und isoliertem PCM-Mixer. Für die stummen Läufe standen beide gespeicherten Spiel-Lautstärken auf null. Der Host bereitete die drei kurzen Effekte in allen vier Läufen vor. In den beiden stummen Läufen gab es keinen Musik- oder Effekt-Abspielaufruf. Alle erreichten dasselbe Ziel.
+
+| Wiedergabe | Spielbilder/s | P99 | Längste Bildpause | Pausen >100 ms | Spitzen-PSS der Testgruppe |
+|---|---:|---:|---:|---:|---:|
+| Mit Ton A | 29,11 | 84 ms | 160 ms | 7 | 241,9 MiB |
+| Stumm A | 28,90 | 87 ms | 171 ms | 6 | 232,5 MiB |
+| Stumm B | 29,03 | 89 ms | 133 ms | 7 | 232,8 MiB |
+| Mit Ton B | 28,91 | 85 ms | 214 ms | 9 | 242,1 MiB |
+
+Ein weiterer vollständiger V3D-Lauf nutzte den Produktionsmixer mit einem privaten PipeWire-Ausgang auf Box 83. Der Monitor zeichnete 2.651.648 Stereo-Frames mit 4.676.500 von null verschiedenen Einzelwerten auf. Nach dem Beenden waren die letzten 500 ms still. Der Parcours erreichte 28,99 Spielbilder/s, P99 89 ms und eine längste Bildpause von 159 ms. Die Messung war am physischen Lautsprecher stumm.
+
+**Janbox, wiederholter Langlauf.** Beide Versuche liefen mit Paket 0.1.0, verbindungsgebundener SDK-Sitzung, temporärem Spielspeicher auf ext4 und einem Go-Speicherziel von 32 MiB. Die installierte Hauptoberfläche lief parallel. Mit Alpha.71 beendete der Schutz den Versuch nach rund 20:58 Minuten beobachteter Qt-Laufzeit bei 161,5 MiB verfügbarem Systemspeicher. Mit Alpha.72 waren es rund 20:39 Minuten und 164,2 MiB. Die Hintergrundmusik startete im zweiten Versuch in 28 ms, die 1.591 Effektaufrufe dauerten im Median 1,88 ms. Um 14:22 Uhr wechselte diese isolierte Instanz in Pause. Auf dem physischen Display wurde zu dieser Zeit das veröffentlichte Webspiel geöffnet. Es liegt für beide Versuche kein vollständiger FPS-Datensatz über 30 Minuten vor. Ob der vom Nutzer ursprünglich beobachtete Stillstand denselben Auslöser hatte, bleibt offen.
+
+**Menü und Rückwechsel auf Box 83.** Ein QtTest auf der vollständigen NG-Oberfläche wählte die Spielekachel, startete einen Lauf, sprang und kehrte zum Menü zurück. Bei absichtlich gelöschtem Sammelton blieben die übrigen Klänge verfügbar. In einem separaten Test installierte der ARM64-Kandidat 0.1.1 über die Admin-API. Das mitgelieferte Recovery-Programm stellte in einer privaten Installation den vorherigen Runtime-Pfad, die Unit-Dateien und die geprüfte Datenbank wieder her. Der originale Alpha.71-Host startete anschließend erfolgreich. Seine unveränderte QML-Oberfläche zeigte den Versionshinweis, ein synthetischer Touch auf „Zurück zum Menü“ löste den regulären Ausstieg aus. Der Neustart wurde nur protokolliert. Physischer Touch, ein echter Controller, die Abnahme am Lautsprecher und ein Geräte-Neustart bleiben offen.
+
 ## Spielansichten und Reproduktion
 
 [Aufnahmen vom Pi 4, Web und Qt nebeneinander](pi4-hosted-scenes.webp) · [Messdaten je Lauf, einschließlich unvollständiger Versuche](pi4-hosted-preview.json) · [Werkzeuge und Ablauf](../../../tools/benchmarks/mupi-run/README.md)

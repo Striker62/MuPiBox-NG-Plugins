@@ -103,9 +103,11 @@ Window {
             if(capture){win.snapshot();return}
             if(inputTrial){win.tryInput();return}
             let elapsed=Date.now()-started
-            if(soak ? elapsed<1800000 : !game.game.finished() && game.phase==="running" && elapsed<90000) return
+            const running = game.phase === "running"
+            const complete = soak ? running && elapsed >= 1800000 : running && game.game.finished()
+            if (running && !complete && (soak || elapsed < 90000)) return
             stop()
-            console.log("HOST_RESULT",JSON.stringify({elapsed:elapsed,times:swaps,distance:game.state.distance,
+            console.log("HOST_RESULT",JSON.stringify({complete:complete,elapsed:elapsed,times:swaps,distance:game.state.distance,
                 notes:game.state.noteCount,waves:game.state.waves,phase:game.phase,collisions:game.overCount}))
             panel.pad({connected:true,start:true});panel.pad({connected:true})
             if(game.phase!=="paused")console.error("PAUSE_FAILED")
