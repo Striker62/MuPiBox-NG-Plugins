@@ -33,6 +33,9 @@ with wave.open(str(music),"wb") as out:
 files["assets/audio/music.wav"] = music
 for path in sorted((src / "assets/audio").glob("*.wav")):
     files["assets/audio/" + path.name] = path
+optional_sounds = [name for name in ("run", "kilometer") if f"assets/audio/{name}.wav" in files]
+if optional_sounds:
+    scene["optionalSounds"] = optional_sounds
 unused = {"ground-boardwalk.png","ground-forest.png","ground-river.png","logo-ui.png",
           "backdrop.png","foreground.png"}
 for path in sorted((build / "assets").glob("*.png")):

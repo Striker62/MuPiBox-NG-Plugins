@@ -179,7 +179,7 @@ def validate_qt_scene(data: bytes, files: set[str], permissions: list[str], app_
         scene = json.loads(data)
     except (UnicodeDecodeError, ValueError) as exc:
         raise PackageError("qtquick scene is not UTF-8 JSON") from exc
-    if not isinstance(scene, dict) or set(scene) - {"sceneVersion", "title", "background", "elements", "engine"}:
+    if not isinstance(scene, dict) or set(scene) - {"sceneVersion", "title", "background", "elements", "engine", "optionalSounds"}:
         raise PackageError("invalid qtquick scene fields")
     color = lambda value: isinstance(value, str) and re.fullmatch(r"#[0-9A-Fa-f]{6}", value) is not None
     if (type(scene.get("sceneVersion")) is not int or scene["sceneVersion"] != 1
@@ -195,10 +195,15 @@ def validate_qt_scene(data: bytes, files: set[str], permissions: list[str], app_
             raise PackageError("unsupported built-in engine, package ID or permissions")
         art = json.loads(Path(__file__).with_name("runner-art-v1.json").read_text())
         sounds = {"assets/audio/" + n + ".wav" for n in ("music", "jump", "slide", "collect")}
+        optional = scene.get("optionalSounds", [])
+        if (not isinstance(optional, list) or any(n not in ("run","kilometer") for n in optional)
+                or len(optional) != len(set(optional))):
+            raise PackageError("invalid optional runner samples")
+        sounds.update("assets/audio/" + n + ".wav" for n in optional)
         if missing := (set(art) | sounds) - files:
             raise PackageError(f"missing runner asset: {min(missing)}")
         return scene
-    if not scene["elements"]:
+    if "optionalSounds" in scene or not scene["elements"]:
         raise PackageError("empty Qt scene")
     def bounded(value, lo, hi):
         return type(value) in (int, float) and math.isfinite(value) and lo <= value <= hi

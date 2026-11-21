@@ -32,6 +32,10 @@ Item {
     property int visibleSlots: 0
     property bool measureTiming: false
     property bool settingsOpen: false
+    property string announcement: ""
+    property bool collected: false
+    Timer {id:clearMessage;interval:1350;onTriggered:gameView.announcement=""}
+    Timer {id:clearPickup;interval:190;onTriggered:gameView.collected=false}
     property bool useGpuRoad: GraphicsInfo.api !== GraphicsInfo.Software
     function effect(name) { if (host && soundEnabled) host.effect(name) }
     function leave() { exitRequested("native_back") }
@@ -90,6 +94,10 @@ Item {
         forceActiveFocus()
     }
     onLoadingChanged:whenReady()
+    onLoadErrorChanged:if(loadError && state.phase==="running") {
+        game.act(state,"pause")
+        rebuildScene()
+    }
 
     property real scaleToScreen: Math.min(width/800,height/480)
     property int roadPhase: 0
@@ -98,6 +106,8 @@ Item {
 
     function pad2(n) { return n<10 ? "0"+n : String(n); }
     function restart() {
+        announcement=""
+        collected=false
         state = game.fresh(autoPilot ? seed : (Date.now() >>> 0))
         sceneryCache = []
         game.act(state,'start')
@@ -165,9 +175,21 @@ Item {
         }
         if(state.phase==='running'){
             var before=state.phase
+            var zoneBefore=state.lastTerrain
+            var levelBefore=Math.floor(state.distance/150)
+            var stepsBefore=state.steps
+            var kmBefore=Math.floor(state.distance/1000)
             var notesBefore=state.noteCount
             game.advance(state,seconds)
-            if(state.noteCount>notesBefore)effect("collect")
+            if(state.noteCount>notesBefore){effect("collect");collected=true;clearPickup.restart()}
+            if(zoneBefore!==state.lastTerrain || levelBefore!==Math.floor(state.distance/150)){
+                announcement=levelBefore!==Math.floor(state.distance/150)
+                    ? tr("level").replace("{n}",String(1+Math.floor(state.distance/150)))
+                    : ({river:"FLUSSBETT!",forest:"WALDPFAD!",boardwalk:"HOLZSTEG!"})[state.lastTerrain]
+                clearMessage.restart()
+            }
+            if(state.steps>stepsBefore)effect("run")
+            if(Math.floor(state.distance/1000)>kmBefore)effect("kilometer")
             if(before==='running' && state.phase==='over'){
                 overCount++
                 if(Math.floor(state.distance)>best){
@@ -193,6 +215,7 @@ Item {
     FrameAnimation {
         running:gameView.visible && gameView.phase==="running" && !gameView.loading
         onTriggered: {
+            if(frameTime>1){gameView.act("pause");return}
             gameView.guiFrames++
             var now=Date.now()
             if(gameView.measureTiming && gameView.lastMeasuredFrameMs>0) {
@@ -238,8 +261,9 @@ Item {
         y:(gameView.height-480*gameView.scaleToScreen)/2
         transform:Scale {origin.x:0;origin.y:0;xScale:gameView.scaleToScreen;yScale:gameView.scaleToScreen}
         clip:true
-        Rectangle {anchors.fill:parent;color:'#122b35'}
+        Rectangle {z:-2000;anchors.fill:parent;color:'#122b35'}
         Image {
+            z:-1500
             x: -38+12*Math.sin(gameView.distanceMeters*.012)
             width:876;height:480
             source:gameView.art("scenery-background")
@@ -249,7 +273,7 @@ Item {
         }
         // The software scene graph uses precomputed ground phases.
         Image {
-            x:0;y:157;width:800;height:323
+            z:-1000;x:0;y:157;width:800;height:323
             visible:!gameView.useGpuRoad
             source:visible ? gameView.art('road-'+gameView.terrain+'-'+gameView.pad2(gameView.roadPhase)) : ""
             fillMode:Image.Stretch
@@ -257,7 +281,7 @@ Item {
             cache:true
         }
         ShaderEffect {
-            x:0;y:157;width:800;height:323
+            z:-1000;x:0;y:157;width:800;height:323
             visible:gameView.useGpuRoad
             property real distanceMeters:gameView.distanceMeters
             property var ground:Image {
@@ -276,6 +300,7 @@ Item {
                 x:obj?obj.x:0;y:obj?obj.y:0
                 width:obj?obj.w:0;height:obj?obj.h:0
                 z:obj?100-obj.worldZ:0
+                opacity:obj && obj.opacity!==undefined ? obj.opacity : 1
                 property bool note:obj && obj.source==="notes"
                 property bool wings:obj && obj.source==="butterflies"
                 property bool rope:obj && obj.source==="rope"
@@ -338,8 +363,13 @@ Item {
         Text {
             z:202;x:102;y:18;width:202;height:42
             text: {var frame=gameView.renderVersion;return Math.floor(gameView.state.distance)+' m   ♫ '+gameView.state.noteCount+'   ★ '+gameView.best}
-            color:'#fff4d2';font.pixelSize:19;font.bold:true
+            color:gameView.collected?'#ffca46':'#fff4d2';font.pixelSize:19;font.bold:true
             verticalAlignment:Text.AlignVCenter
+        }
+        Text {
+            z:202; anchors.horizontalCenter:parent.horizontalCenter; y:80
+            text:gameView.announcement;visible:gameView.phase==="running" && text!==""
+            color:"#fff0af";style:Text.Outline;styleColor:"#47331c";font.bold:true;font.pixelSize:22
         }
         Rectangle {
             z:202;x:720;y:13;width:60;height:48;radius:12;color:'#99305064';border.color:'#c6e8ff'
@@ -404,8 +434,8 @@ Item {
             }
         }
         Rectangle {
-            z:206;x:12;y:411;width:108;height:55;radius:12;color:"#cf19364e"
-            visible:gameView.phase!=="running" && !gameView.autoPilot
+            z:206;x:gameView.phase==="running"?600:12;y:gameView.phase==="running"?13:411;width:108;height:gameView.phase==="running"?48:55;radius:12;color:"#cf19364e"
+            visible:!gameView.autoPilot
             Text {anchors.centerIn:parent;text:gameView.localLabel(0);color:"white";font.pixelSize:21}
             MouseArea {anchors.fill:parent;onClicked:gameView.leave()}
         }
@@ -425,7 +455,7 @@ Item {
                     required property int index
                     required property string modelData
                     x:135;y:135+index*86;width:530;height:65
-                    Text {anchors.verticalCenter:parent.verticalCenter;color:"white";font.pixelSize:25
+                    Text {anchors.verticalCenter:parent.verticalCenter;color:gameView.host && gameView.host.settingsRow===index?"#ffe49b":"white";font.pixelSize:25
                         text:modelData+"   "+(gameView.host?(index===0?gameView.host.musicLevel:gameView.host.effectLevel):0)+" %"}
                     Row { x:300;spacing:12
                         Repeater {

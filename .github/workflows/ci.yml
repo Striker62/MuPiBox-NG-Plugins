@@ -66,6 +66,8 @@ jobs:
           python3 tests/mupi_run_sprite_test.py
       - name: Verify trusted runner art, replay and data-only package
         run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
           python3 tools/build_mupi_run_native.py
           python3 tools/package_mupi_run_scene.py
           node examples/mupi-run-native/test_logic_parity.cjs
