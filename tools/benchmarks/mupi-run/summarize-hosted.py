@@ -29,7 +29,19 @@ def report(prefix):
     if measurement:
         times=measurement.pop("times")
         result.update(measurement)
-        result["completed"]= ("HOST_EXIT" in text if native else "MUPIBENCH DONE true" in text)
+        if native:
+            # Older runners emitted no completion flag. Recover it from the
+            # fixed replay end state or a full running soak with distance.
+            finished=native.get("complete")
+            if finished is None:
+                fixed=(native.get("notes")==39 and native.get("waves")==30 and
+                       abs(native.get("distance",0)-1061.44)<.01)
+                soak=native["elapsed"]>=1800000 and native.get("distance",0)>0
+                finished=fixed or soak
+            result["completed"]=bool(finished and native.get("phase")=="running" and
+                                     "HOST_EXIT runner_controller_back" in text and not result["protectedStop"])
+        else:
+            result["completed"]="MUPIBENCH DONE true" in text and not result["protectedStop"]
         result["frames"]=len(times)
         result["fps"]=round(len(times)*1000/result["elapsed"],2)
         result["gapsMs"]=intervals(times)

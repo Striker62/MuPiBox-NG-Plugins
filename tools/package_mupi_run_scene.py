@@ -19,7 +19,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--host", type=Path)
 args = parser.parse_args()
 manifest = json.loads((root / "examples/mupi-run-native/manifest.json").read_text())
-scene = dict(sceneVersion=1, engine="mupi-run-v1", background="#122b35", elements=[])
+# Already installed packages survive a firmware rollback. Older NG versions
+# can display these passive controls, while the runner host uses its own UI.
+scene = dict(sceneVersion=1, engine="mupi-run-v1", background="#122b35", elements=[
+    dict(type="text", x=40, y=102, width=720, height=58, fontSize=35, text="MuPi Run · Qt Preview"),
+    dict(type="text", x=30, y=185, width=740, height=80, fontSize=22,
+         text="Für diese Preview brauchst du eine neuere MuPiBox-Version.\nIm Spielemenü kannst du MuPi Run in der Webversion starten."),
+    dict(type="button", x=255, y=312, width=290, height=65, fontSize=25, text="Zurück zum Menü", action="exit"),
+])
 files = {name: (src / name) for name in ["cover.png", "icon.png", "AUDIO-CREDITS.txt"]}
 # Preserve the Web loop sample-for-sample, including its loop length.
 pcm = subprocess.check_output(["ffmpeg", "-v","error","-nostdin","-i",
