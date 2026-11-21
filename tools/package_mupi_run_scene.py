@@ -18,9 +18,7 @@ build = root / "dist/mupi-run-native"
 parser = argparse.ArgumentParser()
 parser.add_argument("--host", type=Path)
 args = parser.parse_args()
-manifest = json.loads((src / "manifest.json").read_text())
-manifest.update(id="community.mupi-run-native", name="MuPi Run · Qt Preview",
-                version="0.1.0", runtime="qtquick-scene", entry="scene.json")
+manifest = json.loads((root / "examples/mupi-run-native/manifest.json").read_text())
 scene = dict(sceneVersion=1, engine="mupi-run-v1", background="#122b35", elements=[])
 files = {name: (src / name) for name in ["cover.png", "icon.png", "AUDIO-CREDITS.txt"]}
 # Preserve the Web loop sample-for-sample, including its loop length.
