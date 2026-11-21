@@ -64,6 +64,12 @@ jobs:
           python3 tests/mupi_run_atlases_test.py
           python3 tests/mupi_run_sheet_test.py
           python3 tests/mupi_run_sprite_test.py
+      - name: Verify trusted runner art, replay and data-only package
+        run: |
+          python3 tools/build_mupi_run_native.py
+          python3 tools/package_mupi_run_scene.py
+          node examples/mupi-run-native/test_logic_parity.cjs
+          node examples/mupi-run-native/test_world_replay.cjs
       - name: Build independent Klang Memory preview
         run: python3 tools/build_klang_memory.py
       - name: Build USB webcam preview

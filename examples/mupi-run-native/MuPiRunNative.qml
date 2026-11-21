@@ -3,6 +3,7 @@ import "RunLogic.js" as Logic
 import "RunWorld.js" as Geometry
 import "RunTiles.js" as Tiles
 import "RunPoses.js" as Poses
+import "RunStrings.js" as Strings
 
 // First-party scene. NG ships this code and supplies scoped services via host.
 Item {
@@ -16,6 +17,15 @@ Item {
     property bool soundEnabled: false
     property var host: null
     property url assetsBase: Qt.resolvedUrl("assets/")
+    readonly property string language: host && host.page ? String(host.page.language || "de").split(/[-_]/)[0] : "de"
+    function tr(key) { return (Strings.languages[language] || Strings.languages.en)[key] }
+    function localLabel(key) {
+        const extras={de:["Zurück","Lädt …","Bild fehlt"],en:["Back","Loading…","Missing image"],
+            fr:["Retour","Chargement…","Image manquante"],es:["Volver","Cargando…","Falta la imagen"],
+            it:["Indietro","Caricamento…","Immagine mancante"],nl:["Terug","Laden…","Ontbrekende afbeelding"],
+            sv:["Tillbaka","Laddar…","Bild saknas"]}
+        return (extras[language] || extras.en)[key]
+    }
     function art(name) { return assetsBase.toString() + name + ".png" }
     property string phase: "ready"
     property real distanceMeters: 0
@@ -313,6 +323,16 @@ Item {
         }
         // Game HUD: native touch/keys. Controller input may be forwarded by
         // the trusted host, not read from /dev/input by third-party QML.
+        MouseArea {
+            z:200; anchors.fill:parent; enabled:gameView.phase==="running"
+            property point touchStart
+            onPressed: function(mouse) { touchStart=Qt.point(mouse.x,mouse.y) }
+            onReleased: function(mouse) {
+                const dx=mouse.x-touchStart.x,dy=mouse.y-touchStart.y
+                if(Math.abs(dx)>25 && Math.abs(dx)>Math.abs(dy)) gameView.act(dx<0?"left":"right")
+                else gameView.act(dy>25?"duck":"jump")
+            }
+        }
         Rectangle {z:201;x:16;y:12;width:289;height:55;radius:12;color:'#80203951';border.color:'#88cddd'}
         Image { z:202;x:20;y:14;width:72;height:52;source:gameView.art("title");fillMode:Image.PreserveAspectFit }
         Text {
@@ -331,19 +351,19 @@ Item {
             anchors.fill:parent
             Rectangle {x:14;y:393;width:73;height:70;radius:20;color:'#99345976';border.color:'#bbdeed'
                 Text {anchors.centerIn:parent;text:'◀';color:'white';font.pixelSize:30}
-                MouseArea {anchors.fill:parent;onClicked:gameView.act('left')}
+                MouseArea {anchors.fill:parent;onPressed:gameView.act('left')}
             }
             Rectangle {x:96;y:393;width:73;height:70;radius:20;color:'#99345976';border.color:'#bbdeed'
                 Text {anchors.centerIn:parent;text:'▶';color:'white';font.pixelSize:30}
-                MouseArea {anchors.fill:parent;onClicked:gameView.act('right')}
+                MouseArea {anchors.fill:parent;onPressed:gameView.act('right')}
             }
             Rectangle {x:614;y:393;width:80;height:70;radius:20;color:'#99605c36';border.color:'#ffe49b'
                 Text {anchors.centerIn:parent;text:'↑';color:'white';font.pixelSize:35}
-                MouseArea {anchors.fill:parent;onClicked:gameView.act('jump')}
+                MouseArea {anchors.fill:parent;onPressed:gameView.act('jump')}
             }
             Rectangle {x:704;y:393;width:80;height:70;radius:20;color:'#99605c36';border.color:'#ffe49b'
                 Text {anchors.centerIn:parent;text:'↓';color:'white';font.pixelSize:35}
-                MouseArea {anchors.fill:parent;onClicked:gameView.act('duck')}
+                MouseArea {anchors.fill:parent;onPressed:gameView.act('duck')}
             }
         }
         Rectangle {
@@ -365,41 +385,41 @@ Item {
                 x:145;y:125;width:510;height:84
                 horizontalAlignment:Text.AlignHCenter
                 visible:gameView.phase!=='ready'
-                text:gameView.phase==='ready'?'MuPi RUN':gameView.phase==='paused'?'PAUSE':'AUSGELAUFEN!'
+                text:gameView.phase==='ready'?'MuPi RUN':gameView.tr(gameView.phase==='paused'?'pause':'over')
                 font.bold:true;font.pixelSize:52;color:'#ffe49b'
             }
             Text {
                 x:gameView.phase==='ready'?40:155;y:210;width:gameView.phase==='ready'?310:490;height:72;wrapMode:Text.WordWrap
                 horizontalAlignment:Text.AlignHCenter
-                text:gameView.loadError ? 'Bild konnte nicht geladen werden: '+gameView.loadError : gameView.phase==='ready'?'Laufen · Springen · Grätschen · Noten sammeln':
-                     gameView.phase==='paused'?'Weiterlaufen oder zurück zum Menü':
-                       Math.floor(gameView.state.distance)+' Meter  ·  ♫ '+gameView.state.noteCount
+                text:gameView.loadError ? gameView.localLabel(2)+' · '+gameView.loadError : gameView.phase==='ready'?gameView.tr('intro'):
+                     gameView.phase==='paused'?gameView.tr('pausedesc'):
+                       Math.floor(gameView.state.distance)+' m  ·  ♫ '+gameView.state.noteCount
                 font.pixelSize:18;color:'white'
             }
             Image { visible:gameView.phase==='ready';x:34;y:42;width:315;height:160;source:gameView.art("title");fillMode:Image.PreserveAspectFit }
             Rectangle {
                 x:gameView.phase==='ready'?52:230;y:gameView.phase==='ready'?294:266;width:gameView.phase==='ready'?262:340;height:62;radius:24;color:gameView.phase==='ready'?'#ffd573':'#247b63';border.color:'#b9f1d5';border.width:2
-                Text {anchors.centerIn:parent;text:gameView.loading?'LÄDT …':gameView.phase==='ready'?'LOS GEHT’S!':gameView.phase==='paused'?'WEITERLAUFEN':'NOCH MAL!';color:gameView.phase==='ready'?'#37260d':'white';font.pixelSize:26;font.bold:true}
+                Text {anchors.centerIn:parent;text:gameView.loading?gameView.localLabel(1):gameView.tr(gameView.phase==='ready'?'start':gameView.phase==='paused'?'resume':'again');color:gameView.phase==='ready'?'#37260d':'white';font.pixelSize:26;font.bold:true}
                 MouseArea {anchors.fill:parent;onClicked:gameView.phase==='over'?gameView.restart():gameView.act(gameView.phase==='ready'?'start':'pause')}
             }
         }
         Rectangle {
             z:206;x:12;y:411;width:108;height:55;radius:12;color:"#cf19364e"
             visible:gameView.phase!=="running" && !gameView.autoPilot
-            Text {anchors.centerIn:parent;text:"Zurück";color:"white";font.pixelSize:21}
+            Text {anchors.centerIn:parent;text:gameView.localLabel(0);color:"white";font.pixelSize:21}
             MouseArea {anchors.fill:parent;onClicked:gameView.leave()}
         }
         Rectangle {
             z:206;x:626;y:411;width:162;height:55;radius:12;color:"#cf19364e"
             visible:!!gameView.host && gameView.phase!=="running"
-            Text {anchors.centerIn:parent;text:gameView.settingsOpen?"Schließen":"Lautstärke";color:"white";font.pixelSize:21}
+            Text {anchors.centerIn:parent;width:parent.width-10;horizontalAlignment:Text.AlignHCenter;text:gameView.tr(gameView.settingsOpen?"done":"audioSettings");color:"white";font.pixelSize:20;fontSizeMode:Text.Fit}
             MouseArea {anchors.fill:parent;onClicked:gameView.settingsOpen=!gameView.settingsOpen}
         }
         Rectangle {
             z:205;anchors.fill:parent;color:"#f219364e";visible:gameView.settingsOpen
             MouseArea {anchors.fill:parent}
             Repeater {
-                model:["Musik","Effekte"]
+                model:[gameView.tr("music"),gameView.tr("effects")]
                 delegate:Item {
                     id:levelRow
                     required property int index

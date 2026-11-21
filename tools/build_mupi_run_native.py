@@ -26,6 +26,11 @@ for name,globalname in [('poses.js','MuPiPoses'),('tile-layout.js','MuPiRunTiles
  data=json.loads(text.split(' = ',1)[1].rstrip().rstrip(';'))
  (DST/('RunPoses.js' if name=='poses.js' else 'RunTiles.js')).write_text('.pragma library\nvar '+globalname+' = '+json.dumps(data,separators=(',',':'))+';\n')
 
+# Use the same trusted UI translations as the Web release.
+app = (SRC / "app.js").read_text()
+translations = app.split("  const languages = ", 1)[1].split(";\n  function tr(", 1)[0]
+(DST / "RunStrings.js").write_text(".pragma library\nvar languages = " + translations + ";\n")
+
 # Source images are intentionally re-encoded to PNG: Qt6 on the target Pi can
 # lack the optional WebP QImageIO plugin. Keep all coordinates in the original
 # PNG spritesheet, to preserve all 384 existing run/action poses.
