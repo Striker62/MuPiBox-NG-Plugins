@@ -222,7 +222,7 @@ test('a long music decode allows pickup and pause drains late native voices', as
   assert.deepEqual(calls.slice(4),['stopMusic','stopSamples']);
 });
 
-test('menu music starts once, survives game menus, and stops when the app leaves the screen',()=>{
+test('menu music starts once, survives game menus, and stops when the app leaves the screen',async()=>{
   const vm=require('node:vm'), fs=require('node:fs'), path=require('node:path');
   const dir=path.join(__dirname,'../examples/mupi-run');
   const listeners=new Map(), buttons=new Map(), changes=[];
@@ -235,6 +235,7 @@ test('menu music starts once, survives game menus, and stops when the app leaves
     MuPiBoxSDK:{isHosted:true,on:(event,fn)=>listeners.set(event,fn)},
     createRunAudio:()=>({active:value=>changes.push(value),play(){}})};
   vm.runInNewContext(fs.readFileSync(path.join(dir,'audio-session.js'),'utf8'),{window,document});
+  await window.MuPiRunSession.opening;
   assert.deepEqual(changes,[true]);
   listeners.get('menu-soundclick')();
   assert.equal(changes.at(-1),false);
@@ -248,4 +249,91 @@ test('menu music starts once, survives game menus, and stops when the app leaves
   window.MuPiRunSession.exit();
   listeners.get('lifecycle.resume')();
   assert.equal(changes.at(-1),false);
+});
+
+test('native warmup prepares each effect once and skips old hosts',async()=>{
+  const vm=require('node:vm'), fs=require('node:fs'), path=require('node:path');
+  let time=0;const calls=[];
+  const ctx={window:{},performance:{now:()=>time},setTimeout(fn,ms){time+=ms;fn();}};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../examples/mupi-run/sound.js'),'utf8'),ctx);
+  const files={music:'music.ogg',jump:'jump.mp3',slide:'slide.mp3',collect:'collect.wav'};
+  const api={playMusic:async()=>{},prepareSample:async f=>calls.push(f)};
+  const player=ctx.window.createRunAudio({isHosted:true,audio:api},files);
+  await player.active(true);
+  await player.prepare({});
+  assert.deepEqual(calls,[]);
+  await player.prepare({audioSamplePreload:true});
+  assert.deepEqual(calls,[files.jump,files.slide,files.collect]);
+});
+
+test('audio sliders scale music and effects independently on the native mixer', async()=>{
+  const vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');
+  let clock=0;const calls=[];
+  const ctx={window:{},performance:{now:()=>clock},setTimeout(fn,ms){clock+=ms;fn();}};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../examples/mupi-run/sound.js'),'utf8'),ctx);
+  const sdk={isHosted:true,audio:{
+    playMusic:async(...x)=>calls.push(['music',...x]),
+    playSample:async(...x)=>calls.push(['effect',...x]),
+    setMusicVolume:async(...x)=>calls.push(['musicVolume',...x]),
+    stopMusic:async()=>{},stopSamples:async()=>{}
+  }};
+  const sound=ctx.window.createRunAudio(sdk,{music:'assets/audio/music.ogg',jump:'assets/audio/jump.wav'});
+  await sound.setLevels({music:50,effects:20});
+  await sound.active(true);
+  await sound.play('jump');
+  assert.equal(calls[0][2],17); // base music 34, times 50%
+  assert.equal(calls[1][2],12); // base jump 62, times 20%
+  await sound.setLevels({music:25,effects:20});
+  assert.equal(calls.at(-1)[0],'musicVolume');
+  assert.equal(calls.at(-1)[1],9);
+  assert.equal(calls.at(-1)[2].relative,true);
+  await sound.setLevels({music:25,effects:0});
+  await sound.play('jump');
+  assert.equal(calls.at(-1)[2],0);
+  await sound.active(false);
+});
+
+test('volume preferences restore before playback and persist after adjusting the settings',async()=>{
+  const vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');
+  const dir=path.join(__dirname,'../examples/mupi-run');
+  const listeners=new Map(),nodes=new Map(),applied=[],events=[];
+  function make(id){return {
+    hidden:id==='audio-settings',value:'100',textContent:'',
+    addEventListener:(type,fn)=>listeners.set(id+type,fn),
+    setAttribute(){},focus(){},
+  };}
+  for(const id of ['sound','menu-sound','audio-settings','settings-button','audio-done',
+      'volume-music','volume-effects','volume-music-value','volume-effects-value'])nodes.set(id,make(id));
+  const document={getElementById:id=>nodes.get(id),hidden:false,
+    addEventListener:(type,fn)=>listeners.set('doc'+type,fn)};
+  const window={
+    addEventListener:(type,fn)=>listeners.set('win'+type,fn),
+    MuPiRunAudioFiles:{music:'assets/audio/music.ogg'},
+    MuPiBoxSDK:{
+      isHosted:true,
+      storage:{get:async()=>({music:40,effects:70}),set:async(key,value)=>events.push([key,value])},
+      on:(name,fn)=>listeners.set(name,fn)
+    },
+    createRunAudio:()=>({
+      active:value=>events.push(['active',value]),
+      setLevels:value=>applied.push({...value}),
+      play(){},prepare(){}
+    })
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(dir,'audio-session.js'),'utf8'),{window,document,setTimeout,clearTimeout,console});
+  await window.MuPiRunSession.opening;
+  assert.equal(applied[0].music,40);
+  assert.equal(applied[0].effects,70);
+  assert.equal(nodes.get('volume-music').value,'40');
+  assert.equal(events[0][0],'active');
+  listeners.get('settings-buttonclick')();
+  assert.equal(window.MuPiRunSession.settingsOpen(),true);
+  nodes.get('volume-effects').value='25';
+  listeners.get('volume-effectschange')();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(applied.at(-1).effects,25);
+  assert.equal(events.at(-1)[0],'audioLevels');
+  assert.equal(events.at(-1)[1].effects,25);
+  window.MuPiRunSession.closeSettings();
+  assert.equal(window.MuPiRunSession.settingsOpen(),false);
 });

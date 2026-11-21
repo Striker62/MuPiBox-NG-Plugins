@@ -33,11 +33,11 @@
       "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
     },
     "runtime": {
-      "const": "web"
+      "enum": ["web", "qtquick-scene"]
     },
     "entry": {
       "type": "string",
-      "pattern": "^[a-zA-Z0-9_.-]+(?:/[a-zA-Z0-9_.-]+)*\\.html$"
+      "pattern": "^[a-zA-Z0-9_.-]+(?:/[a-zA-Z0-9_.-]+)*\\.(?:html|json)$"
     },
     "icon": {
       "type": "string",
@@ -68,10 +68,13 @@
           "shared-assets",
           "network",
           "links",
-          "homeassistant"
+          "homeassistant",
+          "device-status",
+          "playback",
+          "playback-control"
         ]
       },
-      "maxItems": 8
+      "maxItems": 12
     },
     "networkHosts": {
       "type": "array",

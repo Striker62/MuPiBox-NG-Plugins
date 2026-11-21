@@ -8,11 +8,11 @@ ROOT = Path(__file__).resolve().parents[1]
 APPS = (
     ("tic-tac-toe", "assets/cover-clean-v2.jpg", "assets/icon.png", "0.2.7"),
     ("four-in-a-row", "assets/cover-clean-v2.jpg", "assets/icon.png", "0.1.5"),
-    ("crumbworm", "cover.jpg", "icon.png", "0.2.2"),
+    ("crumbworm", "cover.jpg", "icon.png", "0.3.0"),
     ("chess", "cover-clean-v2.jpg", "icon.png", "0.1.5"),
     ("klang-memory", "cover.jpg", "icon.png", "0.1.3"),
-    ("Buecherkiste", "cover-axolotl-v028.jpg", "icon-axolotl-v028.png", "1.0.1"),
-    ("fotospass", "cover.jpg", "icon.png", "0.5.7"),
+    ("Buecherkiste", "cover-axolotl-v028.jpg", "icon-axolotl-v028.png", "1.1.0-beta.1"),
+    ("fotospass", "cover.jpg", "icon.png", "1.0.0"),
     ("mupi-klavier", "assets/cover.jpg", "assets/icon.png", "0.1.2"),
 )
 

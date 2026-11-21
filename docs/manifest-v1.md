@@ -44,10 +44,10 @@ Example manifest:
 | `id` | Stable reverse-domain-like lowercase identifier; cannot change after publication |
 | `name`, `description`, `author` | App-store-facing metadata, not trusted HTML |
 | `version` | Semantic release version, for update comparisons |
-| `runtime` | Only `"web"` for v1; Go must be compiled to WASM |
+| `runtime` | `"web"` or experimental `"qtquick-scene"` (declarative JSON; no QML code) |
 | `entry`, `icon` | Relative paths inside the package, no absolute paths or `..` |
 | `cover` | Optional raster home-tile image (PNG/JPG/JPEG/WebP) relative to the package root; not the app background |
-| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `shared-assets`, `links`, `homeassistant` (`network` is not supported by the current host) |
+| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `shared-assets`, `links`, `homeassistant`, `device-status`, `playback`, `playback-control` (`network` is reserved in the packaging schema for backwards compatibility but not supported by the host; see [SDK API reference](sdk-api-reference.md)) |
 | `networkHosts` | Explicit hostname allowlist **required** when requesting `network` |
 | `category` | Preferred native menu location: `games`, `creative`, `learning`, `tools`, or `other` (defaults to `games`) |
 | `display` | Preferred orientation, minimum size and optional native MuPiBox chrome settings |
@@ -327,3 +327,147 @@ verwendet werden: Erst bei `result.state === "completed"` wird der kurze
 Effekt mit `sdk.audio.playClip("assets/laugh.mp3")` gestartet. Die laufende
 Clip-Ausgabe kann über `sdk.tts.stop()` vorzeitig beendet werden. Ältere
 Hosts ohne `audio.clip` unterstützen weiterhin den restlichen App-Betrieb.
+
+
+### Optional short-sample preloading (NG alpha.68+)
+
+The host optionally supports `await MuPiBoxSDK.audio.prepareSample('assets/audio/jump.ogg')`.
+It uses the same `audio` permission, installed-package path validation, per-app
+rate limit, 2 MiB bounded PCM effect cache and PipeWire playback constraints as
+`audio.playSample`. The method only prepares a *short* MP3/OGG/WAV effect,
+returns a host response containing `prepared: true` on success and **never
+plays audio**. It does not preload looping music, return decoded buffers or
+unlock arbitrary filesystem access.
+
+Older NG hosts do not implement this optional bridge method: catch a rejected
+promise and continue with `playSample` without claiming that preloading
+succeeded. Browser-only previews return `false` and do not emulate the native
+PCM cache. Preload sparingly before gameplay (the server still rate-limits
+requests); don't call it on every animation frame.
+
+```js
+try {
+  await MuPiBoxSDK.audio.prepareSample('assets/audio/jump.ogg');
+} catch (error) {
+  // Fallback: the older host may decode on first play.
+}
+```
+
+
+### Optional full-gamepad input (NG controller bridge update)
+
+The trusted, local-only runner continues to publish the original
+`input` events (including `A`, `B`, directional keys and `START`).
+On upgraded hosts, it additionally sends distinct pressed/released
+`input` events for `MUSIC` (physical face B), `SPRINT` (right shoulder)
+and `MUTE` (face X). The original `B` alias for right-shoulder/sprint
+is **preserved** for compatibility with existing community games.
+
+The optional `controller.connection` event carries
+`{connected: boolean, bluetooth: boolean}`. Listen with
+`sdk.on('controller.connection', handler)`; always treat missing events
+on older hosts as an unknown connection state, not proof that a controller
+exists. Host polls physical HID only on trusted loopback routes and forwards
+button edges. No plugin receives raw evdev device handles.
+
+Applications with controller-required gameplay must explicitly refuse to
+start until connection is confirmed. Distinct keys and the connection event
+require an updated NG host; older versions do not provide these additions.
+
+### Optional bounded music preloading (NG host audio-cache draft)
+
+An updated NG host implements `await MuPiBoxSDK.audio.prepareMusic('assets/audio/level.wav')`.
+It uses the existing explicit `audio` permission, only bundled app-owned
+MP3/OGG/WAV assets, the same sandbox, and no file handles or raw PCM access.
+The host has a strict **6 MiB packaged music asset / 125-second decoded
+duration** limit and a shared **20 MiB / two-track LRU cache**. Effects
+retain their separate 2 MiB / five-second limit and cache. Music cache
+entries are owner-scoped, checked against the actual source file and
+evicted on owner revocation. Successful prepare returns
+`{prepared:true}` but plays nothing; `audio.playMusic` reuses the
+cached PCM when possible. The music cache is an optimization, not a
+guarantee that a track will stay cached after other apps run.
+
+Feature-detect via `(await sdk.getContext()).audioMusicPreload === true`
+before invoking it. Older hosts reject unsupported methods; catch and
+continue with regular `audio.playMusic`. Standalone browser previews
+return `false` without pretending to cache audio.
+
+### Optional position-preserving music pause/resume
+
+`MuPiBoxSDK.audio.pauseMusic()` and `MuPiBoxSDK.audio.resumeMusic()`
+are optional NG-host features guarded by the existing `audio` permission.
+They operate **only on the active audio voice belonging to this app/session**.
+Pause silences the track without advancing its PCM position; resume continues
+at that precise offset without redecoding. The operations do not disclose
+the buffer, device or underlying file path and do not change volume limits.
+Inspect `(await sdk.getContext()).audioMusicPauseResume === true` before
+using them; older hosts should fall back to stop/replay (which restarts
+the music), not claim position parity. Stopping paused music still fades
+out safely and revokes the voice on session teardown.
+
+### Optional music hold/restore (controller reconnection)
+
+On hosts reporting `audioMusicHoldRestore === true` from `getContext()`,
+`await sdk.audio.holdMusic()` suspends exactly one owner-owned music voice
+at its current PCM offset. The app may play its title music, then request
+`await sdk.audio.restoreMusic()` to replace that menu loop with the saved
+voice and exact playback position. Both return `{active:boolean}` and
+reject cross-owner restoration. The host holds at most **one** voice
+globally, never exposes PCM to the browser, and discards it on session
+revocation, expiry or displacement by another owner's hold. If `active`
+is false, fall back to normal `playMusic`. A browser preview and older
+hosts do not pretend that the previous position was restored.
+
+### Bounded non-looping victory and game-over music (optional)
+
+Updated NG hosts accept an explicit `loop:false` in
+`MuPiBoxSDK.audio.playMusic('assets/audio/victory.wav', 40,
+{relative:true, loop:false})`. Playback uses the same owner-scoped
+PipeWire voice, volume ceilings, 6MiB packaged file and 125-second PCM
+limits; it stops after the recording ends rather than repeating forever.
+Omitting `loop` keeps historical music behavior and payloads unchanged.
+Use this for level-finish fanfares and game-over themes; never use the
+5-second `playSample` route for long recordings. Older hosts ignore
+unknown `loop` fields, so one-shot parity requires the updated NG host.
+
+## Native Qt Quick scene runtime (experimental host support)
+
+`"runtime":"qtquick-scene"` uses `"entry":"scene.json"`; the trusted NG
+Qt Quick renderer creates QML items from **passive, strictly validated JSON**.
+It does not load arbitrary downloaded `.qml`, JavaScript, HTML, WASM or native
+libraries inside the privileged UI process. This is intentionally a narrow
+first step, **not yet a replacement for an arbitrary-QML game engine**.
+
+- 800×480 logical scene; the host scales it and preserves the native header.
+- Up to 48 objects: `text`, `counter`, `image`, `rectangle`, `button`.
+- RGB colors `#RRGGBB`, coordinates `x`, `y`, `width`, `height`, optional
+  `fontSize`; `image` points to an existing bundled PNG/JPEG/WebP.
+- Optional `animateY:{"from":100,"to":130,"durationMs":1000}` on images
+  and rectangles (150–20,000 ms).
+- Buttons support `increment`, `reset`, `exit`, `saveScore`, `loadScore`,
+  `playSample`, `playMusic`, `stopMusic`, `musicLouder`, `musicQuieter`,
+  `soundLouder`, `soundQuieter`. For `playSample` and `playMusic` set `asset`
+  to a bundled `.wav`, `.ogg`, or `.mp3` file. Other buttons must omit `asset`.
+- `storage`, `controller`, and `audio` are opt-in permissions. The trusted Qt
+  renderer uses the same rate-limited local SDK bridge as Web apps; persistence
+  uses the scoped key `qtquick-score`, audio respects the global box limits
+  and separates music/sound volumes. Jump increments the demo counter, Start
+  resets it. No general app-supplied QML code runs in the host.
+- No browser preview or arbitrary programmable game state. The existing Web
+  runtime stays unchanged.
+- An NG host without this runtime rejects the package.
+
+The host validates scene data **before extraction**, rejects active content,
+and serves immutable app-local assets through the existing scoped routes.
+Unknown properties are rejected. The Qt main process never interprets
+plugin-supplied source code. Allowing arbitrary QML later requires a
+separate sandboxed process and an appropriate display/compositor integration;
+NG currently runs under EGLFS rather than as a Wayland compositor.
+
+Reference source: `examples/qtquick-scene-demo` (package with
+`python3 tools/mupiapp.py pack examples/qtquick-scene-demo dist/qtquick-scene-demo.mupiapp --exclude README.md`).
+Do not add the demo to the public catalog until its NG host version and real
+Raspberry Pi UI behavior have been verified.
+
+The reserved first-party MuPi Run development preview pairs `community.mupi-run-native` with the fixed scene selector `mupi-run-v1`. Its matching NG development host ships the executable implementation. The package has an empty elements array, reviewed media and exactly storage/audio/controller permissions. The regular element-scene format remains available to other authors. Stock alpha.71 cannot install this preview. See [native runner](../examples/mupi-run-native/README.md).

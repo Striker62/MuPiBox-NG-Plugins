@@ -9,8 +9,8 @@ window.createScenePixels = function (ctx) {
     const bytes=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
     return new Uint32Array(bytes.buffer);
   }
-  function texture(source, data, levels) {
-    return {source,data,stride:source.width,levels};
+  function plane(bytes, stride, offset, width, height) {
+    return {bytes, stride, offset, width, height};
   }
   const ready=new Promise((resolve,reject)=>{
     sheet.onerror=()=>reject(new Error('scenery-data'));
@@ -18,11 +18,18 @@ window.createScenePixels = function (ctx) {
       try {
         const canvas=document.createElement('canvas');
         canvas.width=sheet.width; canvas.height=sheet.height;
-        canvas.getContext('2d',{willReadFrequently:true}).drawImage(sheet,0,0);
-        const data=read(canvas);
+        const g=canvas.getContext('2d',{willReadFrequently:true});
+        g.drawImage(sheet,0,0);
         for (const [name,levels] of Object.entries(window.MuPiScenery.rects)) {
-          assets[name]=texture(sheet,data,levels);
+          // The backdrop is drawn directly from the image. The CPU only needs the
+          // other sprites' mip rectangles, never the empty space between them.
+          const planes=name==='woodland' ? [] : levels.map(([x,y,w,h])=>{
+            const data=g.getImageData(x,y,w,h).data;
+            return plane(new Uint32Array(data.buffer),w,0,w,h);
+          });
+          assets[name]={source:sheet,levels,planes};
         }
+        canvas.width=canvas.height=1;
         resolve();
       } catch(error){reject(error);}
     };
@@ -32,7 +39,7 @@ window.createScenePixels = function (ctx) {
   const atlases=new WeakMap();
   function frame(canvas,x,y,w,h) {
     if(!atlases.has(canvas)) atlases.set(canvas,read(canvas));
-    return texture(canvas,atlases.get(canvas),[[x,y,w,h]]);
+    return {source:canvas,levels:[[x,y,w,h]],planes:[plane(atlases.get(canvas),canvas.width,y*canvas.width+x,w,h)]};
   }
   function begin(shift) {
     if (width!==ctx.canvas.width || height!==ctx.canvas.height) {
@@ -68,15 +75,15 @@ window.createScenePixels = function (ctx) {
     const y0=Math.max(0,Math.ceil(top-.5)), y1=Math.min(height,Math.ceil(top+dh-.5));
     if(x0>=x1 || y0>=y1 || opacity<=0) return;
     let level=0;
-    while(level+1<tex.levels.length && tex.levels[level+1][2]>=dw) level++;
-    const [tx,ty,tw,th]=tex.levels[level], step=tw/dw;
+    while(level+1<tex.planes.length && tex.planes[level+1].width>=dw) level++;
+    const {bytes,stride,offset,width:tw,height:th}=tex.planes[level], step=tw/dw;
     const start=(x0+.5-left)*step;
     const gain=Math.min(256,Math.round(opacity*256));
     for(let py=y0;py<y1;py++){
-      const row=(ty+Math.min(th-1,Math.floor((py+.5-top)*th/dh)))*tex.stride+tx;
+      const row=offset+Math.min(th-1,Math.floor((py+.5-top)*th/dh))*stride;
       let dest=py*width+x0, u=start;
       for(let px=x0;px<x1;px++,dest++,u+=step){
-        const c=tex.data[row+Math.min(tw-1,u|0)], a=(c>>>24)*gain>>>8;
+        const c=bytes[row+Math.min(tw-1,u|0)], a=(c>>>24)*gain>>>8;
         if(a===255) pixels[dest]=c;
         else if(a) pixels[dest]=blend(pixels[dest],c,a+1);
       }

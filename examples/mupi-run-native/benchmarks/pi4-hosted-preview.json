@@ -1,0 +1,692 @@
+{
+  "date": "2026-11-21",
+  "devices": {
+    "box83": "Pi 4B Rev 1.1, 1GB",
+    "jan": "Pi 4B Rev 1.5, 1GB"
+  },
+  "resolution": [
+    800,
+    480
+  ],
+  "softwareMixerOnly": true,
+  "seed": 414,
+  "webRelease": "v0.1.0-preview.60",
+  "previewRelease": "v0.1.0-preview.62",
+  "sdkSource": "f6d695e7c98b39cca76795bd2e1bd08c85d15bc3",
+  "ngBeforeStream": "89dd5dfc",
+  "ngStream": "a1ec0c22",
+  "box83Fixed": {
+    "web_a": {
+      "completed": true,
+      "protectedStop": "",
+      "distance": 1061.4402858598046,
+      "notes": 39,
+      "waves": 30,
+      "phase": "running",
+      "elapsed": 48012.60000000149,
+      "frames": 1359,
+      "fps": 28.31,
+      "gapsMs": {
+        "p50": 33.3,
+        "p95": 49.8,
+        "p99": 96.5,
+        "maximum": 501.7,
+        "over100": 13,
+        "over33_33": 655
+      },
+      "qtSwaps": {
+        "count": 1456,
+        "fps": 30.4,
+        "gapsMs": {
+          "p50": 30,
+          "p95": 44,
+          "p99": 89,
+          "maximum": 570,
+          "over100": 15,
+          "over33_33": 497
+        }
+      },
+      "launchMs": 12519,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 2.87,
+          "max": 157.98
+        },
+        "audio.music.play": {
+          "n": 1,
+          "median": 4501.39,
+          "max": 4501.39
+        },
+        "audio.sample.play": {
+          "n": 47,
+          "median": 2.68,
+          "max": 32.77
+        },
+        "audio.music.stop": {
+          "n": 1,
+          "median": 39.44,
+          "max": 39.44
+        },
+        "audio.sample.stop": {
+          "n": 1,
+          "median": 135.41,
+          "max": 135.41
+        }
+      },
+      "peakPssMiB": 341.2,
+      "peakRssMiB": 558.4,
+      "cpuPct": 105.7,
+      "v3dClientRenderSeconds": 7.05,
+      "minC": 60.861,
+      "maxC": 63.296
+    },
+    "native_a": {
+      "completed": true,
+      "protectedStop": "",
+      "elapsed": 48016,
+      "distance": 1061.4402858598046,
+      "notes": 39,
+      "waves": 30,
+      "phase": "running",
+      "collisions": 0,
+      "frames": 1392,
+      "fps": 28.99,
+      "gapsMs": {
+        "p50": 28,
+        "p95": 57,
+        "p99": 87,
+        "maximum": 176,
+        "over100": 12,
+        "over33_33": 489
+      },
+      "launchMs": 1793,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.music.play": {
+          "n": 1,
+          "median": 50.86,
+          "max": 50.86
+        },
+        "audio.music.volume": {
+          "n": 2,
+          "median": 1.67,
+          "max": 1.79
+        },
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 1.83,
+          "max": 2.0
+        },
+        "audio.sample.play": {
+          "n": 49,
+          "median": 1.71,
+          "max": 8.29
+        }
+      },
+      "peakPssMiB": 281.1,
+      "peakRssMiB": 345.2,
+      "cpuPct": 113.4,
+      "v3dClientRenderSeconds": 12.53,
+      "minC": 60.374,
+      "maxC": 63.296
+    },
+    "native_b": {
+      "completed": true,
+      "protectedStop": "",
+      "elapsed": 48039,
+      "distance": 1061.4402858598046,
+      "notes": 39,
+      "waves": 30,
+      "phase": "running",
+      "collisions": 0,
+      "frames": 1399,
+      "fps": 29.12,
+      "gapsMs": {
+        "p50": 28,
+        "p95": 57,
+        "p99": 88,
+        "maximum": 142,
+        "over100": 8,
+        "over33_33": 477
+      },
+      "launchMs": 1492,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.music.play": {
+          "n": 1,
+          "median": 17.54,
+          "max": 17.54
+        },
+        "audio.music.volume": {
+          "n": 2,
+          "median": 1.91,
+          "max": 2.52
+        },
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 1.63,
+          "max": 2.36
+        },
+        "audio.sample.play": {
+          "n": 49,
+          "median": 2.14,
+          "max": 4.22
+        }
+      },
+      "peakPssMiB": 280.6,
+      "peakRssMiB": 345.1,
+      "cpuPct": 113.3,
+      "v3dClientRenderSeconds": 12.21,
+      "minC": 60.861,
+      "maxC": 63.296
+    },
+    "web_b": {
+      "completed": true,
+      "protectedStop": "",
+      "distance": 1061.4402858598046,
+      "notes": 39,
+      "waves": 30,
+      "phase": "running",
+      "elapsed": 48017.89999999851,
+      "frames": 1343,
+      "fps": 27.97,
+      "gapsMs": {
+        "p50": 33.3,
+        "p95": 46.4,
+        "p99": 63.1,
+        "maximum": 1161.2,
+        "over100": 10,
+        "over33_33": 664
+      },
+      "qtSwaps": {
+        "count": 1443,
+        "fps": 30.63,
+        "gapsMs": {
+          "p50": 30,
+          "p95": 43,
+          "p99": 69,
+          "maximum": 718,
+          "over100": 8,
+          "over33_33": 495
+        }
+      },
+      "launchMs": 10564,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 2.62,
+          "max": 28.35
+        },
+        "audio.music.play": {
+          "n": 1,
+          "median": 3986.0,
+          "max": 3986.0
+        },
+        "audio.sample.play": {
+          "n": 47,
+          "median": 2.29,
+          "max": 112.98
+        },
+        "audio.music.stop": {
+          "n": 1,
+          "median": 2.67,
+          "max": 2.67
+        },
+        "audio.sample.stop": {
+          "n": 1,
+          "median": 116.03,
+          "max": 116.03
+        }
+      },
+      "peakPssMiB": 351.0,
+      "peakRssMiB": 571.7,
+      "cpuPct": 106.9,
+      "v3dClientRenderSeconds": 6.95,
+      "minC": 60.861,
+      "maxC": 63.783
+    },
+    "web_pcm_a": {
+      "completed": false,
+      "protectedStop": "",
+      "distance": 0.21666666666666667,
+      "notes": 0,
+      "waves": 0,
+      "phase": "paused",
+      "elapsed": 1864.5,
+      "frames": 1,
+      "fps": 0.54,
+      "gapsMs": {},
+      "qtSwaps": {
+        "count": 2,
+        "fps": 15.87,
+        "gapsMs": {
+          "p50": 63,
+          "p95": 63,
+          "p99": 63,
+          "maximum": 63,
+          "over100": 0,
+          "over33_33": 1
+        }
+      },
+      "launchMs": 15415,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.music.play": {
+          "n": 1,
+          "median": 16.25,
+          "max": 16.25
+        },
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 1.63,
+          "max": 5.23
+        },
+        "audio.sample.stop": {
+          "n": 1,
+          "median": 45.06,
+          "max": 45.06
+        },
+        "audio.music.stop": {
+          "n": 1,
+          "median": 49.24,
+          "max": 49.24
+        }
+      },
+      "peakPssMiB": 395.5,
+      "peakRssMiB": 618.8,
+      "cpuPct": 35.1,
+      "v3dClientRenderSeconds": 0.07,
+      "minC": 59.887,
+      "maxC": 62.809
+    },
+    "web_pcm_b": {
+      "completed": true,
+      "protectedStop": "",
+      "distance": 1061.4402858598046,
+      "notes": 39,
+      "waves": 30,
+      "phase": "running",
+      "elapsed": 47951.5,
+      "frames": 1361,
+      "fps": 28.38,
+      "gapsMs": {
+        "p50": 33.3,
+        "p95": 48.3,
+        "p99": 81.4,
+        "maximum": 411.2,
+        "over100": 11,
+        "over33_33": 662
+      },
+      "qtSwaps": {
+        "count": 1455,
+        "fps": 30.55,
+        "gapsMs": {
+          "p50": 30,
+          "p95": 43,
+          "p99": 88,
+          "maximum": 397,
+          "over100": 13,
+          "over33_33": 499
+        }
+      },
+      "launchMs": 8703,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.music.play": {
+          "n": 1,
+          "median": 25.74,
+          "max": 25.74
+        },
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 2.81,
+          "max": 136.91
+        },
+        "audio.sample.play": {
+          "n": 47,
+          "median": 2.84,
+          "max": 88.56
+        },
+        "audio.music.stop": {
+          "n": 1,
+          "median": 2.86,
+          "max": 2.86
+        },
+        "audio.sample.stop": {
+          "n": 1,
+          "median": 84.14,
+          "max": 84.14
+        }
+      },
+      "peakPssMiB": 365.3,
+      "peakRssMiB": 562.6,
+      "cpuPct": 111.4,
+      "v3dClientRenderSeconds": 7.06,
+      "minC": 60.861,
+      "maxC": 63.296
+    }
+  },
+  "otherRuns": {
+    "jan/web087": {
+      "completed": false,
+      "protectedStop": "AnonKiB 54216 MemAvailableKiB 164360",
+      "httpErrors": 1,
+      "peakPssMiB": 240.8,
+      "peakRssMiB": 396.6,
+      "cpuPct": 21.0,
+      "v3dClientRenderSeconds": 0.04,
+      "minC": 48.686,
+      "maxC": 51.121
+    },
+    "jan/fixed": {
+      "completed": true,
+      "protectedStop": "",
+      "elapsed": 48034,
+      "distance": 1061.4402858598046,
+      "notes": 39,
+      "waves": 30,
+      "phase": "running",
+      "collisions": 0,
+      "frames": 1411,
+      "fps": 29.38,
+      "gapsMs": {
+        "p50": 28,
+        "p95": 57,
+        "p99": 73,
+        "maximum": 141,
+        "over100": 6,
+        "over33_33": 475
+      },
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.music.play": {
+          "n": 1,
+          "median": 30.82,
+          "max": 30.82
+        },
+        "audio.music.volume": {
+          "n": 2,
+          "median": 5.75,
+          "max": 10.34
+        },
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 2.04,
+          "max": 2.16
+        },
+        "audio.sample.play": {
+          "n": 49,
+          "median": 2.35,
+          "max": 24.58
+        }
+      },
+      "peakPssMiB": 242.8,
+      "peakRssMiB": 310.7,
+      "cpuPct": 105.5,
+      "v3dClientRenderSeconds": 12.66,
+      "minC": 49.66,
+      "maxC": 52.582
+    },
+    "jan/endurance": {
+      "completed": false,
+      "protectedStop": "",
+      "launchMs": 2508,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.music.play": {
+          "n": 1,
+          "median": 24.42,
+          "max": 24.42
+        },
+        "audio.music.volume": {
+          "n": 2,
+          "median": 6.31,
+          "max": 8.29
+        },
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 1.87,
+          "max": 15.11
+        },
+        "audio.sample.play": {
+          "n": 1409,
+          "median": 1.91,
+          "max": 276.49
+        }
+      },
+      "peakPssMiB": 227.1,
+      "peakRssMiB": 279.4,
+      "cpuPct": 108.5,
+      "v3dClientRenderSeconds": 273.49,
+      "minC": 47.712,
+      "maxC": 52.095,
+      "qmlPssByMinuteMiB": {
+        "1": 111.07,
+        "5": 108.72,
+        "10": 109.42,
+        "15": 110.35
+      }
+    },
+    "jan/stream": {
+      "completed": false,
+      "protectedStop": "AnonKiB 96376 MemAvailableKiB 165088",
+      "launchMs": 2360,
+      "httpErrors": 0,
+      "peakPssMiB": 253.2,
+      "peakRssMiB": 311.8,
+      "cpuPct": 110.3,
+      "v3dClientRenderSeconds": 5.15,
+      "minC": 50.634,
+      "maxC": 52.095
+    },
+    "matched/stream_fixed": {
+      "completed": true,
+      "protectedStop": "",
+      "elapsed": 48013,
+      "distance": 1061.4402858598046,
+      "notes": 39,
+      "waves": 30,
+      "phase": "running",
+      "collisions": 0,
+      "frames": 1389,
+      "fps": 28.93,
+      "gapsMs": {
+        "p50": 28,
+        "p95": 58,
+        "p99": 90,
+        "maximum": 234,
+        "over100": 11,
+        "over33_33": 477
+      },
+      "launchMs": 1935,
+      "httpErrors": 0,
+      "audioMs": {
+        "audio.music.play": {
+          "n": 1,
+          "median": 20.82,
+          "max": 20.82
+        },
+        "audio.music.volume": {
+          "n": 2,
+          "median": 1.04,
+          "max": 1.06
+        },
+        "audio.sample.prepare": {
+          "n": 3,
+          "median": 2.13,
+          "max": 2.5
+        },
+        "audio.sample.play": {
+          "n": 49,
+          "median": 2.23,
+          "max": 5.45
+        }
+      },
+      "peakPssMiB": 281.8,
+      "peakRssMiB": 345.4,
+      "cpuPct": 112.7,
+      "v3dClientRenderSeconds": 12.59,
+      "minC": 57.452,
+      "maxC": 60.861
+    }
+  },
+  "box83EarlierSoak": {
+    "completed": true,
+    "protectedStop": "",
+    "elapsed": 1800017,
+    "distance": 51869.44028573913,
+    "notes": 1731,
+    "waves": 1527,
+    "phase": "running",
+    "collisions": 0,
+    "frames": 54133,
+    "fps": 30.07,
+    "gapsMs": {
+      "p50": 29,
+      "p95": 57,
+      "p99": 61,
+      "maximum": 135,
+      "over100": 12,
+      "over33_33": 17917
+    },
+    "httpErrors": 0,
+    "audioMs": {
+      "audio.music.play": {
+        "n": 1,
+        "median": 17.35,
+        "max": 17.35
+      },
+      "audio.music.volume": {
+        "n": 2,
+        "median": 1.51,
+        "max": 1.94
+      },
+      "audio.sample.prepare": {
+        "n": 3,
+        "median": 1.8,
+        "max": 3.48
+      },
+      "audio.sample.play": {
+        "n": 2512,
+        "median": 1.93,
+        "max": 12.1
+      }
+    },
+    "peakPssMiB": 277.2,
+    "peakRssMiB": 345.8,
+    "cpuPct": 105.3,
+    "v3dClientRenderSeconds": 477.42,
+    "minC": 55.991,
+    "maxC": 63.783,
+    "qmlPssByMinuteMiB": {
+      "1": 147.82,
+      "5": 147.94,
+      "10": 148.08,
+      "15": 148.03,
+      "20": 148.28,
+      "25": 148.28,
+      "29": 148.27
+    }
+  },
+  "inputToNewSwap": [
+    {
+      "action": "jump",
+      "ms": 13
+    },
+    {
+      "action": "right",
+      "ms": 30
+    },
+    {
+      "action": "duck",
+      "ms": 27
+    },
+    {
+      "action": "left",
+      "ms": 28
+    },
+    {
+      "action": "jump",
+      "ms": 25
+    },
+    {
+      "action": "right",
+      "ms": 34
+    },
+    {
+      "action": "duck",
+      "ms": 17
+    },
+    {
+      "action": "left",
+      "ms": 26
+    },
+    {
+      "action": "jump",
+      "ms": 27
+    },
+    {
+      "action": "right",
+      "ms": 18
+    },
+    {
+      "action": "duck",
+      "ms": 16
+    },
+    {
+      "action": "left",
+      "ms": 27
+    },
+    {
+      "action": "jump",
+      "ms": 30
+    },
+    {
+      "action": "right",
+      "ms": 29
+    },
+    {
+      "action": "duck",
+      "ms": 27
+    },
+    {
+      "action": "left",
+      "ms": 18
+    },
+    {
+      "action": "jump",
+      "ms": 27
+    },
+    {
+      "action": "right",
+      "ms": 11
+    },
+    {
+      "action": "duck",
+      "ms": 26
+    },
+    {
+      "action": "left",
+      "ms": 20
+    },
+    {
+      "action": "jump",
+      "ms": 35
+    },
+    {
+      "action": "right",
+      "ms": 25
+    },
+    {
+      "action": "duck",
+      "ms": 133
+    },
+    {
+      "action": "left",
+      "ms": 90
+    }
+  ]
+}

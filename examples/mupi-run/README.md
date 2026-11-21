@@ -1,6 +1,12 @@
-# MuPi Run 0.8.2
+# MuPi Run 0.8.7
 
 Sammle goldene Noten im Flussbett, auf dem Holzsteg und auf dem Waldpfad. Spring über den umgestürzten Stamm, grätsche unter dem Querbalken durch und wechsle die Spur, wenn ein Fuchs auf dem Weg schläft. Die Distanz bestimmt den Rekord. Die Noten zählen für den jeweiligen Lauf.
+
+## Startbildschirm
+
+MuPi folgt goldenen Noten über einen Holzsteg. Das quadratische Motiv erscheint auf der Home-Kachel und im Katalog. Im Startmenü liegen Schriftzug, Steuerung und Starttaste links, sodass MuPi rechts sichtbar bleibt. Derselbe geschwungene Schriftzug aus dem Startmenü erscheint jetzt statt des alten Banners im HUD des laufenden Spiels. Wenn die Bildausgabe während des Laufs länger als eine Sekunde aussetzt, pausiert das Spiel. Mit „Weiterlaufen“ geht es an der letzten Position weiter.
+
+![Startbildschirm mit dem neuen MuPi-Run-Motiv](screenshot-start.webp)
 
 [Durchgehenden Lauf ansehen](mupi-run-screencast.mp4)
 
@@ -26,9 +32,13 @@ MuPi übernimmt beim Tastendruck die aktuell sichtbare der 24 Laufposen. Beide A
 
 Alle Streckenobjekte sind in Metern relativ zur Kamera platziert. Dieselbe Projektion bestimmt Spur, Tiefe, Größe und Kontaktpunkt. Für jeden Bildpunkt des Bodens wird eine nach Entfernung vorgefilterte Textur abgetastet. Boden, Pflanzen, Geländer, Schmetterlinge und Sammelnoten werden in Tiefenreihenfolge in einen gemeinsamen Bildpuffer gezeichnet. Ein lokaler WebP-Atlas enthält die Motive in mehreren Größen. Am Bodenanker von MuPi übergibt die App den Bildpuffer an das Canvas und zeichnet anschließend die Figur und nähere Objekte. Die Spielwelt rendert mit bis zu 560 Pixeln Breite und 30 Bildern pro Sekunde. Bedienelemente und Anzeigen nutzen die Displayauflösung. Ein Ring mit 16 wiederverwendeten Abschnitten hält nur die Umgebung in Sichtweite. Bäume, Steine, Farn und Schmetterlinge nähern sich mit der Strecke. Ein separater Zufallswert je Abschnitt bestimmt Position und Erscheinung. Schmetterlinge haben rote, violette oder gelbe Flügel und animierten Flügelschlag.
 
-Notenreihen folgen in den Hinderniswellen einer passierbaren Spur. Animationsphasen für Goldreflex und Flügelschlag werden beim Start einmal gerendert. Das Spiel zeichnet die transparenten MuPi-Bilder aus sechs WebP-Seiten mit je 60 Kacheln. Jede Seite passt in eine 2048-Pixel-Textur. Das Paket enthält die verwendeten Grafiken lokal.
+Notenreihen folgen in den Hinderniswellen einer passierbaren Spur. Animationsphasen für Goldreflex und Flügelschlag werden beim Start einmal gerendert. Der Paketbau liefert sieben verlustfrei gepackte WebP-Seiten in Spielauflösung. Die App dekodiert die 384 Posen im Menü. Ein kleiner Zeichenpuffer übernimmt beim Posenwechsel nur das benötigte Rechteck. Der Boden verwendet vorberechnete Farbwerte. Die Simulation läuft in 60-Hz-Schritten. Nach jeweils zwei Schritten zeichnet das Spiel die nächste Pose. Sprung und Grätsche reagieren unmittelbar auf die Eingabe.
+
+Die [Messungen auf zwei Raspberry Pi 4](benchmarks/pi4-2026-11-20.md) enthalten Startzeiten, einzelne Bildhänger und den Vergleich der Renderpfade.
 
 ## Musik und Soundeffekte
+
+Ab NG 0.2.0-alpha.68 bereitet der native Player Sprung, Grätsche und Sammelton im Menü stumm vor. Beim Spielen verwendet er die dekodierten PCM-Daten erneut. Ältere Hosts spielen die Effekte wie bisher beim Auslösen ab.
 
 Der Musik-Loop „Happy Trancin“ sowie Sprung, Grätsche und Notensammeln sind im Paket enthalten. Laufschritt und Kilometersignal sind für spätere Dateien vorbereitet. Urheber, Quellen, Lizenzlinks und die verwendeten Fassungen stehen in den [Audio-Credits](AUDIO-CREDITS.txt). Die Credits sind auch im Spielmenü einsehbar.
 
@@ -43,7 +53,7 @@ Eine Datei je belegtem Platz unter `examples/mupi-run/assets/audio/` ablegen und
 | `collect` | Einsammeln einer goldenen Note |
 | `kilometer` | Einmal beim Überschreiten jeder 1.000-Meter-Marke |
 
-Auf der Box verwendet die App die SDK-Funktionen für lokale Musik und Samples mit relativer Lautstärke. Im Browser übernimmt das Audioelement die Vorschau. Startmenü, Lauf, Spielpause, Ergebnis und neuer Versuch teilen sich denselben Musikloop. Stummschalten, Ausblenden und Verlassen stoppen den Ton. Menü und Lauf haben einen Stummschalter. Bei Browsern mit Autoplay-Sperre schaltet die erste Interaktion die Musik frei. Berechtigungen sind `storage`, `controller` und `audio`. Der vorhandene Distanzrekord bleibt unter `bestMeters` erhalten.
+Auf der Box verwendet die App die SDK-Funktionen für lokale Musik und Samples mit relativer Lautstärke. Im Browser übernimmt das Audioelement die Vorschau. Startmenü, Lauf, Spielpause, Ergebnis und neuer Versuch teilen sich denselben Musikloop. Stummschalten, Ausblenden und Verlassen stoppen den Ton. Menü und Lauf haben einen Stummschalter. Über das Zahnrad im Start-, Pausen- und Ergebnismenü lassen sich Musik und Soundeffekte getrennt von 0 bis 100 % regeln. Die Einstellungen werden pro Box gespeichert und beim nächsten Start vor dem ersten Musikton geladen. Die Regler skalieren die bisherigen Lautstärken; die Lautstärkebegrenzung des Hosts bleibt wirksam. Im nativen Player wird die Musik nach Möglichkeit ohne Neustart per Mixerfunktion angepasst; ältere Hosts können den Loop beim Verstellen neu starten. Bei Browsern mit Autoplay-Sperre schaltet die erste Interaktion die Musik frei. Berechtigungen sind `storage`, `controller` und `audio`. Der vorhandene Distanzrekord bleibt unter `bestMeters` erhalten.
 
 ## Paket und Prüfungen
 
@@ -51,7 +61,8 @@ Im Repository-Stamm ausführen.
 
 ```sh
 python3 tools/build_mupi_run.py
-node --test tests/mupi_run.test.cjs tests/mupi_run_autopilot.test.cjs
+node --test tests/mupi_run.test.cjs tests/mupi_run_autopilot.test.cjs tests/mupi_run_timing.test.cjs
+python3 tests/mupi_run_atlases_test.py
 python3 tests/mupi_run_sheet_test.py
 python3 tests/mupi_run_sprite_test.py
 python3 tools/capture_mupi_run_screenshots.py

@@ -114,3 +114,101 @@ button:focus-visible { outline: 3px solid #fcef71; outline-offset: 3px; }
 .credits p { font-size:12px; line-height:1.4; }
 
 #menu-sound { position:absolute; top:9px; right:10px; width:46px; height:44px; font-size:23px; background:#182e28ec; }
+
+
+/* Title screen: keep the bridge and its runner clear on the right. */
+.forest-title { display: none; }
+.overlay.intro-art {
+  background: linear-gradient(90deg,#061911ba,transparent 62%), url("./splash.webp") center / cover no-repeat #103027;
+  justify-items: start;
+  padding: 12px clamp(16px,5vw,52px);
+}
+.intro-art .panel {
+  width: min(41vw,370px);
+  max-height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  padding: 5px;
+  text-shadow: 0 1px 3px #03150c;
+}
+.intro-art .forest-title { display: block; width: auto; height: clamp(80px,33vh,182px); max-width: 100%; object-fit: contain; object-position: left center; }
+.intro-art h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.intro-art #message { max-width: 29em; margin: 8px 0 10px; font-size: clamp(12px,2.9vh,17px); font-weight: 600; color: #fff7e3; }
+.intro-art .keyhints { margin: 0 0 12px; gap: 4px; }
+.intro-art .keyhints span { border: 1px solid #a9c7a14d; background: #10291fec; color: #fff4d2; }
+.intro-art .primary { min-width: min(100%,208px); min-height: 46px; border-radius: 24px; color: #38250d; border-color: #ffebaa; background: linear-gradient(#ffe7a0,#ffbf49); }
+.intro-art .primary:disabled { color: #3e351e; background: #d5c798; }
+.intro-art .credits { margin-top: 10px; }
+.intro-art .credits summary { min-height: 32px; padding: 7px 0; color: #f2e8c7; }
+.intro-art .credits[open] { background: #10251ff2; border-radius: 8px; padding: 0 8px 6px; }
+.intro-art .hint { margin: 0; color: #dce7cf; }
+@media (max-height: 380px) {
+  .intro-art .forest-title { height: 24vh; }
+  .intro-art .keyhints { margin-bottom: 6px; }
+  .intro-art .credits { margin-top: 4px; }
+}
+@media (max-aspect-ratio: 1/1) {
+  .overlay.intro-art { align-items: end; background-position: 70% top; padding-bottom: 3vh; }
+  .intro-art .panel { width: min(92vw,360px); border-radius: 14px; background: #10291fe6; padding: 12px; }
+  .intro-art .forest-title { height: 15vh; }
+}
+#menu-exit { position: absolute; top: 9px; left: 10px; width: 44px; height: 44px; background: #182e28ec; z-index: 1; }
+@media (max-height: 380px) and (min-aspect-ratio: 1/1) {
+  .overlay.intro-art { padding: 6px 14px 6px 58px; }
+  .intro-art .panel { width: min(50vw,330px); }
+  .intro-art .forest-title { height: 20vh; }
+  .intro-art #message { margin: 5px 0; font-size: 12px; }
+  .intro-art .keyhints { gap: 3px; margin: 4px 0 7px; }
+  .intro-art .keyhints span { padding: 3px 4px; font-size: 11px; }
+  .intro-art .primary { font-size: 16px; padding: 5px 16px; }
+}
+
+/* The title-screen lettering replaces the previous, wide HUD banner. */
+.hud .logo {
+  width:108px;
+  height:65px;
+  flex:none;
+  align-self:flex-start;
+  margin-top:-5px;
+  object-fit:contain;
+  object-position:center top;
+}
+@media(max-width:620px){
+  .hud .logo{width:66px;height:46px;margin-top:-2px;}
+}
+
+/* Audio preferences are available in the start, pause and result menus. */
+#settings-button { position:absolute;top:9px;right:65px;width:46px;height:44px;font-size:24px;z-index:2; }
+.audio-settings {
+  position:absolute;
+  z-index:6;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:min(440px,calc(100vw - 42px));
+  max-height:calc(100% - 24px);
+  overflow:auto;
+  padding:20px 24px 18px;
+  border:2px solid #cbe0ac;
+  border-radius:20px;
+  background:#15352ff5;
+  color:#fff5d6;
+  box-shadow:0 12px 40px #061a16db;
+  text-align:left;
+  text-shadow:none;
+}
+.audio-settings[hidden]{display:none;}
+.audio-settings h2{font-size:23px;margin:0 0 15px;}
+.volume-caption{display:flex;justify-content:space-between;gap:12px;margin:10px 0 4px;font-weight:800;}
+.volume-caption output{color:#ffe391;font-variant-numeric:tabular-nums;}
+.audio-settings input[type="range"]{display:block;width:100%;height:30px;margin:0 0 12px;accent-color:#ffc850;touch-action:pan-x;cursor:pointer;}
+.audio-settings #audio-done{min-height:43px;margin-top:3px;}
+@media(max-height:380px){
+  .audio-settings{padding:9px 22px;}
+  .audio-settings h2{font-size:18px;margin:0 0 4px;}
+  .volume-caption{margin:3px 0 0;}
+  .audio-settings input[type="range"]{height:23px;margin-bottom:3px;}
+  .audio-settings #audio-done{min-height:36px;padding:4px 24px;font-size:16px;}
+}

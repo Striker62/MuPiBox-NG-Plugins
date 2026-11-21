@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import stat
@@ -26,7 +27,7 @@ HOST_ALLOWED_EXTENSIONS = {
     ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico",
     ".woff", ".woff2", ".ttf", ".mp3", ".ogg", ".wav", ".txt",
 }
-ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "shared-assets", "network", "links", "homeassistant"}
+ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "shared-assets", "network", "links", "homeassistant", "device-status", "playback", "playback-control"}
 ALLOWED_FIELDS = {
     "apiVersion", "id", "name", "version", "runtime", "entry", "icon", "cover",
     "description", "author", "permissions", "networkHosts", "display",
@@ -72,9 +73,11 @@ def validate_manifest(data: object, files: set[str]) -> dict:
         raise PackageError(f"required manifest fields missing: {', '.join(sorted(missing))}")
     if unknown := data.keys() - ALLOWED_FIELDS:
         raise PackageError(f"unknown manifest fields: {', '.join(sorted(unknown))}")
-    if data["apiVersion"] != "1" or data["runtime"] != "web":
-        raise PackageError("only apiVersion '1' and runtime 'web' are supported")
+    if data["apiVersion"] != "1" or data["runtime"] not in ("web", "qtquick-scene"):
+        raise PackageError("only API 1 web or qtquick-scene runtimes are supported")
     app_id = _string(data, "id", 5, 128, True)
+    if app_id == "community.mupi-run-native" and data["runtime"] != "qtquick-scene":
+        raise PackageError("runner preview ID requires its built-in engine")
     if not APP_ID.fullmatch(app_id):
         raise PackageError("id must be a lowercase reverse-domain-like identifier")
     _string(data, "name", 2, 80, True)
@@ -84,8 +87,8 @@ def validate_manifest(data: object, files: set[str]) -> dict:
     _string(data, "description", 0, 500)
     _string(data, "author", 0, 100)
     entry = checked_path(_string(data, "entry", 6, 255, True))
-    if not entry.endswith(".html") or entry not in files:
-        raise PackageError("entry must point to an existing .html file")
+    if entry not in files or not entry.endswith(".html" if data["runtime"] == "web" else ".json"):
+        raise PackageError("entry must point to existing HTML (web) or JSON (qtquick-scene)")
     if (icon := _string(data, "icon", 5, 255)) is not None:
         checked_path(icon)
         if icon not in files or not icon.endswith((".svg", ".png")):
@@ -95,10 +98,15 @@ def validate_manifest(data: object, files: set[str]) -> dict:
         if cover not in files or not cover.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
             raise PackageError("cover must point to an existing PNG/JPEG/WebP file")
     perms = data["permissions"]
-    if not isinstance(perms, list) or len(perms) > 8 or any(type(p) is not str for p in perms):
+    if not isinstance(perms, list) or len(perms) > len(ALLOWED_PERMISSIONS) or any(type(p) is not str for p in perms):
         raise PackageError("permissions must be a string array")
     if len(set(perms)) != len(perms) or not set(perms).issubset(ALLOWED_PERMISSIONS):
         raise PackageError("permissions contain duplicates or unsupported values")
+    if data["runtime"] == "qtquick-scene":
+        if not set(perms).issubset({"storage", "audio", "controller"}) or data.get("galleryDirectories") or data.get("sharedDirectories"):
+            raise PackageError("qtquick-scene supports only scoped storage, audio and controller permissions")
+        if any(PurePosixPath(name).suffix.lower() in {".html", ".htm", ".js", ".mjs", ".wasm", ".svg"} for name in files):
+            raise PackageError("qtquick-scene packages must not contain executable/active assets")
     hosts = data.get("networkHosts")
     if "network" in perms:
         if not isinstance(hosts, list) or not hosts or len(hosts) > 20:
@@ -165,6 +173,101 @@ def validate_manifest(data: object, files: set[str]) -> dict:
     return data
 
 
+def validate_qt_scene(data: bytes, files: set[str], permissions: list[str], app_id: str = "") -> dict:
+    """Validate passive scene data; never load arbitrary external QML in the host."""
+    if not data or len(data) > 32 * 1024:
+        raise PackageError("qtquick scene size exceeds 32 KiB")
+    try:
+        scene = json.loads(data)
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise PackageError("qtquick scene is not UTF-8 JSON") from exc
+    if not isinstance(scene, dict) or set(scene) - {"sceneVersion", "title", "background", "elements", "engine", "optionalSounds"}:
+        raise PackageError("invalid qtquick scene fields")
+    color = lambda value: isinstance(value, str) and re.fullmatch(r"#[0-9A-Fa-f]{6}", value) is not None
+    if (type(scene.get("sceneVersion")) is not int or scene["sceneVersion"] != 1
+            or not color(scene.get("background"))
+            or not isinstance(scene.get("title", ""), str)
+            or len(scene.get("title", "")) > 120
+            or not isinstance(scene.get("elements"), list)
+            or len(scene["elements"]) > 48):
+        raise PackageError("invalid qtquick scene metadata")
+    if "engine" in scene:
+        if (scene["engine"] != "mupi-run-v1" or app_id != "community.mupi-run-native" or
+                scene["elements"] or set(permissions) != {"audio", "controller", "storage"}):
+            raise PackageError("unsupported built-in engine, package ID or permissions")
+        art = json.loads(Path(__file__).with_name("runner-art-v1.json").read_text())
+        sounds = {"assets/audio/" + n + ".wav" for n in ("music", "jump", "slide", "collect")}
+        optional = scene.get("optionalSounds", [])
+        if (not isinstance(optional, list) or any(n not in ("run","kilometer") for n in optional)
+                or len(optional) != len(set(optional))):
+            raise PackageError("invalid optional runner samples")
+        sounds.update("assets/audio/" + n + ".wav" for n in optional)
+        if missing := (set(art) | sounds) - files:
+            raise PackageError(f"missing runner asset: {min(missing)}")
+        return scene
+    if app_id == "community.mupi-run-native":
+        raise PackageError("runner preview ID requires its built-in engine")
+    if "optionalSounds" in scene or not scene["elements"]:
+        raise PackageError("empty Qt scene")
+    def bounded(value, lo, hi):
+        return type(value) in (int, float) and math.isfinite(value) and lo <= value <= hi
+    for element in scene["elements"]:
+        if not isinstance(element, dict) or set(element) - {
+                "type", "x", "y", "width", "height", "text", "asset", "color", "fontSize", "action", "animateY"}:
+            raise PackageError("invalid qtquick scene element")
+        x, y, w, h = [element.get(k) for k in ("x", "y", "width", "height")]
+        if not (bounded(x, 0, 799) and bounded(y, 0, 479) and bounded(w, 1, 800)
+                and bounded(h, 1, 480) and x + w <= 800 and y + h <= 480):
+            raise PackageError("qtquick element outside logical display")
+        typ, text, asset, action = [element.get(k, "") for k in ("type", "text", "asset", "action")]
+        if (not isinstance(text, str) or len(text.encode("utf-8")) > 240 or "\0" in text
+                or not isinstance(asset, str) or not isinstance(action, str)
+                or type(element.get("fontSize", 0)) is not int
+                or not 0 <= element.get("fontSize", 0) <= 64
+                or ("color" in element and not color(element["color"]))):
+            raise PackageError("qtquick element has invalid text or styling")
+        if typ in ("text", "counter"):
+            if not text or asset or action:
+                raise PackageError("qtquick text/counter fields invalid")
+        elif typ == "rectangle":
+            if not element.get("color") or text or asset or action:
+                raise PackageError("qtquick rectangle fields invalid")
+        elif typ == "image":
+            if (not asset.endswith((".png", ".jpg", ".jpeg", ".webp"))
+                    or asset not in files or text or action):
+                raise PackageError("qtquick image must be a package asset")
+        elif typ == "button":
+            if not text:
+                raise PackageError("qtquick button must have text")
+            if action in ("increment", "reset", "exit"):
+                if asset:
+                    raise PackageError("qtquick built-in button must not have an asset")
+            elif action in ("saveScore", "loadScore"):
+                if asset or "storage" not in permissions:
+                    raise PackageError("qtquick score persistence needs storage permission")
+            elif action in ("playSample", "playMusic"):
+                if ("audio" not in permissions or asset not in files
+                        or not asset.lower().endswith((".wav", ".ogg", ".mp3"))):
+                    raise PackageError("qtquick audio playback needs permission and a packaged audio file")
+            elif action in ("stopMusic", "musicLouder", "musicQuieter", "soundLouder", "soundQuieter"):
+                if asset or "audio" not in permissions:
+                    raise PackageError("qtquick audio control needs audio permission")
+            else:
+                raise PackageError("qtquick scene action is not approved")
+        else:
+            raise PackageError("unknown qtquick scene element")
+        if "animateY" in element:
+            animation = element["animateY"]
+            if (typ not in ("image", "rectangle") or not isinstance(animation, dict)
+                    or set(animation) != {"from", "to", "durationMs"}
+                    or not bounded(animation["from"], 0, 480 - h)
+                    or not bounded(animation["to"], 0, 480 - h)
+                    or type(animation["durationMs"]) is not int
+                    or not 150 <= animation["durationMs"] <= 20000):
+                raise PackageError("qtquick scene animation invalid")
+    return scene
+
+
 def validate_package(path: Path) -> dict:
     if not zipfile.is_zipfile(path):
         raise PackageError("file is not a ZIP/.mupiapp archive")
@@ -206,7 +309,18 @@ def validate_package(path: Path) -> dict:
             manifest = json.loads(archive.read(info).decode("utf-8"))
         except (ValueError, UnicodeDecodeError) as exc:
             raise PackageError("manifest is not valid UTF-8 JSON") from exc
-        return validate_manifest(manifest, names)
+        validated = validate_manifest(manifest, names)
+        if validated["runtime"] == "qtquick-scene":
+            scene = validate_qt_scene(archive.read(validated["entry"]), names, validated["permissions"], validated["id"])
+            if scene.get("engine") == "mupi-run-v1":
+                art = json.loads(Path(__file__).with_name("runner-art-v1.json").read_text())
+                for name, size in art.items():
+                    with archive.open(name) as image:
+                        header = image.read(24)
+                    if (header[:16] != bytes.fromhex("89504e470d0a1a0a0000000d49484452") or
+                            [int.from_bytes(header[i:i+4], "big") for i in (16, 20)] != size):
+                        raise PackageError(f"invalid runner art dimensions: {name}")
+        return validated
 
 
 def pack(source: Path, destination: Path, excluded: tuple[str, ...] | list[str] = ()) -> dict:
@@ -247,7 +361,9 @@ def pack(source: Path, destination: Path, excluded: tuple[str, ...] | list[str] 
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (ValueError, UnicodeDecodeError) as exc:
         raise PackageError("manifest is not valid UTF-8 JSON") from exc
-    validate_manifest(manifest, {name for name, _ in paths})
+    validated = validate_manifest(manifest, {name for name, _ in paths})
+    if validated["runtime"] == "qtquick-scene":
+        validate_qt_scene(source.joinpath(validated["entry"]).read_bytes(), {name for name, _ in paths}, validated["permissions"], validated["id"])
     destination.parent.mkdir(parents=True, exist_ok=True)
     # Deterministic entries and timestamps for reproducible builds.
     with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:

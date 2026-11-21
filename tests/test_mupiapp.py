@@ -39,6 +39,61 @@ class PackageTests(unittest.TestCase):
         pack(self.source, self.output)
         self.assertEqual(a, self.output.read_bytes())
 
+    def test_native_qtquick_scene_package(self):
+        scene = {
+            "sceneVersion": 1, "background": "#112233", "elements": [
+                {"type": "text", "x": 10, "y": 10, "width": 250,
+                 "height": 44, "text": "Native Qt Quick!"},
+                {"type": "button", "x": 50, "y": 100, "width": 200,
+                 "height": 70, "text": "Collect", "action": "increment"}
+            ]
+        }
+        self.manifest.update(runtime="qtquick-scene", entry="scene.json")
+        (self.source / 'index.html').unlink()
+        (self.source / 'manifest.json').write_text(json.dumps(self.manifest))
+        (self.source / 'scene.json').write_text(json.dumps(scene))
+        built = pack(self.source, self.output)
+        self.assertEqual(built['runtime'], 'qtquick-scene')
+        scene['elements'][1]['action'] = 'exec'
+        (self.source / 'scene.json').write_text(json.dumps(scene))
+        with self.assertRaisesRegex(PackageError, 'action'):
+            pack(self.source, self.output)
+        scene['elements'][1]['action'] = 'increment'
+        (self.source / 'scene.json').write_text(json.dumps(scene))
+        (self.source / 'danger.js').write_text('Qt.quit()')
+        with self.assertRaisesRegex(PackageError, 'executable'):
+            pack(self.source, self.output)
+
+    def test_native_sdk_permissions_and_actions(self):
+        from mupiapp import validate_qt_scene
+        scene = {"sceneVersion":1,"background":"#102539","elements":[
+            {"type":"button","x":20,"y":30,"width":190,"height":70,
+             "text":"Sound","action":"playSample","asset":"assets/hit.wav"}]}
+        raw=json.dumps(scene).encode()
+        assets={"assets/hit.wav","scene.json"}
+        with self.assertRaises(PackageError):
+            validate_qt_scene(raw,assets,[])
+        self.assertEqual(validate_qt_scene(raw,assets,["audio"])["sceneVersion"],1)
+        scene["elements"][0]["fontSize"]=True
+        with self.assertRaises(PackageError):
+            validate_qt_scene(json.dumps(scene).encode(),assets,["audio"])
+        del scene["elements"][0]["fontSize"]
+        scene["elements"][0]["action"]="system.exec"
+        with self.assertRaises(PackageError):
+            validate_qt_scene(json.dumps(scene).encode(),assets,["audio"])
+        self.manifest.update(runtime="qtquick-scene",entry="scene.json",
+                             permissions=["storage","audio","controller"])
+        self.assertEqual(validate_manifest(self.manifest,assets)["runtime"],"qtquick-scene")
+        self.manifest["permissions"].append("camera")
+        with self.assertRaisesRegex(PackageError,"only scoped"):
+            validate_manifest(self.manifest,assets)
+
+    def test_native_example_roundtrip(self):
+        example = Path(__file__).resolve().parents[1] / 'examples' / 'qtquick-scene-demo'
+        manifest = pack(example, self.output, excluded=['README.md'])
+        self.assertEqual(manifest['runtime'], 'qtquick-scene')
+        self.assertEqual(manifest['id'], 'community.qtquick-scene-demo')
+
     def test_readme_requires_explicit_exclusion_from_release_package(self):
         (self.source / "README.md").write_text("Source documentation only")
         with self.assertRaisesRegex(PackageError, "unsupported file type"):
@@ -70,6 +125,13 @@ class PackageTests(unittest.TestCase):
         self.manifest["permissions"] = ["filesystem"]
         with self.assertRaises(PackageError):
             validate_manifest(self.manifest, {"index.html"})
+
+    def test_new_sdk_permissions_pack_and_validate(self):
+        self.manifest['permissions'] = ['device-status', 'playback', 'playback-control']
+        self.assertEqual(validate_manifest(self.manifest, {'index.html'})['permissions'], self.manifest['permissions'])
+        (self.source / 'manifest.json').write_text(json.dumps(self.manifest))
+        pack(self.source, self.output)
+        self.assertEqual(validate_package(self.output)['permissions'], self.manifest['permissions'])
 
     def test_photo_permission_is_explicit_and_supported(self):
         self.manifest["permissions"] = ["camera", "photo-save"]

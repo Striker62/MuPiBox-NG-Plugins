@@ -78,3 +78,83 @@ test('native audio gain controls validate levels without replaying sample assets
  }
  assert.equal(calls.length,3);
 });
+
+
+test('sample preloading uses the trusted bounded PCM cache bridge without playing audio',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.prepareSample('assets/audio/jump.wav');
+ assert.deepEqual(calls.map(c=>c.method),['audio.sample.prepare']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{
+  asset:'assets/audio/jump.wav'
+ });
+ for(const invalid of ['../secret.wav','assets/../secret.wav','assets/.hidden.wav',
+    'https://example.org/a.mp3','assets/test.js','assets/a.ogg?query=1']) {
+   await assert.rejects(()=>sdk.audio.prepareSample(invalid),{name:'TypeError'});
+ }
+ assert.equal(calls.length,1);
+});
+
+test('sample preloading in browser preview does not invent host PCM caching',async()=>{
+ const {sdk}=getSDK(false);
+ assert.equal(await sdk.audio.prepareSample('assets/audio/jump.wav'),false);
+});
+
+test('music preloading validates the same scoped asset rules but never plays a loop',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.prepareMusic('assets/audio/level.wav');
+ assert.deepEqual(calls.map(c=>c.method),['audio.music.prepare']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{
+  asset:'assets/audio/level.wav',volume:0,relative:true
+ });
+ for(const invalid of ['../secret.wav','assets/../../secret.mp3',
+  'https://example.net/music.wav','assets/.hidden.wav','assets/a.js']) {
+  await assert.rejects(()=>sdk.audio.prepareMusic(invalid),{name:'TypeError'});
+ }
+ assert.equal(calls.length,1);
+ const standalone=getSDK(false);
+ assert.equal(await standalone.sdk.audio.prepareMusic('assets/audio/level.wav'),false);
+});
+
+test('music pause and resume keep the owner-scoped host event, without sending playback files',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.pauseMusic();
+ await sdk.audio.resumeMusic();
+ assert.deepEqual(calls.map(c=>c.method),['audio.music.pause','audio.music.resume']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{});
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[1].payload)),{});
+ const preview=getSDK(false).sdk;
+ assert.equal(await preview.audio.pauseMusic(),false);
+ assert.equal(await preview.audio.resumeMusic(),false);
+});
+
+test('music hold/restore uses the session-scoped trusted bridge, never raw audio',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.holdMusic();
+ await sdk.audio.restoreMusic();
+ assert.deepEqual(calls.map(c=>c.method),['audio.music.hold','audio.music.restore']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{});
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[1].payload)),{});
+ const preview=getSDK(false).sdk;
+ assert.equal(await preview.audio.holdMusic(),false);
+ assert.equal(await preview.audio.restoreMusic(),false);
+});
+
+test('one-shot victory music sets loop:false without altering legacy loop payloads',async()=>{
+ const {sdk,calls}=getSDK(true);
+ await sdk.audio.playMusic('assets/audio/victory.wav',40,{relative:true,loop:false});
+ await sdk.audio.playMusic('assets/audio/level.wav',20,{relative:true});
+ await sdk.audio.playMusic('assets/audio/menu.wav',20);
+ assert.deepEqual(calls.map(c=>c.method),['audio.music.play','audio.music.play','audio.music.play']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].payload)),{
+  asset:'assets/audio/victory.wav',volume:40,relative:true,loop:false
+ });
+ for(const call of calls.slice(1)) {
+  assert.ok(!Object.prototype.hasOwnProperty.call(call.payload,'loop'),
+    'legacy apps must keep default infinite loop');
+ }
+ for(const invalid of ['false',0,null,1]){
+  await assert.rejects(()=>sdk.audio.playMusic('assets/audio/victory.wav',40,
+    {relative:true,loop:invalid}),{name:'TypeError'});
+ }
+ assert.equal(calls.length,3);
+});

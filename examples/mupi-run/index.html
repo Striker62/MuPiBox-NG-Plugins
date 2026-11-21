@@ -13,7 +13,7 @@
     <canvas id="world" width="800" height="480" aria-label="Drei Laufspuren mit Hindernissen"></canvas>
     <div class="hud">
       <button id="exit" class="small exit" type="button" aria-label="Spiel verlassen" title="Zurück">‹</button>
-      <img class="logo" src="./art/logo-ui.png" width="206" height="67" alt="MuPi Run">
+      <img class="logo" src="./title.webp" width="400" height="282" alt="MuPi Run">
       <div class="scores">
         <div class="score"><span id="distance">0</span><small data-i18n="meters">METER</small></div>
         <div class="score note-score" aria-label="Gesammelte Noten"><b aria-hidden="true">♫</b><span id="notes">0</span></div>
@@ -32,9 +32,12 @@
         <button type="button" id="duck" class="pad action duck" aria-label="Ducken"><span>↓</span><small data-i18n="duck">DUCKEN</small></button>
       </div>
     </div>
-    <section id="overlay" class="overlay" role="dialog" aria-modal="true">
+    <section id="overlay" class="overlay intro-art" role="dialog" aria-modal="true">
+      <button id="menu-exit" class="small" type="button" aria-label="Spiel verlassen">‹</button>
       <button id="menu-sound" class="small" type="button" aria-label="Ton stummschalten" aria-pressed="false">♫</button>
+      <button id="settings-button" class="small" type="button" aria-label="Audio-Einstellungen" title="Audio-Einstellungen" hidden>⚙</button>
       <div class="panel">
+        <img class="forest-title" src="./title.webp" alt="">
         <h1 id="headline">MuPi <em>RUN</em></h1>
         <p id="message" data-i18n="intro">Springen, ducken, ausweichen – wie weit kommst du?</p>
         <div class="keyhints">
@@ -52,6 +55,14 @@
         </details>
         <p class="hint" data-i18n="controller">Controller empfohlen · Auch mit Touch spielbar</p>
       </div>
+      <section id="audio-settings" class="audio-settings" role="dialog" aria-modal="true" aria-labelledby="audio-settings-title" hidden>
+        <h2 id="audio-settings-title" data-i18n="audioSettings">Audio-Einstellungen</h2>
+        <div class="volume-caption"><label for="volume-music" data-i18n="music">Musik</label><output id="volume-music-value" for="volume-music">100%</output></div>
+        <input id="volume-music" type="range" min="0" max="100" step="5" value="100">
+        <div class="volume-caption"><label for="volume-effects" data-i18n="effects">Soundeffekte</label><output id="volume-effects-value" for="volume-effects">100%</output></div>
+        <input id="volume-effects" type="range" min="0" max="100" step="5" value="100">
+        <button id="audio-done" class="primary" type="button" data-i18n="done">Fertig</button>
+      </section>
     </section>
     <div id="toast" class="toast" aria-live="polite"></div>
   </main>
@@ -63,6 +74,7 @@
   <script src="./ground-data.js"></script>
   <script src="./art-files.js"></script>
   <script src="./poses.js"></script>
+  <script src="./tile-layout.js"></script>
   <script src="./scenery-data.js"></script>
   <script src="./scene-pixels.js"></script>
   <script src="./world.js"></script>

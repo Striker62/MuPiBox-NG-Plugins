@@ -34,13 +34,13 @@
     {
       "id": "community.mupi-kruemelwurm",
       "name": "MuPi Krümelwurm",
-      "description": "Vollbild-Wurmspiel mit weiß-blauem Tron-Neon, Garten-Design, vier speicherbaren Tempostufen und Zwei-Hand-Touchsteuerung. Mit neuem MuPi-Axolotl-Cover. MuPi-Axolotl-Cover für den Coverflow.",
+      "description": "Unterwasser-Neon-Aquarium mit animiertem grünem Krümelwurm, separater Punkte- und Rekordanzeige, Effekten, vier Tempostufen und Touch-/Controllersteuerung.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.2.2",
-      "releaseTag": "v0.1.0-preview.18",
+      "version": "0.3.0",
+      "releaseTag": "v0.1.0-preview.59",
       "asset": "crumbworm.mupiapp",
-      "sha256": "d8b019e2a8d2b8ca757bca3b906d3c61d56759285f2adbb82e74bc8530bfb03c",
+      "sha256": "296ac61c90f47a939087d4872934995836093e71f94282b127caac3da91f257a",
       "permissions": [
         "storage",
         "controller"
@@ -93,13 +93,13 @@
     {
       "id": "community.fotospass",
       "name": "FotoSpaß",
-      "description": "FotoSpaß mit bildbasierten Kategorien und zusätzlichen PNG-Accessoires aus dem eigenen SMB-Ordner. MuPi-Axolotl-Cover für den Coverflow.",
+      "description": "FotoSpaß 1.0.0: Webcam-Fotos, Galerie, Malen und Accessoires einschließlich eigener PNG-Accessoires aus dem SMB-Ordner; lokale Kamera-/Speicherfreigaben erforderlich.",
       "category": "creative",
       "author": "Striker62",
-      "version": "0.5.7",
-      "releaseTag": "v0.1.0-preview.21",
+      "version": "1.0.0",
+      "releaseTag": "v0.1.0-preview.59",
       "asset": "fotospass.mupiapp",
-      "sha256": "fb888b45c3ba683a080becc122801e41395e56e69bdce27a4c435f1d2f9e9302",
+      "sha256": "347dd4cf30a5de4cda5faac1156e9b0f4d37f2e207f3b254a1aa2ac56ff91c9e",
       "permissions": [
         "camera",
         "photo-save",
@@ -109,13 +109,13 @@
     {
       "id": "community.buecherkiste",
       "name": "Bücherkiste",
-      "description": "Bücherkiste mit automatischem Vorlesen, Seitenwechsel und SMB-Büchern.",
+      "description": "Interaktive Bilderbücher mit drei großen Vorlesetasten: Seite einmal vorlesen, beim Blättern vorlesen oder automatisch ganzes Buch lesen. Eigene SMB-Bücher werden unterstützt.",
       "category": "learning",
       "author": "MuPiBox Community",
-      "version": "0.2.30",
-      "releaseTag": "v0.1.0-preview.29",
+      "version": "1.0.0",
+      "releaseTag": "v0.1.0-preview.59",
       "asset": "buecherkiste.mupiapp",
-      "sha256": "a393547273b885501d9ae7e5d12e5acfe3ff2c6be505cf71dc401a3e5cb5e786",
+      "sha256": "d3ea29b05f2384178c491227722c500b4de5f17fe07f932f5984e7a4b1a63ab0",
       "permissions": [
         "shared-assets",
         "audio"
@@ -290,13 +290,13 @@
     {
       "id": "community.mupi-run",
       "name": "MuPi Run",
-      "description": "Sammle goldene Noten im Wald und Flussbett, spring über Stämme und grätsche unter Brücken hindurch.",
+      "description": "Renne als MuPi durch Flussbett, Holzsteg und Wald, sammle Noten und überwinde Hindernisse. Neuer HUD-Schriftzug sowie getrennt einstellbare, gespeicherte Lautstärke für Musik und Soundeffekte.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.8.2",
-      "releaseTag": "v0.1.0-preview.55",
+      "version": "0.8.7",
+      "releaseTag": "v0.1.0-preview.60",
       "asset": "mupi-run.mupiapp",
-      "sha256": "641a7f6daa3717e84ff73259b6f61213a8a733704a417039d5d8787c4648a638",
+      "sha256": "e809d7397eec9257a77a3d4bb747435fd6283f615509bed281004d4bfce8cac1",
       "permissions": [
         "storage",
         "controller",
