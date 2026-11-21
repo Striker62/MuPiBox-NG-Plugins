@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Generate trusted Qt Quick prototype assets from the original MuPi Run 0.8.7.
+"""Generate trusted Qt Quick runner assets from the original MuPi Run 0.8.7.
 
-Not a native-code .mupiapp! The NG alpha.70 JSON-only runtime must NEVER load
-these QML files from an untrusted package. This is a first-party test program.
+NG ships the corresponding QML and shader. The preview package contains media
+and a validated built-in scene selector.
 """
 import hashlib
 import json
@@ -57,7 +57,7 @@ rect=scenery['rects']['woodland'][0]
 wood=image.crop((rect[0],rect[1],rect[0]+rect[2],rect[1]+rect[3]))
 back=Image.new('RGBA',(876,604),(0,0,0,255))
 back.alpha_composite(wood.convert('RGBA').resize((876,604),Image.Resampling.BILINEAR))
-back.crop((38,124,838,604)).save(DST/'assets/scenery-background.png',optimize=True)
+back.crop((0,124,876,604)).save(DST/'assets/scenery-background.png',optimize=True)
 
 # Pre-render the unchanged terrain palette/projection from original world.js
 # into small 12-phase texture strips. QML composes on GPU without generating
@@ -112,3 +112,21 @@ import shutil
 for name in ('RunWorld.js','MuPiRunNative.qml','NativeBench.qml','NativeBenchZones.qml'):
  src=ROOT/'examples/mupi-run-native'/name
  if src.exists(): shutil.copyfile(src,DST/name)
+
+# The GPU samples the same seven prefiltered levels as the Web renderer.
+ground_atlas = Image.new("RGB", (512, 508 * 3))
+for layer, terrain in enumerate(("river", "boardwalk", "forest")):
+    data = ground[terrain]
+    for level, encoded in enumerate(data["levels"]):
+        h = 4 << level
+        indexed = Image.frombytes("P", (widths[level], h), base64.b64decode(encoded))
+        indexed.putpalette(data["palette"])
+        ground_atlas.paste(indexed.convert("RGB"), (0, layer * 508 + h - 4))
+ground_atlas.save(DST / "assets/ground-atlas.png")
+for name in ("splash", "title"):
+    with Image.open(SRC / (name + ".webp")) as art:
+        art.save(DST / "assets" / (name + ".png"))
+for name in ("notes.png","butterflies.png","shadow.png","hint-jump.png","hint-duck.png","hint-dodge.png"):
+    shutil.copyfile(ROOT / "examples/mupi-run-native/art" / name, DST / "assets" / name)
+for name in ("road.frag.qsb", "Compare.qml"):
+    shutil.copyfile(ROOT / "examples/mupi-run-native" / name, DST / name)

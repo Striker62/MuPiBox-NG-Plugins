@@ -10,7 +10,7 @@ Window {
         id:run
         anchors.fill:parent
         autoStart:true
-        autoPilot:true
+        autoPilot:true;measureTiming:true
         soundEnabled:false  // EXPLICITLY NO AUDIO: quieter than requested <=5%
         showControls:false
         seed:414
