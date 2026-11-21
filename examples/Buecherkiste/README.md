@@ -101,3 +101,18 @@ Kehre nach Änderungen aus einem Buch ins Regal zurück oder starte die App neu.
 ## Gerätetest
 
 Der App-Entwickler hat die drei Vorlesetasten und eigene SMB-Bücher auf MuPiBox NG Alpha 65 getestet.
+
+## Buchverwaltung als Vorschau (1.1.0-beta.1)
+
+Dreimal innerhalb von 1,5 Sekunden auf den Stiftebecher rechts im Regal tippen,
+um die Buchverwaltung zu öffnen. Der versteckte Einstieg verhindert versehentliches
+Öffnen und ist keine Authentifizierung. In der Webansicht können Titel, automatisch
+abgeleiteter Ordnername, lokale Seitenbilder und Vorlesetexte vorbereitet werden.
+Die Bilder werden zunächst nach Dateinamen sortiert und können anschließend
+verschoben oder entfernt werden. Vorlesetexte bleiben beim Verschieben bei ihrem Bild.
+
+Der Entwurf bleibt beim Zurückgehen ins Regal erhalten, solange die App geöffnet ist.
+Beim Neuladen oder Beenden geht er verloren. Die Speichertaste ist bis zur geplanten
+Host-Schnittstelle deaktiviert. Es werden keine Buchdateien auf der Box angelegt
+oder bestehende Bücher bearbeitet. Bilder bis 8 MiB und 24 Megapixel werden lokal
+als Vorschau geladen. Der Entwurf ist auf 200 Seiten und insgesamt 128 MiB begrenzt.

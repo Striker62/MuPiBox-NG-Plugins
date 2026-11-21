@@ -4,7 +4,7 @@
   "name": "Bücherkiste",
   "description": "Bilderbücher mit automatischem Vorlesen und eigenen SMB-Büchern",
   "author": "MuPiBox Community",
-  "version": "1.0.1",
+  "version": "1.1.0-beta.1",
   "runtime": "web",
   "entry": "index.html",
   "permissions": [
