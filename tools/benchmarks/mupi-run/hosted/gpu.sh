@@ -28,6 +28,7 @@ export PIPEWIRE_REMOTE=invalid-benchmark-endpoint PULSE_SERVER=unix:/nonexistent
 if [[ "$1" == *Web.qml || "$1" == *Hosted.qml ]]; then
   export RUN_BUNDLE=$lab/web-bench.mupiapp QTWEBENGINE_CHROMIUM_FLAGS=--mute-audio
   hostfile=$lab/nativehost
+  if [[ " $* " == *" --pcm "* ]];then export RUN_BUNDLE=$lab/web-pcm.mupiapp;fi
   if [[ " $* " == *" --capture "* ]];then export RUN_BUNDLE=$lab/capture-web.mupiapp;fi
   if [[ "$1" == *Hosted.qml ]]; then hostfile=$lab/nativehost; export RUN_BUNDLE=$lab/preview.mupiapp; fi
   runuser -m -u mupibox -- "$hostfile" -test.run "^TestRendererBenchHost$" -test.v >"$lab/host.log" 2>&1 &
