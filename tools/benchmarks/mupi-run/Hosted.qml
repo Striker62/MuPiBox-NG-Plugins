@@ -11,6 +11,11 @@ Window {
     property var panel:null
     property bool soak:Qt.application.arguments.indexOf("--soak")>=0
     property bool capture:Qt.application.arguments.indexOf("--capture")>=0
+    property bool inputTrial:Qt.application.arguments.indexOf("--input")>=0
+    property var inputSamples:[]
+    property double pressedAt:0
+    property double lastInput:0
+    property string inputName:""
     property int shot:0
     property bool saving:false
     readonly property var labels:["menu","river","boardwalk","forest","dense","actions","endurance"]
@@ -24,6 +29,23 @@ Window {
         if(!node || node.objectName===name) return node
         for(let child of node.children){let hit=find(child,name); if(hit)return hit}
         return null
+    }
+    function tryInput() {
+        if(pressedAt || Date.now()-lastInput<120)return
+        if(inputSamples.length===24){
+            console.log("HOST_INPUT",JSON.stringify(inputSamples))
+            panel.pad({connected:true,select:true})
+            return
+        }
+        let action=["jump","right","duck","left"][inputSamples.length%4]
+        if((action==="jump"||action==="duck") && (game.state.jumpAge>=0 || game.state.duckAge>=0))return
+        const before=game.renderVersion
+        let down={connected:true}
+        down[action==="duck"?"music":action]=true
+        inputName=action
+        pressedAt=Date.now()
+        panel.pad(down);panel.pad({connected:true})
+        if(game.renderVersion===before) {console.error("INPUT_REJECTED",action);Qt.quit()}
     }
     function snapshot() {
         if(saving) return
@@ -72,12 +94,14 @@ Window {
                 game.state=game.game.fresh(414)
                 game.seed=414
                 game.autoPilot=soak
-                if(!soak) game.game=Replay.fixedReplay(game.game,Poses.MuPiPoses,key=>game.effect(key))
+                if(inputTrial) game.state.spawnIn=100000
+                if(!soak && !inputTrial) game.game=Replay.fixedReplay(game.game,Poses.MuPiPoses,key=>game.effect(key))
                 panel.pad({connected:true,start:true});panel.pad({connected:true})
                 win.started=Date.now()
-                console.log("HOST_READY",started-opened)
+                console.log("HOST_READY",started-opened);console.log("BENCH_READY_AT",started)
             }
             if(capture){win.snapshot();return}
+            if(inputTrial){win.tryInput();return}
             let elapsed=Date.now()-started
             if(soak ? elapsed<1800000 : !game.game.finished() && game.phase==="running" && elapsed<90000) return
             stop()
@@ -92,6 +116,11 @@ Window {
     onFrameSwapped:{
         if(!started || capture || !game || revision===game.renderVersion)return
         revision=game.renderVersion
+        if(inputTrial && pressedAt) {
+            const now=Date.now()
+            inputSamples.push({action:inputName,ms:now-pressedAt})
+            pressedAt=0;lastInput=now
+        }
         swaps.push(Date.now()-started)
     }
 }

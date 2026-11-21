@@ -4,11 +4,11 @@ The preview has its own ID, `community.mupi-run-native`. It uses the Web game's 
 
 ## Installation and compatibility
 
-Use **a development host containing the [trusted runner integration](https://github.com/splitti/MuPiBox-NG/pulls?q=is%3Apr+%22built-in+runner%22)**. Stock NG 0.2.0-alpha.71 understands generic data scenes and rejects the new engine selector. The public catalog continues to offer the Web version 0.8.7.
+Use **a development host containing the [trusted runner integration](https://github.com/splitti/MuPiBox-NG/pull/131)**. Stock NG 0.2.0-alpha.71 understands generic data scenes and rejects the new engine selector. The public catalog continues to offer the Web version 0.8.7.
 
 On a compatible test host a parent can upload `mupi-run-native-preview.mupiapp` in the Community Apps admin, review the requested storage, audio and controller permissions and enable the separate game. The host checks the package ID, required assets and PNG dimensions before installing. The installed package supplies JSON, credits and local media. The host supplies the QML, shader, fixed-step simulation and SDK bridge. This pairing keeps executable files out of Community packages. The general-purpose isolation proposal is tracked in [NG #129](https://github.com/splitti/MuPiBox-NG/issues/129).
 
-The preview stores its own record and independent music/effect settings. The loop starts from the menu and the host pauses and resumes its voice. The three provided effects are prepared before the start control is enabled. The loop and effects use 48 kHz mono 16-bit PCM. Music encoding increases package bytes and avoids launching a decoder on the direct PCM path. Source attribution ships in `AUDIO-CREDITS.txt`. The Web release currently supplies no footstep or kilometre sample.
+The preview stores its own record and independent music/effect settings. The loop starts from the menu and the host pauses and resumes its voice. The three provided effects are prepared before the start control is enabled. The loop and effects use 48 kHz mono 16-bit PCM. Music encoding increases package bytes and avoids launching a decoder on the direct PCM path. Source attribution ships in `AUDIO-CREDITS.txt`. When provided, the builder also registers assets/audio/run.wav for footsteps and assets/audio/kilometer.wav for 1,000 m events. This release includes the three supplied effects.
 
 ## Build
 
