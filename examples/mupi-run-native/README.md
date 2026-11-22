@@ -1,14 +1,14 @@
-# MuPi Run · native Qt Quick preview
+# MuPi Run
 
-The preview has its own ID, `community.mupi-run-native`. It uses the Web game's fixed 60 Hz rules, the original 24-frame run and pose-dependent 35-frame action clips. A jump or slide starts at the next accepted input. The renderer updates the pose at 30 Hz. A static Qt shader projects the original road textures for riverbed, boardwalk and forest. The software backend uses precomputed road phases. Scenery uses culled, recycled Qt scene graph items. The gold notes, butterflies, obstacles, cover, splash and character pages come from the existing game.
+The native game retains its preview ID, `community.mupi-run-native`. It uses the Web game's fixed 60 Hz rules, the original 24-frame run and pose-dependent 35-frame action clips. A jump or slide starts at the next accepted input. The renderer updates the pose at 30 Hz. A static Qt shader projects the original road textures for riverbed, boardwalk and forest. The software backend uses precomputed road phases. Scenery uses culled, recycled Qt scene graph items. The gold notes, butterflies, obstacles, cover, splash and character pages come from the existing game.
 
 ## Installation and compatibility
 
-Use **a development host containing the [trusted runner integration](https://github.com/splitti/MuPiBox-NG/pull/131)**. Stock NG 0.2.0-alpha.71 and alpha.72 lack the runner integration. Preview 0.1.1 includes a German version hint and a working exit button for older generic scene renderers when an already installed preview survives a host rollback. The public catalog continues to offer the Web version 0.8.7.
+Requires MuPiBox NG 0.2.0-alpha.73 or later. Install **MuPi Run** from the Community Apps catalog. Existing Qt preview installations use the normal update action and retain their score and audio settings. The retired web edition used a separate app ID and its saved data stays with that installation. On a box with both editions installed, the admin can disable the web edition under installed apps.
 
-On a compatible test host a parent can upload `mupi-run-native-preview.mupiapp` in the Community Apps admin, review the requested storage, audio and controller permissions and enable the separate game. The host checks the package ID, required assets and PNG dimensions before installing. The installed package supplies JSON, credits and local media. The host supplies the QML, shader, fixed-step simulation and SDK bridge. This pairing keeps executable files out of Community packages. The general-purpose isolation proposal is tracked in [NG #129](https://github.com/splitti/MuPiBox-NG/issues/129).
+The host checks the package ID, required assets and PNG dimensions before installing. The installed package supplies JSON, credits and local media. The host supplies the QML, shader, fixed-step simulation and SDK bridge. This pairing keeps executable files out of Community packages. The general-purpose isolation proposal is tracked in [NG #129](https://github.com/splitti/MuPiBox-NG/issues/129).
 
-The preview stores its own record and independent music/effect settings. The loop starts from the menu and the host pauses and resumes its voice. The three provided effects are prepared before the start control is enabled. The loop and effects use 48 kHz mono 16-bit PCM. Music encoding increases package bytes and avoids launching a decoder on the direct PCM path. Source attribution ships in `AUDIO-CREDITS.txt`. When provided, the builder also registers assets/audio/run.wav for footsteps and assets/audio/kilometer.wav for 1,000 m events. This release includes the three supplied effects.
+The game stores its own record and independent music/effect settings. The loop starts from the menu and the host pauses and resumes its voice. The three provided effects are prepared before the start control is enabled. The loop and effects use 48 kHz mono 16-bit PCM. Music encoding increases package bytes and avoids launching a decoder on the direct PCM path. Source attribution ships in `AUDIO-CREDITS.txt`. When provided, the builder also registers assets/audio/run.wav for footsteps and assets/audio/kilometer.wav for 1,000 m events. This release includes the three supplied effects.
 
 ## Build
 
@@ -17,7 +17,7 @@ Requires Python 3, Pillow, FFmpeg and Node.js. Use a separate NG checkout if reg
 ```sh
 python3 tools/build_mupi_run_native.py
 python3 tools/package_mupi_run_scene.py
-python3 tools/mupiapp.py validate dist/mupi-run-native-preview.mupiapp
+python3 tools/mupiapp.py validate dist/mupi-run-native.mupiapp
 node examples/mupi-run-native/test_logic_parity.cjs
 node examples/mupi-run-native/test_world_replay.cjs
 # To stage the matching built-in code in an NG development checkout:
