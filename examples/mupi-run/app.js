@@ -175,6 +175,8 @@
   function renderOverlay(){
     const phase=state.phase;
     overlay.classList.toggle('intro-art', phase==='ready');
+    // Only the shared exit control stays visible above a menu; no live HUD underneath.
+    gameElement.classList.toggle('menu-open', phase!=='running');
     if(phase==='running'){overlay.classList.add('hidden');pauseButton.textContent='Ⅱ';return;}
     overlay.classList.remove('hidden');
     if(phase==='ready'){
@@ -354,9 +356,7 @@
       event.preventDefault();setControllerMode(false);control(id);
     });
   }
-  for(const id of ['exit','menu-exit']){
-    document.getElementById(id).addEventListener('click',()=>control('exit'));
-  }
+  document.getElementById('exit').addEventListener('click',()=>control('exit'));
   window.addEventListener('blur',()=>{if(state.phase==='running')togglePause();});
   window.addEventListener('pagehide',()=>{if(state.phase==='running')togglePause();});
   pauseButton.addEventListener('click',()=>control('pause'));

@@ -154,7 +154,18 @@ button:focus-visible { outline: 3px solid #fcef71; outline-offset: 3px; }
   .intro-art .panel { width: min(92vw,360px); border-radius: 14px; background: #10291fe6; padding: 12px; }
   .intro-art .forest-title { height: 15vh; }
 }
-#menu-exit { position: absolute; top: 9px; left: 10px; width: 44px; height: 44px; background: #182e28ec; z-index: 1; }
+/* The same exit button is used for both gameplay and every menu.
+   Hide the scoreboard behind modal menus instead of letting its text
+   shine through the partly transparent splash/pause background. */
+.game.menu-open .hud { z-index: 5; }
+.game.menu-open .hud > :not(#exit) { visibility: hidden; pointer-events: none; }
+.game.menu-open .controls { visibility: hidden; pointer-events: none; }
+
+/* Keep values and their captions on separate lines at 800x480 and smaller. */
+.scores .score:not(.note-score) { flex-direction: column; gap: 1px; }
+.scores .score:not(.note-score) small { align-self: center; margin: 0; line-height: 1; }
+.scores .score span, .scores .best strong { white-space: nowrap; }
+.scores .score:not(.note-score) span { font-size: clamp(15px, 2.3vw, 23px); }
 @media (max-height: 380px) and (min-aspect-ratio: 1/1) {
   .overlay.intro-art { padding: 6px 14px 6px 58px; }
   .intro-art .panel { width: min(50vw,330px); }
