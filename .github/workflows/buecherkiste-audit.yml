@@ -68,10 +68,26 @@ jobs:
               raise SystemExit(f'CSS incomplete: comment={comment}, quote={quote}, brace_depth={depth}')
           print('CSS structure: OK')
       - name: Build and validate Buecherkiste package
+        id: package
+        shell: python
         run: |
-          python3 tools/mupiapp.py pack examples/Buecherkiste dist/buecherkiste-ci.mupiapp --exclude README.md
-          python3 tools/mupiapp.py validate dist/buecherkiste-ci.mupiapp
+          import json, os, re, subprocess, sys
+          from pathlib import Path
+
+          manifest = json.loads(Path('examples/Buecherkiste/manifest.json').read_text(encoding='utf-8'))
+          version = manifest['version']
+          if not isinstance(version, str) or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?', version):
+              raise SystemExit('Invalid version in Buecherkiste manifest')
+          package = Path('dist') / f'Buecherkiste-{version}.mupiapp'
+          subprocess.run([sys.executable, 'tools/mupiapp.py', 'pack', 'examples/Buecherkiste',
+                          str(package), '--exclude', 'README.md'], check=True)
+          subprocess.run([sys.executable, 'tools/mupiapp.py', 'validate', str(package)], check=True)
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write(f'path={package.as_posix()}\n')
+              output.write(f'name=Buecherkiste-{version}\n')
       - name: Inspect package integrity and file types
+        env:
+          PACKAGE_PATH: ${{ steps.package.outputs.path }}
         shell: python
         run: |
           from pathlib import Path
@@ -79,8 +95,9 @@ jobs:
           import hashlib
           import json
           import stat
+          import os
 
-          package = Path('dist/buecherkiste-ci.mupiapp')
+          package = Path(os.environ['PACKAGE_PATH'])
           if package.stat().st_size >= 25_000_000:
               raise SystemExit('Buecherkiste package must stay below 25 MB')
           allowed = {'.html', '.css', '.js', '.json', '.jpg', '.jpeg', '.png',
@@ -132,20 +149,23 @@ jobs:
           sudo freshclam
 
       - name: Antivirus scan package and extracted contents
+        env:
+          PACKAGE_PATH: ${{ steps.package.outputs.path }}
         run: |
           mkdir -p dist/buecherkiste-scan
           python3 - <<'PY'
+          import os
           from zipfile import ZipFile
-          with ZipFile('dist/buecherkiste-ci.mupiapp') as archive:
+          with ZipFile(os.environ['PACKAGE_PATH']) as archive:
               archive.extractall('dist/buecherkiste-scan')
           PY
           clamscan --version
-          clamscan --infected --scan-archive=yes dist/buecherkiste-ci.mupiapp
+          clamscan --infected --scan-archive=yes "$PACKAGE_PATH"
           clamscan --recursive --infected dist/buecherkiste-scan
 
-      - name: Upload Buecherkiste test package
+      - name: Upload Buecherkiste installation package
         uses: actions/upload-artifact@v4
         with:
-          name: buecherkiste-css-test
-          path: dist/buecherkiste-ci.mupiapp
+          name: ${{ steps.package.outputs.name }}
+          path: ${{ steps.package.outputs.path }}
           if-no-files-found: error
