@@ -307,7 +307,7 @@
     {
       "id": "community.mupi-run-native",
       "name": "MuPi Run · Qt Preview",
-      "description": "Separate Qt-Quick-Preview für NG mit integriertem Runner. Goldene Noten, Waldpfad und Holzsteg mit der nativen 30-Hz-Darstellung.",
+      "description": "Ab MuPiBox NG 0.2.0-alpha.73. Sammle goldene Noten, spring über Baumstämme und grätsche unter Holzstegen hindurch. Native Qt-Vorschau mit getrennten Reglern für Musik und Effekte.",
       "category": "games",
       "author": "MuPiBox-NG Community",
       "version": "0.1.1",
