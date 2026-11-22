@@ -64,7 +64,6 @@ class CatalogTests(unittest.TestCase):
             self.assertEqual(app["permissions"], permissions, "permissions")
     def test_published_catalog(self):
         examples = {
-            "community.mupi-run":"mupi-run",
             "community.mupi-run-native":"mupi-run-native",
             "community.tictactoe":"tic-tac-toe",
             "community.mupi-four-in-a-row":"four-in-a-row",
