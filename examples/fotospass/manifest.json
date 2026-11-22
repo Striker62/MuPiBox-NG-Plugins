@@ -12,6 +12,7 @@
     "photo-save",
     "shared-assets"
   ],
+  "category": "creative",
   "display": {
     "orientation": "landscape",
     "minWidth": 800,
