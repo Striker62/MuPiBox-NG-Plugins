@@ -369,12 +369,13 @@ Item {
                 else gameView.act(dy>25?"duck":"jump")
             }
         }
-        Rectangle {z:201;x:16;y:12;width:289;height:55;radius:12;color:'#80203951';border.color:'#88cddd'}
-        Image { z:202;x:20;y:14;width:72;height:52;source:gameView.art("title");fillMode:Image.PreserveAspectFit }
+        Rectangle {z:201;x:16;y:77;width:289;height:55;radius:12;color:'#80203951';border.color:'#88cddd';visible:gameView.phase==='running'}
+        Image { z:202;x:20;y:79;width:72;height:52;visible:gameView.phase==='running';source:gameView.art("title");fillMode:Image.PreserveAspectFit }
         Text {
-            z:202;x:102;y:18;width:202;height:42
+            z:202;x:102;y:83;width:202;height:42;visible:gameView.phase==='running'
             text: {var frame=gameView.renderVersion;return Math.floor(gameView.state.distance)+' m   ♫ '+gameView.state.noteCount+'   ★ '+gameView.best}
             color:gameView.collected?'#ffca46':'#fff4d2';font.pixelSize:19;font.bold:true
+            fontSizeMode:Text.Fit;minimumPixelSize:13;elide:Text.ElideRight
             verticalAlignment:Text.AlignVCenter
         }
         Text {
@@ -383,7 +384,8 @@ Item {
             color:"#fff0af";style:Text.Outline;styleColor:"#47331c";font.bold:true;font.pixelSize:22
         }
         Rectangle {
-            z:202;x:720;y:13;width:60;height:48;radius:12;color:'#99305064';border.color:'#c6e8ff'
+            z:202;x:720;y:77;width:60;height:48;radius:12;color:'#99305064';border.color:'#c6e8ff'
+            visible:gameView.phase==='running'
             Text {anchors.centerIn:parent;text:'Ⅱ';color:'white';font.pixelSize:28}
             MouseArea {anchors.fill:parent;onClicked:gameView.act('pause')}
         }
@@ -444,12 +446,8 @@ Item {
                 MouseArea {anchors.fill:parent;onClicked:gameView.phase==='over'?gameView.restart():gameView.act(gameView.phase==='ready'?'start':'pause')}
             }
         }
-        Rectangle {
-            z:206;x:gameView.phase==="running"?600:12;y:gameView.phase==="running"?13:411;width:108;height:gameView.phase==="running"?48:55;radius:12;color:"#cf19364e"
-            visible:!gameView.autoPilot
-            Text {anchors.centerIn:parent;text:gameView.localLabel(0);color:"white";font.pixelSize:21}
-            MouseArea {anchors.fill:parent;onClicked:gameView.leave()}
-        }
+        // The trusted NG shell owns the only visible Back button.
+        // Do not add another game-level exit control over the score or menu.
         Rectangle {
             z:206;x:626;y:411;width:162;height:55;radius:12;color:"#cf19364e"
             visible:!!gameView.host && gameView.phase!=="running"
