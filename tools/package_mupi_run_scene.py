@@ -28,6 +28,8 @@ scene = dict(sceneVersion=1, engine="mupi-run-v1", background="#122b35", element
     dict(type="button", x=255, y=312, width=290, height=65, fontSize=25, text="Zurück zum Menü", action="exit"),
 ])
 files = {name: (src / name) for name in ["cover.png", "icon.png", "AUDIO-CREDITS.txt"]}
+# Versioned data-only layout. It is ignored by older hosts; it NEVER contains QML.
+files["runner-hud.json"] = root / "examples/mupi-run-native/runner-hud.json"
 # Preserve the Web loop sample-for-sample, including its loop length.
 pcm = subprocess.check_output(["ffmpeg", "-v","error","-nostdin","-i",
     str(src / "assets/audio/music.ogg"), "-ac","1","-ar","48000","-f","s16le","pipe:1"])
