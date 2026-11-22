@@ -1,14 +1,14 @@
 {
   "apiVersion": "1",
   "id": "community.mupi-run",
-  "name": "MuPi Run",
-  "version": "0.8.7",
+  "name": "MuPi Run (Web)",
+  "version": "0.8.8",
   "runtime": "web",
   "entry": "index.html",
   "icon": "icon.png",
   "cover": "cover.png",
   "author": "MuPiBox-NG Community",
-  "description": "Sammle goldene Noten im Wald und Flussbett, spring über Stämme und grätsche unter Brücken hindurch.",
+  "description": "Korrigierte Web-Ausgabe mit einem Zurück-Button und sauberer Punkteanzeige.",
   "permissions": [
     "storage",
     "controller",

@@ -303,6 +303,23 @@
       "asset": "mupi-run-native.mupiapp",
       "sha256": "82026a0d5f356bbe0a97a9e5c8d1672e97db8eb1c97fc3173ce7024716c7ef8c",
       "icon": "examples/mupi-run/cover.png"
+    },
+    {
+      "id": "community.mupi-run",
+      "name": "MuPi Run (Web)",
+      "description": "Web-Ausgabe für bestehende Boxen: MuPi läuft durch Wald und Flussbett. Neu: nur ein Zurück-Button und keine überlagerten Punkte- oder Meteranzeigen.",
+      "category": "games",
+      "author": "MuPiBox-NG Community",
+      "version": "0.8.8",
+      "releaseTag": "v0.1.0-preview.65",
+      "asset": "mupi-run-web.mupiapp",
+      "sha256": "40e3dc5dfcb320a39d35d8890e5e61da6d7d6383f2be357135b840a86c3b7dc9",
+      "permissions": [
+        "storage",
+        "controller",
+        "audio"
+      ],
+      "icon": "examples/mupi-run/cover.png"
     }
   ]
 }
