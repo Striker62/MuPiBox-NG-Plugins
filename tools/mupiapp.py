@@ -31,7 +31,7 @@ ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save",
 ALLOWED_FIELDS = {
     "apiVersion", "id", "name", "version", "runtime", "entry", "icon", "cover",
     "description", "author", "permissions", "networkHosts", "display",
-    "category", "galleryDirectories", "sharedDirectories",
+    "category", "galleryDirectories", "sharedDirectories", "adminSettings",
 }
 APP_ID = re.compile(r"^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$")
 SEMVER = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
@@ -63,6 +63,76 @@ def _string(data: dict, key: str, minlen: int, maxlen: int, required: bool = Fal
     if not isinstance(val, str) or not minlen <= len(val) <= maxlen:
         raise PackageError(f"manifest {key!r} must be a string ({minlen}..{maxlen} chars)")
     return val
+
+
+
+def validate_admin_settings(spec: object) -> None:
+    """Host-compatible, no-code form description. Never accepts arbitrary HTML or secrets."""
+    if not isinstance(spec, dict) or set(spec) - {"title", "description", "fields"}:
+        raise PackageError("adminSettings must be a declarative object")
+    for key, limit in (("title", 100), ("description", 500)):
+        if key in spec and (not isinstance(spec[key], str) or len(spec[key].encode("utf-8")) > limit):
+            raise PackageError(f"invalid adminSettings {key}")
+    fields = spec.get("fields")
+    if not isinstance(fields, list) or not 1 <= len(fields) <= 32:
+        raise PackageError("adminSettings needs 1..32 fields")
+    seen: set[str] = set()
+    for field in fields:
+        if not isinstance(field, dict) or set(field) - {
+            "key", "label", "help", "group", "type", "default",
+            "minLength", "maxLength", "min", "max", "options",
+        }:
+            raise PackageError("adminSettings field has unsupported attributes")
+        key = field.get("key")
+        if not isinstance(key, str) or not re.fullmatch(r"[a-z][A-Za-z0-9_]{0,39}", key) or key in seen:
+            raise PackageError("invalid or duplicate adminSettings key")
+        seen.add(key)
+        for label, maximum, minimum in (("label", 100, 1), ("help", 300, 0), ("group", 80, 0)):
+            if (label in field or minimum) and (
+                    not isinstance(field.get(label), str) or
+                    not minimum <= len(field[label].encode("utf-8")) <= maximum):
+                raise PackageError(f"invalid adminSettings {label}")
+        typ = field.get("type")
+        value = field.get("default")
+        if typ not in ("boolean", "string", "integer", "select"):
+            raise PackageError("unsupported adminSettings field type")
+        if "default" not in field:
+            raise PackageError("adminSettings default required")
+        if typ != "string" and ("minLength" in field or "maxLength" in field):
+            raise PackageError("minLength/maxLength only allowed on strings")
+        if typ != "integer" and ("min" in field or "max" in field):
+            raise PackageError("min/max only allowed on integers")
+        if typ != "select" and "options" in field:
+            raise PackageError("options only allowed on selects")
+        if typ == "boolean" and type(value) is not bool:
+            raise PackageError("boolean default required")
+        if typ == "string":
+            a, b = field.get("minLength", 0), field.get("maxLength", 200)
+            if type(a) is not int or type(b) is not int or not 0 <= a <= b <= 200 or b < 1:
+                raise PackageError("invalid string limits")
+            if not isinstance(value, str) or not a <= len(value) <= b:
+                raise PackageError("invalid string default")
+        if typ == "integer":
+            a, b = field.get("min", -1000000), field.get("max", 1000000)
+            if type(a) is not int or type(b) is not int or not -1000000 <= a <= b <= 1000000:
+                raise PackageError("invalid integer limits")
+            if type(value) is not int or not a <= value <= b:
+                raise PackageError("invalid integer default")
+        if typ == "select":
+            opts = field.get("options")
+            if not isinstance(opts, list) or not 2 <= len(opts) <= 30:
+                raise PackageError("select needs 2..30 options")
+            chosen = set()
+            for item in opts:
+                if not isinstance(item, dict) or set(item) != {"label", "value"}:
+                    raise PackageError("invalid select option")
+                if (not isinstance(item["label"], str) or not 1 <= len(item["label"].encode("utf-8")) <= 100
+                        or not isinstance(item["value"], str) or not 1 <= len(item["value"].encode("utf-8")) <= 100
+                        or item["value"] in chosen):
+                    raise PackageError("invalid or duplicate select choice")
+                chosen.add(item["value"])
+            if type(value) is not str or value not in chosen:
+                raise PackageError("select default must match declared choice")
 
 
 def validate_manifest(data: object, files: set[str]) -> dict:
@@ -170,6 +240,8 @@ def validate_manifest(data: object, files: set[str]) -> dict:
                 val = display[dimension]
                 if type(val) is not int or not 240 <= val <= 4096 or (dimension == "minWidth" and val < 320):
                     raise PackageError(f"invalid {dimension}")
+    if "adminSettings" in data:
+        validate_admin_settings(data["adminSettings"])
     return data
 
 
