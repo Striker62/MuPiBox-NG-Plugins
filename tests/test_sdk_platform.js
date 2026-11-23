@@ -87,3 +87,22 @@ test('canonical SDK calls exactly the reviewed bridge method contract', () => {
   assert.deepEqual([...new Set(invoked)].sort(), expected.methods);
   assert.equal(expected.apiVersion, '1');
 });
+test('USB Audio CD SDK calls only the optical allowlist and validates inputs', async () => {
+  const {sdk, calls} = loadSDK();
+  await sdk.optical.list();
+  await sdk.optical.disc('sr0');
+  await sdk.optical.play('sr0', 2);
+  await sdk.optical.status();
+  await sdk.optical.transport('next');
+  assert.deepEqual(calls.map(c => c.method), [
+    'optical.list', 'optical.disc', 'optical.play', 'optical.status', 'optical.transport'
+  ]);
+  for (const device of ['/dev/sda', '../sr0', 'sr-1', 'sr100', '']) {
+    await assert.rejects(sdk.optical.disc(device), {name:'TypeError'});
+  }
+  for (const action of ['eject', 'shutdown', 'volume_up', '']) {
+    await assert.rejects(sdk.optical.transport(action), {name:'TypeError'});
+  }
+  await assert.rejects(sdk.optical.play('sr0', 101), {name:'TypeError'});
+  assert.equal(Object.isFrozen(sdk.optical), true);
+});

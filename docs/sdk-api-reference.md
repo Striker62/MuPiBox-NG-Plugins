@@ -129,3 +129,21 @@ Weitere API-Funktionen sind möglich, aber **nicht automatisch freigegeben**:
 Jede neue Funktion braucht ein eindeutiges Permission-Modell, Input-/Output-
 Beschränkungen, Tests, Fehlerbehandlung, Dokumentation und eine Prüfung,
 ob Elternschutz sowie Ressourcenlimits eingehalten werden.
+
+### USB Audio-CD an Linux-Boxen (NG-Host-Erweiterung)
+
+`sdk.optical.list()`, `sdk.optical.disc(device)`, `sdk.optical.play(device, track = 0)`,
+`sdk.optical.status()` und `sdk.optical.transport(action)` sind nur
+mit **`optical-media`** und einer gültigen **lokalen Touch-Sitzung** verfügbar.
+Transport erlaubt nur `toggle`, `next`, `previous`, `stop`.
+Der Host enumeriert USB-Geräte als opake Namen `sr0` bis `sr99`,
+prüft CD-TOC und darf ausschließlich selbst mit den Geräten kommunizieren.
+App-Code sieht keine `/dev`-Pfade, keine Spotify-/anderen Dienstetokens
+und kann weder Audio-CDs kopieren noch beliebige Programme starten.
+
+Audio-CDs werden durch das interne Core-Playback (Lautstärkebegrenzung,
+Pause/Fortsetzen, Playlist/Tracknavigation) an mpv übergeben.
+Die optionale Bridge erscheint erst auf einer entsprechend aktualisierten
+NG-Host-Version. Ältere Hosts lassen die installierte App über
+`sdk.supports('optical.list')` den fehlenden Dienst melden.
+Physischer Raspberry-Pi-/USB-CDDA-Test ist vor Freigabe nötig.

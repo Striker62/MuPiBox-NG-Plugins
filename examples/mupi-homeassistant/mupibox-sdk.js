@@ -402,6 +402,32 @@
     }
   });
 
+  // Touch-only USB optical media API. Only enumerated srN device IDs are sent
+  // to the trusted host; CD data and raw device access never enter the app.
+  function checkOpticalDevice(device) {
+    if (typeof device !== 'string' || !/^sr(?:0|[1-9][0-9]?)$/.test(device))
+      throw new TypeError('invalid USB CD device ID');
+  }
+  const optical = Object.freeze({
+    async list() {
+      const result = await invoke('optical.list', {});
+      return Array.isArray(result?.devices) ? result.devices : [];
+    },
+    async disc(device) { checkOpticalDevice(device); return invoke('optical.disc', {device}); },
+    async play(device, track = 0) {
+      checkOpticalDevice(device);
+      if (!Number.isSafeInteger(track) || track < 0 || track > 99)
+        throw new TypeError('CD track must be 0..99');
+      return invoke('optical.play', {device, track});
+    },
+    async status() { return invoke('optical.status', {}); },
+    async transport(action) {
+      if (!['toggle', 'next', 'previous', 'stop'].includes(action))
+        throw new TypeError('invalid CD transport action');
+      return invoke('optical.transport', {action});
+    }
+  });
+
   const sdk = Object.freeze({
     apiVersion: '1',
     sdkRevision: '1.1',
@@ -417,6 +443,7 @@
     homeassistant,
     device,
     playback,
+    optical,
     async capabilities() {
       if (bridge) return invoke('host.capabilities', {});
       return {apiVersion: '1', sdkRevision: '1.1', methods: [], preview: true};
