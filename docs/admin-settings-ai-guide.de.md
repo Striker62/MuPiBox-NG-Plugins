@@ -91,8 +91,9 @@ Der Host prüft Session, Browser-Origin, App-Zustand und Änderungsrevision,
 speichert atomar mit 0600-Rechten und begrenzt auf 64 KiB.
 Beim parallelen Bearbeiten liefert die API einen HTTP-409-Konflikt.
 App-Datenverwaltung (z. B. Bücher-Dateien hochladen, löschen, Papierkorb)
-ist **nicht** Bestandteil dieser Einstellungsschnittstelle und benötigt
-später ein gesondert geprüftes Admin-Dateimodul.
+ist **nicht** Bestandteil dieser *deklarativen* Einstellungsfelder.
+Für Apps mit Medienverwaltung existiert die getrennte, strikt gekapselte
+`manifest.admin`-Schnittstelle (siehe [Admin-Seiten-Doku](admin-pages-ai-guide.de.md)).
 
 **Nur das Erstellen eines Manifestfeldes verleiht ausdrücklich keinerlei
 Linux-/GPIO-/USB-/Netzwerkrechte.** Für solche Funktionen sind gesonderte
@@ -126,7 +127,16 @@ python3 -m unittest discover -s tests -v
 > kurzen README mit der Bedeutung jedes Felds und den erforderlichen
 > Freigaben. Nutze keine externen CDNs.
 
-## Was ausdrücklich noch nicht Teil des Features ist
+## Eigene Verwaltungsseiten zusätzlich zu Einstellungsformularen
+
+Neuere NG-Hosts ermöglichen über `manifest.admin.entry` komplette
+Administrationsseiten innerhalb der bestehenden MuPiBox-Administration:
+kein zusätzlicher Login, isolierter Browser-Kontext und ein eigenes
+`MuPiBoxAdminSDK` für begrenzte App-Dateien und Einstellungen.
+Die sichere Bücherverwaltung ist hierfür ein vollständiges Beispiel.
+Siehe [Admin-Webseiten für KI-Entwickler](admin-pages-ai-guide.de.md).
+
+## Was ausdrücklich noch nicht Teil des **einfachen Formulars** ist
 
 Individuell ausgeführtes HTML im Adminbereich, hochladbare Buchdateien,
 GPIO-/udev-Installationsregeln, eigene Hintergrunddienste und geheime
