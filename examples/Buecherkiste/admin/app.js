@@ -3,7 +3,7 @@
 const sdk=window.MuPiBoxAdminSDK;
 const $=id=>document.getElementById(id);
 const state=$('state'),list=$('book-list'),pages=$('pages'),texts=$('texts');
-let books=[],selected=null,bookInfo=null,bookRevision='',pageItems=[],pageText=[],textRevision='',urls=[];
+let books=[],selected=null,bookInfo=null,bookRevision='',pageItems=[],pageText=[],textRevision='',ttsRevision='',urls=[];
 const busy=new Set();
 const slugOK=v=>/^[A-Za-z0-9_-]{1,80}$/.test(v);
 const fullPath=part=>'books/'+selected+'/'+part;
@@ -123,12 +123,20 @@ async function drawPages(){
 }
 async function loadTexts(){
  pageText=[];
+ textRevision='';ttsRevision='';
+ // Existing books may keep their read-aloud text under tts/ rather than text/.
  try{
   const result=await readJSON(fullPath('text/pages.json'));
   textRevision=result.revision;
   if(Array.isArray(result.value.pages))
    pageText=result.value.pages.map(p=>typeof p==='string'?p:String(p?.text||''));
- }catch(e){textRevision=''}
+ }catch(e){}
+ try{
+  const result=await readJSON(fullPath('tts/pages.json'));
+  ttsRevision=result.revision;
+  if(!pageText.length && Array.isArray(result.value.pages))
+   pageText=result.value.pages.map(p=>typeof p==='string'?p:String(p?.text||''));
+ }catch(e){}
  drawTexts();
 }
 function drawTexts(){
@@ -194,14 +202,16 @@ async function saveBook(){
 }
 async function saveTexts(){
  if(!selected)throw Error('Kein Buch ausgewählt');
- const file=fullPath('text/pages.json');
- const data={pages:pageItems.map((_,i)=>({text:pageText[i]||''}))};
- const saved=await saveJSON(file,data,textRevision);
- textRevision=saved.revision;
- if(bookInfo.text!=='text/pages.json'){
-  const old=bookInfo.text;bookInfo.text='text/pages.json';
-  try{await saveBook()}catch(e){bookInfo.text=old;throw e}
+ const data={pages:pageItems.map((_,i)=>({text:(pageText[i]||'').slice(0,600)}))};
+ const saved=await saveJSON(fullPath('tts/pages.json'),data,ttsRevision);
+ ttsRevision=saved.revision;
+ bookInfo.tts='tts/pages.json';
+ if($('layout').value==='image-and-text') {
+  const shown=await saveJSON(fullPath('text/pages.json'),data,textRevision);
+  textRevision=shown.revision;
+  bookInfo.text='text/pages.json';
  }
+ await saveBook();
  notice('Vorlesetexte gespeichert.');
 }
 async function createBook(){
