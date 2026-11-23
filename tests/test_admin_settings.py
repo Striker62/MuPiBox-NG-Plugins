@@ -25,6 +25,7 @@ class DeclarativeAdminSettingsTests(unittest.TestCase):
         for alteration in (
             lambda s: s["fields"].append(copy.deepcopy(s["fields"][0])),
             lambda s: s["fields"][0].update(type="password"),
+            lambda s: s["fields"][0].update(key="spotifyRefreshToken"),
             lambda s: s["fields"][0].update(default="yes"),
             lambda s: s["fields"][1].update(maxLength=3),
             lambda s: s["fields"][2].update(max=1),

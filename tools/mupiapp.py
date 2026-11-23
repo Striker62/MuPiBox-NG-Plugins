@@ -87,6 +87,9 @@ def validate_admin_settings(spec: object) -> None:
         key = field.get("key")
         if not isinstance(key, str) or not re.fullmatch(r"[a-z][A-Za-z0-9_]{0,39}", key) or key in seen:
             raise PackageError("invalid or duplicate adminSettings key")
+        if any(word in key.lower() for word in
+               ("token", "secret", "password", "passwd", "apikey", "privatekey", "credential", "oauth", "jwt")):
+            raise PackageError("credential-like adminSettings field forbidden; use trusted host provider")
         seen.add(key)
         for label, maximum, minimum in (("label", 100, 1), ("help", 300, 0), ("group", 80, 0)):
             if (label in field or minimum) and (

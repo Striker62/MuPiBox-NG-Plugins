@@ -83,6 +83,11 @@ und im vertrauenswürdigen NG-Host bei der Paketinstallation und bei jedem
 Speichervorgang. Unbekannte/duplizierte Felder, ungültige Typen,
 Grenzwertverletzungen und nicht deklarierte Optionen werden verworfen.
 
+Passwörter, OAuth-Tokens und API-Schlüssel sind keine normalen
+Community-App-Einstellungen. Schlüsselnamen wie `password`, `refreshToken`,
+`apiKey` und `secret` werden im deklarativen Schema ausdrücklich abgelehnt.
+Für solche Provider-Zugänge sind eigene, vertrauenswürdige Host-Integrationen nötig.
+
 **Sicherheit:** Keine HTML/JS-Inhalte als Admin-Formular einbinden. Keine
 Passwörter, Provider-Tokens, WLAN-Zugangsdaten, Admin-Cookies oder andere
 Geheimnisse in `adminSettings` speichern. App-JS hat keine Admin-Sitzung
