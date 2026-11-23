@@ -1,68 +1,85 @@
-# USB-Audio-CD und Classic-Forks – technischer Vergleich (2026-11-23)
+# USB-Audio-CD: Classic 5.1 -> MuPiBox NG (Prüfung vom 23.11.2026)
 
-Verglichen wurden die **Main-Branches** von
-`Lippsson/MuPiBox`, `wowa1990/MuPiBox` und `splitti/MuPiBox`
-sowie die NG-Community-Architektur (Release-Zweig `alpha75`).
+## Fundstelle: tatsächlich vorhandene Classic-CD-Implementierung
 
-## USB-CD
+**Korrektur der ersten Main-Branch-Prüfung:** Die CD-Implementierung existiert bereits,
+aber nicht in den `main`-Branches. Sie befindet sich in
+[`Lippsson/MuPiBox` auf `dev5.1`](https://github.com/Lippsson/MuPiBox/tree/dev5.1/extensions/cd)
+und [`wowa1990/MuPiBox` auf `upstream-v5.1-pr`](https://github.com/wowa1990/MuPiBox/tree/upstream-v5.1-pr/extensions/cd).
+Die Classic-Extension heißt `cd` und hat Version **1.0.1**.
 
-**In keinem der beiden genannten Classic-Forks findet sich in Main
-eine eigene CDDA-/CD-ROM-Wiedergabeimplementierung.** Deshalb gibt es
-keinen USB-CD-Spielercode, den wir direkt nach NG portieren könnten.
-Die hier erstellte Implementierung ist eine neue, sichere Adaption
-der Idee: bestehende NG-Core-Queue + mpv-CDDA + eingeschränkte
-Community-Bridge `optical-media`. Sie greift nicht direkt aus
-HTML/JavaScript auf Linux-Gerätedateien zu.
+Der Ursprung ist [wowa1990/MuPiBox PR #41](https://github.com/wowa1990/MuPiBox/pull/41),
+**am 12.11.2026 gemergt** – allerdings in einen 5.1-Entwicklungs-/Integrationsbranch,
+**nicht in den Main-Branch von `splitti/MuPiBox`**. Dieser PR brachte zugleich
+Winamp-Theme, Extensions-Framework, Uhr und Wetter. Auf `dev5.1` sind die
+fertigen Pakete `extensions/dist/cd-1.0.0.mpx` und `cd-1.0.1.mpx` vorhanden.
 
-## Tatsächliche Git-Baum-Unterschiede zu Classic-Upstream
+Relevante Dateien im Classic-Quellcode:
+- [`extensions/cd/manifest.json`](https://github.com/Lippsson/MuPiBox/blob/dev5.1/extensions/cd/manifest.json): Rechte, CD-Erkennung und optionale Internet-Metadaten.
+- [`cd-drive.js`](https://github.com/Lippsson/MuPiBox/blob/dev5.1/extensions/cd/cd-drive.js): `CDROM_DRIVE_STATUS` (0x5326), `CDROM_DISC_STATUS` (0x5327), TOC und Track-LBAs (`0x5305`, `0x5306`), Barcode/MCN (`0x5311`), Laufwerksüberwachung, Tray/Eject (`0x5309`, `0x5319`), Spin-down.
+- [`cd-lookup.js`](https://github.com/Lippsson/MuPiBox/blob/dev5.1/extensions/cd/cd-lookup.js): Discogs mit optionalem Token und Barcode, MusicBrainz-Disc-ID aus TOC, Cover Art Archive, Laufzeitabgleich und Bildprüfung.
+- [`player.js`](https://github.com/Lippsson/MuPiBox/blob/dev5.1/extensions/cd/player.js): logische Albumquelle, CDDA/mpv-Titel, Laufwerksstatus, Disc-Cover-Cache, Miss-Cooldown, Zeitberechnung aus LBAs, Seek, Stop/Spin-down und Eject.
+- [`display.js`](https://github.com/Lippsson/MuPiBox/blob/dev5.1/extensions/cd/display.js): CD-Reiter, Medienansicht und Eject aus Winamp.
+- [`cd-drive.test.js`](https://github.com/Lippsson/MuPiBox/blob/dev5.1/extensions/cd/test/cd-drive.test.js) und [`cd-lookup.test.js`](https://github.com/Lippsson/MuPiBox/blob/dev5.1/extensions/cd/test/cd-lookup.test.js): Tests für Wechsel, USB-Resets, TOC, Metadaten und Cover.
 
-| Fork | Dateien nur im Fork | Dateien im Upstream, nicht im Fork | Gemeinsame Dateien mit unterschiedlichem Inhalt |
-| --- | ---: | ---: | ---: |
-| `wowa1990/MuPiBox` | 0 | 0 | 1 (`version.json`) |
-| `Lippsson/MuPiBox` | **0** | **19** | **117** |
+## Vergleich zum bereits vorbereiteten NG-Entwurf (PR #145 / Plugins #120)
 
-Der `wowa1990`-Stand ist im Main-Baum praktisch identisch zu
-`splitti/MuPiBox`. `Lippsson` hat gegenüber dem Upstream **keine
-zusätzlichen Dateien**, sondern u. a. ältere oder divergierende
-Implementierungen. Es wäre falsch, die Upstream-Neuerungen als
-zusätzliche `Lippsson`-Features zu bezeichnen.
+| Funktion | Classic 5.1 | NG-Erstentwurf | Maßnahme |
+| --- | --- | --- | --- |
+| USB-CD erkennen und Tracks abspielen | vorhanden | vorhanden | NG-Player weiterverwenden; mpv-CDDA an Realgerät testen |
+| Disc-Anwesenheit/Tray-/Spin-up-Status | Kernel-Status via `0x5326` | nur Disc-Typ/TOC und manuelle Neusuche | **Nachziehen** |
+| Disc-Wechsel, Auto-Refresh, USB-Reset | 3s-Poller, ID, 120s-Grace | nur Poll der App und keine Disc-ID | **Nachziehen**, udev-Ereignisse bevorzugen |
+| Track-Längen, Position und präzises Seeking | TOC/LBAs, Offsets | nicht implementiert | **Nachziehen** |
+| Album, Interpret und Titelnamen | Discogs/MusicBrainz | `Titel 1` etc. | **Opt-in-Metadatenservice auf Hostseite**, keine Netzberechtigung für die App |
+| Cover Art Archive | vorhanden + lokaler Cache | nicht implementiert | **Optional nachziehen**, begrenzen, Content-Type und Bildformat validieren |
+| Eject/Tray Close/Spin-down | vorhanden | nicht implementiert | **Optional nachziehen**, nur Touch, ausgewähltes Laufwerk, nicht während anderer Medien |
+| Mehrere USB-CD-Geräte | Standard `/dev/sr0` | Host listet mehrere `srN` | **NG-Vorteil behalten** |
+| Kindersicherung und Host-Autorisierung | Classic-Extension-Modell | NG-Plugin-Capability + Touchsession | **NG-Modell behalten** |
 
-## NG-Vergleich: Was sich zu prüfen lohnt
+## Sicherheitsbewertung (kritisch bei der Portierung)
 
-1. **USB-WLAN-Fallback und Netzwerk-Recovery:** In den beiden Classic-
-   Codebasen sind Skripte wie `scripts/mupibox/optimize_wifi.sh`,
-   `wifi_monitor.sh` und `wpa_action_guard.sh` enthalten. Der
-   Upstream berücksichtigt atomare WLAN-Konfigurationsschreibvorgänge
-   (mit restriktiven Dateirechten), Dual-WLAN und DietPi-Varianten.
-   Prüfen, ob NG diese Sicherheits-/Recovery-Eigenschaften vollständig
-   abdeckt; keine Root-Shellskripte unverändert portieren.
-2. **Display-Profile/-Drehung:** `splitti/MuPiBox` besitzt zusätzliche
-   Dateien wie `scripts/mupibox/display_profile.sh`,
-   `display_rotation.sh` und
-   `src/backend-api/src/eltern/display-profile.ts`, die im
-   `Lippsson`-Main fehlen. NG-Displayprofile und automatische
-   Migration dagegen abgleichen.
-3. **MuPiHAT/USB-PD:** `splitti/MuPiBox` enthält
-   `scripts/mupihat/tps25730.py`, das im `Lippsson`-Main fehlt.
-   Gegen NG-Hardware-Abstraktion und Stromversorgung prüfen.
-4. **Diagnose/Telemetrie:** `splitti/MuPiBox` besitzt zusätzliche
-   `telemetry.ts`, `support-summary.ts` und Tests gegenüber dem
-   `Lippsson`-Main. Vor einem NG-Backport Datenschutz, Einwilligung,
-   Datenminimierung und Testabdeckung abgleichen.
-5. **Spotify-Sync und TIDAL:** In beiden Fork-Ständen existieren
-   Unterschiede an `spotify-sync/diff.ts`, `scheduler.ts`,
-   `state-machine.ts` und `scripts/mupibox/tidal_service.py`.
-   Versions-/Diffprüfung und gezielte Regressionstests sind nötig,
-   bevor ein konkreter Bugfix für NG benannt werden kann.
+**Nicht aus Classic kopieren:**
+- `extensions/cd/99-mpx-cd.rules` setzt `MODE="0666"`: das Laufwerk
+  wäre für **alle lokalen Benutzer/Prozesse** les- und schreibbar.
+- `player.js` benutzt als Fallback `sudo -n chmod a+rw /dev/sr0`:
+  ebenfalls unzulässig für die NG-Sicherheitsarchitektur.
+- Im Classic-Plugin sind Host-Routen als GET (`/eject`) mit Seiteneffekt
+  realisiert. NG-Eject muss eine durch Touch-/Apprechte geschützte **POST**
+  mit Laufwerksidentitätsprüfung sein.
+- Die Classic-`.mpx` kann ausführbaren Player-/API-Code und udev-Regeln
+  installierten; **niemals direkt als NG-`.mupiapp` ausführen**.
 
-## Umsetzungsstatus
+**NG-Vorgabe:** Zugriff nur im vertrauenswürdigen Linux-Host mit
+minimalen Gruppenrechten (`cdrom`, `0660`), niemals `0666`,
+niemals allgemeines `sudo/chmod`, keine Device-Namen aus ungeprüftem
+JavaScript, kein Root-Zugriff oder frei wählbare Pfade. Metadaten
+vom Host über feste HTTPS-Endpunkte mit Timeouts/Größenlimits/
+Redirect-Validierung und lokalem Cache beziehen. Discogs-Token
+gesondert verschlüsselt ablegen; **nicht an die Community-App senden**.
 
-- USB-Optical-Discovery, lokale Berechtigungen und CDDA-Playback:
-  **Code in NG- und Plugins-PRs, Entwurf / noch nicht real hardwaregetestet**.
-- Lese- und Transporttests: Unit-Tests + CI vorgesehen.
-- Hardware-Lauffähigkeit: USB-Laufwerk, libcdio-Unterstützung in mpv,
-  Linux-Rechte/Gruppe, Audiofokus, Laufwerkswechsel und Medienwechsel
-  **noch nicht bestätigt**.
-- Weitere Classic-Neuerungen: **nur Prüfempfehlungen**, keine Übernahmen
-  oder freigegebenen Patches. Der Vergleich umfasst Main, nicht sämtliche
-  offenen Feature-Branches und PRs.
+## Weitere Classic-5.1-Funktionen im selben PR-Umfeld
+
+- [PR #41](https://github.com/wowa1990/MuPiBox/pull/41): Winamp-Skin,
+  Erweiterungs-Framework, CD, Uhr, Wetter.
+- [PR #42](https://github.com/wowa1990/MuPiBox/pull/42): mehrere
+  Box-Benutzer, GPIO-Buttons, Upgrade-Rollback und Erweiterungs-Settings.
+- [PR #44](https://github.com/wowa1990/MuPiBox/pull/44):
+  NFC-Erweiterung (PN5180, RC522, PN532, USB), Podcast-Episodenlisten,
+  Sunset-Dimming und Rotary Pi 5.
+- [PR #45](https://github.com/wowa1990/MuPiBox/pull/45):
+  NFC-Multireader, Tag-Kacheln und Mini-Player; PR zum Prüfdatum geschlossen,
+  **nicht gemergt**.
+
+Alle diese Änderungen **gegen den bestehenden NG-Code abgleichen**, nicht
+blind übernehmen: NG hat eigene Schnittstellen, Plugins, GPIO- und
+Sicherheitsmodelle. Ein Classic-PR kann in einem Fork integriert sein,
+ohne dass das Classic-Upstream-Main bereits aktualisiert wurde.
+
+## Status NG
+
+Bisherige NG- und Plugins-PRs implementieren einen **ersten unabhängigen
+Entwurf**; der vorhandene Classic-Code wurde bei der ersten Prüfung
+übersehen. Diese Datei korrigiert den Sachstand. Der konkrete Backport
+von Classic-Laufwerksüberwachung, LBAs, Metadaten und Tray-Verwaltung ist
+**noch offen**. Physische USB-CDDA-Hardwaretests vor Merge und Katalog-Release
+erforderlich.
