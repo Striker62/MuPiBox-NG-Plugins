@@ -1,0 +1,55 @@
+:root{font-family:system-ui,Arial,sans-serif;color:#edf7ff;background:#08172b}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+main{height:100dvh;min-height:300px;display:flex;flex-direction:column;padding:11px 18px;gap:8px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:clamp(19px,4vw,28px);margin:0;font-weight:900;letter-spacing:.02em}
+h1 span{color:#ffdd6e}h2{font-size:18px;margin:0}
+button,select{font:inherit;background:#173550;color:white;border:1px solid #466d89;border-radius:12px;min-height:43px;padding:7px 14px;touch-action:manipulation}
+button:disabled{opacity:.32;cursor:not-allowed}
+button:not(:disabled):active{transform:scale(.97)}
+#exit{font-size:14px;min-height:36px}
+.layout{flex:1;min-height:0;display:grid;grid-template-columns:minmax(230px, .85fr) minmax(320px,1.45fr);gap:15px}
+.album{background:linear-gradient(150deg,#102f55,#123c58);border:1px solid #254d74;border-radius:20px;display:flex;align-items:center;flex-direction:column;justify-content:space-around;gap:8px;min-height:0;padding:10px}
+.disc-art{width:min(27vh,170px);height:min(27vh,170px);min-height:95px;min-width:95px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(from 15deg,#acdcff,#f4f7ff,#b9aaff,#9bd7f0,#d7fff9,#f4f7ff,#acdcff);box-shadow:0 9px 28px #0008,inset 0 0 10px #356d9b;position:relative;animation:spin 3s linear infinite;animation-play-state:paused}
+.disc-art.playing{animation-play-state:running}
+.disc-art::after{content:"";position:absolute;width:15%;height:15%;border:7px solid #124066;background:#08172b;border-radius:50%}
+.disc-label{width:68%;height:68%;border-radius:50%;background:#143d67;display:grid;place-items:center;text-align:center;line-height:1.1;font-size:23px;font-weight:900;color:#ffdf78;letter-spacing:.07em}
+@keyframes spin{to{transform:rotate(360deg)}}
+.device-row{display:grid;grid-template-columns:1fr auto;gap:5px;width:100%;align-items:center}
+.device-row label{grid-column:1/-1;font-size:12px;color:#c3dbf2}
+#drive{min-width:0;width:100%;font-size:13px}
+#scan{font-size:13px;padding:6px 10px}
+#message{font-size:13px;color:#cce0f4;text-align:center;margin:0;min-height:38px}
+.right{display:flex;flex-direction:column;min-height:0;gap:8px}
+.list-heading{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#disc-count{color:#ffdc7f;font-size:13px;white-space:nowrap}
+.tracks{flex:1;overflow:auto;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:7px;padding-right:4px}
+.tracks button{display:flex;gap:9px;align-items:center;text-align:left;min-height:44px;border:1px solid #3e6d9b;background:#153d60;color:#f0faff}
+.tracks button.selected{border-color:#ffde7b;background:#22517c}
+.tracks .number{font-size:13px;color:#ffdd6e}
+.muted{grid-column:1/-1;color:#bdcee0;font-size:14px}
+.transport{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.transport button{flex:1;font-size:22px;min-height:49px;background:#1c466c}
+.transport .play{background:#ffcf68;color:#082c43;border:0;font-size:25px;font-weight:900}
+@media(max-width:680px){main{padding:8px;gap:6px}.layout{gap:8px;grid-template-columns:minmax(155px,.9fr) minmax(220px,1.3fr)}.album{padding:7px}.disc-art{width:min(22vh,115px);height:min(22vh,115px)}.tracks{grid-template-columns:1fr}.tracks button{min-height:39px}.transport button{min-height:40px}.disc-label{font-size:17px}}
+@media(max-height:400px){main{padding:4px 10px}header h1{font-size:19px}.layout{gap:8px}.disc-art{width:100px;height:100px;min-width:0;min-height:0}.album{gap:4px}.transport button{min-height:37px}#message{min-height:20px}h2{font-size:14px}}
+
+.artwork{position:relative;width:min(24vh,148px);height:min(24vh,148px);min-height:80px;min-width:80px}
+.artwork .disc-art{height:100%;width:100%;min-height:0;min-width:0}
+.artwork .cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:12px;box-shadow:0 9px 28px #0008}
+.album-meta{width:100%;display:flex;flex-direction:column;gap:2px;text-align:center;min-height:30px}
+#album-name{font-size:14px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+#album-artist{font-size:12px;color:#bcd8ef;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.drive-actions{display:grid;width:100%;gap:5px;grid-template-columns:1.7fr 1fr 1fr .8fr}
+.drive-actions button{font-size:11px;min-height:34px;padding:3px 6px;border-radius:9px}
+.seek-row{display:flex;align-items:center;gap:9px;min-height:23px}
+#seek{flex:1;min-width:0;accent-color:#ffdb77;cursor:pointer}
+#seek:disabled{opacity:.3;cursor:not-allowed}
+#position{font-size:12px;color:#d2e5f7;font-variant-numeric:tabular-nums;white-space:nowrap}
+.track-duration{font-size:11px;color:#bdd8ed;margin-left:auto;flex:none}
+.tracks button{min-width:0}
+.tracks .track-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-height:450px){.artwork{width:min(16vh,85px);height:min(16vh,85px);min-height:65px;min-width:65px}
+.album{gap:4px}.album-meta{min-height:20px}.drive-actions button{min-height:27px;padding:2px 3px}
+#message{min-height:24px;font-size:11px}.disc-label{font-size:16px}}
