@@ -54,6 +54,14 @@ Example manifest:
 | `galleryDirectories` | Optional, scoped album directory declarations; requires `photo-save` |
 | `sharedDirectories` | Optional explicit SMB directory allowlist; requires `shared-assets`; max 8 paths |
 
+**Owner-managed settings pages (declarative):** Apps may optionally declare
+`adminSettings` in the manifest. MuPiBox renders a form in its existing
+authenticated Admin UI, with typed fields and defaults. The app can read only
+its own non-secret values via `MuPiBoxSDK.config.get()` when `storage` is
+approved. There is no second sign-in, app-authored Admin HTML or write method
+in the normal SDK. [Full German developer/AI guide](admin-settings-ai-guide.de.md)
+and [working example](../examples/admin-settings-demo/README.md).
+
 **Compatibility:** An app supporting API `1` must not assume later additions or the presence of a physical controller. A host must reject unsupported API versions and unknown permission names, and may deny any requested privilege.
 
 **Packaging restrictions implemented by the validator:** 200 files max, 50 MiB total uncompressed, 20 MiB per file, max 1 MiB manifest, no absolute paths, traversal paths, symbolic links, duplicate paths or case-insensitive collisions. Host enforcement must repeat checks and enforce time/CPU/memory/file limits. Invalid packages must never be extracted directly into system directories.

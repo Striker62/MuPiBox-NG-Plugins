@@ -43,6 +43,11 @@ jobs:
           python3 tools/mupiapp.py validate dist/funny-mupi.mupiapp
       - name: Build reference app
         run: python3 tools/build_example.py
+      - name: Build declarative Admin settings example
+        run: |
+          node --check examples/admin-settings-demo/app.js
+          python3 tools/mupiapp.py pack examples/admin-settings-demo dist/admin-settings-demo.mupiapp --exclude README.md
+          python3 tools/mupiapp.py validate dist/admin-settings-demo.mupiapp
       - name: Build four-in-a-row app
         run: python3 tools/build_four_in_a_row.py
       - name: Build Crumbworm app
@@ -108,5 +113,6 @@ jobs:
             dist/klang-memory.mupiapp
             dist/webcam-preview.mupiapp
             dist/fotospass.mupiapp
+            dist/admin-settings-demo.mupiapp
             dist/funny-mupi.mupiapp
           if-no-files-found: error

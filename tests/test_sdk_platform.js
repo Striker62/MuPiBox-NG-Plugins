@@ -87,3 +87,12 @@ test('canonical SDK calls exactly the reviewed bridge method contract', () => {
   assert.deepEqual([...new Set(invoked)].sort(), expected.methods);
   assert.equal(expected.apiVersion, '1');
 });
+
+test('app can only read its own admin-managed settings via scoped config.get', async () => {
+  const {sdk, calls} = loadSDK();
+  assert.equal(Object.isFrozen(sdk.config), true);
+  assert.deepEqual(JSON.parse(JSON.stringify(await sdk.config.get())), {});
+  assert.deepEqual(calls, [{method:'config.get', payload:{}}]);
+  assert.deepEqual(JSON.parse(JSON.stringify(await loadSDK(false).sdk.config.get())), {});
+  assert.equal(typeof sdk.config.set, 'undefined');
+});
