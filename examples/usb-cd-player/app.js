@@ -10,7 +10,7 @@ function busy(on){state.busy=on;updateControls()}
 function updateControls(){
  const canPlay=state.supported&&Boolean(state.toc)&&!state.busy;
  for(const button of ["previous","toggle","next","stop"])enabled(button,canPlay);
- $("toggle").textContent=state.active&&state.paused?"▶":"⏯";
+ $("toggle").textContent=!state.active||state.paused?"▶":"⏸";
  $("disc-art").classList.toggle("playing",state.active&&!state.paused);
 }
 async function scan(){
@@ -72,7 +72,7 @@ async function play(track){
  finally{busy(false)}
 }
 async function refreshStatus(){
- if(!state.supported||state.busy&&state.active===false)return;
+ if(!state.supported)return;
  try{
   const status=await sdk.optical.status();
   const active=status.active===true;
