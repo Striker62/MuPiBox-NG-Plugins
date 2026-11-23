@@ -67,10 +67,20 @@ wird dadurch nicht zu ausführbarem QML.
 Das normale Installationsverfahren bleibt unverändert: Man bestätigt die
 vom Paket angeforderten Berechtigungen. Der Entwickler darf zusätzliche,
 möglichst konkrete Begründungen in `permissionReasons` mitliefern.
-Im Admin können Laufzeitrechte pro App wieder entzogen oder freigegeben
-werden. Sie werden im Host bei jeder Bridge-Operation erneut geprüft;
-die Freigabe für Funktionen im Admin-SDK ist separat explizit durch das
-Paket festgelegt und stets an eine gültige Admin-Sitzung gebunden.
+Die MuPiBox zeigt außerdem die Admin-Capabilities und die
+freigegebenen app-eigenen Verzeichnisse **vor der Installation** an.
+
+Im Admin sind die Rechte einzeln **auch nach der Installation**
+steuerbar – sowohl die gewöhnlichen Community-SDK-Rechte als auch
+die Admin-Capabilities (als `admin.settings.read`,
+`admin.files.write` usw.). Ein Widerruf von `admin.files.write`
+sperrt unmittelbar neue Uploads und Änderungsaufrufe auf der
+Admin-Verwaltungsseite, ohne die übrigen Berechtigungen der App
+zu verändern. `admin.files.read` ist separat schaltbar.
+Die Berechtigungen werden im Host **bei jeder Bridge-Operation**
+erneut geprüft und bleiben bei App-Updates erhalten.
+Unabhängig von diesen Freigaben ist für sämtliche Admin-Aktionen
+immer eine tatsächlich gültige MuPiBox-Admin-Sitzung erforderlich.
 
 ## Paketstruktur
 
