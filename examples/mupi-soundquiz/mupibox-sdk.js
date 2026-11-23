@@ -59,6 +59,17 @@
     }
   });
 
+  // Read-only, app-scoped settings supplied by the already authenticated
+  // administrator. No second login, no credential or write bridge.
+  const config = Object.freeze({
+    async get() {
+      if (!bridge) return {};
+      const response = await invoke('config.get', {});
+      return response?.value && typeof response.value === 'object' &&
+        !Array.isArray(response.value) ? response.value : {};
+    }
+  });
+
   // Opt-in audio host capability. The Raspberry Pi uses a dedicated
   // PipeWire server that Chromium WebAudio cannot automatically reach.
   // The trusted host enforces the audio permission and device volume ceiling.
@@ -408,6 +419,7 @@
     isHosted: Boolean(bridge),
     on,
     storage,
+    config,
     audio,
     tts,
     camera,
