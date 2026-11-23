@@ -108,6 +108,7 @@ Der neue Host-Code befindet sich in
 `#153`; die App/SDK-Gegenstelle in
 `splitti/MuPiBox-NG-Plugins#120`.
 **Sämtliche realen Laufwerk-/CDDA-/mpv-Tests stehen aus.**
-Die Implementierung ist nicht öffentlich für Anwender freigegeben.
-Keiner der oben beschriebenen Punkte ist als Hardware-abgenommen
-zu verstehen.
+Die App wird auf ausdrücklichen Wunsch des Maintainers als klar gekennzeichnete
+**experimentelle Vorschau** öffentlich angeboten. Die Host-Unterstützung ist
+weiterhin an die noch nicht veröffentlichte Integration #154/#153 gebunden.
+Keiner der oben beschriebenen Punkte ist als Hardware-abgenommen zu verstehen.

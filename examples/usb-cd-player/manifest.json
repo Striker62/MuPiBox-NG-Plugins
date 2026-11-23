@@ -20,5 +20,6 @@
     "showSystemInfo": true,
     "fullScreen": false,
     "background": "app"
-  }
+  },
+  "cover": "cover.png"
 }
