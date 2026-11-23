@@ -79,6 +79,7 @@ jobs:
       - name: Build USB Audio CD Player candidate
         run: |
           node --check examples/usb-cd-player/app.js
+          node --test tests/usb_cd_player.test.cjs
           node --check examples/usb-cd-player/mupibox-sdk.js
           python3 tools/mupiapp.py pack examples/usb-cd-player dist/usb-cd-player.mupiapp --exclude README.md
           python3 tools/mupiapp.py validate dist/usb-cd-player.mupiapp

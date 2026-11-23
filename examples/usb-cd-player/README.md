@@ -5,6 +5,15 @@ in MuPiBox NG die App **MuPi CD-Player** öffnen. Titelwahl, Pause/Weiter,
 vorheriger/nächster Titel und Stop laufen über denselben Core-Player wie
 andere MuPiBox-Audioquellen. Daten-CDs und Rippen werden nicht unterstützt.
 
+Die App sucht im Leerlauf etwa alle 11 Sekunden nach neu angeschlossenen
+Laufwerken und eingelegten CDs. Die Schaltfläche **Suchen** aktualisiert
+sofort. Bei einem CD-Wechsel mit derselben Trackanzahl kann die aktuelle
+Version den Wechsel noch nicht sicher erkennen; bitte dann **Suchen** wählen.
+Bei mehreren Laufwerken zeigen die Transporttasten nur die Wiedergabe des
+in der App ausgewählten Laufwerks an (Host mit `optical.status().device`
+erforderlich). Während laufender Wiedergabe wird das Laufwerk nicht zusätzlich
+auf einen Disc-Wechsel abgefragt, um unnötige Zugriffe zu vermeiden.
+
 **NG-Voraussetzung:** Host-Erweiterung im separaten MuPiBox-NG-PR,
 die die neue Berechtigung `optical-media` einführt. Die Erlaubnis muss
 beim Installieren explizit bestätigt werden. Nur die lokale Touch-Sitzung

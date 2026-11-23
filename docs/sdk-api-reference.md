@@ -136,6 +136,10 @@ ob Elternschutz sowie Ressourcenlimits eingehalten werden.
 `sdk.optical.status()` und `sdk.optical.transport(action)` sind nur
 mit **`optical-media`** und einer gültigen **lokalen Touch-Sitzung** verfügbar.
 Transport erlaubt nur `toggle`, `next`, `previous`, `stop`.
+`optical.status()` liefert bei laufender CD zusätzlich das Feld `device` (z. B. `sr0`);
+`track` ist dabei die **1-basierte Position in der aktuellen CD-Queue**, nicht
+zwingend die physische Tracknummer. Die App muss die Rückgabe mit ihrem
+gewählten Laufwerk vergleichen, damit sie keine fremde CD-Wiedergabe anzeigt.
 Der Host enumeriert USB-Geräte als opake Namen `sr0` bis `sr99`,
 prüft CD-TOC und darf ausschließlich selbst mit den Geräten kommunizieren.
 App-Code sieht keine `/dev`-Pfade, keine Spotify-/anderen Dienstetokens
