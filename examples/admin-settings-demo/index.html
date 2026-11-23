@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MuPi Einstellungen Demo</title>
+<style>
+html,body{margin:0;min-height:100%;background:#162239;color:#eef6ff;font-family:system-ui,sans-serif}
+main{max-width:700px;margin:4vh auto;padding:24px;text-align:center}
+section{border:1px solid #4d698e;border-radius:20px;padding:22px;background:#243b58}
+button{border:0;border-radius:14px;padding:12px 24px;font-size:18px;cursor:pointer}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;text-align:left}
+</style></head>
+<body><main><section><h1>App-Einstellungen</h1><p>Werte werden im vorhandenen MuPiBox-Adminbereich gesetzt.</p>
+<p id="message" role="status">Lade Einstellungen …</p>
+<button id="refresh" type="button">Aktualisieren</button>
+<pre id="values"></pre>
+</section></main><script src="mupibox-sdk.js"></script><script src="app.js"></script></body></html>
