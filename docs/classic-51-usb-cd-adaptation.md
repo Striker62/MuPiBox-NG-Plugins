@@ -83,3 +83,31 @@ Entwurf**; der vorhandene Classic-Code wurde bei der ersten Prüfung
 von Classic-Laufwerksüberwachung, LBAs, Metadaten und Tray-Verwaltung ist
 **noch offen**. Physische USB-CDDA-Hardwaretests vor Merge und Katalog-Release
 erforderlich.
+
+## Weiterentwickelter NG-Stand (23.11.2026; Host #154 + Plugins #120)
+
+**Hinweis:** Die obige Tabelle beschreibt ausdrücklich den *ersten* NG-
+Entwurf von PR #145 und ist deshalb historische Bestandsaufnahme.
+
+Für die **zweite Entwicklungsstufe** wurden die folgenden Unterschiede
+im NG-eigenen Sicherheitsmodell softwareseitig umgesetzt:
+
+| Classic-Funktion | Umsetzung der NG-Entwicklungsstufe 2 |
+| --- | --- |
+| Laufwerk/Tray/Disc-Zustand | Sichere Linux-ioctls auf validierten USB-Laufwerken; Status wird an App gereicht |
+| TOC/Track-LBA/Laufzeit | LBA, Trackdauer und Lead-out aus Kernel-TOC, angezeigt im Tracklisting |
+| CD-Identität/Disc-Wechsel | MusicBrainz-SHA1-ID aus 804 ASCII-Hexzeichen; Disc-Wechsel auch bei gleicher Titelanzahl; erneute Prüfung vor Play/Skip/Seek |
+| Audio-CD + CD-Extra | Audio-only sowie Standard-CD-Extra mit **einem** letzten Daten-Track; exotische Mixed-Mode-Layouts werden abgewiesen |
+| Eject/Close/Spin-down | Explizite SDK-Bedienung für das ausgewählte Laufwerk, stoppt nur dessen Audioquelle |
+| MusicBrainz-Titel/Album | Nur auf Benutzerklick, hostseitiger HTTPS-Lookup ohne App-Netzwerkberechtigung, Cache und strenge API-Limits |
+| Cover Art Archive | Nur nach MusicBrainz-Lookup, Proxy über Host auf begrenztes JPEG-/PNG-Datenbild mit Redirect-/Host-/IP-Prüfungen |
+| USB-Reset-Recovery | **Absichtlich nicht automatisch übernommen**: hardwareabhängiges Busreset kann fremde Geräte stören. Hardware-Test + gezielte Recovery später nötig. |
+
+Der neue Host-Code befindet sich in
+`splitti/MuPiBox-NG#154` auf der Admin-Sicherheitsintegration
+`#153`; die App/SDK-Gegenstelle in
+`splitti/MuPiBox-NG-Plugins#120`.
+**Sämtliche realen Laufwerk-/CDDA-/mpv-Tests stehen aus.**
+Die Implementierung ist nicht öffentlich für Anwender freigegeben.
+Keiner der oben beschriebenen Punkte ist als Hardware-abgenommen
+zu verstehen.

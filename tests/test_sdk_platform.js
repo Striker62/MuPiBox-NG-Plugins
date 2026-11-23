@@ -87,22 +87,32 @@ test('canonical SDK calls exactly the reviewed bridge method contract', () => {
   assert.deepEqual([...new Set(invoked)].sort(), expected.methods);
   assert.equal(expected.apiVersion, '1');
 });
-test('USB Audio CD SDK calls only the optical allowlist and validates inputs', async () => {
+test('USB Audio CD SDK includes track identity guards, metadata and tray control', async () => {
   const {sdk, calls} = loadSDK();
+  const id = '49HHV7Eb8UKF3aQiNmu1GR8vKTY-';
   await sdk.optical.list();
   await sdk.optical.disc('sr0');
-  await sdk.optical.play('sr0', 2);
+  await sdk.optical.play('sr0', 2, id);
   await sdk.optical.status();
-  await sdk.optical.transport('next');
+  await sdk.optical.transport('next', 'sr0', id);
+  await sdk.optical.seek('sr0', id, 42);
+  await sdk.optical.metadata('sr0', id);
+  await sdk.optical.drive('sr0', 'eject');
   assert.deepEqual(calls.map(c => c.method), [
-    'optical.list', 'optical.disc', 'optical.play', 'optical.status', 'optical.transport'
+    'optical.list', 'optical.disc', 'optical.play', 'optical.status', 'optical.transport',
+    'optical.seek', 'optical.metadata', 'optical.drive'
   ]);
+  assert.deepEqual(JSON.parse(JSON.stringify(calls[2].payload)), {device:'sr0',track:2,discId:id});
   for (const device of ['/dev/sda', '../sr0', 'sr-1', 'sr100', '']) {
     await assert.rejects(sdk.optical.disc(device), {name:'TypeError'});
   }
   for (const action of ['eject', 'shutdown', 'volume_up', '']) {
-    await assert.rejects(sdk.optical.transport(action), {name:'TypeError'});
+    await assert.rejects(sdk.optical.transport(action, 'sr0', id), {name:'TypeError'});
   }
-  await assert.rejects(sdk.optical.play('sr0', 101), {name:'TypeError'});
+  await assert.rejects(sdk.optical.play('sr0', 101, id), {name:'TypeError'});
+  await assert.rejects(sdk.optical.play('sr0', 2, ''), {name:'TypeError'});
+  await assert.rejects(sdk.optical.transport('next', 'sr0', '../pwn'), {name:'TypeError'});
+  await assert.rejects(sdk.optical.drive('sr0', 'chmod'), {name:'TypeError'});
+  await assert.rejects(sdk.optical.seek('sr0', id, Infinity), {name:'TypeError'});
   assert.equal(Object.isFrozen(sdk.optical), true);
 });

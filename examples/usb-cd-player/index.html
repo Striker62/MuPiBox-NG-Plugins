@@ -7,13 +7,22 @@
   <header><h1>MuPi <span>CD-Player</span></h1><button id="exit" type="button" aria-label="Zurück zur MuPiBox">Zurück</button></header>
   <div class="layout">
     <section class="album" aria-label="CD-Laufwerk">
-      <div id="disc-art" class="disc-art" aria-hidden="true"><div class="disc-label">MuPi<br>CD</div></div>
+      <div class="artwork">
+        <div id="disc-art" class="disc-art" aria-hidden="true"><div class="disc-label">MuPi<br>CD</div></div>
+        <img id="cover-img" class="cover-img" alt="Albumcover" hidden>
+      </div>
+      <div class="album-meta"><strong id="album-name">Audio-CD</strong><span id="album-artist">Lokal abspielbar</span></div>
       <div class="device-row"><label for="drive">USB-Laufwerk</label><select id="drive" aria-label="USB-Laufwerk auswählen"><option value="">Laufwerk suchen …</option></select><button id="scan" type="button">Suchen</button></div>
+      <div class="drive-actions"><button id="lookup" type="button" disabled title="Nur auf Klick: Musik-Metadaten über MusicBrainz abrufen">Albuminfos online</button>
+        <button id="eject" type="button" disabled>Auswerfen</button>
+        <button id="close" type="button" disabled>Einziehen</button><button id="spindown" type="button" disabled>Ruhe</button></div>
       <p id="message" role="status" aria-live="polite">Laufwerk wird gesucht …</p>
     </section>
     <section class="right">
       <div class="list-heading"><h2 id="disc-heading">Keine CD eingelegt</h2><span id="disc-count"></span></div>
       <div id="tracks" class="tracks" aria-label="CD-Titel"><p class="muted">USB-CD-Laufwerk anschließen und eine Audio-CD einlegen.</p></div>
+      <div class="seek-row"><input id="seek" type="range" min="0" max="1" step="1" value="0" disabled aria-label="Wiedergabeposition">
+        <span id="position">0:00 / 0:00</span></div>
       <nav class="transport" aria-label="CD-Steuerung">
         <button id="previous" type="button" disabled aria-label="Vorheriger Titel">⏮</button>
         <button id="toggle" type="button" class="play" disabled aria-label="Abspielen oder Pause">▶</button>

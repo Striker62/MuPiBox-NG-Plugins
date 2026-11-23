@@ -10,7 +10,7 @@ function fixture() {
   const elements = new Map();
   const timers = [];
   const calls = [];
-  const media = {drives: [], discs: {}, playing: {active:false}};
+  const media = {drives: [], discs: {}, playing: {active:false}, metadata: null};
   function node(tag = '') {
     const listeners = new Map();
     return {
@@ -36,9 +36,24 @@ function fixture() {
     optical: {
       async list() {calls.push('list'); return media.drives;},
       async disc(id) {calls.push('disc:' + id); if (!media.discs[id]) throw Error('no disc'); return media.discs[id];},
-      async play(id, track) {calls.push('play:' + id + ':' + track); media.playing = {active:true, device:id, state:'playing', track};},
+      async play(id, track, discId) {
+        calls.push('play:' + id + ':' + track);
+        assert.equal(discId,media.discs[id].discId);
+        media.playing = {active:true, device:id, state:'playing',track,position:0,duration:200};
+      },
       async status() {calls.push('status'); return media.playing;},
-      async transport(action) {calls.push('transport:' + action); if (action === 'stop') media.playing = {active:false};}
+      async transport(action,device,discId) {
+        calls.push('transport:' + action);
+        assert.equal(device,'sr0'); assert.ok(discId);
+        if (action === 'stop') media.playing = {active:false};
+      },
+      async seek(device,discId,position) {
+        calls.push('seek:' + device + ':' + position); assert.ok(discId);
+      },
+      async metadata(device,discId) {
+        calls.push('metadata:' + device); assert.ok(discId); return media.metadata;
+      },
+      async drive(device,action) {calls.push('drive:' + device + ':' + action);}
     }
   };
   const window = {MuPiBoxSDK:sdk, addEventListener() {}};
@@ -57,7 +72,8 @@ test('automatically discovers an inserted CD while idle without repeated UI rese
   await flush();
   assert.equal(f.elements.get('toggle').disabled, true);
   f.media.drives = [{id:'sr0', name:'USB CD'}];
-  f.media.discs.sr0 = {device:'sr0',first:1,last:3,tracks:3};
+  f.media.discs.sr0 = {device:'sr0',first:1,last:3,tracks:3,discId:'49HHV7Eb8UKF3aQiNmu1GR8vKTY-',
+    trackList:[{number:1,duration:120},{number:2,duration:200},{number:3,duration:140}]};
   await ticks(f);
   assert.equal(f.elements.get('drive').value, 'sr0');
   assert.equal(f.elements.get('tracks').children.length, 3);
@@ -73,8 +89,9 @@ test('controls never affect a CD playing in another USB drive', async () => {
   const f = fixture();
   await flush();
   f.media.drives = [{id:'sr0',name:'CD A'}, {id:'sr1',name:'CD B'}];
-  f.media.discs.sr0 = {device:'sr0',first:1,last:3,tracks:3};
-  f.media.discs.sr1 = {device:'sr1',first:1,last:3,tracks:3};
+  f.media.discs.sr0 = {device:'sr0',first:1,last:3,tracks:3,discId:'49HHV7Eb8UKF3aQiNmu1GR8vKTY-',
+    trackList:[{number:1,duration:120},{number:2,duration:200},{number:3,duration:140}]};
+  f.media.discs.sr1 = {device:'sr1',first:1,last:3,tracks:3,discId:'AAAAAAAAAAAAAAAAAAAAAAAAAAA-'};
   await ticks(f);
   f.media.playing = {active:true,device:'sr1',state:'playing',track:1};
   await ticks(f,1);
@@ -91,7 +108,7 @@ test('controls never affect a CD playing in another USB drive', async () => {
 test('removing an idle disc clears stale tracks and disables playback', async () => {
   const f = fixture();
   f.media.drives = [{id:'sr0',name:'CD'}];
-  f.media.discs.sr0 = {device:'sr0',first:1,last:4,tracks:4};
+  f.media.discs.sr0 = {device:'sr0',first:1,last:4,tracks:4,discId:'49HHV7Eb8UKF3aQiNmu1GR8vKTY-'};
   await flush();
   assert.equal(f.elements.get('tracks').children.length, 4);
   delete f.media.discs.sr0;
@@ -99,4 +116,41 @@ test('removing an idle disc clears stale tracks and disables playback', async ()
   assert.equal(f.elements.get('tracks').children.length, 1);
   assert.equal(f.elements.get('toggle').disabled, true);
   assert.match(f.elements.get('message').textContent, /Keine lesbare Audio-CD/);
+});
+
+
+test('same track count, changed disc identity refreshes tracks and album', async () => {
+  const f = fixture();
+  f.media.drives = [{id:'sr0',name:'CD'}];
+  f.media.discs.sr0 = {device:'sr0',first:1,last:2,tracks:2,discId:'49HHV7Eb8UKF3aQiNmu1GR8vKTY-'};
+  await flush();
+  f.media.metadata = {title:'Known album',artist:'Artist',trackTitles:['AAA','BBB']};
+  f.elements.get('lookup').trigger('click');
+  await flush();
+  assert.equal(f.elements.get('album-name').textContent,'Known album');
+  assert.equal(f.calls.filter(c => c.startsWith('metadata:')).length,1);
+  const old = f.elements.get('tracks').children[0];
+  f.media.discs.sr0 = {device:'sr0',first:1,last:2,tracks:2,discId:'AAAAAAAAAAAAAAAAAAAAAAAAAAA-'};
+  await ticks(f);
+  assert.notEqual(f.elements.get('tracks').children[0],old);
+  assert.equal(f.elements.get('album-name').textContent,'Audio-CD');
+  assert.equal(f.calls.filter(c => c.startsWith('metadata:')).length,1); // no automatic online lookup
+});
+
+test('seek and eject never use raw paths and are explicit actions', async () => {
+  const f = fixture();
+  f.media.drives = [{id:'sr0',name:'CD'}];
+  f.media.discs.sr0 = {device:'sr0',first:1,last:2,tracks:2,discId:'49HHV7Eb8UKF3aQiNmu1GR8vKTY-'};
+  await flush();
+  f.elements.get('toggle').trigger('click');
+  await flush();
+  assert.equal(f.elements.get('seek').disabled,false);
+  f.elements.get('seek').value='54';
+  f.elements.get('seek').trigger('change');
+  await flush();
+  assert.ok(f.calls.includes('seek:sr0:54'));
+  f.elements.get('eject').trigger('click');
+  await flush();
+  assert.ok(f.calls.includes('drive:sr0:eject'));
+  assert.equal(f.elements.get('toggle').disabled,true);
 });
