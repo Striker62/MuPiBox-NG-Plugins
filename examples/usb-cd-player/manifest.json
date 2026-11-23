@@ -16,7 +16,7 @@
     "orientation": "landscape",
     "minWidth": 480,
     "minHeight": 320,
-    "showBackButton": true,
+    "showBackButton": false,
     "showSystemInfo": true,
     "fullScreen": false,
     "background": "app"
