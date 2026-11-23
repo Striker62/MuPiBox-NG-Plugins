@@ -412,6 +412,54 @@
           }
         }
       }
+    },
+    "admin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry",
+        "capabilities"
+      ],
+      "properties": {
+        "entry": {
+          "type": "string",
+          "pattern": "^admin/[a-zA-Z0-9_./-]+\\.html$"
+        },
+        "capabilities": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "settings.read",
+              "settings.write",
+              "files.list",
+              "files.read",
+              "files.write",
+              "files.trash"
+            ]
+          }
+        },
+        "directories": {
+          "type": "array",
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+){0,5}$"
+          }
+        }
+      }
+    },
+    "permissionReasons": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      },
+      "maxProperties": 12
     }
   },
   "allOf": [

@@ -32,6 +32,7 @@ ALLOWED_FIELDS = {
     "apiVersion", "id", "name", "version", "runtime", "entry", "icon", "cover",
     "description", "author", "permissions", "networkHosts", "display",
     "category", "galleryDirectories", "sharedDirectories", "adminSettings",
+    "admin", "permissionReasons",
 }
 APP_ID = re.compile(r"^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$")
 SEMVER = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
@@ -133,6 +134,48 @@ def validate_admin_settings(spec: object) -> None:
                 chosen.add(item["value"])
             if type(value) is not str or value not in chosen:
                 raise PackageError("select default must match declared choice")
+
+
+
+def validate_admin_surface(surface: object, manifest: dict, files: set[str]) -> None:
+    if not isinstance(surface, dict) or set(surface) - {"entry", "capabilities", "directories"}:
+        raise PackageError("admin must be a declarative, capability-scoped object")
+    if manifest.get("runtime") != "web":
+        raise PackageError("admin HTML pages require web runtime")
+    entry = surface.get("entry")
+    if (not isinstance(entry, str) or not entry.startswith("admin/")
+            or not entry.endswith(".html") or entry not in files):
+        raise PackageError("admin.entry must exist under admin/ as .html")
+    checked_path(entry)
+    supported = {"settings.read", "settings.write", "files.list", "files.read", "files.write", "files.trash"}
+    permissions = surface.get("capabilities")
+    if (not isinstance(permissions, list) or not 1 <= len(permissions) <= len(supported)
+            or any(not isinstance(p, str) for p in permissions)
+            or len(set(permissions)) != len(permissions) or not set(permissions) <= supported):
+        raise PackageError("invalid admin.capabilities")
+    folders = surface.get("directories", [])
+    if (not isinstance(folders, list) or len(folders) > 8 or
+            any(not isinstance(x, str) for x in folders) or len(set(folders)) != len(folders)):
+        raise PackageError("invalid admin.directories")
+    file_caps = any(p.startswith("files.") for p in permissions)
+    if file_caps and not folders:
+        raise PackageError("admin files.* requires declared directories")
+    if folders and not file_caps:
+        raise PackageError("admin directories need a files.* capability")
+    if file_caps and "shared-assets" not in manifest["permissions"]:
+        raise PackageError("admin files.* requires shared-assets")
+    allowed = set(manifest.get("sharedDirectories", []))
+    if any(folder not in allowed for folder in folders):
+        raise PackageError("admin.directories must be a subset of sharedDirectories")
+
+
+def validate_permission_reasons(reasons: object, permissions: list[str]) -> None:
+    if not isinstance(reasons, dict):
+        raise PackageError("permissionReasons must be a map")
+    for key, value in reasons.items():
+        if (key not in permissions or not isinstance(value, str)
+                or not 1 <= len(value.encode("utf-8")) <= 300 or not value.strip()):
+            raise PackageError("invalid permission reason")
 
 
 def validate_manifest(data: object, files: set[str]) -> dict:
@@ -242,6 +285,10 @@ def validate_manifest(data: object, files: set[str]) -> dict:
                     raise PackageError(f"invalid {dimension}")
     if "adminSettings" in data:
         validate_admin_settings(data["adminSettings"])
+    if "admin" in data:
+        validate_admin_surface(data["admin"], data, files)
+    if "permissionReasons" in data:
+        validate_permission_reasons(data["permissionReasons"], perms)
     return data
 
 
