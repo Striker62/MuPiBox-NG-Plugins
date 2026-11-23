@@ -9,7 +9,7 @@ und [`wowa1990/MuPiBox` auf `upstream-v5.1-pr`](https://github.com/wowa1990/MuPi
 Die Classic-Extension heißt `cd` und hat Version **1.0.1**.
 
 Der Ursprung ist [wowa1990/MuPiBox PR #41](https://github.com/wowa1990/MuPiBox/pull/41),
-**am 12.11.2026 gemergt** – allerdings in einen 5.1-Entwicklungs-/Integrationsbranch,
+**am 09.11.2026 gemergt** – allerdings in einen 5.1-Entwicklungs-/Integrationsbranch,
 **nicht in den Main-Branch von `splitti/MuPiBox`**. Dieser PR brachte zugleich
 Winamp-Theme, Extensions-Framework, Uhr und Wetter. Auf `dev5.1` sind die
 fertigen Pakete `extensions/dist/cd-1.0.0.mpx` und `cd-1.0.1.mpx` vorhanden.
