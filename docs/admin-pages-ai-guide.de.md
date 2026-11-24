@@ -1,8 +1,8 @@
 # Eigene Admin-Webseiten für MuPiBox NG Community-Apps
 
-> **Status:** Implementiert in den zugehörigen Entwurfs-PRs, noch nicht Bestandteil
-> einer veröffentlichten Alpha. Zuerst Host- und SDK-PR mergen, auf Testbox
-> installieren, anschließend Community-App aktualisieren.
+> **Host-Voraussetzung:** Alpha 84 mit laufzeitunabhängiger App-Verwaltung.
+> Ältere Versionen unterstützen diese Erweiterung nicht vollständig.
+> Vor der Veröffentlichung einer App auf dem Ziel-Host testen.
 
 ## Drei Stufen – dieselbe bestehende Anmeldung
 
@@ -10,7 +10,7 @@
 2. **Formular:** `manifest.adminSettings` mit automatisch erzeugten
    Schaltern, Eingabefeldern und Auswahlfeldern. Kein App-JavaScript im Admin.
 3. **Verwaltungsseite:** `manifest.admin.entry` verweist auf ein
-   mitgeliefertes `admin/index.html`. Nach dem Klick auf **Verwaltung öffnen**
+   mitgeliefertes `admin/index.html`. Nach dem Klick auf **App-Verwaltung öffnen**
    erscheint eine eigene Seite **innerhalb der bestehenden MuPiBox-Administration**
    (mit MuPiBox-Kopfzeile und Zurück-Navigation). Keine zweite Anmeldung.
 
@@ -20,7 +20,28 @@ sie erhält keine Admin-Cookies, keine Provider-Tokens und kein allgemeines
 Netzwerk-/Dateisystemrecht. Ein vertrauenswürdiger MuPiBox-Parent nimmt
 nur freigegebene `MuPiBoxAdminSDK`-Aufrufe an und prüft Admin-Session,
 Browser-Origin, App-ID, aktivierten Status und deklarierte Capability
-**bei jeder einzelnen Operation**.
+**bei jeder einzelnen Operation**. Statische Admin-Ressourcen werden über eine
+kurzlebige, nur lesende und auf App/Version sowie die aktive Admin-Sitzung
+beschränkte URL geladen. Der Browser muss dafür keine Admin-Cookies in die
+Sandbox übertragen. Relative Pfade (z. B. `./settings.js`) verwenden;
+keine Zugangsdaten oder privaten Nutzerdaten in Paketdateien ablegen.
+
+## Native Qt-Apps (Alpha 84)
+
+Die Verwaltungsseite ist unabhängig von der Touch-Laufzeit. Für
+`qtquick-scene` bleibt der Spiel-Einstieg eine deklarative JSON-Szene,
+während die separate HTML-Seite unter `admin/` liegt. HTML, JS und SVG
+sind ausschließlich in diesem deklarierten Admin-Unterbaum zulässig;
+WASM und freies QML bleiben verboten. Die Szene darf keine Admin-Assets
+referenzieren. Native Apps können die eigenen Einstellungen über
+`config.get` mit `storage`-Freigabe lesen, sofern ihre Spiel-Engine
+diese SDK-Methode nutzt. Schreibzugriff bleibt dem Admin vorbehalten.
+Dateirechte setzen weiterhin die vom jeweiligen Runtime-Typ erlaubten
+Shared-Verzeichnisse und ausdrücklich freigegebene Capabilities voraus.
+
+Signierte Lost-Notes-Pakete (`qtquick`) nutzen denselben Admin-Vertrag,
+bleiben aber auf den speziellen signierten Katalogpfad beschränkt.
+Der öffentliche Packer erlaubt kein freies QML.
 
 ## Minimales Manifest
 

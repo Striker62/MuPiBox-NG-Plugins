@@ -143,8 +143,6 @@ def validate_admin_settings(spec: object) -> None:
 def validate_admin_surface(surface: object, manifest: dict, files: set[str]) -> None:
     if not isinstance(surface, dict) or set(surface) - {"entry", "capabilities", "directories"}:
         raise PackageError("admin must be a declarative, capability-scoped object")
-    if manifest.get("runtime") != "web":
-        raise PackageError("admin HTML pages require web runtime")
     entry = surface.get("entry")
     if (not isinstance(entry, str) or not entry.startswith("admin/")
             or not entry.endswith(".html") or entry not in files):
@@ -219,10 +217,16 @@ def validate_manifest(data: object, files: set[str]) -> dict:
     if len(set(perms)) != len(perms) or not set(perms).issubset(ALLOWED_PERMISSIONS):
         raise PackageError("permissions contain duplicates or unsupported values")
     if data["runtime"] == "qtquick-scene":
+        if entry.startswith("admin/"):
+            raise PackageError("native scene entry cannot be an admin asset")
         if not set(perms).issubset({"storage", "audio", "controller"}) or data.get("galleryDirectories") or data.get("sharedDirectories"):
             raise PackageError("qtquick-scene supports only scoped storage, audio and controller permissions")
-        if any(PurePosixPath(name).suffix.lower() in {".html", ".htm", ".js", ".mjs", ".wasm", ".svg"} for name in files):
-            raise PackageError("qtquick-scene packages must not contain executable/active assets")
+        for name in files:
+            suffix = PurePosixPath(name).suffix.lower()
+            if suffix in {".html", ".htm", ".js", ".mjs", ".wasm", ".svg"}:
+                if suffix != ".wasm" and data.get("admin") and name.startswith("admin/"):
+                    continue
+                raise PackageError("qtquick-scene packages must not contain executable/active assets outside declared admin/")
     hosts = data.get("networkHosts")
     if "network" in perms:
         if not isinstance(hosts, list) or not hosts or len(hosts) > 20:
@@ -434,7 +438,7 @@ def validate_package(path: Path) -> dict:
             raise PackageError("manifest is not valid UTF-8 JSON") from exc
         validated = validate_manifest(manifest, names)
         if validated["runtime"] == "qtquick-scene":
-            scene = validate_qt_scene(archive.read(validated["entry"]), names, validated["permissions"], validated["id"])
+            scene = validate_qt_scene(archive.read(validated["entry"]), {name for name in names if not name.startswith("admin/")}, validated["permissions"], validated["id"])
             if scene.get("engine") == "mupi-run-v1":
                 art = json.loads(Path(__file__).with_name("runner-art-v1.json").read_text())
                 for name, size in art.items():
@@ -486,7 +490,7 @@ def pack(source: Path, destination: Path, excluded: tuple[str, ...] | list[str] 
         raise PackageError("manifest is not valid UTF-8 JSON") from exc
     validated = validate_manifest(manifest, {name for name, _ in paths})
     if validated["runtime"] == "qtquick-scene":
-        validate_qt_scene(source.joinpath(validated["entry"]).read_bytes(), {name for name, _ in paths}, validated["permissions"], validated["id"])
+        validate_qt_scene(source.joinpath(validated["entry"]).read_bytes(), {name for name, _ in paths if not name.startswith("admin/")}, validated["permissions"], validated["id"])
     destination.parent.mkdir(parents=True, exist_ok=True)
     # Deterministic entries and timestamps for reproducible builds.
     with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:

@@ -50,3 +50,20 @@ class AdminPagesManifestTests(unittest.TestCase):
 
 if __name__=="__main__":
     unittest.main()
+
+
+class NativeAdminSurfaceTests(unittest.TestCase):
+    def test_native_scope(self):
+        manifest = {"apiVersion":"1","id":"community.native-admin","name":"Native Admin",
+                    "version":"1.0.0","runtime":"qtquick-scene","entry":"scene.json",
+                    "permissions":["storage"],"admin":{"entry":"admin/index.html",
+                    "capabilities":["settings.read","settings.write"]}}
+        files = {"manifest.json","scene.json","admin/index.html","admin/app.js"}
+        self.assertEqual(validate_manifest(manifest,files)["admin"]["entry"],"admin/index.html")
+        for asset in ["evil.js","admin/evil.wasm","outside.html"]:
+            with self.assertRaises(PackageError):
+                validate_manifest(manifest, files | {asset})
+        no_admin = dict(manifest)
+        no_admin.pop("admin")
+        with self.assertRaises(PackageError):
+            validate_manifest(no_admin,files)
