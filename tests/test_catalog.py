@@ -10,7 +10,7 @@ VERSION = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$")
 TAG = re.compile(r"^v[0-9]+\.[0-9]+\.[0-9]+-preview\.[0-9]+$")
 ASSET = re.compile(r"^[a-z0-9][a-z0-9-]*\.mupiapp$")
 SHA = re.compile(r"^[0-9a-f]{64}$")
-PERMISSIONS = {"storage","controller","audio","camera","photo-save","shared-assets","links","homeassistant","device-status","playback","playback-control"}
+PERMISSIONS = {"storage","controller","audio","camera","photo-save","shared-assets","links","homeassistant","device-status","playback","playback-control","optical-media"}
 
 def validate(catalog):
     if not isinstance(catalog, dict) or set(catalog) != {"schema", "apps"} or catalog["schema"] != 1:
@@ -64,6 +64,7 @@ class CatalogTests(unittest.TestCase):
             self.assertEqual(app["permissions"], permissions, "permissions")
     def test_published_catalog(self):
         examples = {
+            "community.mupi-run-native":"mupi-run-native",
             "community.tictactoe":"tic-tac-toe",
             "community.mupi-four-in-a-row":"four-in-a-row",
             "community.mupi-kruemelwurm":"crumbworm",

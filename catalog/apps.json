@@ -288,20 +288,20 @@
       ]
     },
     {
-      "id": "community.mupi-run",
+      "id": "community.mupi-run-native",
       "name": "MuPi Run",
-      "description": "Renne als MuPi durch Flussbett, Holzsteg und Wald, sammle Noten und überwinde Hindernisse. Neuer HUD-Schriftzug sowie getrennt einstellbare, gespeicherte Lautstärke für Musik und Soundeffekte.",
+      "description": "Renne durch Wald und Flussbett, sammle goldene Noten, spring über Stämme und grätsche unter Holzstegen hindurch. Benötigt MuPiBox NG ab 0.2.0-alpha.73.",
       "category": "games",
       "author": "MuPiBox-NG Community",
-      "version": "0.8.7",
-      "releaseTag": "v0.1.0-preview.60",
-      "asset": "mupi-run.mupiapp",
-      "sha256": "e809d7397eec9257a77a3d4bb747435fd6283f615509bed281004d4bfce8cac1",
+      "version": "1.0.1",
       "permissions": [
         "storage",
         "controller",
         "audio"
       ],
+      "releaseTag": "v0.1.0-preview.66",
+      "asset": "mupi-run-native.mupiapp",
+      "sha256": "39a4485a4f708669580128539d008374ac8e2a0896ca9ff68cd4676276d6d242",
       "icon": "examples/mupi-run/cover.png"
     }
   ]

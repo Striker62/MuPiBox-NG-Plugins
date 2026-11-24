@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" role="img" aria-label="MuPi CD-Player mit glänzender Audio-CD, Noten und Abspielknopf">
+  <defs>
+    <linearGradient id="back" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#041529"/><stop offset=".4" stop-color="#05344e"/><stop offset=".75" stop-color="#07172a"/><stop offset="1" stop-color="#04121e"/></linearGradient>
+    <radialGradient id="tealGlow"><stop stop-color="#02e8ef" stop-opacity=".58"/><stop offset="1" stop-color="#02e8ef" stop-opacity="0"/></radialGradient>
+    <radialGradient id="goldGlow"><stop stop-color="#ffc84a" stop-opacity=".4"/><stop offset="1" stop-color="#ffc84a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="disc" cx=".31" cy=".26" r=".88"><stop offset="0" stop-color="#fafffb"/><stop offset=".13" stop-color="#50e8f8"/><stop offset=".27" stop-color="#b5b8f7"/><stop offset=".38" stop-color="#fde4b7"/><stop offset=".54" stop-color="#74ebdd"/><stop offset=".67" stop-color="#e2b2ef"/><stop offset=".79" stop-color="#5e87dc"/><stop offset=".91" stop-color="#f8edc9"/><stop offset="1" stop-color="#9fdcf0"/></radialGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset=".2" stop-color="#b1d2dd"/><stop offset=".48" stop-color="#fff8e1"/><stop offset=".75" stop-color="#4c829e"/><stop offset="1" stop-color="#c1eafa"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff0b7"/><stop offset=".5" stop-color="#ffcc52"/><stop offset="1" stop-color="#bd8312"/></linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c9faff"/><stop offset=".36" stop-color="#ffe490"/><stop offset=".65" stop-color="#d4a4fa"/><stop offset="1" stop-color="#00dae4"/></linearGradient>
+    <filter id="shadow" x="-50%" y="-60%" width="200%" height="220%"><feGaussianBlur stdDeviation="12"/></filter>
+    <filter id="spark" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="5"/></filter>
+    <clipPath id="cdclip"><ellipse cx="256" cy="260" rx="198" ry="160" transform="rotate(-16 256 260)"/></clipPath>
+  </defs>
+  <rect width="512" height="512" fill="url(#back)"/>
+  <ellipse cx="90" cy="290" rx="180" ry="200" fill="url(#tealGlow)"/>
+  <ellipse cx="430" cy="230" rx="185" ry="180" fill="url(#goldGlow)"/>
+  <path d="M-20 184 C126 120 224 290 533 123 M-20 204 C126 140 224 310 533 143 M-20 225 C126 160 224 330 533 164" fill="none" stroke="#12cbdc" stroke-width="3" opacity=".45"/>
+  <path d="M-18 373 C200 307 335 470 538 356 M-18 390 C200 324 335 487 538 373" fill="none" stroke="#ffcf66" stroke-width="3" opacity=".5"/>
+  <text x="256" y="55" fill="#082235" stroke="#082235" stroke-width="5" paint-order="stroke" text-anchor="middle" font-size="50" font-weight="850" font-family="DejaVu Sans, sans-serif">MuPi <tspan fill="url(#gold)">CD-Player</tspan></text>
+  <text x="256" y="55" fill="#ffffff" text-anchor="middle" font-size="50" font-weight="850" font-family="DejaVu Sans, sans-serif" opacity=".06">MuPi</text>
+  <ellipse cx="271" cy="293" rx="199" ry="158" transform="rotate(-16 271 293)" fill="#010b16" opacity=".8" filter="url(#shadow)"/>
+  <ellipse cx="256" cy="260" rx="203" ry="165" transform="rotate(-16 256 260)" fill="url(#edge)" stroke="#d6f5fe" stroke-width="5"/>
+  <ellipse cx="256" cy="260" rx="193" ry="155" transform="rotate(-16 256 260)" fill="url(#disc)" stroke="#316f91" stroke-width="3"/>
+  <g clip-path="url(#cdclip)" opacity=".52">
+    <path d="M45 350 L490 163" stroke="#ffffc6" stroke-width="31"/><path d="M42 385 L510 206" stroke="#27e5ff" stroke-width="20"/><path d="M36 265 L458 370" stroke="#d554fa" stroke-width="17"/><path d="M67 146 L466 443" stroke="#0bebcc" stroke-width="18"/><path d="M26 335 L474 91" stroke="#ffcf47" stroke-width="15"/>
+  </g>
+  <g transform="rotate(-16 256 260)">
+    <ellipse cx="256" cy="260" rx="181" ry="146" fill="none" stroke="#eefbfa" stroke-width="1" opacity=".65"/>
+    <ellipse cx="256" cy="260" rx="147" ry="117" fill="none" stroke="#174968" stroke-width="2" opacity=".45"/>
+    <ellipse cx="256" cy="260" rx="113" ry="88" fill="none" stroke="#fffce6" stroke-width="2" opacity=".52"/>
+    <ellipse cx="256" cy="260" rx="73" ry="59" fill="url(#metal)" stroke="#22608c" stroke-width="5"/>
+    <ellipse cx="256" cy="260" rx="49" ry="39" fill="none" stroke="#eaf7ff" stroke-width="4"/>
+    <ellipse cx="256" cy="260" rx="24" ry="21" fill="#04182a" stroke="#edfbff" stroke-width="6"/>
+  </g>
+  <path d="M408 145v50a19 13 0 1 1-6-9v-47l28-7v43a19 13 0 1 1-6-9v-46z" fill="url(#gold)" stroke="#fff2ac" stroke-width="2"/>
+  <circle cx="403" cy="149" r="23" fill="#fff9b3" opacity=".53" filter="url(#spark)"/>
+  <path d="M401 122v49 M376 146h49" stroke="#fff5c4" stroke-width="3" stroke-linecap="round" opacity=".85"/>
+  <g fill="none" stroke="#f9d278" stroke-width="5" stroke-linecap="round"><path d="M68 158q-24-10-9-32t19 2v53c-4 37-37 43-32 15 4-20 27-16 22 1"/></g>
+  <rect x="12" y="427" width="488" height="74" rx="28" fill="#03152b" opacity=".78"/>
+  <path d="M58 464l23-14v28z M82 450v28 M423 450v28 M429 450l23 14-23 14z" fill="#eafaff"/>
+  <circle cx="256" cy="466" r="36" fill="#ffce5b" opacity=".4" filter="url(#spark)"/>
+  <circle cx="256" cy="462" r="34" fill="#08223b" stroke="url(#gold)" stroke-width="6"/>
+  <path d="M244 442l34 20-34 20z" fill="#fff9e6" stroke="#ffc65f" stroke-width="2"/>
+  <rect x="461" y="451" width="17" height="17" rx="3" fill="#eafaff"/>
+  <path d="M0 509h512" stroke="#02cbdf" stroke-width="6" opacity=".7"/>
+</svg>

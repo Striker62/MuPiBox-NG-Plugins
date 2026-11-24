@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "kind": "meters",
+      "x": 326,
+      "y": 9,
+      "width": 120,
+      "height": 48,
+      "background": "#e6182e28",
+      "border": "#9ce9daa3",
+      "valueColor": "#ffffff",
+      "labelColor": "#aaf4df",
+      "accentColor": "#ffd268",
+      "valueSize": 24,
+      "labelSize": 10
+    },
+    {
+      "kind": "notes",
+      "x": 453,
+      "y": 9,
+      "width": 85,
+      "height": 48,
+      "background": "#e6182e28",
+      "border": "#9ce9daa3",
+      "valueColor": "#ffffff",
+      "labelColor": "#aaf4df",
+      "accentColor": "#ffd268",
+      "valueSize": 24,
+      "labelSize": 10
+    },
+    {
+      "kind": "record",
+      "x": 545,
+      "y": 9,
+      "width": 115,
+      "height": 48,
+      "background": "#e6182e28",
+      "border": "#9ce9daa3",
+      "valueColor": "#ffdc7d",
+      "labelColor": "#eaf8ff",
+      "accentColor": "#ffd268",
+      "valueSize": 18,
+      "labelSize": 10
+    }
+  ]
+}

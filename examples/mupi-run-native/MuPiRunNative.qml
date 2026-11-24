@@ -61,6 +61,14 @@ Item {
     property var timestamps: []
     property double startWallMs: 0
     property int best: 0
+    // Default native layout for legacy packages without runner-hud.json.
+    // New packages may override ONLY the validated positions and styling.
+    property string hudSource: "built-in"
+    property var hudCards: [
+        {kind:"meters",x:326,y:9,width:120,height:48,background:"#e6182e28",border:"#9ce9daa3",valueColor:"#ffffff",labelColor:"#aaf4df",accentColor:"#ffd268",valueSize:24,labelSize:10},
+        {kind:"notes",x:453,y:9,width:85,height:48,background:"#e6182e28",border:"#9ce9daa3",valueColor:"#ffffff",labelColor:"#aaf4df",accentColor:"#ffd268",valueSize:24,labelSize:10},
+        {kind:"record",x:545,y:9,width:115,height:48,background:"#e6182e28",border:"#9ce9daa3",valueColor:"#ffdc7d",labelColor:"#eaf8ff",accentColor:"#ffd268",valueSize:18,labelSize:10}
+    ]
     property int overCount: 0
     property string loadError: ""
     property int loadedImages: 0
@@ -321,7 +329,10 @@ Item {
                     height:worldItem.height*(worldItem.wings?3:1)
                     x:worldItem.obj?-worldItem.obj.frame*worldItem.width:0
                     y:worldItem.obj?-worldItem.obj.row*worldItem.height:0
-                    source:worldItem.obj && !worldItem.rope ? gameView.art(worldItem.obj.source):""
+                    source: {
+                        const object = worldItem.obj
+                        return object && object.source !== "rope" ? gameView.art(object.source) : ""
+                    }
                     fillMode:Image.Stretch
                     cache:true
                 }
@@ -366,13 +377,83 @@ Item {
                 else gameView.act(dy>25?"duck":"jump")
             }
         }
-        Rectangle {z:201;x:16;y:12;width:289;height:55;radius:12;color:'#80203951';border.color:'#88cddd'}
-        Image { z:202;x:20;y:14;width:72;height:52;source:gameView.art("title");fillMode:Image.PreserveAspectFit }
-        Text {
-            z:202;x:102;y:18;width:202;height:42
-            text: {var frame=gameView.renderVersion;return Math.floor(gameView.state.distance)+' m   ♫ '+gameView.state.noteCount+'   ★ '+gameView.best}
-            color:gameView.collected?'#ffca46':'#fff4d2';font.pixelSize:19;font.bold:true
-            verticalAlignment:Text.AlignVCenter
+        // Web HUD layout: three independent, legible counters in the top row.
+        // Keep the top-left space free for NG's trusted Back button.
+        Image {
+            z:202; x:70; y:0; width:136; height:66
+            visible:gameView.phase==='running'
+            source:gameView.art("title")
+            fillMode:Image.PreserveAspectFit
+        }
+        Repeater {
+            model:gameView.hudCards
+            delegate:Rectangle {
+                required property var modelData
+                readonly property string cardKind: modelData.kind
+                objectName:"run-hud-"+cardKind
+                z:202
+                x:modelData.x; y:modelData.y
+                width:modelData.width; height:modelData.height
+                visible:gameView.phase==="running"
+                radius:12
+                color:cardKind==="notes" && gameView.collected ? "#ee4c4828" : modelData.background
+                border.color:cardKind==="notes" && gameView.collected ? modelData.accentColor : modelData.border
+                border.width:1
+                Item {
+                    anchors.centerIn:parent
+                    width:parent.width-12; height:42
+                    visible:cardKind!=="notes"
+                    Text {
+                        width:parent.width
+                        y:cardKind==="meters" ? 0 : 18
+                        height:24
+                        horizontalAlignment:Text.AlignHCenter
+                        verticalAlignment:Text.AlignVCenter
+                        textFormat:Text.PlainText
+                        text:{
+                            const tick=gameView.renderVersion
+                            return cardKind==="meters" ? String(Math.floor(gameView.state.distance)) : String(gameView.best)+" m"
+                        }
+                        font.pixelSize:modelData.valueSize; font.bold:true
+                        fontSizeMode:Text.Fit;minimumPixelSize:12
+                        color:modelData.valueColor
+                    }
+                    Text {
+                        width:parent.width
+                        y:cardKind==="meters" ? 27 : 0
+                        height:14
+                        horizontalAlignment:Text.AlignHCenter
+                        verticalAlignment:Text.AlignVCenter
+                        textFormat:Text.PlainText
+                        text:cardKind==="meters" ? gameView.tr("meters").toUpperCase() : gameView.tr("best").toUpperCase()
+                        font.pixelSize:modelData.labelSize;font.bold:true
+                        color:modelData.labelColor
+                    }
+                }
+                Row {
+                    anchors.centerIn:parent
+                    spacing:5
+                    visible:cardKind==="notes"
+                    Text {
+                        text:"♫";textFormat:Text.PlainText
+                        font.pixelSize:27;font.bold:true
+                        color:modelData.accentColor
+                    }
+                    Text {
+                        width:Math.max(34,Math.min(48,modelData.width-44))
+                        height:32
+                        textFormat:Text.PlainText
+                        verticalAlignment:Text.AlignVCenter
+                        text:{
+                            const tick=gameView.renderVersion
+                            return String(gameView.state.noteCount)
+                        }
+                        font.pixelSize:modelData.valueSize;font.bold:true
+                        fontSizeMode:Text.Fit;minimumPixelSize:12
+                        color:modelData.valueColor
+                    }
+                }
+            }
         }
         Text {
             z:202; anchors.horizontalCenter:parent.horizontalCenter; y:80
@@ -380,7 +461,8 @@ Item {
             color:"#fff0af";style:Text.Outline;styleColor:"#47331c";font.bold:true;font.pixelSize:22
         }
         Rectangle {
-            z:202;x:720;y:13;width:60;height:48;radius:12;color:'#99305064';border.color:'#c6e8ff'
+            z:202;x:720;y:77;width:60;height:48;radius:12;color:'#99305064';border.color:'#c6e8ff'
+            visible:gameView.phase==='running'
             Text {anchors.centerIn:parent;text:'Ⅱ';color:'white';font.pixelSize:28}
             MouseArea {anchors.fill:parent;onClicked:gameView.act('pause')}
         }
@@ -441,12 +523,8 @@ Item {
                 MouseArea {anchors.fill:parent;onClicked:gameView.phase==='over'?gameView.restart():gameView.act(gameView.phase==='ready'?'start':'pause')}
             }
         }
-        Rectangle {
-            z:206;x:gameView.phase==="running"?600:12;y:gameView.phase==="running"?13:411;width:108;height:gameView.phase==="running"?48:55;radius:12;color:"#cf19364e"
-            visible:!gameView.autoPilot
-            Text {anchors.centerIn:parent;text:gameView.localLabel(0);color:"white";font.pixelSize:21}
-            MouseArea {anchors.fill:parent;onClicked:gameView.leave()}
-        }
+        // The trusted NG shell owns the only visible Back button.
+        // Do not add another game-level exit control over the score or menu.
         Rectangle {
             z:206;x:626;y:411;width:162;height:55;radius:12;color:"#cf19364e"
             visible:!!gameView.host && gameView.phase!=="running"

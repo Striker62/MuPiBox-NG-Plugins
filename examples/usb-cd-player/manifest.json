@@ -1,0 +1,25 @@
+{
+  "apiVersion": "1",
+  "id": "community.usb-cd-player",
+  "name": "MuPi CD-Player",
+  "version": "0.2.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "description": "USB-Audio-CDs lokal abspielen, CD-Infos auf Wunsch online nachschlagen.",
+  "author": "MuPiBox Community",
+  "icon": "icon.svg",
+  "category": "tools",
+  "permissions": [
+    "optical-media"
+  ],
+  "display": {
+    "orientation": "landscape",
+    "minWidth": 480,
+    "minHeight": 320,
+    "showBackButton": false,
+    "showSystemInfo": true,
+    "fullScreen": false,
+    "background": "app"
+  },
+  "cover": "cover.png"
+}

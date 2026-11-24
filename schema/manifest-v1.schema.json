@@ -71,10 +71,11 @@
           "homeassistant",
           "device-status",
           "playback",
-          "playback-control"
+          "playback-control",
+          "optical-media"
         ]
       },
-      "maxItems": 12
+      "maxItems": 13
     },
     "networkHosts": {
       "type": "array",

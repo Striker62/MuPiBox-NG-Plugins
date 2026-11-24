@@ -402,6 +402,53 @@
     }
   });
 
+  // Host-side CDDA playback. App code never receives raw device handles.
+  // Online metadata is requested only on an explicit user click.
+  function checkOpticalDevice(device) {
+    if (typeof device !== 'string' || !/^sr(?:0|[1-9][0-9]?)$/.test(device))
+      throw new TypeError('invalid USB CD device ID');
+  }
+  function checkOpticalDisc(discId) {
+    if (typeof discId !== 'string' || !/^[A-Za-z0-9._-]{28}$/.test(discId))
+      throw new TypeError('invalid audio CD identifier');
+  }
+  const optical = Object.freeze({
+    async list() {
+      const result = await invoke('optical.list', {});
+      return Array.isArray(result?.devices) ? result.devices : [];
+    },
+    async disc(device) { checkOpticalDevice(device); return invoke('optical.disc', {device}); },
+    async play(device, track = 0, discId) {
+      checkOpticalDevice(device); checkOpticalDisc(discId);
+      if (!Number.isSafeInteger(track) || track < 0 || track > 99)
+        throw new TypeError('CD track must be 0..99');
+      return invoke('optical.play', {device, track, discId});
+    },
+    async status() { return invoke('optical.status', {}); },
+    async transport(action, device, discId) {
+      if (!['toggle', 'next', 'previous', 'stop'].includes(action))
+        throw new TypeError('invalid CD transport action');
+      checkOpticalDevice(device); checkOpticalDisc(discId);
+      return invoke('optical.transport', {action, device, discId});
+    },
+    async seek(device, discId, position) {
+      checkOpticalDevice(device); checkOpticalDisc(discId);
+      if (typeof position !== 'number' || !Number.isFinite(position) || position < 0 || position > 25200)
+        throw new TypeError('CD position out of range');
+      return invoke('optical.seek', {device, discId, position});
+    },
+    async metadata(device, discId) {
+      checkOpticalDevice(device); checkOpticalDisc(discId);
+      return invoke('optical.metadata', {device, discId});
+    },
+    async drive(device, action) {
+      checkOpticalDevice(device);
+      if (!['eject', 'close', 'spindown'].includes(action))
+        throw new TypeError('invalid CD drive action');
+      return invoke('optical.drive', {device, action});
+    }
+  });
+
   const sdk = Object.freeze({
     apiVersion: '1',
     sdkRevision: '1.1',
@@ -417,6 +464,7 @@
     homeassistant,
     device,
     playback,
+    optical,
     async capabilities() {
       if (bridge) return invoke('host.capabilities', {});
       return {apiVersion: '1', sdkRevision: '1.1', methods: [], preview: true};
