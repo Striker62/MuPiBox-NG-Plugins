@@ -6,6 +6,10 @@ Dieses öffentliche Repository enthält einen **Entwurf der App-API v1**, ein SD
 
 > **Status: Developer Preview.** Seit **MuPiBox-NG 0.2.0-alpha.18** steht der webbasierte Plugin-Manager im Adminbereich zur Verfügung. Installation und isolierter Browser-Test von `.mupiapp`-Paketen sind möglich. Native Qt-Touch-Apps und der offizielle, geprüfte App-Katalog sind inzwischen verfügbar. Vollständiger Audiofokus und unabhängige Publisher-Signaturen fehlen weiterhin; ältere NG-Versionen haben keinen Plugin-Manager.
 
+## MuPi und die verlorenen Noten
+
+Im musikalischen Jump-and-Run sammelt MuPi Noten und öffnet im Klangwald Brücken mit kurzen Melodien. Seit **MuPiBox NG Alpha 84** gibt es das Spiel ausschließlich im Community Store. [Gegner, Klangwelle und Screenshots aus dem Spiel](examples/lost-notes/README.md)
+
 ## MuPi Water Battle (Spielekatalog, November 2026)
 
 Eine kindgerechte, eigenständige Flottensuche-App für das 5-Zoll-Touchdisplay: **Quick 8×8 (2 Boote), Classic 10×10 (5 Boote), Max 12×12 (7 Boote)**, drei KI-Stufen, orangefarbener MuPi, Offline-Spiel und Sound. Die geprüfte Version **0.2.5** enthält das neue drei-Kiemenäste-Cover, einen eine Sekunde langen Treffer-Ruckler sowie getrennte Musik- und Effektlautstärke. Das gleiche Cover erscheint im Spiele-Coverflow und im Admin-Katalog (mit NG-Cover-Sync).
@@ -186,7 +190,7 @@ Siehe [CONTRIBUTING.md](CONTRIBUTING.md) und [SECURITY.md](SECURITY.md). Dieses 
 
 ## Erste bestehende App als Plugin-Prototyp: Klang-Memory
 
-Eine unabhängige Klang-Memory-Testversion liegt in `examples/klang-memory/`. Sie lässt sich mit `python3 tools/build_klang_memory.py` als `.mupiapp` verpacken. Die Browser-Version **ersetzt nicht** die bisherigen QML-Apps (Klang-Memory, Piano, Malbuch oder Cover-Memory). **MuPi und die verlorenen Noten bleibt im NG-Kern.** Vollständiger Audiofokus bleibt in Entwicklung; die native Qt-Touch-Laufzeit steht inzwischen zur Verfügung.
+Eine unabhängige Klang-Memory-Testversion liegt in `examples/klang-memory/`. Sie lässt sich mit `python3 tools/build_klang_memory.py` als `.mupiapp` verpacken. Die Browser-Version **ersetzt nicht** die bisherigen QML-Apps (Klang-Memory, Piano, Malbuch oder Cover-Memory). Vollständiger Audiofokus bleibt in Entwicklung; die native Qt-Touch-Laufzeit steht inzwischen zur Verfügung.
 
 ## Entwickleranleitungen und Beiträge
 
@@ -194,7 +198,7 @@ Eine unabhängige Klang-Memory-Testversion liegt in `examples/klang-memory/`. Si
 - [AI coding instructions (Claude, ChatGPT, Codex, etc.)](ai.md)
 - [Contributing](CONTRIBUTING.md)
 
-Webbasierter Plugin-Manager ab **[MuPiBox-NG 0.2.0-alpha.18](https://releases.mupibox.de/releases/0.2.0-alpha.18/release-notes.txt)**. MuPi und die verlorenen Noten bleibt im NG-Kern.
+Webbasierter Plugin-Manager ab **[MuPiBox-NG 0.2.0-alpha.18](https://releases.mupibox.de/releases/0.2.0-alpha.18/release-notes.txt)**.
 
 ## Offizieller App-Katalog
 
