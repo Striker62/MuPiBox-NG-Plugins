@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_PERMISSIONS = {
     "storage", "controller", "audio", "camera", "photo-save",
     "shared-assets", "network", "links", "homeassistant",
-    "device-status", "playback", "playback-control",
+    "device-status", "playback", "playback-control", "optical-media",
 }
 
 class SDKContractTests(unittest.TestCase):

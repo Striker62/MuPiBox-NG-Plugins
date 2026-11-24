@@ -129,3 +129,39 @@ Weitere API-Funktionen sind möglich, aber **nicht automatisch freigegeben**:
 Jede neue Funktion braucht ein eindeutiges Permission-Modell, Input-/Output-
 Beschränkungen, Tests, Fehlerbehandlung, Dokumentation und eine Prüfung,
 ob Elternschutz sowie Ressourcenlimits eingehalten werden.
+
+### USB Audio-CD an Linux-Boxen (optical-media, nur lokale Touch-Sitzung)
+
+Die App benötigt die ausdrückliche `optical-media`-Berechtigung. Der Host
+öffnet ausschließlich verifizierte USB-CD-Geräte mit IDs `sr0` … `sr99`,
+während das SDK keine Linux-Gerätehandles, Audio-Samples, Netzwerkberechtigung
+oder Authentifizierungsdaten erhält.
+
+| Methode | Bedeutung |
+| --- | --- |
+| `optical.list()` | USB-Laufwerke `[{id,name,status}]`, Status `ready`, `tray-open`, `empty` u.a. |
+| `optical.disc(device)` | `{device,first,last,tracks,discId,trackList:[{number,start,duration}]}`; TOC in Sekunden |
+| `optical.play(device,track,discId)` | Lokal starten (Track 0 = erster), erwartete CD-ID ist Pflicht |
+| `optical.status()` | `{active,device,state,track,tracks,position,duration,volume}` oder `{active:false}` |
+| `optical.transport(action,device,discId)` | `toggle`, `next`, `previous`, `stop` (nur ausgewähltes Gerät) |
+| `optical.seek(device,discId,position)` | In Sekunden innerhalb des laufenden CD-Tracks springen; mpv-Hardwareabnahme offen |
+| `optical.drive(device,action)` | `eject`, `close`, `spindown` (einzelnes Laufwerk) |
+| `optical.metadata(device,discId)` | Optionaler Host-Lookup: Album/Interpret/Titelnamen/CoverData, **nur auf bewusste Nutzeraktion** |
+
+`discId` ist die 28 Zeichen lange MusicBrainz-Disc-ID aus den TOC-Sektoren.
+Sie schützt auch vor vertauschten CDs mit gleicher Titelanzahl. Der Host
+prüft sie bei jedem Play-/Next-/Seek-Aufruf erneut; bei Austausch stoppt
+er die alte CD-Wiedergabe. `optical.status().track` ist die 1-basierte
+Position in der aktuellen CD-Audio-Queue, nicht zwingend die CD-Titelnummer.
+
+Der Online-Lookup erfolgt nur über die HTTPS-Fixhosts `musicbrainz.org`,
+`coverartarchive.org` sowie Art-Archiv-Unterdomains. Er benötigt keine
+Netzwerkberechtigung der App. Requests, Redirects, IP-Ziele, Format,
+Covergröße, Cache, Timeouts und Rate sind begrenzt; kein Audio oder Token
+wird übertragen. Offline funktionieren CD-Wiedergabe und Track-Längen
+weiter. Alle Methoden sind nur mit **lokal genehmigter Touch-Sitzung**
+verfügbar – keine Admin-Vorschau und kein generisches Systemproxy.
+
+**Noch nicht als Hardware-abgenommen markieren:** Hotplug/USB-Reset,
+mpv-CDDA-Seek-Positionssemantik, Disc-Extra-Medien und Laufwerkstrays
+sind ohne physische CD/Laufwerk auf Pi 4/5 nur softwareseitig getestet.

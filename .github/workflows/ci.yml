@@ -81,6 +81,13 @@ jobs:
         run: python3 tools/build_klang_memory.py
       - name: Build USB webcam preview
         run: python3 tools/build_webcam_example.py
+      - name: Build USB Audio CD Player candidate
+        run: |
+          node --check examples/usb-cd-player/app.js
+          node --test tests/usb_cd_player.test.cjs
+          node --check examples/usb-cd-player/mupibox-sdk.js
+          python3 tools/mupiapp.py pack examples/usb-cd-player dist/usb-cd-player.mupiapp --exclude README.md --exclude cover-art.svg
+          python3 tools/mupiapp.py validate dist/usb-cd-player.mupiapp
       - name: Verify package
         run: |
           python3 tools/mupiapp.py validate dist/mupi-kreuz-kreis.mupiapp
@@ -112,6 +119,7 @@ jobs:
             dist/mupi-wasserschlacht.mupiapp
             dist/klang-memory.mupiapp
             dist/webcam-preview.mupiapp
+            dist/usb-cd-player.mupiapp
             dist/fotospass.mupiapp
             dist/admin-settings-demo.mupiapp
             dist/funny-mupi.mupiapp
