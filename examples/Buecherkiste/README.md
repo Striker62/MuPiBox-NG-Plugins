@@ -2,6 +2,37 @@
 
 Mit der Bücherkiste können Kinder Bilderbücher auswählen, durchblättern, vergrößern und vorlesen lassen. Die App bringt **Ole und der verschwundene Knopf** (16 Bildseiten) und **Henne und Adler** (10 Bild- und Textseiten plus eine Urheberseite) mit. Eigene Bücher erscheinen zusätzlich im Regal.
 
+
+## Neu: Bücher direkt in der MuPiBox-Administration verwalten (1.1.0)
+
+Die Bücherkiste liefert optional eine **eigene Admin-Webseite**
+`admin/index.html` mit. Nach dem Update des NG-Hosts (Admin-Page-Feature)
+erscheint in der Karte der installierten App die Schaltfläche
+**Verwaltung öffnen**. Die vorhandene MuPiBox-Admin-Sitzung reicht
+vollkommen aus – es gibt **keine zweite Anmeldung**.
+
+Dort können eigene Bücher erstellt und bearbeitet, Titel und Seitenlayouts
+geändert, Bildseiten hochgeladen, Vorschaubilder geladen und Vorlesetexte
+erfasst werden. Eigene Bücher können mit Bestätigung in einen geschützten
+Papierkorb verschoben werden. Die Leseansicht für Kinder bekommt
+**keine** dieser Schreibrechte.
+
+Die Verwaltungsseite verwaltet ausschließlich den bereits vorhandenen
+eigenen SMB-Bücherbereich und verwendet
+`MuPiBoxAdminSDK.files.*`. Vorhandene eigene Bücher und die
+mitgelieferten Standardbücher bleiben erhalten. Bilder werden beim
+Upload lokal im Browser nach JPEG konvertiert. Die App schreibt
+`books/<buch-id>/book.json`, `images/01.jpg`, `tts/pages.json` und
+ggf. `text/pages.json`. Im Admin nicht möglich: geschützte
+Originalbuch-Dateien aus dem App-Paket bearbeiten oder Dateien
+außerhalb des Bücherordners lesen.
+
+**Abhängigkeit:** Diese Funktion setzt die neue NG-Host-Admin-Bridge
+voraus. Auf alten Box-Versionen lässt sich das neue Paket mit `admin`
+nicht installieren. Die vollständige SDK-Dokumentation:
+`docs/admin-pages-ai-guide.de.md` im Plugin-Repository.
+
+
 ## Installation und Bedienung
 
 Installiere das `.mupiapp`-Paket in der Community-App-Verwaltung. Erlaube **SMB-Inhalte** (`shared-assets`) für eigene Bücher und **Audio** für das Vorlesen. Öffne die Bücherkiste am Touchscreen. Mit **Regal** kommst du aus dem Buch zurück zur Bücherauswahl. Der Pfeil im Regal führt zurück zur MuPiBox.

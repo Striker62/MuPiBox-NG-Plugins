@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bücherkiste verwalten</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<header><div><h1>Bücherkiste · Verwaltung</h1><p>Eigene Bücher anlegen, bearbeiten und mit Bildern ergänzen.</p></div>
+<button id="reload" type="button">Aktualisieren</button></header>
+<p id="state" role="status" aria-live="polite">Bücher werden geladen …</p>
+<div class="layout">
+<aside><h2>Meine Bücher</h2><div id="book-list" role="list"></div>
+<button id="create" type="button">+ Neues Buch</button></aside>
+<section id="editor" hidden>
+<h2 id="heading">Buch bearbeiten</h2>
+<label>Titel<input id="title" type="text" maxlength="300" required></label>
+<label>Ordnerkennung <input id="slug" type="text" pattern="[A-Za-z0-9_-]{1,80}" maxlength="80" required></label>
+<label>Darstellung<select id="layout"><option value="full-page">Bildseite</option>
+<option value="image-and-text">Bild und Text</option></select></label>
+<div class="actions"><button id="save" type="button" class="primary">Buch speichern</button>
+<button id="trash" type="button" class="danger">Buch in Papierkorb</button></div>
+<h3>Seitenbilder</h3>
+<p class="note">Bilder werden lokal in JPEG-Seiten umgewandelt (maximal 2048 px Kantenlänge) und im app-eigenen Buchordner gespeichert.</p>
+<div id="pages" class="pages"></div>
+<label>Neue Bilder hinzufügen <input id="uploads" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></label>
+<button id="upload" type="button">Ausgewählte Bilder hinzufügen</button>
+<h3>Vorlesetexte</h3><p class="note">Ein Textfeld pro Seite. Über „Texte speichern“ wird die Lesedatei aktualisiert.</p>
+<div id="texts"></div><button id="save-texts" type="button">Texte speichern</button>
+</section>
+<section id="empty"><h2>Buch auswählen</h2><p>Links ein Buch auswählen oder ein neues Buch erstellen.</p></section>
+</div></main><script src="app.js"></script></body></html>
