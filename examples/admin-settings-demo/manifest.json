@@ -1,0 +1,62 @@
+{
+  "apiVersion": "1",
+  "id": "community.admin-settings-demo",
+  "name": "Einstellungen Demo",
+  "description": "Zeigt app-spezifische Admin-Einstellungen ohne zusätzlichen Login.",
+  "author": "MuPiBox Community",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "permissions": [
+    "storage"
+  ],
+  "category": "tools",
+  "adminSettings": {
+    "title": "Demo · App-Einstellungen",
+    "description": "Diese Felder erscheinen im MuPiBox-Adminbereich der installierten App.",
+    "fields": [
+      {
+        "key": "enabled",
+        "label": "Funktion aktivieren",
+        "type": "boolean",
+        "default": true,
+        "group": "Allgemein",
+        "help": "Schaltet die Anzeige im Beispiel an oder aus."
+      },
+      {
+        "key": "greeting",
+        "label": "Begrüßung",
+        "type": "string",
+        "default": "Hallo von MuPi!",
+        "group": "Allgemein",
+        "maxLength": 80
+      },
+      {
+        "key": "repeat",
+        "label": "Wiederholungen",
+        "type": "integer",
+        "default": 2,
+        "group": "Wiedergabe",
+        "min": 1,
+        "max": 5
+      },
+      {
+        "key": "mode",
+        "label": "Darstellung",
+        "type": "select",
+        "default": "normal",
+        "group": "Darstellung",
+        "options": [
+          {
+            "value": "normal",
+            "label": "Normal"
+          },
+          {
+            "value": "compact",
+            "label": "Kompakt"
+          }
+        ]
+      }
+    ]
+  }
+}

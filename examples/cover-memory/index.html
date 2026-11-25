@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cover-Memory</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<header><h1>Memory</h1><p id="stats" aria-live="polite"></p><button id="shuffle" type="button">Neu mischen</button></header>
+<nav aria-label="Spielmodus"><button data-mode="covers">Eigene Cover</button><button data-mode="classic">Klassisch</button><span class="spacer"></span><button data-pairs="4">4</button><button data-pairs="6">6</button><button data-pairs="8">8</button></nav>
+<nav id="themes" aria-label="Motive"><button data-theme="mixed">Gemischt</button><button data-theme="shapes">Formen</button><button data-theme="animals">Tiere</button><button data-theme="numbers">Zahlen</button></nav>
+<p id="status" role="status"></p><section id="board" aria-label="Spielfeld"></section>
+</main><script src="mupibox-sdk.js"></script><script src="engine.js"></script><script src="app.js"></script></body></html>

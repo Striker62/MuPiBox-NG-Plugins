@@ -165,3 +165,24 @@ verfügbar – keine Admin-Vorschau und kein generisches Systemproxy.
 **Noch nicht als Hardware-abgenommen markieren:** Hotplug/USB-Reset,
 mpv-CDDA-Seek-Positionssemantik, Disc-Extra-Medien und Laufwerkstrays
 sind ohne physische CD/Laufwerk auf Pi 4/5 nur softwareseitig getestet.
+
+### Lokale Cover-Vorschaubilder (cover-art)
+
+`await MuPiBoxSDK.covers.sample()` liefert bis zu acht zufällig gewählte,
+auf 160 × 160 Pixel verkleinerte JPEG-Data-URLs für Memory-Spiele.
+Nur mit ausdrücklich erteilter Berechtigung `cover-art` und aktiver lokaler
+Touch-Sitzung. Kein Netzwerkzugriff, keine Pfade, Titel, Dateinamen oder
+Originaldateien. Unterstützt lokal vorhandene JPEG-, PNG- und GIF-Bilder
+innerhalb der Größenlimits; andere Formate werden übersprungen.
+Browser-Vorschau liefert eine leere Liste; ältere Hosts oder entzogene
+Berechtigungen können den Aufruf ablehnen. Apps müssen klassisches Offline-Spiel
+als Rückfall anbieten und sollen Bilder nur für die aktuelle Runde im RAM halten.
+
+### Lokale Ausmalbilder (coloring-pages)
+
+Nur mit ausdrücklich erteilter Berechtigung und aktiver lokaler Touch-Sitzung:
+`sdk.coloring.list()` liefert bis zu 128 Bild-IDs und Titel aus dem bereits
+vorhandenen lokalen Ausmalbilder-Ordner. `sdk.coloring.get(id)` liefert eine
+transparente PNG-Kontur als Data-URL, höchstens 1024 × 768 Pixel. Kein
+Schreibzugriff, keine beliebigen Pfade und keine Netzwerkfreigabe. Apps müssen
+auch ohne diese optionale Funktion freies Malen anbieten.

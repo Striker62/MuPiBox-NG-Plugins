@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "app": {
+    "id": "official.mupi-lost-notes",
+    "name": "MuPi und die verlorenen Noten",
+    "description": "MuPis musikalisches Jump-and-Run",
+    "category": "games",
+    "author": "MuPiBox",
+    "version": "0.1.0-alpha.10",
+    "permissions": [
+      "controller",
+      "audio",
+      "storage"
+    ],
+    "releaseTag": "v0.1.0-alpha.10",
+    "asset": "lost-notes.mupiapp",
+    "sha256": "594a21db2ba076744d26cc959bd5b36f3afa759843c7fce431f85deb1e4e4f61",
+    "icon": "examples/lost-notes/cover.jpg"
+  },
+  "signature": "nR0eWlB1zvH3snzg/FIn5lsxLrmH/IJVkhNGIpi4nripbGfWqTR/bTg8e3+jV6DmJ9soumQXHEOGaldfU30LBA=="
+}

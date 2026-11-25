@@ -87,6 +87,16 @@ test('canonical SDK calls exactly the reviewed bridge method contract', () => {
   assert.deepEqual([...new Set(invoked)].sort(), expected.methods);
   assert.equal(expected.apiVersion, '1');
 });
+
+test('app can only read its own admin-managed settings via scoped config.get', async () => {
+  const {sdk, calls} = loadSDK();
+  assert.equal(Object.isFrozen(sdk.config), true);
+  assert.deepEqual(JSON.parse(JSON.stringify(await sdk.config.get())), {});
+  assert.deepEqual(JSON.parse(JSON.stringify(calls)), [{method:'config.get', payload:{}}]);
+  assert.deepEqual(JSON.parse(JSON.stringify(await loadSDK(false).sdk.config.get())), {});
+  assert.equal(typeof sdk.config.set, 'undefined');
+});
+
 test('USB Audio CD SDK includes track identity guards, metadata and tray control', async () => {
   const {sdk, calls} = loadSDK();
   const id = '49HHV7Eb8UKF3aQiNmu1GR8vKTY-';
@@ -115,4 +125,14 @@ test('USB Audio CD SDK includes track identity guards, metadata and tray control
   await assert.rejects(sdk.optical.drive('sr0', 'chmod'), {name:'TypeError'});
   await assert.rejects(sdk.optical.seek('sr0', id, Infinity), {name:'TypeError'});
   assert.equal(Object.isFrozen(sdk.optical), true);
+});
+
+test('covers.sample uses only its scoped method and no preview data', async () => {
+  const {sdk,calls}=loadSDK();
+  assert.equal((await sdk.covers.sample()).length,0);
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].method,'covers.sample');
+  assert.equal(Object.keys(calls[0].payload).length,0);
+  const preview=loadSDK(false);
+  assert.equal((await preview.sdk.covers.sample()).length,0);
 });

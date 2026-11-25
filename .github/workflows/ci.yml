@@ -43,6 +43,11 @@ jobs:
           python3 tools/mupiapp.py validate dist/funny-mupi.mupiapp
       - name: Build reference app
         run: python3 tools/build_example.py
+      - name: Build declarative Admin settings example
+        run: |
+          node --check examples/admin-settings-demo/app.js
+          python3 tools/mupiapp.py pack examples/admin-settings-demo dist/admin-settings-demo.mupiapp --exclude README.md
+          python3 tools/mupiapp.py validate dist/admin-settings-demo.mupiapp
       - name: Build four-in-a-row app
         run: python3 tools/build_four_in_a_row.py
       - name: Build Crumbworm app
@@ -74,6 +79,18 @@ jobs:
           node examples/mupi-run-native/test_world_replay.cjs
       - name: Build independent Klang Memory preview
         run: python3 tools/build_klang_memory.py
+      - name: Test and build Cover Memory
+        run: |
+          node --check examples/cover-memory/app.js
+          node --test tests/cover_memory.test.cjs
+          python3 tools/build_cover_memory.py
+          python3 tools/mupiapp.py validate dist/cover-memory.mupiapp
+      - name: Test and build MuPi Malbuch
+        run: |
+          node --check examples/mupi-malbuch/app.js
+          node --test tests/malbuch.test.cjs
+          python3 tools/build_malbuch.py
+          python3 tools/mupiapp.py validate dist/mupi-malbuch.mupiapp
       - name: Build USB webcam preview
         run: python3 tools/build_webcam_example.py
       - name: Build USB Audio CD Player candidate
@@ -113,8 +130,11 @@ jobs:
             dist/mupi-chess.mupiapp
             dist/mupi-wasserschlacht.mupiapp
             dist/klang-memory.mupiapp
+            dist/cover-memory.mupiapp
+            dist/mupi-malbuch.mupiapp
             dist/webcam-preview.mupiapp
             dist/usb-cd-player.mupiapp
             dist/fotospass.mupiapp
+            dist/admin-settings-demo.mupiapp
             dist/funny-mupi.mupiapp
           if-no-files-found: error
