@@ -79,6 +79,18 @@ jobs:
           node examples/mupi-run-native/test_world_replay.cjs
       - name: Build independent Klang Memory preview
         run: python3 tools/build_klang_memory.py
+      - name: Test and build Cover Memory
+        run: |
+          node --check examples/cover-memory/app.js
+          node --test tests/cover_memory.test.cjs
+          python3 tools/build_cover_memory.py
+          python3 tools/mupiapp.py validate dist/cover-memory.mupiapp
+      - name: Test and build MuPi Malbuch
+        run: |
+          node --check examples/mupi-malbuch/app.js
+          node --test tests/malbuch.test.cjs
+          python3 tools/build_malbuch.py
+          python3 tools/mupiapp.py validate dist/mupi-malbuch.mupiapp
       - name: Build USB webcam preview
         run: python3 tools/build_webcam_example.py
       - name: Build USB Audio CD Player candidate
@@ -118,6 +130,8 @@ jobs:
             dist/mupi-chess.mupiapp
             dist/mupi-wasserschlacht.mupiapp
             dist/klang-memory.mupiapp
+            dist/cover-memory.mupiapp
+            dist/mupi-malbuch.mupiapp
             dist/webcam-preview.mupiapp
             dist/usb-cd-player.mupiapp
             dist/fotospass.mupiapp

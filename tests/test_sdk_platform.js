@@ -126,3 +126,13 @@ test('USB Audio CD SDK includes track identity guards, metadata and tray control
   await assert.rejects(sdk.optical.seek('sr0', id, Infinity), {name:'TypeError'});
   assert.equal(Object.isFrozen(sdk.optical), true);
 });
+
+test('covers.sample uses only its scoped method and no preview data', async () => {
+  const {sdk,calls}=loadSDK();
+  assert.equal((await sdk.covers.sample()).length,0);
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].method,'covers.sample');
+  assert.equal(Object.keys(calls[0].payload).length,0);
+  const preview=loadSDK(false);
+  assert.equal((await preview.sdk.covers.sample()).length,0);
+});

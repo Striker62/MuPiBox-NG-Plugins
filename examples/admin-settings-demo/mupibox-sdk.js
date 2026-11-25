@@ -477,6 +477,24 @@
     device,
     playback,
     optical,
+    coloring: Object.freeze({
+      async list() {
+        if (!bridge) return [];
+        const result = await invoke('coloring.list', {});
+        return Array.isArray(result?.pages) ? result.pages.slice(0,128) : [];
+      },
+      async get(id) {
+        if (typeof id !== 'string' || !id || id.length > 180 || /[\\/]/.test(id) || id.startsWith('.')) throw new TypeError('invalid page ID');
+        const result = await invoke('coloring.get', {id});
+        if (typeof result?.image !== 'string' || !/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(result.image) || result.image.length > 5000000) throw new Error('invalid coloring page');
+        return result.image;
+      }
+    }),
+    covers: Object.freeze({async sample() {
+      if (!bridge) return [];
+      const result = await invoke('covers.sample', {});
+      return Array.isArray(result?.images) ? result.images.filter(x => typeof x === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(x) && x.length <= 150000).slice(0, 8) : [];
+    }}),
     async capabilities() {
       if (bridge) return invoke('host.capabilities', {});
       return {apiVersion: '1', sdkRevision: '1.1', methods: [], preview: true};

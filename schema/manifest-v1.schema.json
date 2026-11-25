@@ -75,10 +75,12 @@
           "device-status",
           "playback",
           "playback-control",
-          "optical-media"
+          "optical-media",
+          "cover-art",
+          "coloring-pages"
         ]
       },
-      "maxItems": 13
+      "maxItems": 15
     },
     "networkHosts": {
       "type": "array",

@@ -10,7 +10,7 @@ VERSION = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$")
 TAG = re.compile(r"^v[0-9]+\.[0-9]+\.[0-9]+-preview\.[0-9]+$")
 ASSET = re.compile(r"^[a-z0-9][a-z0-9-]*\.mupiapp$")
 SHA = re.compile(r"^[0-9a-f]{64}$")
-PERMISSIONS = {"storage","controller","audio","camera","photo-save","shared-assets","links","homeassistant","device-status","playback","playback-control","optical-media"}
+PERMISSIONS = {"storage","controller","audio","camera","photo-save","shared-assets","links","homeassistant","device-status","playback","playback-control","optical-media", "cover-art", "coloring-pages"}
 
 def validate(catalog):
     if not isinstance(catalog, dict) or set(catalog) != {"schema", "apps"} or catalog["schema"] != 1:
@@ -81,6 +81,15 @@ class CatalogTests(unittest.TestCase):
             if path.exists():
                 manifest = json.loads(path.read_text())
                 self.assert_source_matches_release(app, manifest)
+    def test_first_party_extension_keeps_old_catalog_compatible(self):
+        old = validate(self.catalog)
+        self.assertFalse(any(set(a["permissions"]) & {"cover-art","coloring-pages"} for a in old))
+        extra = validate(json.loads((ROOT/"catalog/first-party-apps.json").read_text()))
+        paths={"official.cover-memory":"cover-memory","official.mupi-malbuch":"mupi-malbuch"}
+        self.assertEqual(set(a["id"] for a in extra),set(paths))
+        for app in extra:
+            self.assert_source_matches_release(app,json.loads((ROOT/"examples"/paths[app["id"]]/"manifest.json").read_text()))
+            self.assertNotIn(app["id"],{a["id"] for a in old})
     def test_new_source_permissions_do_not_rewrite_published_release(self):
         release = {"id": "community.example", "name": "Example", "version": "0.2.19", "permissions": []}
         source = {**release, "version": "0.2.24", "permissions": ["shared-assets"]}
