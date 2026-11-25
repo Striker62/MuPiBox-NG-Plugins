@@ -23,6 +23,7 @@
     "camera.start",
     "camera.stop",
     "config.get",
+    "covers.sample",
     "device.audio",
     "device.display",
     "device.info",

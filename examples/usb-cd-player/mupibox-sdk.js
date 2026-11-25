@@ -477,6 +477,11 @@
     device,
     playback,
     optical,
+    covers: Object.freeze({async sample() {
+      if (!bridge) return [];
+      const result = await invoke('covers.sample', {});
+      return Array.isArray(result?.images) ? result.images.filter(x => typeof x === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(x) && x.length <= 150000).slice(0, 8) : [];
+    }}),
     async capabilities() {
       if (bridge) return invoke('host.capabilities', {});
       return {apiVersion: '1', sdkRevision: '1.1', methods: [], preview: true};
