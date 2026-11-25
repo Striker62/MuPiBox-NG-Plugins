@@ -2,9 +2,21 @@
 
 Sammle Noten, öffne Klangbrücken und bring die Musik zurück. Du findest das Spiel auf der MuPiBox unter **Community-Apps → Katalog**. Für den Start brauchst du einen Controller und die Freigabe der Qt-Laufzeit im Reiter **Sicherheit**.
 
+## Level 3 · Klangbäume
+
+Spring über 36 Äste und zwei Trommeln zum Gitarrenbaumhaus. Der Grollnebel
+steigt unter dir in Wellen. Am Baumhaus erklingen beim Weitergehen auch die
+Saiten, die du bei der Landung übersprungen hast. Nach der sechsten Saite
+öffnet sich das Fenster und eine Bonusnote schwebt an der Tür zu MuPi.
+Mit mindestens **26 von 40 Punkten** endet das Level an der Tür.
+
+Für einen Lauf mit allen Noten erhältst du je nach Schwierigkeitsgrad eine,
+zwei oder drei funkelnde **Levelnoten** auf Leicht, Normal oder Schwer.
+Die Levelwahl zeigt deine beste Wertung je Level.
+
 ## Gegner und Klangwelle
 
-Im ersten Level schaltest du die Klangwelle mit den Kopfhörern frei. Im Klangwald hast du sie von Anfang an. **Tippe B** für eine Klangwelle und **halte B** zum Sprinten. Eine Klangwelle wirkt in MuPis Nähe. Getroffene Gegner bleiben für eine kurze Zeit harmlos und können danach wieder angreifen.
+Im ersten Level schaltest du die Klangwelle mit den Kopfhörern frei. Im Klangwald und in den Klangbäumen hast du sie von Anfang an. **Tippe B** für eine Klangwelle und **halte B** zum Sprinten. Eine Klangwelle wirkt in MuPis Nähe. Getroffene Gegner bleiben für eine kurze Zeit harmlos und können danach wieder angreifen.
 
 | Gegner | Wo? | Angriff und Warnzeichen | Hilft die Klangwelle? |
 | --- | --- | --- | --- |
@@ -14,7 +26,8 @@ Im ersten Level schaltest du die Klangwelle mit den Kopfhörern frei. Im Klangwa
 | **Pieksekaktus** | Level 1 | Bläht sich kurz auf und schießt einen Stachel waagerecht auf MuPi. Ducken hilft gegen den Schuss. | **Ja, gegen den Kaktus.** Ein Treffer stoppt das Aufladen. Ein bereits abgefeuerter Stachel fliegt weiter. |
 | **Wutwurm** | Level 1 | Ein Erdhügel beginnt zu wackeln, wenn du am Boden darüberläufst. Etwa **1,25 Sekunden** später kommt der Wurm heraus und schnappt nach MuPi. | **Ja, sobald der Hügel wackelt oder der Wurm herausragt.** Dann schläft er kurz ein. Tief im Boden erreicht ihn die Klangwelle nicht. |
 | **Brüllbarsch** | Level 2 · Klangwald | Blasen steigen **1,4 Sekunden** vor dem Sprung auf. Beim Absprung hörst du ein Platschen. | **Ja.** Triffst du ihn in Reichweite, kannst du den Sprung schon während der Blasenphase verhindern oder in der Luft abbrechen. |
-| **Schreieule** | Level 2 · Klangwald | Bewacht ihren eigenen Abschnitt. Ein Ausrufezeichen warnt vor dem Schrei. Mit dem Schrei schickt sie eine Schallwelle los, unter der du dich ducken kannst. | **Ja.** Ein Treffer betäubt die Eule und lässt ihre Schallwelle verschwinden, auch wenn sie schon unterwegs ist. |
+| **Schreieule** | Level 2 · Klangwald und Level 3 · Klangbäume | Bewacht ihren eigenen Abschnitt. Ein Ausrufezeichen warnt vor dem Schrei. Mit dem Schrei schickt sie eine Schallwelle los, unter der du dich ducken kannst. | **Ja.** Ein Treffer betäubt die Eule und lässt ihre Schallwelle verschwinden, auch wenn sie schon unterwegs ist. |
+| **Eichhörnchen** | Level 3 · Klangbäume | Duckt sich kurz und springt zwischen zwei Ästen hin und her. Ein Zusammenstoß während des Sprungs kostet ein Herz. | **Ja.** Ein Treffer stoppt den Sprung und betäubt es kurz. |
 
 ## Screenshots aus dem Spiel
 
