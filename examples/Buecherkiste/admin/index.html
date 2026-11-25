@@ -1,28 +1,40 @@
-<!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bücherkiste verwalten</title><link rel="stylesheet" href="style.css"></head>
-<body><main>
-<header><div><h1>Bücherkiste · Verwaltung</h1><p>Eigene Bücher anlegen, bearbeiten und mit Bildern ergänzen.</p></div>
-<button id="reload" type="button">Aktualisieren</button></header>
-<p id="state" role="status" aria-live="polite">Bücher werden geladen …</p>
-<div class="layout">
-<aside><h2>Meine Bücher</h2><div id="book-list" role="list"></div>
-<button id="create" type="button">+ Neues Buch</button></aside>
-<section id="editor" hidden>
-<h2 id="heading">Buch bearbeiten</h2>
-<label>Titel<input id="title" type="text" maxlength="300" required></label>
-<label>Ordnerkennung <input id="slug" type="text" pattern="[A-Za-z0-9_-]{1,80}" maxlength="80" required></label>
-<label>Darstellung<select id="layout"><option value="full-page">Bildseite</option>
-<option value="image-and-text">Bild und Text</option></select></label>
-<div class="actions"><button id="save" type="button" class="primary">Buch speichern</button>
-<button id="trash" type="button" class="danger">Buch in Papierkorb</button></div>
-<h3>Seitenbilder</h3>
-<p class="note">Bilder werden lokal in JPEG-Seiten umgewandelt (maximal 2048 px Kantenlänge) und im app-eigenen Buchordner gespeichert.</p>
-<div id="pages" class="pages"></div>
-<label>Neue Bilder hinzufügen <input id="uploads" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></label>
-<button id="upload" type="button">Ausgewählte Bilder hinzufügen</button>
-<h3>Vorlesetexte</h3><p class="note">Ein Textfeld pro Seite. Über „Texte speichern“ wird die Lesedatei aktualisiert.</p>
-<div id="texts"></div><button id="save-texts" type="button">Texte speichern</button>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bücherkiste – Bucheditor</title><link rel="stylesheet" href="style.css"></head><body><section id="book-admin" aria-labelledby="admin-heading">
+  <header class="admin-header">
+    <div><h2 id="admin-heading">Buchverwaltung</h2><p id="editor-root">CommunityApps/community.buecherkiste/books/</p></div>
+
+  </header>
+  <div class="admin-content">
+    <aside class="admin-sidebar">
+      <label for="editor-existing">Gespeicherte Bücher</label><select id="editor-existing"><option value="">Buch auswählen …</option></select><button id="editor-load" type="button">Buch öffnen</button><button id="editor-refresh" type="button">Bücherliste aktualisieren</button><hr><button id="admin-new" type="button">+ Neues Buch</button>
+      <label for="admin-title">Buchtitel</label>
+      <input id="admin-title" maxlength="300" placeholder="Wie heißt dein Buch?" autocomplete="off">
+      <label for="admin-folder">Ordnername</label>
+      <input id="admin-folder" readonly>
+      <div id="admin-path" class="admin-path"></div>
+      <div class="admin-pages-heading"><strong>Buchseiten</strong><span id="admin-page-count">0 Seiten</span></div>
+      <button id="admin-add" type="button">Bilder hinzufügen</button>
+      <input id="admin-files" type="file" accept=".jpg,.jpeg,.png,.webp,.gif" multiple hidden>
+      <p id="admin-message" role="status">Bilder werden nach Dateinamen sortiert. Du kannst ihre Reihenfolge anschließend ändern.</p>
+      <label class="editor-cover"><input id="editor-cover" type="checkbox"> Erstes Bild nur als Cover (00)</label><div id="admin-pages" aria-label="Buchseiten auswählen"></div>
+    </aside>
+    <section class="admin-workspace" aria-label="Seite bearbeiten">
+      <div id="admin-empty"><strong>Hier beginnt dein Buch</strong><p>Gib einen Titel ein und füge deine Seitenbilder hinzu. Danach kannst du für jede Seite den Vorlesetext eingeben.</p></div>
+      <div id="admin-page-editor" hidden>
+        <div class="admin-page-toolbar"><h3 id="admin-page-heading">Seite 1</h3><div class="admin-page-actions">
+          <button id="admin-up" type="button" title="Seite nach vorne verschieben" aria-label="Seite nach vorne verschieben">←</button>
+          <button id="admin-down" type="button" title="Seite nach hinten verschieben" aria-label="Seite nach hinten verschieben">→</button>
+          <button id="admin-remove" type="button">Entfernen</button>
+        </div></div>
+        <p id="admin-original-name"></p>
+        <div class="admin-preview"><img id="admin-image" alt="Seitenvorschau"></div>
+        <div class="admin-text-heading"><label for="admin-page-text">Vorlesetext dieser Seite</label><span id="admin-text-count">0 Zeichen</span></div>
+        <textarea id="admin-page-text" placeholder="Was soll auf dieser Seite vorgelesen werden? Leer lassen, wenn die Seite stumm bleiben soll."></textarea>
+      </div>
+    </section>
+  </div>
+  <footer class="admin-footer"><p id="editor-save-status" role="status">Noch nicht gespeichert. Beim Neuladen gehen ungespeicherte Änderungen verloren.</p><button id="editor-save" type="button">Buch speichern</button></footer>
+  <div id="admin-discard" role="alertdialog" aria-modal="true" aria-labelledby="admin-discard-heading" hidden>
+    <div class="admin-confirm"><h3 id="admin-discard-heading">Neues Buch beginnen?</h3><p>Der aktuelle Entwurf mit allen ausgewählten Bildern und Texten wird verworfen.</p><div><button id="admin-keep" type="button">Weiter bearbeiten</button><button id="admin-discard-confirm" type="button">Entwurf verwerfen</button></div></div>
+  </div>
 </section>
-<section id="empty"><h2>Buch auswählen</h2><p>Links ein Buch auswählen oder ein neues Buch erstellen.</p></section>
-</div></main><script src="app.js"></script></body></html>
+<script src="book-store.js"></script><script src="app.js"></script></body></html>

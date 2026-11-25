@@ -1,248 +1,298 @@
 (() => {
-'use strict';
-const sdk=window.MuPiBoxAdminSDK;
-const $=id=>document.getElementById(id);
-const state=$('state'),list=$('book-list'),pages=$('pages'),texts=$('texts');
-let books=[],selected=null,bookInfo=null,bookRevision='',pageItems=[],pageText=[],textRevision='',ttsRevision='',urls=[];
-const busy=new Set();
-const slugOK=v=>/^[A-Za-z0-9_-]{1,80}$/.test(v);
-const fullPath=part=>'books/'+selected+'/'+part;
-const notice=(message,error=false)=>{state.textContent=message;state.classList.toggle('error',error)};
-async function operation(name,fn){
- if(busy.size)return;
- busy.add(name);
- try{await fn()}catch(e){notice(e.message||String(e),true)}
- finally{busy.delete(name)}
-}
-const jsonBlob=obj=>new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
-async function readJSON(name){
- const file=await sdk.files.read(name);
- return {value:JSON.parse(await file.blob.text()),revision:file.revision};
-}
-async function saveJSON(name,value,revision=''){
- return sdk.files.write(name,jsonBlob(value),{expectedRevision:revision});
-}
-async function refresh(){
- notice('Bücher laden …');
- const found=await sdk.files.list('books');
- books=[];
- for(const row of found.entries||[]) {
-  if(!row.isDir||!slugOK(row.name))continue;
-  try{
-   const info=(await readJSON('books/'+row.name+'/book.json')).value;
-   if(typeof info.title==='string')books.push({id:row.name,title:info.title});
-  }catch(e){
-   // Incomplete folders remain visible for recovery rather than deleted.
-   books.push({id:row.name,title:row.name+' (unvollständig)'});
+  'use strict';
+
+  function folderName(title) {
+    return title.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe')
+      .replace(/ü/g, 'ue').replace(/ß/g, 'ss').normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_-]+/g, '-')
+      .replace(/^-+|-+$/g, '').slice(0, 80).replace(/-+$/g, '');
   }
- }
- books.sort((a,b)=>a.title.localeCompare(b.title,'de'));
- renderList();
- notice(books.length+' Buch/Bücher vorhanden.');
-}
-function renderList(){
- list.replaceChildren();
- books.forEach(b=>{
-  const button=document.createElement('button');
-  button.type='button';button.textContent=b.title;
-  button.setAttribute('aria-current',String(b.id===selected));
-  button.onclick=()=>operation('open',()=>openBook(b.id));
-  list.append(button);
- });
-}
-function clearImages(){urls.forEach(URL.revokeObjectURL);urls=[]}
-function resetView(){
- clearImages();pageItems=[];pageText=[];selected=null;bookRevision='';textRevision='';
- $('editor').hidden=true;$('empty').hidden=false;renderList();
-}
-async function openBook(id){
- if(!slugOK(id))throw Error('Ungültiger Buchordner');
- clearImages();
- selected=id;
- bookInfo=null;
- try{
-  const result=await readJSON(fullPath('book.json'));
-  bookInfo=result.value;bookRevision=result.revision;
- }catch(e){
-  bookInfo={title:id,cover:'images/01.jpg',
-    imagePattern:'images/{page:02d}.jpg',layout:'full-page'};
-  bookRevision='';
- }
- $('title').value=typeof bookInfo.title==='string'?bookInfo.title:id;
- $('slug').value=id;$('slug').disabled=true;
- $('layout').value=bookInfo.layout==='image-and-text'?'image-and-text':'full-page';
- $('editor').hidden=false;$('empty').hidden=true;
- $('heading').textContent='Buch: '+id;
- await reloadPages();
- await loadTexts();
- renderList();
- notice('Buch geladen: '+id);
-}
-async function reloadPages(){
- clearImages();pageItems=[];pages.replaceChildren();
- try{
-  const data=await sdk.files.list(fullPath('images'));
-  for(const row of data.entries||[]){
-   if(row.isDir||!/^([0-9]{2,3})\.(jpe?g|png|webp|gif)$/i.test(row.name))continue;
-   pageItems.push({name:row.name,path:row.path});
+
+  function movePage(pages, index, direction) {
+    const target = index + direction;
+    if (index < 0 || target < 0 || index >= pages.length || target >= pages.length) return index;
+    [pages[index], pages[target]] = [pages[target], pages[index]];
+    return target;
   }
- }catch(e){/* newly created books may have no images yet */}
- pageItems.sort((a,b)=>Number(a.name.split('.')[0])-Number(b.name.split('.')[0]));
- await drawPages();
-}
-async function drawPages(){
- pages.replaceChildren();
- for(const [index,page] of pageItems.entries()){
-  const card=document.createElement('div');card.className='page';
-  const label=document.createElement('strong');label.textContent='Seite '+(index+1);
-  card.append(label);
-  try{
-   const content=await sdk.files.read(page.path);
-   page.revision=content.revision;
-   const mime=page.name.toLowerCase().endsWith('.png')?'image/png':
-    page.name.toLowerCase().endsWith('.webp')?'image/webp':
-    page.name.toLowerCase().endsWith('.gif')?'image/gif':'image/jpeg';
-   const url=URL.createObjectURL(new Blob([content.blob],{type:mime}));
-   urls.push(url);
-   const image=document.createElement('img');image.src=url;image.alt='Seite '+(index+1);
-   card.append(image);
-  }catch(e){card.append(document.createTextNode('Bild nicht verfügbar'))}
-  if(index===pageItems.length-1){
-   const del=document.createElement('button');del.type='button';del.textContent='Letzte Seite entfernen';
-   del.onclick=()=>operation('delete-page',async()=>{
-    if(!confirm('Letzte Seite wirklich in den Papierkorb verschieben?'))return;
-    await sdk.files.trash(page.path,{confirmName:page.name,expectedRevision:page.revision});
-    await reloadPages();
-    notice('Seite in Papierkorb verschoben.');
-   });
-   card.append(del);
+
+  if (typeof module !== 'undefined') module.exports = {folderName, movePage};
+  if (typeof document === 'undefined') return;
+
+  const get = id => document.getElementById(id);
+  const panel = get('book-admin');
+  let loadedId = null;
+  let loadedRevision = null;
+  let previous = null;
+  const sdk = window.MuPiBoxAdminSDK;
+  const store = sdk && window.BookStore.create(sdk);
+  let pendingAction = null;
+  let busy = false;
+  let pages = [];
+  let selected = -1;
+  let importing = false;
+  let importVersion = 0;
+
+  function message(text) {
+    get('admin-message').textContent = text;
   }
-  pages.append(card);
- }
- if(!pageItems.length)pages.append(document.createTextNode('Noch keine Seitenbilder vorhanden.'));
-}
-async function loadTexts(){
- pageText=[];
- textRevision='';ttsRevision='';
- // Existing books may keep their read-aloud text under tts/ rather than text/.
- try{
-  const result=await readJSON(fullPath('text/pages.json'));
-  textRevision=result.revision;
-  if(Array.isArray(result.value.pages))
-   pageText=result.value.pages.map(p=>typeof p==='string'?p:String(p?.text||''));
- }catch(e){}
- try{
-  const result=await readJSON(fullPath('tts/pages.json'));
-  ttsRevision=result.revision;
-  if(!pageText.length && Array.isArray(result.value.pages))
-   pageText=result.value.pages.map(p=>typeof p==='string'?p:String(p?.text||''));
- }catch(e){}
- drawTexts();
-}
-function drawTexts(){
- texts.replaceChildren();
- for(let i=0;i<pageItems.length;i++){
-  const wrap=document.createElement('label');
-  wrap.textContent='Vorlesetext – Seite '+(i+1);
-  const field=document.createElement('textarea');
-  field.rows=3;field.maxLength=10000;field.value=pageText[i]||'';
-  field.addEventListener('input',()=>{pageText[i]=field.value});
-  wrap.append(field);texts.append(wrap);
- }
-}
-async function toJPEG(input) {
- if(!input.type.startsWith('image/')||input.size>8*1024*1024)
-  throw Error('Bitte ein Bild bis 8 MiB wählen: '+input.name);
- const src=URL.createObjectURL(input);
- try{
-  const image=new Image();image.decoding='async';
-  image.src=src;await image.decode();
-  const scale=Math.min(1,2048/Math.max(image.naturalWidth,image.naturalHeight));
-  const canvas=document.createElement('canvas');
-  canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
-  canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
-  const context=canvas.getContext('2d');
-  context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);
-  context.drawImage(image,0,0,canvas.width,canvas.height);
-  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.88));
-  if(!blob||!blob.size||blob.size>8*1024*1024)throw Error('Bild konnte nicht konvertiert werden');
-  return blob;
- }finally{URL.revokeObjectURL(src)}
-}
-async function upload(){
- if(!selected)throw Error('Bitte zuerst ein Buch auswählen');
- const inputs=Array.from($('uploads').files||[]);
- if(!inputs.length)throw Error('Keine Bilder ausgewählt');
- if(pageItems.length+inputs.length>200)throw Error('Maximal 200 Seiten pro Buch');
- const numbers=pageItems.map(p=>Number(p.name.split('.')[0]));
- let number=Math.max(0,...numbers);
- for(const file of inputs){
-  const output=await toJPEG(file);
-  ++number;
-  const filename=String(number).padStart(2,'0')+'.jpg';
-  await sdk.files.write(fullPath('images/'+filename),output,{expectedRevision:''});
- }
- $('uploads').value='';
- await reloadPages();drawTexts();
- notice(inputs.length+' Bilder hochgeladen.');
-}
-async function saveBook(){
- if(!selected)throw Error('Kein Buch ausgewählt');
- const title=$('title').value.trim();
- if(!title||title.length>300)throw Error('Buchtitel erforderlich (max. 300 Zeichen)');
- const info={...bookInfo,title,
-  cover:bookInfo.cover||'images/01.jpg',
-  imagePattern:bookInfo.imagePattern||'images/{page:02d}.jpg',
-  layout:$('layout').value,
- };
- const saved=await saveJSON(fullPath('book.json'),info,bookRevision);
- bookRevision=saved.revision;bookInfo=info;
- await refresh();
- notice('Buch gespeichert.');
-}
-async function saveTexts(){
- if(!selected)throw Error('Kein Buch ausgewählt');
- const data={pages:pageItems.map((_,i)=>({text:(pageText[i]||'').slice(0,600)}))};
- const saved=await saveJSON(fullPath('tts/pages.json'),data,ttsRevision);
- ttsRevision=saved.revision;
- bookInfo.tts='tts/pages.json';
- if($('layout').value==='image-and-text') {
-  const shown=await saveJSON(fullPath('text/pages.json'),data,textRevision);
-  textRevision=shown.revision;
-  bookInfo.text='text/pages.json';
- }
- await saveBook();
- notice('Vorlesetexte gespeichert.');
-}
-async function createBook(){
- const title=prompt('Titel des neuen Buches:');
- if(title===null)return;
- if(!title.trim()||title.length>300)throw Error('Buchtitel fehlt oder ist zu lang');
- const suggestion=title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-  .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60);
- const id=prompt('Ordnerkennung (Buch-ID):',suggestion||'mein-buch');
- if(id===null)return;
- if(!slugOK(id))throw Error('Nur Buchstaben, Zahlen, _ und - (max. 80)');
- if(books.some(b=>b.id===id))throw Error('Buch existiert bereits');
- const metadata={title:title.trim(),cover:'images/01.jpg',imagePattern:'images/{page:02d}.jpg',layout:'full-page'};
- await saveJSON('books/'+id+'/book.json',metadata,'');
- await refresh();
- await openBook(id);
- notice('Neues Buch angelegt. Jetzt Seitenbilder hochladen.');
-}
-async function deleteBook(){
- if(!selected)return;
- const entered=prompt('Zum Verschieben in den Papierkorb bitte die Buch-ID eingeben: '+selected);
- if(entered!==selected){notice('Löschen abgebrochen.');return}
- await sdk.files.trash('books/'+selected,{confirmName:selected});
- const name=selected;resetView();await refresh();
- notice('Buch '+name+' in den Papierkorb verschoben.');
-}
-$('reload').onclick=()=>operation('refresh',refresh);
-$('create').onclick=()=>operation('create',createBook);
-$('save').onclick=()=>operation('save',saveBook);
-$('save-texts').onclick=()=>operation('texts',saveTexts);
-$('upload').onclick=()=>operation('upload',upload);
-$('trash').onclick=()=>operation('trash',deleteBook);
-void operation('initial',refresh);
+
+  function renderSelection() {
+    const page = pages[selected];
+    get('admin-empty').hidden = Boolean(page);
+    get('admin-page-editor').hidden = !page;
+    if (page) {
+      get('admin-image').src = page.url;
+      get('admin-image').alt = 'Vorschau von Seite ' + (selected + 1);
+      get('admin-page-heading').textContent = 'Seite ' + (selected + 1 - (get('editor-cover').checked ? 1 : 0));
+      get('admin-original-name').textContent = page.file.name;
+      get('admin-page-text').value = page.text;
+      const isCover = get('editor-cover').checked && selected === 0;
+      get('admin-page-text').disabled = isCover;
+      if (isCover) get('admin-page-heading').textContent = 'Cover (00)';
+      get('admin-text-count').textContent = Array.from(page.text).length + ' Zeichen';
+    } else get('admin-image').removeAttribute('src');
+    get('admin-up').disabled = !page || selected <= (get('editor-cover').checked ? 1 : 0);
+    get('admin-down').disabled = !page || selected === pages.length - 1 || (get('editor-cover').checked && selected === 0);
+    for (const button of get('admin-pages').children) {
+      button.setAttribute('aria-current', String(Number(button.dataset.index) === selected));
+    }
+    get('admin-page-count').textContent = pages.length + (pages.length === 1 ? ' Seite' : ' Seiten');
+  }
+
+  function renderPages() {
+    get('admin-pages').replaceChildren();
+    pages.forEach((page, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.index = String(index);
+      button.className = 'admin-page-card';
+      const thumbnail = document.createElement('img');
+      thumbnail.src = page.url;
+      thumbnail.alt = '';
+      thumbnail.loading = 'lazy';
+      const label = document.createElement('span');
+      label.textContent = get('editor-cover').checked && index === 0 ? 'Cover' : String(index + 1 - (get('editor-cover').checked ? 1 : 0)).padStart(2, '0');
+      button.title = page.file.name;
+      button.append(thumbnail, label);
+      button.onclick = () => { selected = index; renderSelection(); };
+      get('admin-pages').append(button);
+    });
+    renderSelection();
+  }
+
+  function updateFolder() {
+    const name = loadedId || folderName(get('admin-title').value);
+    get('admin-folder').value = name;
+    get('admin-path').textContent = 'books/' + (name || 'mein-buch') + '/';
+  }
+
+  panel.addEventListener('keydown', event => {
+    event.stopPropagation();
+    if (event.key === 'Escape') {
+      if (!get('admin-discard').hidden) get('admin-keep').click();
+
+    }
+    if (event.key === 'Tab') {
+      const scope = get('admin-discard').hidden ? panel : get('admin-discard');
+      const controls = Array.from(scope.querySelectorAll('button,input,textarea,[tabindex]'))
+        .filter(node => !node.disabled && node.getClientRects().length);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+  });
+  get('admin-title').oninput = updateFolder;
+  get('admin-page-text').oninput = () => {
+    if (!pages[selected]) return;
+    pages[selected].text = get('admin-page-text').value;
+    get('admin-text-count').textContent = Array.from(pages[selected].text).length + ' Zeichen';
+  };
+  get('admin-up').onclick = () => { selected = movePage(pages, selected, -1); renderPages(); };
+  get('admin-down').onclick = () => { selected = movePage(pages, selected, 1); renderPages(); };
+  get('admin-remove').onclick = () => {
+    if (selected === 0 && get('editor-cover').checked) get('editor-cover').checked = false;
+    const [removed] = pages.splice(selected, 1);
+    if (removed) URL.revokeObjectURL(removed.url);
+    selected = Math.min(selected, pages.length - 1);
+    renderPages();
+  };
+
+  function clearDraft() {
+    loadedId = null;
+    loadedRevision = null;
+    previous = null;
+    get('editor-cover').checked = false;
+    importVersion++;
+    for (const page of pages) URL.revokeObjectURL(page.url);
+    pages = [];
+    selected = -1;
+    get('admin-title').value = '';
+    get('admin-files').value = '';
+    get('admin-discard').hidden = true;
+    updateFolder();
+    renderPages();
+    message('Neuer Entwurf. Wähle die Bilder für dein Buch.');
+    get('admin-title').focus();
+  }
+  function confirmDiscard(action) {
+    if (pages.length || get('admin-title').value) {
+      pendingAction = action;
+      get('admin-discard-heading').textContent = 'Aktuellen Entwurf verlassen?';
+      get('admin-discard').hidden = false;
+      get('admin-keep').focus();
+    } else action();
+  }
+  get('admin-new').onclick = () => confirmDiscard(clearDraft);
+  get('admin-keep').onclick = () => { pendingAction = null; get('admin-discard').hidden = true; };
+  get('admin-discard-confirm').onclick = () => {
+    get('admin-discard').hidden = true;
+    const action = pendingAction;
+    pendingAction = null;
+    if (action) action();
+  };
+  get('admin-add').onclick = () => get('admin-files').click();
+
+  async function previewFile(file) {
+    if (!/\.(jpe?g|png|webp|gif)$/i.test(file.name) || file.size > 8 * 1024 * 1024) {
+      throw Error('Bilder müssen JPEG, PNG, WebP oder GIF und höchstens 8 MiB groß sein.');
+    }
+    const url = URL.createObjectURL(file);
+    try {
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      if (!image.naturalWidth || image.naturalWidth * image.naturalHeight > 24000000) {
+        throw Error('Dieses Bild ist zu groß. Verwende höchstens 24 Megapixel.');
+      }
+      return {file, url, text: ''};
+    } catch (error) {
+      URL.revokeObjectURL(url);
+      throw error;
+    }
+  }
+
+  get('admin-files').onchange = async () => {
+    if (importing || busy) return;
+    const files = Array.from(get('admin-files').files).sort((a, b) =>
+      a.name.localeCompare(b.name, 'de', {numeric: true}));
+    if (!files.length) return;
+    importing = true;
+    get('editor-save').disabled = true;
+    get('editor-load').disabled = true;
+    get('admin-add').disabled = true;
+    get('admin-new').disabled = true;
+    const version = importVersion;
+    let added = 0, rejected = 0;
+    let bytes = pages.reduce((sum, page) => sum + page.file.size, 0);
+    for (const file of files) {
+      if (version !== importVersion) break;
+      message('Bilder werden geladen … ' + (added + rejected + 1) + ' / ' + files.length);
+      try {
+        if (pages.length >= 200 || bytes + file.size > 128 * 1024 * 1024) {
+          throw Error('Der Entwurf ist voll. Maximal 200 Seiten und 128 MiB Bilder.');
+        }
+        const page = await previewFile(file);
+        if (version !== importVersion) { URL.revokeObjectURL(page.url); break; }
+        pages.push(page);
+        bytes += file.size;
+        added++;
+      } catch (error) { rejected++; message(file.name + ' – ' + error.message); }
+    }
+    importing = false;
+    get('editor-save').disabled = false;
+    get('editor-load').disabled = false;
+    get('admin-add').disabled = false;
+    get('admin-new').disabled = false;
+    get('admin-files').value = '';
+    if (selected < 0 && pages.length) selected = 0;
+    renderPages();
+    message(added + ' Bilder hinzugefügt.' + (rejected ? ' ' + rejected + ' Bilder konnten nicht geladen werden (Format oder Größenlimit).' : ''));
+  };
+  window.addEventListener('pagehide', () => {
+    importVersion++;
+    for (const page of pages) URL.revokeObjectURL(page.url);
+  });
+  // A restored browser page keeps File objects but needs fresh object URLs.
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) { for (const page of pages) page.url = URL.createObjectURL(page.file); renderPages(); }
+  });
+
+  async function loadLibrary() {
+    if (!store) throw Error('Bitte die Buchverwaltung innerhalb der MuPiBox-Administration öffnen (Alpha 85 oder neuer).');
+    const books = await store.list();
+    const list = get('editor-existing');
+    list.replaceChildren(new Option('Buch auswählen …',''));
+    for (const book of books) list.append(new Option(book.title,book.id));
+    if (loadedId) list.value = loadedId;
+    get('editor-root').textContent = books.length + ' Bücher · CommunityApps/community.buecherkiste/books/';
+  }
+  function setBusy(value) {
+    busy = value;
+    for (const id of ['admin-title','editor-cover','editor-save','editor-load','editor-refresh','admin-add','admin-new']) get(id).disabled = value;
+    get('admin-page-editor').inert = value;
+    get('admin-pages').inert = value;
+  }
+  async function openBook(id) {
+    if (busy || importing || !id) return;
+    setBusy(true);
+    const incoming = [];
+    try {
+      const data = await store.load(id);
+      for (const page of data.pages) {
+        const file = new File([page.blob],page.path.split('/').pop(),{type:page.blob.type});
+        incoming.push({file,url:URL.createObjectURL(file),text:page.text,path:page.path});
+      }
+      for (const page of pages) URL.revokeObjectURL(page.url);
+      pages = incoming;
+      previous = data;
+      loadedId = id;
+      loadedRevision = data.revision;
+      selected = 0;
+      get('admin-title').value = data.info.title;
+      get('editor-cover').checked = data.coverOnly;
+      updateFolder(); renderPages();
+      get('editor-save-status').textContent = 'Buch geladen. Änderungen werden erst mit „Buch speichern“ übernommen.';
+      message('Seiten und Vorlesetexte geladen. Ein separates Cover hat keinen Vorlesetext.');
+    } catch (error) {
+      for (const page of incoming) URL.revokeObjectURL(page.url);
+      message(error.message);
+    } finally { setBusy(false); }
+  }
+  get('editor-load').onclick = () => {
+    if (busy || importing) return;
+    const id = get('editor-existing').value;
+    if (id) confirmDiscard(() => openBook(id)); else message('Bitte zuerst ein Buch auswählen.');
+  };
+  get('editor-refresh').onclick = async () => {
+    if (busy || importing) return;
+    setBusy(true);
+    try { await loadLibrary(); message('Bücherliste aktualisiert. Der Entwurf bleibt erhalten.'); }
+    catch (error) { message(error.message); } finally { setBusy(false); }
+  };
+  get('editor-cover').onchange = renderPages;
+  get('editor-save').onclick = async () => {
+    if (busy || importing) return;
+    if (!store) { message('Die MuPiBox-Admin-SDK ist nicht verfügbar.'); return; }
+    setBusy(true);
+    get('editor-save-status').textContent = 'Buch wird gespeichert …';
+    try {
+      const result = await store.save({id:get('admin-folder').value,title:get('admin-title').value,
+        pages,coverOnly:get('editor-cover').checked,previous},message);
+      loadedId = result.id;
+      previous = result;
+      pages.forEach((page,i) => { page.path = result.pages[i].path; });
+      loadedRevision = result.revision;
+      get('editor-save-status').textContent = result.warning || 'Buch und index.json gespeichert.';
+      message(result.warning || 'Gespeichert. Vorlesetexte bleiben vollständig erhalten.');
+      await loadLibrary();
+    } catch (error) {
+      get('editor-save-status').textContent = 'Speichern fehlgeschlagen. Der Entwurf bleibt geöffnet.';
+      message(error.message + ' Bisher veröffentlichte Buchdateien werden nicht überschrieben, bevor alle neuen Seiten bereit sind.');
+    } finally { setBusy(false); }
+  };
+  window.addEventListener('beforeunload',event => {
+    if (pages.length || get('admin-title').value) { event.preventDefault(); event.returnValue = ''; }
+  });
+  updateFolder(); renderPages();
+  loadLibrary().catch(error => message(error.message));
 })();

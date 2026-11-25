@@ -37,7 +37,7 @@ function setup(mode='ok'){
   }
  };
  const context={Blob,Uint8Array,console:{warn(){}},URL:{createObjectURL(){const u='blob:'+ ++next;urls.add(u);return u},revokeObjectURL(u){urls.delete(u);revoked.push(u)}},
-  window:{innerWidth:800,innerHeight:480,MuPiBoxSDK:mode==='absent'?undefined:{shared,tts:{status:async()=>({available:mode==='speech'||mode==='smb-speech',preRenderingEnabled:mode==='speech'}),prepare:async(text)=>{prepared.push(text);return{queued:true}},stop:async()=>{stopped.push(true);return{ok:true}},speak:async(text)=>{spoken.push(text);return{state:'completed'}}}},addEventListener(n,f){events[n]=f}},
+  window:{innerWidth:800,innerHeight:480,MuPiBoxSDK:mode==='absent'?undefined:{on(n,f){events[n]=f},shared,tts:{status:async()=>({available:mode==='speech'||mode==='smb-speech',preRenderingEnabled:mode==='speech'}),prepare:async(text)=>{prepared.push(text);return{queued:true}},stop:async()=>{stopped.push(true);return{ok:true}},speak:async(text)=>{spoken.push(text);return{state:'completed'}}}},addEventListener(n,f){events[n]=f}},
   document:{getElementById:get,querySelector:get,createElement:element,documentElement:element(),addEventListener(){}},
   requestAnimationFrame(){},fetch:async p=>{
    if(mode==='attribution'||mode==='speech'){
@@ -47,7 +47,7 @@ function setup(mode='ok'){
    return {ok:true,json:async()=>p.startsWith('books/index')?{books:['ole']}:{...info}};
   }};
  // Expose lexical app functions only in this test VM, without changing shipped code.
- const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={loadShelf,loadSharedShelf,scanPages,open,show,turn,validSharedInfo,sharedImage,releaseCovers,releasePage,renderShelf,bookInfo,pageFiles,bookTexts,sharedBooks,get entries(){return shelfEntries},get current(){return current}};})();`);
+ const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={loadShelf,loadSharedShelf,scanPages,open,show,turn,validSharedInfo,sharedImage,releaseCovers,releasePage,renderShelf,splitSpeechText,bookSpeech,bookInfo,pageFiles,bookTexts,sharedBooks,get entries(){return shelfEntries},get current(){return current}};})();`);
  vm.runInNewContext(exposed,context);
  return {...context,app:context.app,get,calls,urls,revoked,events,spoken,stopped,prepared};
 }
@@ -198,4 +198,156 @@ test('continuous mode advances only after speech completion and stops at book en
  assert.equal(h.spoken.length,16,'read exactly each of the sixteen pages');
  h.events.pagehide();await tick();
  assert.ok(h.stopped.length>=16);
+});
+
+
+test('speech splitting preserves Unicode, punctuation and whitespace within 500 characters',()=>{
+ const h=setup();
+ for(const text of ['', 'Kurz.', '😀'.repeat(1201), 'a'.repeat(1201),
+  '  Erster Satz.\n'+ 'Zweiter Satz! '.repeat(150)+' Ende?  ',
+  ' '.repeat(650)+'Wort', 'Ein Wort '.repeat(200)]){
+  const blocks=h.app.splitSpeechText(text);
+  assert.equal(blocks.join(''),text);
+  for(const block of blocks)assert.ok(Array.from(block).length<=500);
+ }
+ const sentence='Ein Satz mit Schluss. ';
+ const text=sentence.repeat(30);
+ const first=h.app.splitSpeechText(text)[0];
+ assert.ok(first.endsWith('. '),'prefer sentence boundaries');
+});
+
+test('long page speaks each block in order and keeps original page text',async()=>{
+ const h=setup('speech');await tick();await tick();
+ await h.app.open('ole');await tick();await tick();
+ const text='Ein vollständiger Satz. '.repeat(70);
+ h.app.bookSpeech.ole=[text];
+ const expected=Array.from(h.app.splitSpeechText(text));
+ await h.get('read-aloud').onclick();
+ assert.deepEqual(h.spoken,expected);
+ assert.equal(h.app.bookSpeech.ole[0],text);
+ assert.equal(h.app.current,1);
+ assert.equal(h.get('speech-controls').hidden,false);
+ await h.get('read-aloud').onclick();
+ assert.deepEqual(h.spoken,expected.concat(expected),'replaying uses the same cache inputs');
+});
+
+test('waiting for playback completion pauses the chunk queue; stop cancels later blocks',async()=>{
+ const h=setup('speech');await tick();await tick();
+ await h.app.open('ole');await tick();await tick();
+ h.app.bookSpeech.ole=['Satz. '.repeat(200)];
+ let complete;
+ h.window.MuPiBoxSDK.tts.speak=text=>{
+  h.spoken.push(text);
+  return new Promise(resolve=>{complete=resolve});
+ };
+ const reading=h.get('read-book').onclick();
+ await tick();await tick();
+ assert.equal(h.spoken.length,1);
+ await tick();
+ assert.equal(h.spoken.length,1,'no next chunk while current playback is paused or unfinished');
+ await h.get('read-book').onclick();
+ complete({state:'completed'});
+ await reading;await tick();
+ assert.equal(h.spoken.length,1,'stale completion must not restart after stop');
+ assert.equal(h.app.current,1);
+});
+
+test('page changes and lifecycle pause discard a pending chunk queue',async()=>{
+ for(const action of ['turn','pagehide','lifecycle.pause']){
+  const h=setup('speech');await tick();await tick();
+  await h.app.open('ole');await tick();await tick();
+  h.app.bookSpeech.ole=['Satz. '.repeat(200)];
+  let complete;
+  h.window.MuPiBoxSDK.tts.speak=text=>{
+   h.spoken.push(text);
+   return new Promise(resolve=>{complete=resolve});
+  };
+  const reading=h.get('read-aloud').onclick();
+  await tick();await tick();
+  if(action==='turn')h.app.turn(1);else h.events[action]();
+  complete({state:'completed'});
+  await reading;await tick();
+  assert.equal(h.spoken.length,1);
+ }
+});
+
+test('a cancelled or failed block prevents subsequent chunks and automatic turning',async()=>{
+ for(const outcome of ['cancelled','error']){
+  const h=setup('speech');await tick();await tick();
+  await h.app.open('ole');await tick();await tick();
+  h.app.bookSpeech.ole=['Satz. '.repeat(200)];
+  h.window.MuPiBoxSDK.tts.speak=async text=>{
+   h.spoken.push(text);
+   if(outcome==='error')throw Error('host failed');
+   return{state:outcome};
+  };
+  await h.get('read-book').onclick();
+  assert.equal(h.spoken.length,1);
+  assert.equal(h.app.current,1);
+  assert.equal(h.get('read-book')['aria-pressed'],'false');
+ }
+});
+
+test('continuous mode waits for every block before changing the image',async()=>{
+ const h=setup('speech');await tick();await tick();
+ await h.app.open('ole');await tick();await tick();
+ const text='Satz. '.repeat(200);
+ h.app.bookSpeech.ole=[text,'Nächste Seite.'];
+ const blocks=Array.from(h.app.splitSpeechText(text));
+ const pages=[];
+ h.window.MuPiBoxSDK.tts.speak=async text=>{
+  h.spoken.push(text);pages.push(h.app.current);return{state:'completed'};
+ };
+ await h.get('read-book').onclick();
+ for(let i=0;i<40;i++)await tick();
+ assert.deepEqual(h.spoken.slice(0,blocks.length),blocks);
+ assert.ok(pages.slice(0,blocks.length).every(page=>page===1));
+ assert.equal(pages[blocks.length],2);
+});
+
+test('pre-rendering uses chunk limits and respects the host request budget',async()=>{
+ const h=setup('speech');await tick();await tick();
+ await h.app.open('ole');await tick();await tick();
+ h.app.bookSpeech.ole=['Vorbereitung. '.repeat(800)];
+ for(let i=0;i<10;i++){
+  h.app.show();await tick();await tick();
+ }
+ assert.ok(h.prepared.length<=10);
+ assert.ok(h.prepared.every(text=>Array.from(text).length<=500));
+});
+
+
+test('resuming a host-paused block continues the remaining page blocks in order',async()=>{
+ const h=setup('speech');await tick();await tick();
+ await h.app.open('ole');await tick();await tick();
+ h.app.bookSpeech.ole=['Ein Satz. '.repeat(140)];
+ const expected=Array.from(h.app.splitSpeechText(h.app.bookSpeech.ole[0]));
+ let resume;
+ h.window.MuPiBoxSDK.tts.speak=text=>{
+  h.spoken.push(text);
+  if(h.spoken.length===1)return new Promise(resolve=>{resume=resolve});
+  return Promise.resolve({state:'completed'});
+ };
+ const reading=h.get('read-aloud').onclick();
+ await tick();await tick();
+ assert.equal(h.spoken.length,1);
+ resume({state:'completed'});
+ await reading;
+ assert.deepEqual(h.spoken,expected);
+});
+
+test('stopping during pending pre-rendering cannot start audio after preparation finishes',async()=>{
+ const h=setup('speech');await tick();await tick();
+ await h.app.open('ole');await tick();await tick();
+ h.app.bookSpeech.ole=['Noch ein Satz. '.repeat(140)];
+ let finishPreparation;
+ h.window.MuPiBoxSDK.tts.prepare=()=>new Promise(resolve=>{finishPreparation=resolve});
+ h.app.show();await tick();
+ const reading=h.get('read-aloud').onclick();
+ await tick();await tick();
+ assert.equal(h.spoken.length,0);
+ await h.get('read-aloud').onclick();
+ finishPreparation({queued:true});
+ await reading;await tick();
+ assert.equal(h.spoken.length,0);
 });

@@ -112,3 +112,39 @@ Kehre nach Änderungen aus einem Buch ins Regal zurück oder starte die App neu.
 ## Gerätetest
 
 Der App-Entwickler hat die drei Vorlesetasten und eigene SMB-Bücher auf MuPiBox NG Alpha 65 getestet.
+# Buchverwaltung im vertrauten Editor-Layout (1.1.1-beta.1)
+
+Die Verwaltung verwendet das Layout des lokalen Bucheditors: Bücherliste,
+Titel und Ordnerkennung links, Seitenminiaturen darunter sowie große
+Seitenvorschau und Vorlesetext rechts. Bilder lassen sich hinzufügen,
+entfernen und mit den Pfeilen umsortieren; der Text bleibt bei seinem Bild.
+Ein separates erstes Cover wird ausdrücklich markiert, erhält keinen
+Vorlesetext und wird nicht als Inhaltsseite gezählt. Beim Entfernen des
+Covers wird die Cover-Markierung zurückgesetzt. Ohne separates Cover ist
+die erste Inhaltsseite zugleich das Titelbild.
+
+Die Seite wird über „App-Verwaltung öffnen“ in der angemeldeten MuPiBox-
+Administration geöffnet. Alpha 85 oder neuer wird für diesen Test empfohlen.
+Dateizugriffe verwenden ausschließlich die freigegebene Admin-SDK und den
+eigenen `books`-Ordner. Die normale Leseansicht behält ihr Design. Die
+vorhandene Aufteilung langer Vorlesetexte in höchstens 500 Zeichen große
+TTS-Blöcke ist auch in diesem Paket enthalten; die Verwaltung kürzt Texte
+nicht. Leere Seitentexte bleiben erhalten.
+
+„Buch speichern“ übernimmt den gesamten Entwurf und aktualisiert die
+`index.json` unter Erhalt vorhandener Einträge. Die Bearbeitung unterstützt
+derzeit `full-page`; `image-and-text` wird mit einem Hinweis abgewiesen.
+OCR bleibt im lokalen Flask-Editor, da die Admin-SDK keine OCR anbietet.
+Ungespeicherte Entwürfe gehen beim Neuladen verloren.
+
+Zum Schutz bestehender Bücher werden geänderte Bildfolgen und Texte unter
+neuen Dateinamen geschrieben, bevor `book.json` revisionsgeprüft auf den
+neuen Stand verweist. Unveränderte Bildfolgen werden wiederverwendet.
+Die ursprünglichen Dateien bleiben erhalten und zählen weiterhin gegen
+die Host-Quota (128 MiB/2000 Dateien einschließlich Papierkorb). Es gibt
+keine automatische endgültige Bereinigung und keine hostseitige Transaktion
+über mehrere Dateien. Falls nur die Aktualisierung der Bücherliste scheitert,
+wird das gespeicherte Buch mit einer sichtbaren Warnung gemeldet; erneutes
+Speichern versucht den Listeneintrag nochmals. Bei Konflikten mit SMB-
+Änderungen das Buch neu öffnen. Ein fehlgeschlagener Upload kann ungenutzte
+Dateien hinterlassen, verändert aber noch nicht das veröffentlichte Buch.
