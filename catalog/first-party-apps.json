@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "apps": [
+    {
+      "id": "official.cover-memory",
+      "name": "Cover-Memory",
+      "description": "Finde Bildpaare aus eigenen lokalen Covern oder spiele klassisches Memory mit Formen, Tieren und Zahlen.",
+      "category": "games",
+      "author": "MuPiBox Team",
+      "version": "0.1.0",
+      "permissions": [
+        "cover-art"
+      ],
+      "releaseTag": "v0.1.0-preview.68",
+      "asset": "cover-memory.mupiapp",
+      "sha256": "eee5e2bca729f8f6974f7bd88c2d366ed3dbe127a19d98f12211024dc2cd3650",
+      "icon": "examples/cover-memory/cover.png"
+    },
+    {
+      "id": "official.mupi-malbuch",
+      "name": "MuPi Malbuch",
+      "description": "Freies Malen und Ausmalbilder, mit Stiften, Radierer und eigenen lokalen Vorlagen.",
+      "category": "creative",
+      "author": "MuPiBox Team",
+      "version": "0.1.0",
+      "permissions": [
+        "coloring-pages"
+      ],
+      "releaseTag": "v0.1.0-preview.68",
+      "asset": "mupi-malbuch.mupiapp",
+      "sha256": "48878242c71e177c95b7b16bdb1fad78fbe62910a9ac2fd10b3cecc4b55171bc",
+      "icon": "examples/mupi-malbuch/cover.png"
+    }
+  ]
+}

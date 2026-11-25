@@ -53,3 +53,10 @@ Reihenfolge zurück.
 ## Camera-capable catalog apps
 
 A catalog entry with the `camera` permission must explain why it needs an attached USB/V4L2 camera. Admin approval at installation does **not** turn the camera on: the trusted local touchscreen asks for explicit session consent each time. A red Stop indicator is always visible. Camera apps are local-only; media is not uploaded or persisted by the host. For the experimental `official.webcam-preview` app, device capture has not been validated with physical hardware on Box 85.
+
+### Optional first-party catalog extension
+
+`first-party-apps.json` lists apps requiring newer, separately approved SDK
+capabilities. Hosts predating these capabilities continue to read only
+`apps.json`, whose strict permission validation would otherwise reject the
+whole catalog. Both files reference the same verified GitHub Release assets.
