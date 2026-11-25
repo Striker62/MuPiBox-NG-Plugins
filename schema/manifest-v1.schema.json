@@ -76,10 +76,11 @@
           "playback",
           "playback-control",
           "optical-media",
-          "cover-art"
+          "cover-art",
+          "coloring-pages"
         ]
       },
-      "maxItems": 14
+      "maxItems": 15
     },
     "networkHosts": {
       "type": "array",

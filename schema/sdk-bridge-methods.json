@@ -22,6 +22,8 @@
     "camera.list",
     "camera.start",
     "camera.stop",
+    "coloring.get",
+    "coloring.list",
     "config.get",
     "covers.sample",
     "device.audio",

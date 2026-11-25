@@ -27,7 +27,7 @@ HOST_ALLOWED_EXTENSIONS = {
     ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico",
     ".woff", ".woff2", ".ttf", ".mp3", ".ogg", ".wav", ".txt",
 }
-ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "shared-assets", "network", "links", "homeassistant", "device-status", "playback", "playback-control", "optical-media", "cover-art"}
+ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "shared-assets", "network", "links", "homeassistant", "device-status", "playback", "playback-control", "optical-media", "cover-art", "coloring-pages"}
 ALLOWED_FIELDS = {
     "apiVersion", "id", "name", "version", "runtime", "entry", "icon", "cover",
     "description", "author", "permissions", "networkHosts", "display",
