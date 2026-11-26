@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>Admin Audio Test</title></head>
+<body>
+<h1>Buchseite einsprechen</h1>
+<button id="scan">Mikrofone suchen</button>
+<label>Mikrofon <select id="device"></select></label>
+<label>Seite <input id="page" type="number" min="1" max="999" value="1"></label>
+<button id="start">Aufnehmen</button>
+<button id="stop">Stoppen &amp; speichern</button>
+<button id="cancel">Abbrechen</button>
+<button id="play">Letzte Aufnahme anhören</button>
+<button id="trash">Letzte Aufnahme verwerfen</button>
+<p id="status" role="status">Bereit</p>
+<script src="./recording.js"></script>
+</body></html>

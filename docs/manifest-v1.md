@@ -68,6 +68,7 @@ The page runs in an opaque-origin iframe and calls only the host-provided
 `MuPiBoxAdminSDK` for explicitly approved scoped file and settings
 operations. Optional `permissionReasons` explain requested permission
 grants to the user. [German security, API and AI developer guide](admin-pages-ai-guide.de.md).
+Since NG Alpha 87, `admin.capabilities` may include `audio.record`, with a required `permissionReasons["admin.audio.record"]`, `shared-assets` and scoped directories. [Recording API and demo](community-admin-audio-recording.md).
 
 **Compatibility:** An app supporting API `1` must not assume later additions or the presence of a physical controller. A host must reject unsupported API versions and unknown permission names, and may deny any requested privilege.
 
