@@ -186,3 +186,7 @@ vorhandenen lokalen Ausmalbilder-Ordner. `sdk.coloring.get(id)` liefert eine
 transparente PNG-Kontur als Data-URL, höchstens 1024 × 768 Pixel. Kein
 Schreibzugriff, keine beliebigen Pfade und keine Netzwerkfreigabe. Apps müssen
 auch ohne diese optionale Funktion freies Malen anbieten.
+
+## Extended camera and photo album SDK
+
+See [Photo and camera SDK](photo-camera-sdk.md) for permission scopes, separate photo buckets, gallery import, native capture modes and bounded preview polling. Check host capabilities before use.

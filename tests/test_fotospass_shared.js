@@ -7,7 +7,69 @@ const vm=require('node:vm');
 const source=fs.readFileSync(path.join(__dirname,'../examples/fotospass/app.js'),'utf8');
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgAAIAAAUAAXpeqz8AAAAASUVORK5CYII=','base64');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-function setup(mode='ok'){
+
+test('extended camera uses sequential preview and a separate selected native still resolution',async()=>{
+ const h=setup('ok',true);await tick();await tick();
+ const start=h.calls.find(row=>row[0]==='camera.start');
+ assert.equal(start[2].fps,10);assert.equal(start[2].preview.width,640);
+ assert.equal(h.calls.filter(row=>row[0]==='camera.capture').length,0);
+ await h.advance(100);
+ assert.equal(h.calls.filter(row=>row[0]==='camera.preview').length,2);
+ h.get('capture-resolution').value='640x480';h.get('capture-resolution').onchange();
+ await h.app.freeze();
+ const capture=h.calls.find(row=>row[0]==='camera.capture');assert.equal(capture[1].width,640);
+ assert.equal(h.get('photo').width,800,'decoded still dimensions are used rather than upscaling preview');
+ await h.advance(1000);assert.equal(h.calls.filter(row=>row[0]==='camera.preview').length,2);
+});
+
+test('high resolution still waits for the outstanding preview and stop discards a late still',async()=>{
+ const h=setup('ok',true);await tick();await tick();let finishPreview,finishCapture;
+ h.sdk.camera.preview=()=>new Promise(resolve=>{finishPreview=resolve});
+ const pending=h.app.frame();await h.advance(100); // scheduled request owns the single pending preview
+ const taking=h.app.freeze();await tick();
+ assert.equal(h.calls.filter(row=>row[0]==='camera.capture').length,0);
+ h.sdk.camera.capture=()=>new Promise(resolve=>{finishCapture=resolve});
+ finishPreview({image:'data:image/jpeg;base64,/9j/2Q=='});await pending;await tick();
+ assert.equal(typeof finishCapture,'function');
+ await h.app.stop();finishCapture({image:'data:image/jpeg;base64,/9j/2Q=='});await taking;
+ assert.equal(h.app.active,false);assert.equal(h.app.dirty,false);
+});
+
+test('bucket saving retains one camera original across a failed edited save and retry',async()=>{
+ const h=setup('ok',true);await tick();await tick();await h.app.freeze();let fail=true;const writes=[];
+ h.sdk.photos.save=async input=>{writes.push(input.bucket);if(input.bucket==='edited'&&fail)throw Error('full');return{id:'original'}};
+ await h.app.savePhoto();assert.equal(h.app.dirty,true);
+ fail=false;await h.app.savePhoto();
+ assert.deepEqual(writes,['originals','edited','edited']);assert.equal(h.app.dirty,false);
+});
+
+test('extended gallery combines legacy and edited photos and reads the selected bucket',async()=>{
+ const h=setup('ok',true);await tick();await tick();const reads=[];
+ h.sdk.photos.list=async bucket=>[{id:bucket==='edited'?'new':'legacy'}];
+ h.sdk.photos.get=async(id,bucket)=>{reads.push([id,bucket]);return new Blob([png])};
+ h.app.gallerySwitch(true);await tick();await tick();
+ assert.deepEqual(Array.from(h.app.galleryEntries,row=>row.id),['new','legacy']);
+ await h.app.galleryOpenDetail('new');assert.ok(reads.some(row=>row[0]==='new'&&row[1]==='edited'));
+});
+
+test('album import is explicit and only imports the selected host reference',async()=>{
+ const h=setup('ok',true);await tick();await tick();
+ h.app.gallerySwitch(true);h.app.selectGallerySource('album');await tick();await tick();
+ const choices=h.get('album-choices').children;assert.equal(choices.length,1);
+ choices[0].listeners.click();await tick();await tick();
+ assert.equal(h.calls.filter(row=>row[0]==='album.import').length,0);
+ await h.app.galleryOpenDetail('/api/gallery/local/photo/1');
+ assert.equal(h.get('gallery-edit').hidden,true);assert.equal(h.get('album-import').hidden,false);
+ h.get('album-import').listeners.click();await tick();await tick();
+ assert.deepEqual(h.calls.filter(row=>row[0]==='album.import'),[['album.import','/api/gallery/local/photo/1']]);
+});
+
+test('camera mode enumeration failure retains the legacy capture route',async()=>{
+ const h=setup('ok',true);h.sdk.camera.modes=async()=>{throw Error('unavailable')};await tick();await tick();
+ assert.equal(h.app.active,true);assert.equal(h.calls.filter(row=>row[0]==='camera.preview').length,0);
+ assert.equal(h.calls.filter(row=>row[0]==='camera.capture').length,1);
+});
+function setup(mode='ok',extended=false){
  const nodes=new Map(),events={},calls=[],urls=new Set(),draws=[],saved=[],encodings=[],fills=[],intervals=new Map(),timeouts=new Map();let nextURL=0,nextTimer=0,now=0;
  class Element{
   constructor(tag='div'){this.tag=tag;this.children=[];this.hidden=false;this.disabled=false;this.value='';this.style={};this.dataset={};this.listeners={};this.classList={toggle(){},add(){},remove(){}};this.isConnected=true;this.complete=true;this.naturalWidth=320;this.naturalHeight=240;this.width=320;this.height=240;}
@@ -40,6 +102,14 @@ function setup(mode='ok'){
  const sdk={shared:mode==='absent'?undefined:shared,
   camera:{list:async()=>[{id:'video0',name:'Mock camera'}],start:async()=>{},capture:async()=>({image:'data:image/jpeg;base64,/9j/2Q=='}),stop:async()=>{}},
   photos:{save:async blob=>{saved.push(blob);return{id:'saved'}},list:async()=>[],get:async()=>new Blob([png]),delete:async()=>{}},exit:async()=>{calls.push(['exit'])},on(){}};
+ if(extended){
+  sdk.capabilities=async()=>({methods:['camera.preview','camera.modes','photos.album.import'].map(method=>({method,available:true}))});
+  sdk.camera.modes=async()=>[{width:640,height:480},{width:1920,height:1080}];
+  sdk.camera.start=async(id,options)=>{calls.push(['camera.start',id,options])};
+  sdk.camera.preview=async()=>{calls.push(['camera.preview']);return {image:'data:image/jpeg;base64,/9j/2Q=='}};
+  sdk.camera.capture=async options=>{calls.push(['camera.capture',options]);return {image:'data:image/jpeg;base64,/9j/2Q=='}};
+  sdk.photos.album={list:async()=>[{name:'Familie',photos_url:'/api/gallery/local/photos'}],page:async()=>({photos:[{url:'/api/gallery/local/photo/1',name:'Mama'}],has_more:false}),get:async()=>new Blob([png]),import:async url=>{calls.push(['album.import',url]);return{id:'imported'}}};
+ }
  class MockImage{constructor(){this.naturalWidth=800;this.naturalHeight=600}set src(value){this._src=value;queueMicrotask(()=>{if(mode==='decode-failure')this.onerror?.();else this.onload?.()})}get src(){return this._src}}
  const context={Blob,Uint8Array,DataView,Image:MockImage,console:{warn(){}},
   URL:{createObjectURL(){const url='blob:'+ ++nextURL;urls.add(url);return url},revokeObjectURL(url){urls.delete(url)}},

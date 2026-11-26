@@ -61,7 +61,7 @@ jobs:
               manifest = json.loads(archive.read('manifest.json'))
               assert manifest['id'] == 'community.fotospass'
               assert manifest['version'] == version
-              assert manifest['permissions'] == ['camera', 'photo-save', 'shared-assets']
+              assert manifest['permissions'] == ['camera', 'photo-save', 'shared-assets', 'photo-import']
               assert manifest['sharedDirectories'] == ['accessoires', 'originale']
               assert manifest['admin']['directories'] == ['originale']
           print('SHA256:', hashlib.sha256(package.read_bytes()).hexdigest())

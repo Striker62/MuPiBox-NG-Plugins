@@ -2,6 +2,46 @@
 
 FotoSpaß ist ein kindgerechtes Fotobox-Plugin für MuPiBox-NG.
 
+## 1.3.0-beta.1: neue Foto- und Kamerafunktionen
+
+Diese Testversion verwendet den öffentlichen SDK-Stand aus
+`feat/photo-camera-sdk-20261126` (Commit `3c8a509`). Die Box muss die neuen
+Funktionen anbieten; die App prüft dies beim Start. Auf älteren unterstützten
+Hosts bleiben bisherige Kameraaufnahme und Fotospeicherung erhalten.
+
+- **Kamera einstellen:** Fotoauflösung aus den tatsächlich angebotenen nativen
+  Kameramodi auswählen. Standard ist die größte unterstützte Auflösung bis
+  3840 × 2160. Die Einstellung gilt für die aktuelle Kamerasitzung.
+- Vorschau: bis 640 × 480 mit angeforderten 10 Bildern pro Sekunde, jeweils
+  nur eine Anfrage. Die tatsächliche Geschwindigkeit hängt von Kamera und Box ab.
+  Vor dem Foto wartet die App auf eine ausstehende Vorschau und nimmt dann
+  ein separates Foto in der gewählten Auflösung auf. Keine Hochskalierung.
+- **Meine Fotos → Fotoalbum:** freigegebenes Album auswählen, Bild öffnen,
+  **In Originale übernehmen** antippen. Anschließend unter **Originale**
+  auswählen und bearbeiten. Die neue Berechtigung `photo-import` muss freigegeben
+  sein. Der Import verändert das Quellfoto nicht.
+- Mit dem neuen SDK bleiben aufgenommene Originale beim Speichern separat im
+  privaten SDK-Bereich `originals`; Ergebnisse liegen unter `edited`. Bereits
+  gespeicherte Fotos aus dem bisherigen Bereich `photos` bleiben unter
+  **Meine Fotos** sichtbar. Speichern einer Vorlage erstellt eine bearbeitete Kopie.
+- Damit neue Ergebnisse im MuPiBox-Fotoalbum erscheinen, muss die Veröffentlichung
+  des deklarierten Bereichs `edited` in der App-Verwaltung freigegeben werden.
+  Originale werden nicht automatisch veröffentlicht.
+- **Vorlagen** und der Admin-Upload bleiben unter dem SMB-Ordner
+  `CommunityApps/community.fotospass/originale/`. Dieser Ordner ist unabhängig
+  vom privaten SDK-Bereich `originals`. Vorhandene Dateien werden nicht migriert.
+
+Gespeicherte Kameraaufnahmen und Ergebnisse sind JPEG mit 90 % Qualität.
+Importierte Albumoriginale behalten die Quellbytes (JPEG/PNG). Es gelten die
+SDK-Grenzen von 8 MiB und 16 Megapixeln pro gespeicherten Bild sowie die gemeinsame
+App-Quote. Scheitert das Speichern eines Ergebnisses, bleibt der Entwurf geöffnet;
+ein bereits gesichertes Original wird beim erneuten Versuch nicht dupliziert.
+
+Automatische Tests prüfen die neue Anbindung mit einem simulierten Host,
+einschließlich ausstehender Vorschau, abgebrochener Aufnahme, Speicherversuch
+mit Wiederholung und Albumimport. Die tatsächliche Kamerageschwindigkeit,
+Auflösung und Veröffentlichung müssen auf der Box getestet werden.
+
 ## Funktionen
 
 - Live-Vorschau über die offizielle Kamera-API
@@ -88,7 +128,7 @@ Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginv
 
 ## Version
 
-0.5.5 (Testversion mit freundlicher Fotobox-Oberfläche)
+1.3.0-beta.1 (Fotoalbum-Import, getrennte Originale und neue Kameraanbindung)
 
 ## Neue Oberfläche (ab 0.5.5)
 
