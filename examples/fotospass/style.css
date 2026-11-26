@@ -119,3 +119,7 @@ footer{grid-area:3/1/4/3;align-self:center;text-align:center;font-size:9px;line-
 @media(min-height:600px){.sticker-controls button{height:44px;min-height:44px;}}
 
 .sticker-controls .control-symbol{font-family:Arial,sans-serif;font-size:25px;line-height:1;}
+
+.gallery-detail-buttons{grid-template-columns:repeat(3,minmax(0,1fr));}
+#gallery-edit{background:#dff0e8;color:#175d59;}
+#gallery-edit-confirm{position:absolute;inset:0;z-index:35;display:flex;align-items:center;justify-content:center;padding:12px;background:#234c50b8;border-radius:22px;}

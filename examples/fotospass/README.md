@@ -181,3 +181,21 @@ Das ist weiterhin eine Einzelbildvorschau innerhalb der dokumentierten
 Kamera-SDK-Grenzen, kein Video-Stream. Die tatsächliche Bildrate hängt von
 Kamera und Host ab und muss auf der MuPiBox gemessen werden. Das Design und
 die Foto-/Accessoire-Funktionen bleiben erhalten.
+# Testversion 1.1.0-beta.1: Galeriefotos bearbeiten
+
+Unter „Meine Fotos“ ein gespeichertes Foto öffnen und „Bearbeiten“ wählen.
+Das Bild wird in seiner vorhandenen Auflösung (bis 16 Megapixel) in den
+Editor übernommen. Accessoires und Zeichnungen können hinzugefügt werden.
+„Foto speichern“ erstellt über die bestehende Foto-SDK eine neue Kopie;
+das gewählte Original wird nicht ersetzt oder gelöscht. Bereits im Bild
+enthaltene Zeichnungen und Accessoires sind Teil des gespeicherten Bilds
+und lassen sich nicht nachträglich einzeln verschieben.
+
+Beim Wechsel von einem ungespeicherten Entwurf wird dessen Verwerfen
+ausdrücklich bestätigt. Ein Fehler beim Bildladen erhält den bisherigen
+Entwurf. Die Kamera bleibt während der Bearbeitung ausgeschaltet.
+
+Diese Version greift auf die eigene FotoSpaß-Galerie zu. Der Import aus
+dem allgemeinen MuPiBox-Fotoalbum benötigt eine zusätzliche SDK-Funktion.
+Eine Trennung in Original- und Ergebnisordner ist damit noch nicht umgesetzt.
+Die verbesserte Kameravorschau aus 1.0.2-beta.1 bleibt enthalten.

@@ -40,14 +40,14 @@ function setup(mode='ok'){
  const sdk={shared:mode==='absent'?undefined:shared,
   camera:{list:async()=>[{id:'video0',name:'Mock camera'}],start:async()=>{},capture:async()=>({image:'data:image/jpeg;base64,/9j/2Q=='}),stop:async()=>{}},
   photos:{save:async blob=>{saved.push(blob);return{id:'saved'}},list:async()=>[],get:async()=>new Blob([png]),delete:async()=>{}},exit:async()=>{calls.push(['exit'])},on(){}};
- class MockImage{set src(value){this._src=value;queueMicrotask(()=>{if(mode==='decode-failure')this.onerror?.();else this.onload?.()})}get src(){return this._src}}
+ class MockImage{constructor(){this.naturalWidth=800;this.naturalHeight=600}set src(value){this._src=value;queueMicrotask(()=>{if(mode==='decode-failure')this.onerror?.();else this.onload?.()})}get src(){return this._src}}
  const context={Blob,Uint8Array,DataView,Image:MockImage,console:{warn(){}},
   URL:{createObjectURL(){const url='blob:'+ ++nextURL;urls.add(url);return url},revokeObjectURL(url){urls.delete(url)}},
   setInterval(cb){const id=intervals.size+1;intervals.set(id,cb);return id},clearInterval(id){intervals.delete(id)},
   performance:{now:()=>now},setTimeout(cb,delay){const id=++nextTimer;timeouts.set(id,{cb,at:now+delay});return id},clearTimeout(id){timeouts.delete(id)},
   window:{MuPiBoxSDK:sdk,addEventListener(name,cb){const previous=events[name];events[name]=(...args)=>{previous?.(...args);cb(...args)}}},
   document:{hidden:false,getElementById:get,createElement:tag=>new Element(tag),createTextNode:text=>({textContent:text}),querySelectorAll:()=>[],addEventListener(name,cb){events['document:'+name]=cb}}};
- const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={categories,sharedAccessories,accessoryCache,loadSharedAccessories,accessorySource,safeAccessoryName,addSticker,freeze,savePhoto,accessoryHeight,releaseUnusedAccessories,requestExit,performExit,beginCountdown,resume,start,stop,frame,get dirty(){return photoDirty},get counting(){return counting},get active(){return active}, get items(){return items},setCategory(id){accessoryCategory=id;renderAccessoryMenu()}};})();`);
+ const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={categories,sharedAccessories,accessoryCache,loadSharedAccessories,accessorySource,safeAccessoryName,addSticker,freeze,savePhoto,accessoryHeight,releaseUnusedAccessories,requestExit,performExit,beginCountdown,resume,start,stop,frame,gallerySwitch,galleryOpenDetail,galleryEditPhoto,requestGalleryEdit,get dirty(){return photoDirty},get counting(){return counting},get active(){return active}, get items(){return items},setCategory(id){accessoryCategory=id;renderAccessoryMenu()}};})();`);
  vm.runInNewContext(exposed,context);
  return {app:context.app,get,calls,urls,draws,saved,events,sdk,timeouts,context,
   async advance(ms){now+=ms;const ready=[...timeouts].filter(([,task])=>task.at<=now);for(const [id,task] of ready){timeouts.delete(id);task.cb()}await tick();await tick()}};
@@ -181,4 +181,46 @@ test('stop cancels pending scheduling and a late result cannot restore the previ
  finish({image:'late'});await tick();await tick();
  assert.equal(h.get('preview').hidden,true);assert.equal(h.app.active,false);
  assert.equal(h.timeouts.size,0);
+});
+
+async function openGalleryPhoto(h){
+ h.app.gallerySwitch(true);await tick();await tick();
+ await h.app.galleryOpenDetail('original');
+}
+test('gallery image opens in editor at original dimensions; saving creates a copy',async()=>{
+ const h=setup();await tick();await tick();let deleted=0;
+ h.sdk.photos.delete=async()=>{deleted++};
+ await openGalleryPhoto(h);await h.app.galleryEditPhoto('original');
+ assert.equal(h.app.active,false);assert.equal(h.app.dirty,true);
+ assert.equal(h.get('editor-view').hidden,false);assert.equal(h.get('gallery-view').hidden,true);
+ assert.equal(h.get('photo').width,800);assert.equal(h.get('photo').height,600);
+ assert.equal(h.get('painting').width,800);assert.equal(h.app.items.length,0);
+ await h.app.addSticker('glasses');await h.app.savePhoto();
+ assert.equal(h.saved.length,1);assert.equal(deleted,0);assert.equal(h.app.dirty,false);
+});
+test('editing another gallery photo protects unsaved changes and permits cancellation',async()=>{
+ const h=setup();await tick();await tick();await h.app.freeze();
+ await h.app.addSticker('glasses');await openGalleryPhoto(h);
+ h.app.requestGalleryEdit();
+ assert.equal(h.get('gallery-edit-confirm').hidden,false);
+ h.get('gallery-edit-cancel').listeners.click();
+ assert.equal(h.get('gallery-view').hidden,true);assert.equal(h.app.items.length,1);assert.equal(h.app.dirty,true);
+ await openGalleryPhoto(h);h.app.requestGalleryEdit();h.get('gallery-edit-discard').listeners.click();
+ await tick();await tick();
+ assert.equal(h.app.items.length,0);assert.equal(h.get('photo').width,800);
+});
+test('gallery decode failure retains the current draft and shows an error',async()=>{
+ const h=setup('decode-failure');await tick();await tick();await h.app.freeze();
+ await openGalleryPhoto(h);await h.app.galleryEditPhoto('original');
+ assert.match(h.get('gallery-status').textContent,/Bearbeiten fehlgeschlagen/);
+ assert.equal(h.get('photo').width,320);assert.equal(h.app.dirty,true);
+ assert.equal(h.get('gallery-edit').disabled,false);
+});
+test('leaving gallery while image loading prevents late editor replacement',async()=>{
+ const h=setup();await tick();await tick();await openGalleryPhoto(h);
+ let finish;
+ h.context.Image=class {constructor(){this.naturalWidth=800;this.naturalHeight=600}set src(value){finish=()=>this.onload()}};
+ const loading=h.app.galleryEditPhoto('original');await tick();
+ h.app.gallerySwitch(false);finish();await loading;
+ assert.equal(h.get('photo').width,320);assert.equal(h.app.dirty,false);
 });
