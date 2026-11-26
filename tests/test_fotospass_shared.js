@@ -8,7 +8,7 @@ const source=fs.readFileSync(path.join(__dirname,'../examples/fotospass/app.js')
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgAAIAAAUAAXpeqz8AAAAASUVORK5CYII=','base64');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function setup(mode='ok'){
- const nodes=new Map(),events={},calls=[],urls=new Set(),draws=[],saved=[],intervals=new Map(),timeouts=new Map();let nextURL=0,nextTimer=0,now=0;
+ const nodes=new Map(),events={},calls=[],urls=new Set(),draws=[],saved=[],encodings=[],fills=[],intervals=new Map(),timeouts=new Map();let nextURL=0,nextTimer=0,now=0;
  class Element{
   constructor(tag='div'){this.tag=tag;this.children=[];this.hidden=false;this.disabled=false;this.value='';this.style={};this.dataset={};this.listeners={};this.classList={toggle(){},add(){},remove(){}};this.isConnected=true;this.complete=true;this.naturalWidth=320;this.naturalHeight=240;this.width=320;this.height=240;}
   append(...values){for(const value of values){this.children.push(value);if(this.tag==='select'&&!this.value)this.value=value.value}}
@@ -19,8 +19,8 @@ function setup(mode='ok'){
   removeAttribute(name){delete this[name]}
   focus(){context.document.activeElement=this}
   getBoundingClientRect(){return {left:0,top:0,width:640,height:480}}
-  getContext(){return {drawImage:(image,...args)=>draws.push({image,args}),clearRect(){},getImageData(){return{}},putImageData(){},beginPath(){},moveTo(){},lineTo(){},stroke(){}}}
-  toBlob(callback){callback(new Blob([png],{type:'image/png'}))}
+  getContext(){return {drawImage:(image,...args)=>draws.push({image,args}),fillRect(...args){fills.push({color:this.fillStyle,args})},clearRect(){},getImageData(){return{}},putImageData(){},beginPath(){},moveTo(){},lineTo(){},stroke(){}}}
+  toBlob(callback,type='image/png',quality){encodings.push({type,quality});const actual=mode==='jpeg-fallback'?'image/png':type;callback(new Blob([mode==='jpeg-oversize'?new Uint8Array(8*1024*1024+1):actual==='image/jpeg'?Buffer.from([255,216,255,217]):png],{type:actual}))}
  }
  const get=id=>{if(!nodes.has(id))nodes.set(id,new Element(id==='devices'?'select':'div'));return nodes.get(id)};
  get('delay').value='5';
@@ -49,7 +49,7 @@ function setup(mode='ok'){
   document:{hidden:false,getElementById:get,createElement:tag=>new Element(tag),createTextNode:text=>({textContent:text}),querySelectorAll:()=>[],addEventListener(name,cb){events['document:'+name]=cb}}};
  const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={categories,sharedAccessories,accessoryCache,loadSharedAccessories,accessorySource,safeAccessoryName,addSticker,freeze,savePhoto,accessoryHeight,releaseUnusedAccessories,requestExit,performExit,beginCountdown,resume,start,stop,frame,gallerySwitch,galleryOpenDetail,galleryEditPhoto,requestGalleryEdit,get dirty(){return photoDirty},get counting(){return counting},get active(){return active}, get items(){return items},setCategory(id){accessoryCategory=id;renderAccessoryMenu()}};})();`);
  vm.runInNewContext(exposed,context);
- return {app:context.app,get,calls,urls,draws,saved,events,sdk,timeouts,context,
+ return {app:context.app,get,calls,urls,draws,saved,encodings,fills,events,sdk,timeouts,context,
   async advance(ms){now+=ms;const ready=[...timeouts].filter(([,task])=>task.at<=now);for(const [id,task] of ready){timeouts.delete(id);task.cb()}await tick();await tick()}};
 }
 test('existing five categories retain built-ins and add PNG files only from their own directories',async()=>{
@@ -74,7 +74,9 @@ test('square SMB PNG is placed without distortion and included in saved photo',a
  await h.app.freeze();await h.app.addSticker('shared:brillen:glasses.png');
  const item=h.app.items[0];assert.equal(item.aspect,1);
  assert.equal(h.app.accessoryHeight(item),48);
- await h.app.savePhoto();assert.equal(h.saved.length,1);assert.equal(h.saved[0].type,'image/png');
+ await h.app.savePhoto();assert.equal(h.saved.length,1);assert.equal(h.saved[0].type,'image/jpeg');
+ assert.deepEqual(h.encodings.at(-1),{type:'image/jpeg',quality:0.9});
+ assert.equal(h.fills.at(-1).color,'#fff');
  const placed=h.draws.filter(draw=>draw.image instanceof Object&&String(draw.image.src).startsWith('blob:')).at(-1);
  assert.ok(placed);assert.ok(Math.abs(placed.args[2]-placed.args[3])<0.0001,'saved PNG stays square');
  await h.app.addSticker('glasses');assert.equal(h.app.accessoryHeight(h.app.items[1]),22.5,'built-in geometry is preserved');
@@ -223,4 +225,9 @@ test('leaving gallery while image loading prevents late editor replacement',asyn
  const loading=h.app.galleryEditPhoto('original');await tick();
  h.app.gallerySwitch(false);finish();await loading;
  assert.equal(h.get('photo').width,320);assert.equal(h.app.dirty,false);
+});
+for(const mode of ['jpeg-fallback','jpeg-oversize'])test(mode+' rejects unusable output and preserves unsaved changes',async()=>{
+ const h=setup(mode);await tick();await tick();await h.app.freeze();await h.app.savePhoto();
+ assert.equal(h.saved.length,0);assert.equal(h.app.dirty,true);
+ assert.match(h.get('message').textContent,/Speichern fehlgeschlagen/);
 });

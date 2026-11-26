@@ -199,3 +199,14 @@ Diese Version greift auf die eigene FotoSpaß-Galerie zu. Der Import aus
 dem allgemeinen MuPiBox-Fotoalbum benötigt eine zusätzliche SDK-Funktion.
 Eine Trennung in Original- und Ergebnisordner ist damit noch nicht umgesetzt.
 Die verbesserte Kameravorschau aus 1.0.2-beta.1 bleibt enthalten.
+# Testversion 1.1.0-beta.2: Fotos als JPEG
+
+FotoSpaß speichert neue Kameraaufnahmen und bearbeitete Galeriefotos als
+JPEG mit Qualität 90 %. Transparente Bildbereiche werden vor dem Speichern
+auf Weiß zusammengeführt; Accessoires behalten ihre Transparenz im Editor.
+Die Host-Fotoverwaltung erhält einen Blob mit `image/jpeg` und bestimmt
+Dateiname und Speicherort. Es werden keine vorhandenen Bilder automatisch
+umgewandelt. Bearbeitete Bilder werden weiterhin als neue Kopie gespeichert.
+Ergebnisse über 8 MiB werden mit einem sichtbaren Fehler abgewiesen, der
+Entwurf bleibt erhalten. Die Original-/Ergebnisordner-Trennung und der
+allgemeine Fotoalbum-Import sind weiterhin separate Erweiterungen.

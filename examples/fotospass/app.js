@@ -253,7 +253,10 @@ async function savePhoto(){
  try{
   if(!sdk.photos||typeof sdk.photos.save!=='function')throw new Error('Die Foto-Speicher-API fehlt.');
   const out=document.createElement('canvas');out.width=photo.width;out.height=photo.height;
-  const c=out.getContext('2d');c.drawImage(photo,0,0);c.drawImage(canvas,0,0);
+  const c=out.getContext('2d');
+  // JPEG has no alpha channel: flatten any transparent source onto white.
+  c.fillStyle='#fff';c.fillRect(0,0,out.width,out.height);
+  c.drawImage(photo,0,0);c.drawImage(canvas,0,0);
   // Sticker liegen im Editor in einer Prozent-Box; die Darstellung ist auf 160:100 normiert.
   const snapshot=items.map(item=>({...item}));
   for(const item of snapshot)savingAccessoryTypes.add(item.type);
@@ -265,7 +268,9 @@ async function savePhoto(){
    const y=out.height*item.y/100-h/2;
    c.drawImage(im,x,y,w,h);
   }
-  const blob=await new Promise((resolve,reject)=>out.toBlob(b=>b?resolve(b):reject(new Error('PNG konnte nicht erzeugt werden')),'image/png'));
+  const blob=await new Promise((resolve,reject)=>out.toBlob(b=>b?resolve(b):reject(new Error('JPEG konnte nicht erzeugt werden')),'image/jpeg',0.9));
+  if(blob.type!=='image/jpeg')throw Error('Dieser Browser konnte kein JPEG erzeugen. Das Foto wurde nicht gespeichert.');
+  if(blob.size>8*1024*1024)throw Error('Das JPEG ist größer als 8 MiB. Bitte ein kleineres Ausgangsfoto verwenden.');
   const result=await sdk.photos.save(blob);
   if(photoRevision===savedRevision)photoDirty=false;
   say('✓ Foto gespeichert!'+(result?.id?' ID: '+result.id:''));
