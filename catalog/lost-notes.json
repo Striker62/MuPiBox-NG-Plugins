@@ -6,16 +6,16 @@
     "description": "MuPis musikalisches Jump-and-Run",
     "category": "games",
     "author": "MuPiBox",
-    "version": "0.1.0-alpha.16",
+    "version": "0.1.0-alpha.35",
     "permissions": [
       "controller",
       "audio",
       "storage"
     ],
-    "releaseTag": "v0.1.0-alpha.16",
+    "releaseTag": "v0.1.0-alpha.35",
     "asset": "lost-notes.mupiapp",
-    "sha256": "88c1dbe64ed8b05367531f820d4d29826db0faacb4f99465212cb5c6fee463d9",
+    "sha256": "8faefc35ce44078072853008dd775f3a2e94dc589583f3959ab8a168b14fd552",
     "icon": "examples/lost-notes/cover.jpg"
   },
-  "signature": "LJw2UJ2QUSVGsW9IR/XMjtFL4nP63p/R7brawHyOEP4PAbx00TjIvxdzwciink9xctS4vXB7XnA2pjQM6g4VDw=="
+  "signature": "jQwNX8ZfzWb9y/1m1Ind4FTgVL5kPfIC5SMHl+T1ryuVYTJ4At2Ue4Zruun9zEPtwomTAc8thcBakpO8i4TjAg=="
 }
