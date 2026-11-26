@@ -6,6 +6,40 @@
   const urls=new Set();
   let uploading=false,stopRequested=false,refreshRun=0,queue=[];
   function error(message){$('error').textContent=message;$('error').hidden=false;}
+  let cameraSettings=null,cameraRevision='',cameraBusy=false;
+  const resolutions=['auto','640x480','1280x720','1920x1080','2560x1440','3840x2160'];
+  async function loadCameraSettings(){
+    if(cameraBusy)return;
+    cameraBusy=true;cameraSettings=null;
+    for(const id of ['camera-save','camera-reload','capture-resolution'])$(id).disabled=true;
+    try{
+      if(!sdk?.settings?.get||!sdk?.settings?.set)throw Error('Die Box stellt die App-Einstellungen noch nicht bereit.');
+      const result=await sdk.settings.get();
+      if(typeof result?.revision!=='string'||!result.value||typeof result.value!=='object'||Array.isArray(result.value))throw Error('Ungültige Antwort der App-Einstellungen.');
+      cameraSettings=result.value;cameraRevision=result.revision;
+      $('capture-resolution').value=resolutions.includes(result.value.fotoCaptureResolution)?result.value.fotoCaptureResolution:'auto';
+      $('camera-status').textContent='Kameraeinstellung geladen. Änderungen gelten nach einem Neustart der FotoSpaß-App.';
+    }catch(e){$('camera-status').textContent='Kameraeinstellung konnte nicht geladen werden: '+e.message;}
+    finally{cameraBusy=false;$('camera-reload').disabled=false;$('camera-save').disabled=$('capture-resolution').disabled=!cameraSettings;}
+  }
+  $('camera-reload').onclick=()=>void loadCameraSettings();
+  $('camera-save').onclick=async()=>{
+    if(cameraBusy||!cameraSettings)return;
+    const resolution=$('capture-resolution').value;if(!resolutions.includes(resolution))return;
+    cameraBusy=true;for(const id of ['camera-save','camera-reload','capture-resolution'])$(id).disabled=true;
+    try{
+      await sdk.settings.set({...cameraSettings,fotoCaptureResolution:resolution},{expectedRevision:cameraRevision});
+      cameraSettings=null;
+      // Re-read the revision before permitting another write. Other settings
+      // are preserved, and a concurrent admin edit must fail closed.
+      const result=await sdk.settings.get();
+      if(typeof result?.revision!=='string'||!result.value||typeof result.value!=='object'||Array.isArray(result.value))throw Error('Einstellung gespeichert; aktuelle Revision konnte nicht gelesen werden. Bitte neu laden.');
+      cameraSettings=result.value;cameraRevision=result.revision;
+      $('camera-status').textContent='Kameraeinstellung gespeichert. FotoSpaß schließen und erneut öffnen.';
+    }catch(e){$('camera-status').textContent='Speichern nicht abgeschlossen: '+e.message+'. Bei einem Konflikt Einstellung neu laden.';}
+    finally{cameraBusy=false;$('camera-reload').disabled=false;$('camera-save').disabled=$('capture-resolution').disabled=!cameraSettings;}
+  };
+  void loadCameraSettings();
   function unique(){const bytes=new Uint8Array(12);crypto.getRandomValues(bytes);return [...bytes].map(value=>value.toString(16).padStart(2,'0')).join('');}
   function release(){for(const url of urls)URL.revokeObjectURL(url);urls.clear();}
   function selection(){

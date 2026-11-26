@@ -41,8 +41,9 @@ test('listing filters unsafe entries and reads validate names',async()=>{
  assert.deepEqual(result.entries,[{name:'a.jpg',path:'originale/a.jpg'}]);
  await assert.rejects(h.store.read('../bad.jpg'),/Bildname/);
 });
-function ui(){
+function ui(settings){
  const h=backend(),nodes=new Map(),encoded=[],released=[];
+ if(settings)h.sdk.settings=settings;
  const node=()=>({disabled:false,hidden:false,value:'',checked:true,files:[],children:[],append(...items){this.children.push(...items)},replaceChildren(){this.children=[]},prepend(item){this.children.unshift(item)}});
  const get=id=>{if(!nodes.has(id))nodes.set(id,node());return nodes.get(id)};
  class Image{constructor(){this.naturalWidth=4000;this.naturalHeight=3000}async decode(){}}
@@ -73,4 +74,25 @@ test('partial failure keeps failed and unprocessed inputs, retry does not duplic
  assert.equal(h.data.size,1);assert.match(h.get('error').textContent,/read-only/);
  assert.equal(h.get('selection').children.length,2);
  await h.get('upload').onclick();assert.equal(h.data.size,3);assert.equal(h.get('upload').disabled,true);
+});
+
+test('camera admin settings preserve other keys and use the current revision for every save',async()=>{
+ let value={other:'preserve',fotoCaptureResolution:'1280x720'},revision='r1';const writes=[];
+ const h=ui({get:async()=>({value,revision}),set:async(next,options)=>{writes.push([next,options]);value=next;revision='r2'}});await tick();
+ assert.equal(h.get('capture-resolution').value,'1280x720');
+ h.get('capture-resolution').value='1920x1080';await h.get('camera-save').onclick();
+ assert.equal(writes[0][0].other,'preserve');assert.equal(writes[0][0].fotoCaptureResolution,'1920x1080');assert.equal(writes[0][1].expectedRevision,'r1');
+ h.get('capture-resolution').value='auto';await h.get('camera-save').onclick();
+ assert.equal(writes[1][1].expectedRevision,'r2');assert.match(h.get('camera-status').textContent,/gespeichert/);
+});
+
+test('camera setting conflicts retain the selected resolution and never overwrite blindly',async()=>{
+ let writes=0;const h=ui({get:async()=>({value:{},revision:'r1'}),set:async()=>{writes++;throw Error('409 conflict')}});await tick();
+ h.get('capture-resolution').value='1920x1080';await h.get('camera-save').onclick();
+ assert.equal(writes,1);assert.equal(h.get('capture-resolution').value,'1920x1080');assert.match(h.get('camera-status').textContent,/409 conflict/);
+});
+
+test('missing admin settings capability disables camera saving while upload stays available',async()=>{
+ const h=ui();await tick();assert.equal(h.get('camera-save').disabled,true);
+ h.get('files').files=[{name:'Familie.jpg',size:100}];h.get('files').onchange();assert.equal(h.get('upload').disabled,false);
 });

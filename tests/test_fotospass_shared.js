@@ -9,13 +9,12 @@ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4n
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 
 test('extended camera uses sequential preview and a separate selected native still resolution',async()=>{
- const h=setup('ok',true);await tick();await tick();
+ const h=setup('ok',true,'640x480');await tick();await tick();
  const start=h.calls.find(row=>row[0]==='camera.start');
  assert.equal(start[2].fps,10);assert.equal(start[2].preview.width,640);
  assert.equal(h.calls.filter(row=>row[0]==='camera.capture').length,0);
  await h.advance(125);
  assert.equal(h.calls.filter(row=>row[0]==='camera.preview').length,2);
- h.get('capture-resolution').value='640x480';h.get('capture-resolution').onchange();
  await h.app.freeze();
  const capture=h.calls.find(row=>row[0]==='camera.capture');assert.equal(capture[1].width,640);
  assert.equal(h.get('photo').width,800,'decoded still dimensions are used rather than upscaling preview');
@@ -69,7 +68,7 @@ test('camera mode enumeration failure retains the legacy capture route',async()=
  assert.equal(h.app.active,true);assert.equal(h.calls.filter(row=>row[0]==='camera.preview').length,0);
  assert.equal(h.calls.filter(row=>row[0]==='camera.capture').length,1);
 });
-function setup(mode='ok',extended=false){
+function setup(mode='ok',extended=false,preferred='auto'){
  const nodes=new Map(),events={},calls=[],urls=new Set(),draws=[],saved=[],encodings=[],fills=[],intervals=new Map(),timeouts=new Map();let nextURL=0,nextTimer=0,now=0;
  class Element{
   constructor(tag='div'){this.tag=tag;this.children=[];this.hidden=false;this.disabled=false;this.value='';this.style={};this.dataset={};this.listeners={};this.classList={toggle(){},add(){},remove(){}};this.isConnected=true;this.complete=true;this.naturalWidth=320;this.naturalHeight=240;this.width=320;this.height=240;}
@@ -103,6 +102,7 @@ function setup(mode='ok',extended=false){
   camera:{list:async()=>[{id:'video0',name:'Mock camera'}],start:async()=>{},capture:async()=>({image:'data:image/jpeg;base64,/9j/2Q=='}),stop:async()=>{}},
   photos:{save:async blob=>{saved.push(blob);return{id:'saved'}},list:async()=>[],get:async()=>new Blob([png]),delete:async()=>{}},exit:async()=>{calls.push(['exit'])},on(name,handler){events['sdk:'+name]=handler}};
  if(extended){
+  sdk.config={get:async()=>({fotoCaptureResolution:preferred})};
   sdk.capabilities=async()=>({methods:['camera.preview','camera.modes','photos.album.import'].map(method=>({method,available:true}))});
   sdk.camera.modes=async()=>[{width:640,height:480},{width:1920,height:1080}];
   sdk.camera.start=async(id,options)=>{calls.push(['camera.start',id,options])};
@@ -162,6 +162,11 @@ test('preview learns a slower host rate and retains it after successful frames',
  assert.match(h.get('message').textContent,/angepasst/);
  now+=999;await h.advance(999);assert.equal(calls,4);
  now++;await h.advance(1);assert.equal(calls,5);assert.equal(h.app.active,true);
+});
+
+test('unsupported admin resolution selects a native mode within the limit without upscaling',async()=>{
+ const h=setup('ok',true,'1280x720');await tick();await tick();await h.app.freeze();
+ const capture=h.calls.find(row=>row[0]==='camera.capture');assert.equal(capture[1].width,640);assert.equal(capture[1].height,480);
 });
 test('existing five categories retain built-ins and add PNG files only from their own directories',async()=>{
  const h=setup();await tick();await tick();

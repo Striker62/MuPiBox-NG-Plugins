@@ -5,6 +5,19 @@
   <header><div><span class="eyebrow">FOTOSPAẞ · VERWALTUNG</span><h1>Fotos für neue Ideen</h1><p>Lade Bilder von deinem Computer in den eigenen FotoSpaß-Ordner.</p></div><span class="badge">Originale</span></header>
   <section class="notice"><strong>Erster Schritt: Fotos bereitstellen</strong><p>Die Uploads liegen unter <code>CommunityApps/community.fotospass/originale/</code> und sind auch über SMB erreichbar. In der Kinder-App findest du diese Bilder unter „Meine Fotos“ → „Vorlagen“; Bearbeitungen werden als neue Kopien gespeichert. „Meine Fotos“ zeigt weiterhin die über die Foto-SDK gespeicherten Aufnahmen und Ergebnisse.</p></section>
   <div id="error" role="alert" hidden></div>
+  <section class="panel camera-settings" aria-labelledby="camera-heading">
+    <h2 id="camera-heading">Kamera</h2>
+    <label class="field" for="capture-resolution">Auflösung für neue Fotoaufnahmen</label>
+    <select id="capture-resolution" disabled>
+      <option value="auto">Automatisch – größte unterstützte Auflösung</option>
+      <option value="640x480">640 × 480</option><option value="1280x720">1280 × 720 (HD)</option>
+      <option value="1920x1080">1920 × 1080 (Full HD)</option><option value="2560x1440">2560 × 1440</option>
+      <option value="3840x2160">3840 × 2160 (4K)</option>
+    </select>
+    <p class="hint">Gilt ab dem nächsten Start der FotoSpaß-App. Die Kamera muss die Auflösung unterstützen. Ist sie nicht verfügbar, verwendet FotoSpaß die größte angebotene Auflösung innerhalb der Vorgabe; falls keine passt, die kleinste. Bilder werden nicht hochskaliert. Die Live-Vorschau verwendet unabhängig davon eine kleinere Auflösung. Ältere Box-Versionen verwenden weiterhin die bisherige Kameraaufnahme.</p>
+    <div class="actions"><button id="camera-save" class="primary" disabled>Kameraeinstellung speichern</button><button id="camera-reload">Einstellung neu laden</button></div>
+    <p id="camera-status" class="status" role="status" aria-live="polite">Kameraeinstellung wird geladen …</p>
+  </section>
   <div class="columns">
     <section class="panel"><h2>Fotos hochladen</h2>
       <label class="field" for="files">Bilder auswählen</label>

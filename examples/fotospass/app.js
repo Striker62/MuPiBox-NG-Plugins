@@ -130,8 +130,13 @@ async function scan(autostart=false){try{const list=await sdk.camera.list(),old=
 // A single capture at a time, with a small margin above the host's ~1 fps.
 let PREVIEW_INTERVAL_MS=1100;
 let fastPreview=false,previewSupported=false,highResolution=false,photoBuckets=false,capturing=false;
-let framePending=Promise.resolve(),captureMode=null,photoSession=null,previewFailures=0;
+let framePending=Promise.resolve(),captureMode=null,photoSession=null,previewFailures=0,preferredResolution='auto';
 async function discoverPhotoFeatures(){
+ try{
+  const settings=await sdk.config?.get();
+  const value=settings?.fotoCaptureResolution;
+  if(typeof value==='string'&&/^(auto|640x480|1280x720|1920x1080|2560x1440|3840x2160)$/.test(value))preferredResolution=value;
+ }catch{ /* No app configuration on older hosts: retain automatic mode. */ }
  try{
   const info=await sdk.capabilities?.();
   const methods=Array.isArray(info?.methods)?info.methods:[];
@@ -147,16 +152,18 @@ async function discoverPhotoFeatures(){
 }
 async function prepareCamera(){
  captureMode=null;fastPreview=false;PREVIEW_INTERVAL_MS=1100;previewFailures=0;
- const picker=$('capture-resolution');picker.replaceChildren();picker.hidden=true;
  if(!highResolution)return {};
  let modes;
  try{modes=await sdk.camera.modes(select.value)}catch{return {}};
  const seen=new Set();
  const usable=(Array.isArray(modes)?modes:[]).filter(m=>Number.isInteger(m.width)&&Number.isInteger(m.height)&&m.width>0&&m.height>0&&m.width<=3840&&m.height<=2160).filter(m=>{const key=m.width+'x'+m.height;if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>b.width*b.height-a.width*a.height);
  if(!usable.length)return {};
- for(const mode of usable){const option=document.createElement('option');option.value=mode.width+'x'+mode.height;option.textContent=mode.width+' × '+mode.height;picker.append(option)}
- picker.value=usable[0].width+'x'+usable[0].height;picker.hidden=false;
- captureMode=usable[0];picker.onchange=()=>{captureMode=usable.find(m=>m.width+'x'+m.height===picker.value)||usable[0]};
+ captureMode=usable[0];
+ if(preferredResolution!=='auto'){
+  const [width,height]=preferredResolution.split('x').map(Number);
+  captureMode=usable.find(mode=>mode.width===width&&mode.height===height)||
+   usable.find(mode=>mode.width<=width&&mode.height<=height)||usable[usable.length-1];
+ }
  const previewMode=usable.filter(m=>m.width<=640&&m.height<=480)[0];
  // Leave headroom below the requested 10 FPS, including timer rounding and
  // different clocks on the browser and host. Never poll on the rate boundary.

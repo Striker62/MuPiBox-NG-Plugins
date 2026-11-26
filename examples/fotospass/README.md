@@ -2,6 +2,22 @@
 
 FotoSpaß ist ein kindgerechtes Fotobox-Plugin für MuPiBox-NG.
 
+## 1.3.0-beta.4: Fotoauflösung in der Adminseite
+
+Die Auflösung wird unter **FotoSpaß · Verwaltung → Kamera** eingestellt.
+Nach **Kameraeinstellung speichern** die Kinder-App schließen und neu öffnen.
+In der Kinder-App gibt es keine Auflösungsauswahl mehr. Zur Auswahl stehen
+Automatisch, 640 × 480, 1280 × 720, 1920 × 1080, 2560 × 1440 und 3840 × 2160.
+Automatisch verwendet den größten angebotenen nativen Modus bis 3840 × 2160.
+Bei einer nicht angebotenen Vorgabe wird die größte native Auflösung innerhalb
+der Vorgabe verwendet, andernfalls die kleinste. Die Vorschau bleibt unabhängig
+davon kleiner und passt ihren Abfrageabstand an die Box an.
+
+Die zusätzliche Berechtigung `storage` dient dem lesenden Zugriff auf diese
+Admin-Vorgabe über `config.get`. Die Adminseite nutzt dafür `settings.read`
+und `settings.write`. Andere App-Einstellungen bleiben erhalten; Schreibkonflikte
+werden über die Revision erkannt. Dateifreigaben und Foto-Uploads bleiben gleich.
+
 ## 1.3.0-beta.3: automatische Anpassung an Vorschau-Limits
 
 Bei „preview rate limited“ erhöht die App den Abfrageabstand schrittweise
@@ -9,8 +25,7 @@ Bei „preview rate limited“ erhöht die App den Abfrageabstand schrittweise
 Kamerasitzung auch nach erfolgreichen Bildern bei. Das verhindert, dass sie
 nach jeder erfolgreichen Vorschau erneut die gleiche Grenze überschreitet.
 Ein Test simuliert eine Box, die nur eine Vorschau pro Sekunde zulässt.
-Die Fotoauflösung ist unabhängig davon unter **Kamera einstellen** wählbar,
-sofern die Box native Kameramodi liefert.
+Die Fotoauflösung ist unabhängig davon; ab beta.4 wird sie in der Adminseite gewählt.
 
 ## 1.3.0-beta.2: Vorschaufehler und Startdiagnose
 
@@ -33,9 +48,8 @@ Diese Testversion verwendet den öffentlichen SDK-Stand aus
 Funktionen anbieten; die App prüft dies beim Start. Auf älteren unterstützten
 Hosts bleiben bisherige Kameraaufnahme und Fotospeicherung erhalten.
 
-- **Kamera einstellen:** Fotoauflösung aus den tatsächlich angebotenen nativen
-  Kameramodi auswählen. Standard ist die größte unterstützte Auflösung bis
-  3840 × 2160. Die Einstellung gilt für die aktuelle Kamerasitzung.
+- Native Fotoauflösung bis 3840 × 2160. Ab beta.4 steht die Vorgabe in der
+  Adminseite; sie wird beim nächsten App-Start gelesen.
 - Vorschau: bis 640 × 480 mit angeforderten 10 Bildern pro Sekunde, jeweils
   nur eine Anfrage. Die tatsächliche Geschwindigkeit hängt von Kamera und Box ab.
   Vor dem Foto wartet die App auf eine ausstehende Vorschau und nimmt dann
@@ -152,7 +166,7 @@ Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginv
 
 ## Version
 
-1.3.0-beta.3 (Vorschau passt sich an das tatsächliche Abfragelimit an)
+1.3.0-beta.4 (Fotoauflösung in der Adminseite und adaptive Kameravorschau)
 
 ## Neue Oberfläche (ab 0.5.5)
 

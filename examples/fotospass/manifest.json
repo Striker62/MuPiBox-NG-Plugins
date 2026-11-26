@@ -4,14 +4,15 @@
   "name": "FotoSpaß",
   "description": "FotoSpaß mit bildbasierten Kategorien und zusätzlichen PNG-Accessoires aus dem eigenen SMB-Ordner.",
   "author": "Striker62",
-  "version": "1.3.0-beta.3",
+  "version": "1.3.0-beta.4",
   "runtime": "web",
   "entry": "index.html",
   "permissions": [
     "camera",
     "photo-save",
     "shared-assets",
-    "photo-import"
+    "photo-import",
+    "storage"
   ],
   "category": "creative",
   "display": {
@@ -30,11 +31,14 @@
     "camera": "Nutzt die Kamera auf Wunsch für neue Fotoaufnahmen.",
     "photo-save": "Speichert auf Wunsch Kameraaufnahmen und bearbeitete Bilder als neue Fotos.",
     "shared-assets": "Liest eigene Accessoires und Bildvorlagen aus den app-eigenen Ordnern.",
-    "photo-import": "Zeigt freigegebene Fotoalben und übernimmt ausgewählte Bilder auf Wunsch als Originale zum Bearbeiten."
+    "photo-import": "Zeigt freigegebene Fotoalben und übernimmt ausgewählte Bilder auf Wunsch als Originale zum Bearbeiten.",
+    "storage": "Liest die in der Adminseite festgelegte Fotoauflösung."
   },
   "admin": {
     "entry": "admin/index.html",
     "capabilities": [
+      "settings.read",
+      "settings.write",
       "files.list",
       "files.read",
       "files.write"
