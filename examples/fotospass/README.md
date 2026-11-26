@@ -2,6 +2,20 @@
 
 FotoSpaß ist ein kindgerechtes Fotobox-Plugin für MuPiBox-NG.
 
+## 1.3.0-beta.2: Vorschaufehler und Startdiagnose
+
+Die neue Vorschau wird mit 125 ms Mindestabstand abgefragt, mit Reserve zur
+angeforderten Rate von 10 FPS. Vorübergehende Rate-Limits und Meldungen über
+noch nicht bereite Bilder werden bis zu dreimal mit wachsendem Abstand erneut
+versucht. Berechtigungsfehler stoppen sofort. Bei dauerhaften Fehlern bleibt
+der konkrete Fehlertext sichtbar, auch wenn die Box anschließend den von der
+App angeforderten Kamerastopp bestätigt. Ein externer Sicherheitsstopp wird
+weiterhin beachtet und startet die Kamera nicht automatisch neu.
+
+Diese Änderungen sind mit simulierten Rate-Limits, dauerhaften Fehlern und
+Berechtigungsfehlern geprüft. Die Ursache des auf der Box gemeldeten kurzen
+Livebilds ist ohne deren genaue Fehlermeldung noch nicht bestätigt.
+
 ## 1.3.0-beta.1: neue Foto- und Kamerafunktionen
 
 Diese Testversion verwendet den öffentlichen SDK-Stand aus
@@ -128,7 +142,7 @@ Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginv
 
 ## Version
 
-1.3.0-beta.1 (Fotoalbum-Import, getrennte Originale und neue Kameraanbindung)
+1.3.0-beta.2 (robustere Vorschau und sichtbare Kamerafehler)
 
 ## Neue Oberfläche (ab 0.5.5)
 

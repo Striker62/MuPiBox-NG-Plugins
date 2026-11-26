@@ -130,7 +130,7 @@ async function scan(autostart=false){try{const list=await sdk.camera.list(),old=
 // A single capture at a time, with a small margin above the host's ~1 fps.
 let PREVIEW_INTERVAL_MS=1100;
 let fastPreview=false,previewSupported=false,highResolution=false,photoBuckets=false,capturing=false;
-let framePending=Promise.resolve(),captureMode=null,photoSession=null;
+let framePending=Promise.resolve(),captureMode=null,photoSession=null,previewFailures=0;
 async function discoverPhotoFeatures(){
  try{
   const info=await sdk.capabilities?.();
@@ -146,7 +146,7 @@ async function discoverPhotoFeatures(){
  $('gallery-source-album').hidden=!sdk.photos?.album;
 }
 async function prepareCamera(){
- captureMode=null;fastPreview=false;PREVIEW_INTERVAL_MS=1100;
+ captureMode=null;fastPreview=false;PREVIEW_INTERVAL_MS=1100;previewFailures=0;
  const picker=$('capture-resolution');picker.replaceChildren();picker.hidden=true;
  if(!highResolution)return {};
  let modes;
@@ -158,7 +158,9 @@ async function prepareCamera(){
  picker.value=usable[0].width+'x'+usable[0].height;picker.hidden=false;
  captureMode=usable[0];picker.onchange=()=>{captureMode=usable.find(m=>m.width+'x'+m.height===picker.value)||usable[0]};
  const previewMode=usable.filter(m=>m.width<=640&&m.height<=480)[0];
- if(previewSupported&&previewMode){fastPreview=true;PREVIEW_INTERVAL_MS=100;return {preview:{width:previewMode.width,height:previewMode.height},fps:10}}
+ // Leave headroom below the requested 10 FPS, including timer rounding and
+ // different clocks on the browser and host. Never poll on the rate boundary.
+ if(previewSupported&&previewMode){fastPreview=true;PREVIEW_INTERVAL_MS=125;return {preview:{width:previewMode.width,height:previewMode.height},fps:10}}
  fastPreview=false;PREVIEW_INTERVAL_MS=1100;return {};
 }
 let lastCaptureStarted=-Infinity;
@@ -177,15 +179,24 @@ async function frame(){
  busy=true;
  lastCaptureStarted=performance.now();
  const current=epoch;
+ let retryDelay=0;
  try{
   framePending=fastPreview?sdk.camera.preview():sdk.camera.capture();
   const f=await framePending;
-  if(active&&!frozen&&current===epoch){preview.src=f.image;preview.hidden=false;$('placeholder').hidden=true}
+  if(active&&!frozen&&current===epoch){previewFailures=0;preview.src=f.image;preview.hidden=false;$('placeholder').hidden=true}
  }catch(e){
-  if(current===epoch&&!frozen){say('Kamerafehler: '+e.message);await stop()}
+  if(current===epoch&&!frozen){
+   const message=String(e?.message||e);
+   if(fastPreview&&++previewFailures<=3&&/rate.?limit|too many|429|not ready|not yet|no.*frame|kein.*bild|noch.*bild|temporar|warming|EAGAIN|503/i.test(message)){
+    retryDelay=250*previewFailures;say('Livebild wartet auf die Kamera … '+message);
+   }else{
+    await stop();cameraState('Vorschau fehlgeschlagen','error');
+    say('Kameravorschau gestoppt: '+message+'. Unter Kamera einstellen erneut starten.');
+   }
+  }
  }finally{
   busy=false;
-  if(current===epoch)scheduleFrame(Math.max(0,PREVIEW_INTERVAL_MS-(performance.now()-lastCaptureStarted)));
+  if(current===epoch)scheduleFrame(Math.max(retryDelay,PREVIEW_INTERVAL_MS-(performance.now()-lastCaptureStarted),0));
  }
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active&&!frozen)scheduleFrame()});
@@ -347,7 +358,7 @@ $('save-photo').addEventListener('click',()=>void savePhoto());
 
 $('camera-settings').addEventListener('click',()=>{const e=$('advanced-camera');e.hidden=!e.hidden;buttonLabel('camera-settings',e.hidden?'Kamera einstellen':'Schließen')});delay.addEventListener('change',controls);$('scan').addEventListener('click',()=>{autoStartSuppressed=false;void scan(false)});$('start').addEventListener('click',()=>{autoStartSuppressed=false;void start()});$('stop').addEventListener('click',()=>{autoStartSuppressed=true;void stop()});$('freeze').addEventListener('click',beginCountdown);$('cancel').addEventListener('click',()=>{cancelCountdown();say('Countdown abgebrochen. Livebild läuft weiter.')});$('resume').addEventListener('click',resume);
 window.addEventListener('resize',()=>{if(frozen)updateStickerBox()});
-sdk.on('camera.stopped',()=>{if(frozen)return;autoStartSuppressed=true;void stop(false);say('Kamera über die MuPiBox-Leiste ausgeschaltet. Zum erneuten Starten auf Kamera starten tippen.')});sdk.on('lifecycle.pause',()=>{if(frozen)return;void stop()});window.addEventListener('pagehide',()=>void stop());setMode('stickers');void discoverPhotoFeatures().then(()=>scan(true));
+sdk.on('camera.stopped',()=>{if(frozen||!active)return;autoStartSuppressed=true;void stop(false);say('Kamera von der MuPiBox gestoppt. Zum erneuten Starten auf Kamera starten tippen.')});sdk.on('lifecycle.pause',()=>{if(frozen)return;void stop()});window.addEventListener('pagehide',()=>void stop());setMode('stickers');void discoverPhotoFeatures().then(()=>scan(true));
 // Leave through the SDK; a frozen, unsaved photo requires confirmation.
 function cancelExit(){ $('exit-confirm').hidden=true;$('app-exit').focus() }
 async function performExit(){

@@ -13,7 +13,7 @@ test('extended camera uses sequential preview and a separate selected native sti
  const start=h.calls.find(row=>row[0]==='camera.start');
  assert.equal(start[2].fps,10);assert.equal(start[2].preview.width,640);
  assert.equal(h.calls.filter(row=>row[0]==='camera.capture').length,0);
- await h.advance(100);
+ await h.advance(125);
  assert.equal(h.calls.filter(row=>row[0]==='camera.preview').length,2);
  h.get('capture-resolution').value='640x480';h.get('capture-resolution').onchange();
  await h.app.freeze();
@@ -25,7 +25,7 @@ test('extended camera uses sequential preview and a separate selected native sti
 test('high resolution still waits for the outstanding preview and stop discards a late still',async()=>{
  const h=setup('ok',true);await tick();await tick();let finishPreview,finishCapture;
  h.sdk.camera.preview=()=>new Promise(resolve=>{finishPreview=resolve});
- const pending=h.app.frame();await h.advance(100); // scheduled request owns the single pending preview
+ const pending=h.app.frame();await h.advance(125); // scheduled request owns the single pending preview
  const taking=h.app.freeze();await tick();
  assert.equal(h.calls.filter(row=>row[0]==='camera.capture').length,0);
  h.sdk.camera.capture=()=>new Promise(resolve=>{finishCapture=resolve});
@@ -101,7 +101,7 @@ function setup(mode='ok',extended=false){
  };
  const sdk={shared:mode==='absent'?undefined:shared,
   camera:{list:async()=>[{id:'video0',name:'Mock camera'}],start:async()=>{},capture:async()=>({image:'data:image/jpeg;base64,/9j/2Q=='}),stop:async()=>{}},
-  photos:{save:async blob=>{saved.push(blob);return{id:'saved'}},list:async()=>[],get:async()=>new Blob([png]),delete:async()=>{}},exit:async()=>{calls.push(['exit'])},on(){}};
+  photos:{save:async blob=>{saved.push(blob);return{id:'saved'}},list:async()=>[],get:async()=>new Blob([png]),delete:async()=>{}},exit:async()=>{calls.push(['exit'])},on(name,handler){events['sdk:'+name]=handler}};
  if(extended){
   sdk.capabilities=async()=>({methods:['camera.preview','camera.modes','photos.album.import'].map(method=>({method,available:true}))});
   sdk.camera.modes=async()=>[{width:640,height:480},{width:1920,height:1080}];
@@ -122,6 +122,34 @@ function setup(mode='ok',extended=false){
  return {app:context.app,get,calls,urls,draws,saved,encodings,fills,events,sdk,timeouts,context,
   async advance(ms){now+=ms;const ready=[...timeouts].filter(([,task])=>task.at<=now);for(const [id,task] of ready){timeouts.delete(id);task.cb()}await tick();await tick()}};
 }
+
+test('transient preview rate limit retains camera and retries with backoff',async()=>{
+ const h=setup('ok',true);await tick();await tick();let attempts=0,stops=0;
+ h.sdk.camera.stop=async()=>{stops++};
+ h.sdk.camera.preview=async()=>{if(++attempts===1)throw Error('rate limit exceeded');return {image:'data:image/jpeg;base64,/9j/2Q=='}};
+ await h.advance(124);assert.equal(attempts,0,'leave margin below the requested 10 fps');
+ await h.advance(1);assert.equal(attempts,1);assert.equal(h.app.active,true);assert.equal(stops,0);
+ await h.advance(249);assert.equal(attempts,1);
+ await h.advance(1);assert.equal(attempts,2);assert.equal(h.app.active,true);
+});
+
+test('persistent preview failure stops once and preserves error after host stop notification',async()=>{
+ const h=setup('ok',true);await tick();await tick();let stops=0;
+ h.sdk.camera.preview=async()=>{throw Error('rate limit exceeded')};
+ h.sdk.camera.stop=async()=>{stops++;h.events['sdk:camera.stopped']()};
+ for(const elapsed of [125,250,500,750])await h.advance(elapsed);
+ assert.equal(h.app.active,false);assert.equal(stops,1);
+ assert.match(h.get('message').textContent,/rate limit exceeded/);
+ assert.match(h.get('camera-state').textContent,/Vorschau fehlgeschlagen/);
+});
+
+test('permission errors never restart or retry the camera',async()=>{
+ const h=setup('ok',true);await tick();await tick();let attempts=0;
+ h.sdk.camera.preview=async()=>{attempts++;throw Error('permission denied')};
+ await h.advance(125);await h.advance(2000);
+ assert.equal(h.app.active,false);assert.equal(attempts,1);
+ assert.match(h.get('message').textContent,/permission denied/);
+});
 test('existing five categories retain built-ins and add PNG files only from their own directories',async()=>{
  const h=setup();await tick();await tick();
  assert.equal(h.app.categories.length,5);
