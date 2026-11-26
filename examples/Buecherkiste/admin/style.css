@@ -82,3 +82,8 @@ dialog::backdrop{background:#173c4670;}
 dialog button{padding:10px;margin:3px;border-radius:8px;border:1px solid #a4bdb6;cursor:pointer;}
 
 body{height:100vh;} #book-admin #editor-refresh{width:100%;margin:0 0 8px;}
+
+#book-admin #editor-error{flex:none;display:flex;gap:18px;align-items:flex-start;justify-content:space-between;padding:16px 24px;background:#fff0ed;border:3px solid #b72d22;color:#792018;font-size:17px;line-height:1.45;max-height:35vh;overflow:auto;}
+#book-admin #editor-error strong{font-size:20px;}#book-admin #editor-error p{margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere;}#book-admin #editor-error span{font-size:15px;}
+#book-admin #editor-save-status{font-size:16px;font-weight:600;max-width:none;overflow-wrap:anywhere;}
+#book-admin #admin-message{font-size:15px;}

@@ -232,6 +232,16 @@
     get('admin-page-editor').inert = value;
     get('admin-pages').inert = value;
   }
+  function showError(error) {
+    const detail = error?.message || String(error || 'Unbekannter Fehler');
+    const alert = get('editor-error');
+    get('editor-error-detail').textContent = detail;
+    alert.hidden = false;
+    alert.focus();
+    message(detail);
+    return detail;
+  }
+  get('editor-error-close').onclick = () => { get('editor-error').hidden = true; };
   async function openBook(id) {
     if (busy || importing || !id) return;
     setBusy(true);
@@ -255,7 +265,7 @@
       message('Seiten und Vorlesetexte geladen. Ein separates Cover hat keinen Vorlesetext.');
     } catch (error) {
       for (const page of incoming) URL.revokeObjectURL(page.url);
-      message(error.message);
+      showError(error);
     } finally { setBusy(false); }
   }
   get('editor-load').onclick = () => {
@@ -267,13 +277,14 @@
     if (busy || importing) return;
     setBusy(true);
     try { await loadLibrary(); message('Bücherliste aktualisiert. Der Entwurf bleibt erhalten.'); }
-    catch (error) { message(error.message); } finally { setBusy(false); }
+    catch (error) { showError(error); } finally { setBusy(false); }
   };
   get('editor-cover').onchange = renderPages;
   get('editor-save').onclick = async () => {
     if (busy || importing) return;
     if (!store) { message('Die MuPiBox-Admin-SDK ist nicht verfügbar.'); return; }
     setBusy(true);
+    get('editor-error').hidden = true;
     get('editor-save-status').textContent = 'Buch wird gespeichert …';
     try {
       const result = await store.save({id:get('admin-folder').value,title:get('admin-title').value,
@@ -284,15 +295,17 @@
       loadedRevision = result.revision;
       get('editor-save-status').textContent = result.warning || 'Buch und index.json gespeichert.';
       message(result.warning || 'Gespeichert. Vorlesetexte bleiben vollständig erhalten.');
-      await loadLibrary();
+      if (result.warning) showError(result.warning);
+      try { await loadLibrary(); }
+      catch (error) { showError('Das Buch ist gespeichert. Nur die Bücherliste konnte nicht neu geladen werden: ' + (error.message || String(error))); }
     } catch (error) {
-      get('editor-save-status').textContent = 'Speichern fehlgeschlagen. Der Entwurf bleibt geöffnet.';
-      message(error.message + ' Bisher veröffentlichte Buchdateien werden nicht überschrieben, bevor alle neuen Seiten bereit sind.');
+      const detail = showError(error);
+      get('editor-save-status').textContent = 'Speichern fehlgeschlagen: ' + detail + ' – Der Entwurf bleibt geöffnet.';
     } finally { setBusy(false); }
   };
   window.addEventListener('beforeunload',event => {
     if (pages.length || get('admin-title').value) { event.preventDefault(); event.returnValue = ''; }
   });
   updateFolder(); renderPages();
-  loadLibrary().catch(error => message(error.message));
+  loadLibrary().catch(showError);
 })();

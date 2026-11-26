@@ -77,6 +77,8 @@
       return {id, info, revision:result.revision, pages, coverOnly};
     }
     async function save(draft, progress = () => {}) {
+      let stage = 'Buchdaten prüfen';
+      try {
       const {id, title, pages, coverOnly, previous} = draft;
       if (!slug(id) || !title.trim() || title.length > 300) throw Error('Bitte einen gültigen Buchtitel eingeben.');
       if (!pages.length || pages.length > 200 || (coverOnly && pages.length < 2)) throw Error('Bitte mindestens eine Inhaltsseite hinzufügen (höchstens 200 Bilder).');
@@ -87,8 +89,10 @@
         if (page.file.size > 8 * 1024 * 1024) throw Error('Ein Bild überschreitet 8 MiB.');
         if (!/\.(jpg|jpeg|png|webp|gif)$/i.test(page.file.name)) throw Error('Nicht unterstütztes Bildformat.');
       }
+      stage = 'Bücherliste lesen';
       const index = await catalog(); // Validate before making any changes.
       if (previous) {
+        stage = 'Buchrevision prüfen';
         const current = await readJSON('books/' + id + '/book.json');
         if (current.revision !== previous.revision) throw Error('Das Buch wurde zwischenzeitlich geändert. Bitte neu öffnen.');
       }
@@ -106,14 +110,19 @@
         if (!['jpg','jpeg','png','webp','gif'].includes(ext)) throw Error('Nicht unterstütztes Bildformat.');
         const path = 'images/' + generation + '-' + String(i + (coverOnly ? 0 : 1)).padStart(2,'0') + '.' + ext;
         progress('Bild ' + (i+1) + ' / ' + pages.length + ' speichern …');
+        stage = 'Seitenbild speichern: ' + base + path;
         await sdk.files.write(base + path, page.file, {expectedRevision:''});
         output.push(path);
       }
       const tts = 'tts/' + generation + '.json';
+      stage = 'Vorlesetexte speichern: ' + base + tts;
+      progress('Vorlesetexte speichern …');
       await sdk.files.write(base + tts, speech, {expectedRevision:''});
       const ext = output[coverOnly ? 1 : 0].split('.').pop();
       const info = {...(previous?.info || {}), id, title, layout:'full-page', firstPage:1,
         cover:output[0], imagePattern:reuse ? previous.info.imagePattern : 'images/' + generation + '-{page:02d}.' + ext, tts};
+      stage = 'Buchbeschreibung speichern: ' + base + 'book.json';
+      progress('Buchbeschreibung speichern …');
       const saved = await sdk.files.write(base + 'book.json', jsonBlob(info), {expectedRevision:previous?.revision || ''});
       // A catalog conflict must not undo another administrator's changes.
       // Return the saved book plus a clear warning so retry does not duplicate it.
@@ -124,6 +133,12 @@
       } catch (error) { warning = 'Buch gespeichert, aber index.json nicht aktualisiert: ' + error.message + ' Bitte erneut speichern.'; }
       return {id, info, revision:saved.revision, warning, coverOnly,
         pages:pages.map((page,i) => ({path:output[i],text:page.text,blob:page.file}))};
+      } catch (error) {
+        const detail = error?.message || String(error);
+        const explanation = /read.only file system|EROFS/i.test(detail)
+          ? ' Die Box meldet ein schreibgeschütztes Dateisystem. Der Schreibzugriff muss auf der Box geprüft werden.' : '';
+        throw Error(stage + ': ' + detail + explanation);
+      }
     }
     return {list, load, save};
   }

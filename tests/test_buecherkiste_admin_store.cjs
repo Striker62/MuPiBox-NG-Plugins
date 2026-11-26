@@ -77,3 +77,15 @@ test('catalog conflict reports saved book and permits a safe retry',async()=>{
   assert.match(saved.warning,/index.json/);
   assert.equal((await f.store.load('buch')).revision,saved.revision);
 });
+test('read-only failures name the saving step and retain the published book',async()=>{
+  const f=fixture(), input=draft(await f.store.load('buch'));
+  const original=f.data.get('books/buch/book.json');
+  f.sdk.files.write=async()=>{throw Error('read-only file system');};
+  await assert.rejects(f.store.save(input),error=>{
+    assert.match(error.message,/Vorlesetexte speichern: books\/buch\/tts\//);
+    assert.match(error.message,/read-only file system/);
+    assert.match(error.message,/schreibgeschütztes Dateisystem/);
+    return true;
+  });
+  assert.equal(f.data.get('books/buch/book.json'),original);
+});
