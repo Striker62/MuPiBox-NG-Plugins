@@ -319,9 +319,10 @@ document.addEventListener('keydown',event=>{
 // Galerie: Alle Aktionen erfolgen ausschliesslich ueber die Host-Foto-API.
 let galleryOpen=false,galleryEntries=[],gallerySelected=null,galleryLoading=false;
 let galleryEditing=false,galleryEditRun=0,pendingGalleryEdit=null;
+let gallerySource='photos',galleryLoadRun=0;
 const galleryUrls=new Map();
 const gallerySay=message=>{$('gallery-status').textContent=message};
-function galleryRevoke(){for(const url of galleryUrls.values())if(url.startsWith('blob:'))URL.revokeObjectURL(url);galleryUrls.clear()}
+function galleryRevoke(){++galleryLoadRun;for(const url of galleryUrls.values())if(url.startsWith('blob:'))URL.revokeObjectURL(url);galleryUrls.clear()}
 function galleryNormalizeList(value){const entries=Array.isArray(value)?value:Array.isArray(value?.photos)?value.photos:Array.isArray(value?.items)?value.items:[];return entries.map(x=>typeof x==='string'?{id:x}:x).filter(x=>x&&typeof x.id==='string'&&x.id.length>0)}
 function galleryDataUrl(result){
  if(typeof result==='string'&&result.startsWith('data:image/'))return result;
@@ -334,20 +335,97 @@ function galleryDataUrl(result){
  if(typeof raw==='string'&&/^[A-Za-z0-9+/=]+$/.test(raw))return 'data:'+(result?.mime||result?.mimeType||'image/png')+';base64,'+raw;
  throw new Error('Unbekanntes Bildformat der Foto-API');
 }
-async function galleryImage(id){if(galleryUrls.has(id))return galleryUrls.get(id);const result=await sdk.photos.get(id);const url=galleryDataUrl(result);galleryUrls.set(id,url);return url}
+const templateName=name=>typeof name==='string'&&/^[A-Za-z0-9_-][A-Za-z0-9_.-]*\.(jpe?g|png|webp|gif)$/i.test(name)&&!name.includes('..');
+async function templateBlob(id){
+ if(!templateName(id))throw Error('Ungültiger Vorlagenname');
+ const blob=await sdk.shared.read('originale/'+id);
+ if(!(blob instanceof Blob)||blob.size<12||blob.size>8*1024*1024)throw Error('Vorlagen müssen Bilder bis 8 MiB sein');
+ const bytes=new Uint8Array(await blob.slice(0,12).arrayBuffer());
+ let type;
+ if(bytes[0]===255&&bytes[1]===216&&bytes[2]===255)type='image/jpeg';
+ else if([137,80,78,71,13,10,26,10].every((n,i)=>bytes[i]===n))type='image/png';
+ else if(/^GIF8[79]a$/.test(String.fromCharCode(...bytes.slice(0,6))))type='image/gif';
+ else if(String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP')type='image/webp';
+ else throw Error('Keine gültige Bildvorlage');
+ return new Blob([blob],{type});
+}
+async function galleryImage(id,source=gallerySource){
+ const key=source+':'+id;if(galleryUrls.has(key))return galleryUrls.get(key);
+ const run=galleryLoadRun;
+ const result=source==='templates'?await templateBlob(id):await sdk.photos.get(id);
+ if(run!==galleryLoadRun)throw Error('Bildauswahl wurde gewechselt');
+ const url=galleryDataUrl(result);galleryUrls.set(key,url);return url;
+}
+async function templateThumbnail(id){
+ const blob=await templateBlob(id),url=URL.createObjectURL(blob);
+ try{
+  const image=await new Promise((resolve,reject)=>{const value=new Image();value.onload=()=>resolve(value);value.onerror=()=>reject(Error('Vorlage nicht lesbar'));value.src=url});
+  if(!image.naturalWidth||!image.naturalHeight||image.naturalWidth*image.naturalHeight>16000000)throw Error('Vorlage größer als 16 Megapixel');
+  const scale=Math.min(1,256/Math.max(image.naturalWidth,image.naturalHeight));
+  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+  const context=canvas.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);
+  const thumb=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.8));
+  if(!thumb)throw Error('Vorschau nicht verfügbar');
+  return thumb;
+ }finally{URL.revokeObjectURL(url)}
+}
+function selectGallerySource(source){
+ if(!['photos','templates'].includes(source)||source===gallerySource)return;
+ gallerySource=source;galleryCloseDetail();void galleryLoad();
+}
 function gallerySwitch(open){galleryOpen=open;$('editor-view').hidden=open;$('gallery-view').hidden=!open;$('show-gallery').classList.toggle('chosen',open);$('show-camera').classList.toggle('chosen',!open);if(open){if(active&&!frozen)void stop();void galleryLoad()}else{galleryCloseDetail();galleryRevoke()}}
-async function galleryLoad(){if(galleryLoading)return;galleryLoading=true;galleryCloseDetail();galleryRevoke();$('gallery-grid').replaceChildren();gallerySay('Fotos werden geladen …');try{
- if(!sdk.photos?.list||!sdk.photos?.get||!sdk.photos?.delete)throw new Error('Die Galerie-API fehlt in dieser Plugin-Version.');
- const result=await sdk.photos.list();galleryEntries=galleryNormalizeList(result);
- gallerySay(galleryEntries.length?galleryEntries.length+' Foto(s) gespeichert. Foto antippen zum Ansehen.':'Noch keine gespeicherten Fotos.');
- for(const entry of galleryEntries){const tile=document.createElement('button');tile.className='gallery-tile';const img=document.createElement('img');img.alt='Foto';const label=document.createElement('span');label.textContent=entry.name||entry.filename||entry.id.slice(0,20);tile.append(img,label);tile.addEventListener('click',()=>void galleryOpenDetail(entry.id));$('gallery-grid').append(tile);
- // Einzelne Ladefehler duerfen die restliche Galerie nicht blockieren.
- void galleryImage(entry.id).then(url=>{if(tile.isConnected)img.src=url}).catch(()=>{if(tile.isConnected)label.textContent='Bild nicht ladbar'});
- }
- }catch(e){gallerySay('Galerie fehlgeschlagen: '+(e?.message||String(e)))}finally{galleryLoading=false}}
-async function galleryOpenDetail(id){++galleryEditRun;gallerySelected=id;$('gallery-grid').hidden=true;$('gallery-detail').hidden=false;$('gallery-large').removeAttribute('src');gallerySay('Foto wird geladen …');try{const url=await galleryImage(id);if(gallerySelected!==id)return;$('gallery-large').src=url;gallerySay('Foto bearbeiten, ansehen oder einzeln löschen. Beim Bearbeiten bleibt das Original erhalten.')}catch(e){gallerySay('Foto konnte nicht geladen werden: '+e.message)}}
+async function galleryLoad(){
+ galleryLoading=true;galleryCloseDetail();galleryRevoke();
+ const run=galleryLoadRun,source=gallerySource;
+ $('gallery-source-photos').classList.toggle('chosen',source==='photos');
+ $('gallery-source-templates').classList.toggle('chosen',source==='templates');
+ $('gallery-source-photos').setAttribute('aria-pressed',String(source==='photos'));
+ $('gallery-source-templates').setAttribute('aria-pressed',String(source==='templates'));
+ $('gallery-delete').hidden=source==='templates';
+ $('gallery-grid').replaceChildren();gallerySay(source==='templates'?'Vorlagen werden geladen …':'Fotos werden geladen …');
+ try{
+  let entries,truncated=false;
+  if(source==='templates'){
+   if(!sdk.shared?.list||!sdk.shared?.read)throw Error('Die Freigabe für den Vorlagenordner fehlt.');
+   const result=await sdk.shared.list('originale');
+   entries=(result.entries||[]).filter(row=>!row.isDir&&templateName(row.name)).map(row=>({id:row.name,name:row.name}));
+   entries.sort((a,b)=>a.name.localeCompare(b.name,'de',{numeric:true}));truncated=result.truncated===true;
+  }else{
+   if(!sdk.photos?.list||!sdk.photos?.get)throw Error('Die Galerie-API fehlt in dieser Plugin-Version.');
+   entries=galleryNormalizeList(await sdk.photos.list());
+  }
+  if(run!==galleryLoadRun||!galleryOpen)return;
+  galleryEntries=entries;
+  gallerySay(entries.length?entries.length+(source==='templates'?' Vorlage(n).':' Foto(s) gespeichert.')+' Bild antippen zum Bearbeiten.'+(truncated?' Die Liste wurde von der Box gekürzt.':''):
+   source==='templates'?'Noch keine Vorlagen. Bilder über die FotoSpaß-Verwaltung oder SMB im Ordner originale bereitstellen.':'Noch keine gespeicherten Fotos.');
+  for(const entry of entries){
+   if(run!==galleryLoadRun||!galleryOpen)return;
+   const tile=document.createElement('button');tile.className='gallery-tile';
+   const img=document.createElement('img');img.alt=source==='templates'?'Vorlage':'Foto';
+   const label=document.createElement('span');label.textContent=entry.name||entry.filename||entry.id.slice(0,20);
+   tile.append(img,label);tile.addEventListener('click',()=>void galleryOpenDetail(entry.id));$('gallery-grid').append(tile);
+   // Template previews are small JPEGs, decoded sequentially rather than
+   // retaining all high-resolution originals in memory at the same time.
+   if(source==='templates'){
+    try{const thumb=await templateThumbnail(entry.id);if(run!==galleryLoadRun||!galleryOpen)return;const url=URL.createObjectURL(thumb);galleryUrls.set('thumb:'+entry.id,url);if(tile.isConnected)img.src=url}
+    catch{if(tile.isConnected&&run===galleryLoadRun)label.textContent=entry.name+' – Vorschau nicht verfügbar'}
+   }else{
+    void galleryImage(entry.id,source).then(url=>{if(run===galleryLoadRun&&tile.isConnected)img.src=url}).catch(()=>{if(run===galleryLoadRun&&tile.isConnected)label.textContent='Bild nicht ladbar'});
+   }
+  }
+ }catch(e){if(run===galleryLoadRun)gallerySay('Galerie fehlgeschlagen: '+(e?.message||String(e)))}
+ finally{if(run===galleryLoadRun)galleryLoading=false}
+}
+async function galleryOpenDetail(id){
+ const request=++galleryEditRun,source=gallerySource;gallerySelected=id;
+ $('gallery-grid').hidden=true;$('gallery-detail').hidden=false;$('gallery-large').removeAttribute('src');
+ $('gallery-delete').hidden=source==='templates';gallerySay('Bild wird geladen …');
+ try{const url=await galleryImage(id,source);if(gallerySelected!==id||request!==galleryEditRun||source!==gallerySource)return;$('gallery-large').src=url;
+  gallerySay(source==='templates'?'Vorlage bearbeiten. Speichern erstellt ein neues JPEG in „Meine Fotos“. Die Vorlage bleibt unverändert.':'Foto bearbeiten, ansehen oder einzeln löschen. Beim Bearbeiten bleibt das Original erhalten.');
+ }catch(e){if(request===galleryEditRun)gallerySay('Bild konnte nicht geladen werden: '+e.message)}
+}
 function galleryCloseDetail(){++galleryEditRun;pendingGalleryEdit=null;$('gallery-edit-confirm').hidden=true;gallerySelected=null;$('gallery-grid').hidden=false;$('gallery-detail').hidden=true;$('gallery-confirm').hidden=true;$('gallery-large').removeAttribute('src')}
-async function galleryDelete(){const id=gallerySelected;if(!id)return;$('delete-yes').disabled=true;gallerySay('Foto wird gelöscht …');try{await sdk.photos.delete(id);galleryCloseDetail();galleryLoading=false;await galleryLoad();gallerySay('Foto gelöscht. '+galleryEntries.length+' Foto(s) verbleiben.')}catch(e){gallerySay('Löschen fehlgeschlagen: '+(e?.message||String(e)));$('gallery-confirm').hidden=true}finally{$('delete-yes').disabled=false}}
+async function galleryDelete(){const id=gallerySelected;if(!id||gallerySource!=='photos')return;$('delete-yes').disabled=true;gallerySay('Foto wird gelöscht …');try{await sdk.photos.delete(id);galleryCloseDetail();galleryLoading=false;await galleryLoad();gallerySay('Foto gelöscht. '+galleryEntries.length+' Foto(s) verbleiben.')}catch(e){gallerySay('Löschen fehlgeschlagen: '+(e?.message||String(e)));$('gallery-confirm').hidden=true}finally{$('delete-yes').disabled=false}}
 function requestGalleryEdit(){
  const id=gallerySelected;
  if(!id||galleryEditing||saving||exitBusy||exitComplete)return;
@@ -364,8 +442,8 @@ async function galleryEditPhoto(id){
  galleryEditing=true;
  $('gallery-edit').disabled=true;
  $('gallery-delete').disabled=true;
- const request=++galleryEditRun;
- const valid=()=>request===galleryEditRun&&galleryOpen&&gallerySelected===id&&!exitBusy&&!exitComplete;
+ const request=++galleryEditRun,source=gallerySource;
+ const valid=()=>request===galleryEditRun&&source===gallerySource&&galleryOpen&&gallerySelected===id&&!exitBusy&&!exitComplete;
  gallerySay('Foto wird zum Bearbeiten geladen …');
  try{
   const url=await galleryImage(id);
@@ -418,5 +496,7 @@ $('gallery-edit-discard').addEventListener('click',()=>{
  if(id&&gallerySelected===id)void galleryEditPhoto(id);
 });
 
-$('show-gallery').addEventListener('click',()=>gallerySwitch(true));$('show-camera').addEventListener('click',()=>gallerySwitch(false));$('refresh-gallery').addEventListener('click',()=>void galleryLoad());$('gallery-back').addEventListener('click',galleryCloseDetail);$('gallery-delete').addEventListener('click',()=>{if(gallerySelected)$('gallery-confirm').hidden=false});$('delete-cancel').addEventListener('click',()=>{$('gallery-confirm').hidden=true});$('delete-yes').addEventListener('click',()=>void galleryDelete());
+$('gallery-source-photos').addEventListener('click',()=>selectGallerySource('photos'));
+$('gallery-source-templates').addEventListener('click',()=>selectGallerySource('templates'));
+$('show-gallery').addEventListener('click',()=>gallerySwitch(true));$('show-camera').addEventListener('click',()=>gallerySwitch(false));$('refresh-gallery').addEventListener('click',()=>void galleryLoad());$('gallery-back').addEventListener('click',galleryCloseDetail);$('gallery-delete').addEventListener('click',()=>{if(gallerySelected&&gallerySource==='photos')$('gallery-confirm').hidden=false});$('delete-cancel').addEventListener('click',()=>{$('gallery-confirm').hidden=true});$('delete-yes').addEventListener('click',()=>void galleryDelete());
 })();

@@ -123,3 +123,5 @@ footer{grid-area:3/1/4/3;align-self:center;text-align:center;font-size:9px;line-
 .gallery-detail-buttons{grid-template-columns:repeat(3,minmax(0,1fr));}
 #gallery-edit{background:#dff0e8;color:#175d59;}
 #gallery-edit-confirm{position:absolute;inset:0;z-index:35;display:flex;align-items:center;justify-content:center;padding:12px;background:#234c50b8;border-radius:22px;}
+
+.gallery-sources{display:flex;gap:6px;flex-wrap:wrap}.gallery-sources button{min-height:44px;font-size:13px}.gallery-sources .chosen{background:#187a75;color:white;border-color:#187a75}

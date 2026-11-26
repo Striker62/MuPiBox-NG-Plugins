@@ -47,7 +47,7 @@ function setup(mode='ok'){
   performance:{now:()=>now},setTimeout(cb,delay){const id=++nextTimer;timeouts.set(id,{cb,at:now+delay});return id},clearTimeout(id){timeouts.delete(id)},
   window:{MuPiBoxSDK:sdk,addEventListener(name,cb){const previous=events[name];events[name]=(...args)=>{previous?.(...args);cb(...args)}}},
   document:{hidden:false,getElementById:get,createElement:tag=>new Element(tag),createTextNode:text=>({textContent:text}),querySelectorAll:()=>[],addEventListener(name,cb){events['document:'+name]=cb}}};
- const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={categories,sharedAccessories,accessoryCache,loadSharedAccessories,accessorySource,safeAccessoryName,addSticker,freeze,savePhoto,accessoryHeight,releaseUnusedAccessories,requestExit,performExit,beginCountdown,resume,start,stop,frame,gallerySwitch,galleryOpenDetail,galleryEditPhoto,requestGalleryEdit,get dirty(){return photoDirty},get counting(){return counting},get active(){return active}, get items(){return items},setCategory(id){accessoryCategory=id;renderAccessoryMenu()}};})();`);
+ const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={categories,sharedAccessories,accessoryCache,loadSharedAccessories,accessorySource,safeAccessoryName,addSticker,freeze,savePhoto,accessoryHeight,releaseUnusedAccessories,requestExit,performExit,beginCountdown,resume,start,stop,frame,gallerySwitch,galleryOpenDetail,galleryEditPhoto,requestGalleryEdit,selectGallerySource,templateBlob,get galleryEntries(){return galleryEntries},get dirty(){return photoDirty},get counting(){return counting},get active(){return active}, get items(){return items},setCategory(id){accessoryCategory=id;renderAccessoryMenu()}};})();`);
  vm.runInNewContext(exposed,context);
  return {app:context.app,get,calls,urls,draws,saved,encodings,fills,events,sdk,timeouts,context,
   async advance(ms){now+=ms;const ready=[...timeouts].filter(([,task])=>task.at<=now);for(const [id,task] of ready){timeouts.delete(id);task.cb()}await tick();await tick()}};
@@ -230,4 +230,36 @@ for(const mode of ['jpeg-fallback','jpeg-oversize'])test(mode+' rejects unusable
  const h=setup(mode);await tick();await tick();await h.app.freeze();await h.app.savePhoto();
  assert.equal(h.saved.length,0);assert.equal(h.app.dirty,true);
  assert.match(h.get('message').textContent,/Speichern fehlgeschlagen/);
+});
+
+test('templates load only allowed files from originale and edited copies use photo SDK',async()=>{
+ const h=setup();await tick();await tick();const templateCalls=[];let deleted=0;
+ h.sdk.shared.list=async folder=>{templateCalls.push(['list',folder]);return {entries:[{name:'Mama.jpg'},{name:'../bad.jpg'},{name:'phone.HEIC'},{name:'folder.jpg',isDir:true}],truncated:false}};
+ h.sdk.shared.read=async file=>{templateCalls.push(['read',file]);return new Blob([png])};
+ h.sdk.photos.delete=async()=>{deleted++};
+ h.app.gallerySwitch(true);await tick();await tick();h.app.selectGallerySource('templates');await tick();await tick();
+ assert.deepEqual(Array.from(h.app.galleryEntries,x=>x.id),['Mama.jpg']);
+ assert.equal(h.get('gallery-delete').hidden,true);
+ assert.ok(templateCalls.every(([,name])=>name==='originale'||name==='originale/Mama.jpg'));
+ await h.app.galleryOpenDetail('Mama.jpg');await h.app.galleryEditPhoto('Mama.jpg');
+ assert.equal(h.get('editor-view').hidden,false);assert.equal(h.get('photo').width,800);
+ await h.app.addSticker('glasses');await h.app.savePhoto();
+ assert.equal(h.saved.length,1);assert.equal(h.saved[0].type,'image/jpeg');assert.equal(deleted,0);
+});
+test('invalid templates are rejected without raw paths or executable formats',async()=>{
+ const h=setup();await tick();await tick();let reads=0;
+ h.sdk.shared.read=async()=>{reads++;return new Blob(['<svg>not a photo</svg>'])};
+ await assert.rejects(h.app.templateBlob('../file.jpg'),/Vorlagenname/);
+ assert.equal(reads,0);
+ await assert.rejects(h.app.templateBlob('fake.jpg'),/Bildvorlage/);
+ h.sdk.shared.read=async()=>new Blob([new Uint8Array(8*1024*1024+1)]);
+ await assert.rejects(h.app.templateBlob('large.jpg'),/8 MiB/);
+});
+test('missing template permission is visible and saved photo gallery still works',async()=>{
+ const h=setup();await tick();await tick();h.app.gallerySwitch(true);await tick();
+ h.sdk.shared.list=async()=>{throw Error('Permission denied')};
+ h.app.selectGallerySource('templates');await tick();assert.match(h.get('gallery-status').textContent,/Permission denied/);
+ h.sdk.photos.list=async()=>[{id:'saved'}];h.app.selectGallerySource('photos');await tick();await tick();
+ assert.deepEqual(Array.from(h.app.galleryEntries,x=>x.id),['saved']);
+ assert.equal(h.get('gallery-delete').hidden,false);
 });

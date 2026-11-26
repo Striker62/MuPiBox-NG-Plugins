@@ -242,3 +242,26 @@ MuPiBox-Fotoalbum und die Auswahl der bereitgestellten Originale zum Bearbeiten
 folgen separat. Bisherige Foto-SDK-Aufnahmen und Ergebnisse bleiben im
 bestehenden Host-Fotospeicher und werden nicht verschoben. Diese neue
 Verwaltungsseite kann einen Schreibschutz des Host-Dateisystems nicht umgehen.
+# Testversion 1.2.0-beta.2: Vorlagen in der Touch-App bearbeiten
+
+Unter „Meine Fotos“ kann zwischen gespeicherten Fotos und „Vorlagen“
+gewechselt werden. Vorlagen werden ausschließlich über die lesende Shared-
+SDK aus `CommunityApps/community.fotospass/originale/` geladen. JPEG, PNG,
+WebP und GIF bis 8 MiB und 16 Megapixel werden unterstützt; HEIC und
+ausführbare Formate werden nicht geladen. Die Übersicht erzeugt kleine
+JPEG-Vorschauen nacheinander, um große Originaldateien nicht gesammelt als
+Vorschaubilder im Speicher zu halten.
+
+Vorlage antippen und „Bearbeiten“ wählen. Accessoires und Zeichnungen
+funktionieren wie bei einer Kameraaufnahme. Das Ergebnis wird als neues
+JPEG mit Qualität 90 % über die Foto-SDK in „Meine Fotos“ gespeichert.
+Die Quelldatei im Vorlagenordner bleibt unverändert. Bei Vorlagen wird kein
+Löschen-Button angeboten. Ein noch nicht gespeicherter Entwurf wird vor dem
+Ersetzen ausdrücklich bestätigt. Fehlende Shared-Freigaben und Bildfehler
+werden angezeigt; die eigene Foto-Galerie bleibt davon unabhängig.
+
+Die Auswahl benötigt eine gültige lokale Touch-Sitzung für Shared-Dateien.
+Der allgemeine MuPiBox-Fotoalbum-Import ist nicht Teil dieser Änderung.
+Solange der Admin-Upload durch den bekannten Host-Schreibschutz blockiert
+ist, können die Bilder per SMB in `originale` kopiert werden. Dann in der
+App „Vorlagen“ wählen und bei Bedarf „Aktualisieren“ drücken.
