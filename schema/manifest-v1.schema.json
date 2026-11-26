@@ -68,6 +68,7 @@
           "audio",
           "camera",
           "photo-save",
+          "photo-import",
           "shared-assets",
           "network",
           "links",
@@ -80,7 +81,7 @@
           "coloring-pages"
         ]
       },
-      "maxItems": 15
+      "maxItems": 16
     },
     "networkHosts": {
       "type": "array",
@@ -154,7 +155,7 @@
           "path": {
             "type": "string",
             "maxLength": 160,
-            "pattern": "^photos(?:/[A-Za-z0-9_-]+){0,5}$"
+            "pattern": "^(?:photos(?:/[A-Za-z0-9_-]+){0,5}|edited)$"
           },
           "name": {
             "type": "string",
