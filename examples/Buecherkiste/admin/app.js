@@ -15,6 +15,37 @@ async function operation(name,fn){
  finally{busy.delete(name)}
 }
 const jsonBlob=obj=>new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+// The host intentionally omits allow-modals. Use only in-page UI.
+function confirmTrash(message,id=''){
+ const dialog=$('confirm-dialog'), field=$('confirm-id'), submit=$('confirm-submit');
+ $('confirm-message').textContent=message;
+ $('confirm-label').hidden=!id;field.value='';submit.disabled=Boolean(id);
+ field.oninput=()=>{submit.disabled=Boolean(id)&&field.value!==id};
+ dialog.returnValue='cancel';
+ return new Promise(resolve=>{
+  const finish=confirmed=>{
+   dialog.oncancel=null;
+   $('confirm-cancel').onclick=null;submit.onclick=null;
+   dialog.close();
+   resolve(confirmed&&(!id||field.value===id));
+  };
+  dialog.oncancel=event=>{event.preventDefault();finish(false)};
+  $('confirm-cancel').onclick=()=>finish(false);
+  submit.onclick=()=>finish(true);
+  dialog.showModal();
+ });
+}
+function showNewBook(){
+ $('editor').hidden=true;$('empty').hidden=true;$('new-book').hidden=false;
+ $('new-title').value='';$('new-slug').value='';$('new-title').focus();
+}
+function closeNewBook(){
+ $('new-book').hidden=true;$('editor').hidden=!selected;$('empty').hidden=Boolean(selected);
+}
+function suggestID(title){
+ return title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60)||'mein-buch';
+}
 async function readJSON(name){
  const file=await sdk.files.read(name);
  return {value:JSON.parse(await file.blob.text()),revision:file.revision};
@@ -53,7 +84,7 @@ function renderList(){
 function clearImages(){urls.forEach(URL.revokeObjectURL);urls=[]}
 function resetView(){
  clearImages();pageItems=[];pageText=[];selected=null;bookRevision='';textRevision='';
- $('editor').hidden=true;$('empty').hidden=false;renderList();
+ $('editor').hidden=true;$('new-book').hidden=true;$('empty').hidden=false;renderList();
 }
 async function openBook(id){
  if(!slugOK(id))throw Error('Ungültiger Buchordner');
@@ -71,7 +102,7 @@ async function openBook(id){
  $('title').value=typeof bookInfo.title==='string'?bookInfo.title:id;
  $('slug').value=id;$('slug').disabled=true;
  $('layout').value=bookInfo.layout==='image-and-text'?'image-and-text':'full-page';
- $('editor').hidden=false;$('empty').hidden=true;
+ $('editor').hidden=false;$('new-book').hidden=true;$('empty').hidden=true;
  $('heading').textContent='Buch: '+id;
  await reloadPages();
  await loadTexts();
@@ -110,7 +141,7 @@ async function drawPages(){
   if(index===pageItems.length-1){
    const del=document.createElement('button');del.type='button';del.textContent='Letzte Seite entfernen';
    del.onclick=()=>operation('delete-page',async()=>{
-    if(!confirm('Letzte Seite wirklich in den Papierkorb verschieben?'))return;
+    if(!await confirmTrash('Letzte Seite wirklich in den Papierkorb verschieben?'))return;
     await sdk.files.trash(page.path,{confirmName:page.name,expectedRevision:page.revision});
     await reloadPages();
     notice('Seite in Papierkorb verschoben.');
@@ -215,13 +246,9 @@ async function saveTexts(){
  notice('Vorlesetexte gespeichert.');
 }
 async function createBook(){
- const title=prompt('Titel des neuen Buches:');
- if(title===null)return;
- if(!title.trim()||title.length>300)throw Error('Buchtitel fehlt oder ist zu lang');
- const suggestion=title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-  .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60);
- const id=prompt('Ordnerkennung (Buch-ID):',suggestion||'mein-buch');
- if(id===null)return;
+ const title=$('new-title').value.trim();
+ if(!title||title.length>300)throw Error('Buchtitel fehlt oder ist zu lang');
+ const id=$('new-slug').value.trim();
  if(!slugOK(id))throw Error('Nur Buchstaben, Zahlen, _ und - (max. 80)');
  if(books.some(b=>b.id===id))throw Error('Buch existiert bereits');
  const metadata={title:title.trim(),cover:'images/01.jpg',imagePattern:'images/{page:02d}.jpg',layout:'full-page'};
@@ -232,17 +259,28 @@ async function createBook(){
 }
 async function deleteBook(){
  if(!selected)return;
- const entered=prompt('Zum Verschieben in den Papierkorb bitte die Buch-ID eingeben: '+selected);
- if(entered!==selected){notice('Löschen abgebrochen.');return}
+ if(!await confirmTrash('Zum Verschieben bitte die Buch-ID eingeben: '+selected,selected)){notice('Löschen abgebrochen.');return}
  await sdk.files.trash('books/'+selected,{confirmName:selected});
  const name=selected;resetView();await refresh();
  notice('Buch '+name+' in den Papierkorb verschoben.');
 }
 $('reload').onclick=()=>operation('refresh',refresh);
-$('create').onclick=()=>operation('create',createBook);
+$('create').onclick=()=>{if(!busy.size)showNewBook()};
+$('new-title').oninput=()=>{$('new-slug').value=suggestID($('new-title').value)};
+$('new-cancel').onclick=()=>{if(!busy.size)closeNewBook()};
+$('new-submit').onclick=()=>{
+ if(busy.size)return;
+ $('new-submit').disabled=true;
+ void operation('create',createBook).finally(()=>{$('new-submit').disabled=false});
+};
 $('save').onclick=()=>operation('save',saveBook);
 $('save-texts').onclick=()=>operation('texts',saveTexts);
 $('upload').onclick=()=>operation('upload',upload);
 $('trash').onclick=()=>operation('trash',deleteBook);
+$('new-form').onkeydown=event=>{
+ if(event.key==='Enter'&&event.target.tagName==='INPUT'){
+  event.preventDefault();$('new-submit').click();
+ }
+};
 void operation('initial',refresh);
 })();

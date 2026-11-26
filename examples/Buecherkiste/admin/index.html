@@ -8,6 +8,14 @@
 <div class="layout">
 <aside><h2>Meine Bücher</h2><div id="book-list" role="list"></div>
 <button id="create" type="button">+ Neues Buch</button></aside>
+<section id="new-book" hidden>
+<h2>Neues Buch anlegen</h2>
+<div id="new-form">
+<label>Titel<input id="new-title" type="text" maxlength="300" required></label>
+<label>Ordnerkennung (Buch-ID)<input id="new-slug" type="text" pattern="[A-Za-z0-9_\-]{1,80}" maxlength="80" required></label>
+<div class="actions"><button id="new-submit" type="button" class="primary">Buch anlegen</button>
+<button id="new-cancel" type="button">Abbrechen</button></div>
+</div></section>
 <section id="editor" hidden>
 <h2 id="heading">Buch bearbeiten</h2>
 <label>Titel<input id="title" type="text" maxlength="300" required></label>
@@ -25,4 +33,10 @@
 <div id="texts"></div><button id="save-texts" type="button">Texte speichern</button>
 </section>
 <section id="empty"><h2>Buch auswählen</h2><p>Links ein Buch auswählen oder ein neues Buch erstellen.</p></section>
-</div></main><script src="app.js"></script></body></html>
+</div>
+<dialog id="confirm-dialog">
+<h2>In den Papierkorb verschieben?</h2><p id="confirm-message"></p>
+<label id="confirm-label" hidden>Buch-ID eingeben<input id="confirm-id" autocomplete="off"></label>
+<div class="actions"><button id="confirm-cancel" type="button" autofocus>Abbrechen</button>
+<button id="confirm-submit" type="button" class="danger">Bestätigen</button></div>
+</dialog></main><script src="app.js"></script></body></html>
