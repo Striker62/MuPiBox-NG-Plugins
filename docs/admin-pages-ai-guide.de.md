@@ -263,3 +263,7 @@ Kein universeller Dateimanager, keine neue Spotify-/TIDAL-Anbindung,
 keine Medienquellensuche über den gesamten Player und kein frei
 ausführbares Linux-Skript. Für solche Vorgänge ist eine eigene
 explizit geprüfte Host-Funktion erforderlich.
+
+### Dialoge und Formulare in Admin-Seiten
+
+Die Admin-Sandbox erlaubt Skripte, aber weder native Browserdialoge (`window.prompt`, `window.confirm`, `window.alert`) noch Formularnavigation. Eingaben und Bestätigungen deshalb als eigene HTML-Bedienelemente umsetzen, z. B. ein `<dialog>` mit expliziten Buttons und `dialog.close()`. Dateien ausschließlich über das freigegebene Admin-SDK schreiben.
