@@ -3,16 +3,17 @@
 const E=WaterBattle, sdk=window.MuPiBoxSDK, $=id=>document.getElementById(id);
 const words={
  de:{audioTitle:"Toneinstellungen",volume:"Lautstärke",mute:"Ton aus",unmute:"Ton an",testSound:"Probeton",audioHint:"Echte Sounds/Musik brauchen die neue NG-Version. Hier sonst nur Tonfolgen.",audioHintNative:"Echte Sounds und Musik laufen über PipeWire. Lautstärke bleibt begrenzt.",musicVolume:"Musik",musicOff:"Musik aus",musicOn:"Musik an",credits:"Soundquellen / Lizenz",mode:"Modus",quick:"Quick · 8×8",classic:"Classic · 10×10",max:"Max · 12×12",viewown:"Meine Karte",viewenemy:"Gegner",viewboth:"Beide",level:"MuPi-Stärke",easy:"Leicht",medium:"Mittel",hard:"Schlau",new:"Neu",opponent:"MuPis Versteck",own:"Deine Boote",
- rotate:"↻ Drehen",random:"Zufall",start:"Los geht's!",again:"Nochmal!",help:"Boote rechts platzieren. Danach links ein Feld antippen.",
- controller:"Controller: Pfeile · A wählen · X drehen",ready:"Platziere deine Boote!",placed:"Alle Boote sind bereit!",next:"Boot mit {n} Feldern",invalid:"Hier ist zu wenig Platz.",yourTurn:"Du bist dran! Tippe links auf ein Feld.",
+ rotate:"↻ Drehen",random:"Zufallsflotte",confirm:"Boot setzen",undo:"Rückgängig",start:"Los geht's!",again:"Nochmal!",help:"Feld antippen, bei Bedarf drehen und Boot setzen.",
+ controller:"Pfeile · A setzen · X drehen · Y Zufall · B zurücknehmen",ready:"Setze deine Boote oder wähle Zufallsflotte.",placed:"Alle Boote sind bereit!",next:"Boot mit {n} Feldern",invalid:"Hier ist zu wenig Platz.",yourTurn:"Du bist dran! Tippe links auf ein Feld.",
  botTurn:"MuPi sucht ein Feld …",miss:"Platsch! Nur Wasser!",hit:"Huch! MuPi bekommt nasse Füße!",sunk:"Oh nein! MuPi braucht den Rettungsring!",win:"Juhu, du hast gewonnen!",lose:"MuPi hat gewonnen. Nächste Runde?",
  ownMiss:"MuPi ist ins Wasser geplumpst!",ownHit:"Auweia! Dein Boot wurde getroffen!",ownSunk:"Blubb! Ein Boot ist untergegangen!",wait:"MuPi ist noch am Zug.",preview:"Vorschau: Fenster schließen"},
  en:{audioTitle:"Sound settings",volume:"Volume",mute:"Mute",unmute:"Unmute",testSound:"Test sound",audioHint:"Original sounds/music require newer NG. Older hosts play note effects only.",audioHintNative:"Real sound effects and music play via PipeWire, within volume limits.",musicVolume:"Music",musicOff:"Music off",musicOn:"Music on",credits:"Audio credits / license",mode:"Mode",quick:"Quick · 8×8",classic:"Classic · 10×10",max:"Max · 12×12",viewown:"My board",viewenemy:"Opponent",viewboth:"Both",level:"MuPi skill",easy:"Easy",medium:"Normal",hard:"Clever",new:"New",opponent:"MuPi's hideout",own:"Your boats",
- rotate:"↻ Rotate",random:"Random",start:"Let's go!",again:"Play again!",help:"Place your boats on the right. Then tap the left ocean.",
- controller:"Controller: arrows · A select · X rotate",ready:"Place your boats!",placed:"All boats are ready!",next:"Boat with {n} squares",invalid:"Not enough room here.",yourTurn:"Your turn! Tap a square on the left.",
+ rotate:"↻ Rotate",random:"Random fleet",confirm:"Place boat",undo:"Undo",start:"Let's go!",again:"Play again!",help:"Tap a square, rotate if needed, then place the boat.",
+ controller:"Arrows · A place · X rotate · Y random · B undo",ready:"Place your boats or choose a random fleet.",placed:"All boats are ready!",next:"Boat with {n} squares",invalid:"Not enough room here.",yourTurn:"Your turn! Tap a square on the left.",
  botTurn:"MuPi is searching …",miss:"Splash! Just water!",hit:"Oops! MuPi's getting wet!",sunk:"Oh no! MuPi needs the lifebuoy!",win:"Hooray, you won!",lose:"MuPi won. Another round?",
  ownMiss:"MuPi splashed into the sea!",ownHit:"Oh dear! Your boat was hit!",ownSunk:"Glug! A boat went down!",wait:"MuPi's turn.",preview:"Preview: close this window"}
 };
+let touchArmed=false;
 let lang="de",player=E.empty(),computer=E.empty(),phase="place",turn="player",placed=0,vertical=false,selected=27,epoch=0,muted=false,volume=40,musicVolume=20,musicEnabled=true,reactionTimer=0,focusTarget="own",shakeTimer=0,lastImpact=null;
 const ui={enemy:[],own:[]};
 const soundPlayer=new WaterBattleAudio.Player(sdk.isHosted,sdk.audio);
@@ -33,7 +34,7 @@ function makeGrid(which){
  for(let i=0;i<size*size;i++){
   const btn=document.createElement("button");
   btn.type="button";btn.className="cell";btn.dataset.i=String(i);
-  btn.addEventListener("click",()=>which==="own"?tryPlace(i):tryFire(i));
+  btn.addEventListener("click",()=>which==="own"?selectPlacement(i):tryFire(i));
   btn.setAttribute("aria-label",(which==="enemy"?"Opposite ":"Own ")+String.fromCharCode(65+i%size)+(Math.floor(i/size)+1));
   ui[which].push(btn);element.appendChild(btn);
  }
@@ -45,9 +46,12 @@ function toggleView(){
 }
 function draw(){
  const ownCell=new Set(player.ships.flatMap(s=>s.cells));
+ const ghost=phase==="place"?E.placementPreview(player,selected,player.fleet[placed],vertical):null;
+ const ghostCells=new Set(ghost?.cells||[]);
+ $("app").dataset.phase=phase;
  $("app").dataset.mode=$("mode").value;
  $("app").dataset.focus=focusTarget;
- $("view").hidden=$("mode").value!=="max";
+ $("view").hidden=phase==="place"||$("mode").value!=="max";
  const target=phase==="place"?(focusTarget==="own"?"both":"own"):(focusTarget==="enemy"?"own":"enemy");
  $("view").textContent=t("view"+target);
  $("view").setAttribute("aria-label",t("view"+target));
@@ -58,19 +62,23 @@ function draw(){
    const shot=board.shots[i];
    btn.className="cell";
    if(which==="own"&&ownCell.has(i))btn.classList.add("ship");
+   if(which==="own"&&ghostCells.has(i))btn.classList.add(ghost.valid?"ghost-valid":"ghost-invalid");
    if(shot)btn.classList.add(shot);
    if(lastImpact&&lastImpact.which===which&&lastImpact.index===i)btn.classList.add("last-hit");
-   if(selected===i&&(phase==="place"?which==="own":which==="enemy")&&phase!=="finished")btn.classList.add("aim");
+   if(selected===i&&phase==="play"&&which==="enemy")btn.classList.add("aim");
    btn.disabled=phase==="finished"||(which==="enemy"?(phase!=="play"||turn!=="player"||shot!==null):(phase!=="place"));
   });
  }
- $("own-score").textContent=E.sunkCount(player)+" / "+fleetSize;
+ $("own-score").textContent=(phase==="place"?placed:E.sunkCount(player))+" / "+fleetSize;
  $("enemy-score").textContent=E.sunkCount(computer)+" / "+fleetSize;
  $("start").disabled=placed<player.fleet.length;
+ $("confirm").disabled=!ghost?.valid;
+ $("rotate").disabled=!ghost;
+ $("undo").disabled=placed===0;
  $("placement").hidden=phase!=="place";
  $("game-controls").hidden=phase==="place";
  $("again").hidden=phase!=="finished";
- $("ship-hint").textContent=placed===player.fleet.length?t("placed"):t("next",player.fleet[placed])+" "+(vertical?"↕":"↔");
+ $("ship-hint").textContent=placed===player.fleet.length?t("placed"):(placed+1)+" / "+fleetSize+" · "+t("next",player.fleet[placed])+" "+(vertical?"↕":"↔");
  $("rotate").setAttribute("aria-pressed",String(vertical));
  $("turn").textContent=phase==="play"&&turn==="computer"?t("botTurn"):"";
  const help=document.querySelector("footer [data-i18n='help']");
@@ -118,20 +126,52 @@ function announce(kind,key){picture(kind);sound(kind);message(t(key));}
 function newRound(){
  epoch++;
  player=E.empty($("mode").value);computer=E.empty($("mode").value);
- phase="place";turn="player";placed=0;vertical=false;
+ phase="place";turn="player";placed=0;vertical=false;touchArmed=false;
  selected=E.index(Math.floor(player.size/2),Math.floor(player.size/2),player);
  focusTarget="own";makeGrid("enemy");makeGrid("own");
- $("reaction-img").src="assets/sunk.png";lastImpact=null;$("impact-flash").classList.remove("active","on-own");soundPlayer.startMusic();message(t("ready"));draw();
+ $("reaction-img").src="assets/sunk.png";lastImpact=null;$("impact-flash").classList.remove("active","on-own");message(t("ready"));draw();
+}
+function selectPlacement(i){
+ if(phase!=="place"||placed>=player.fleet.length)return;
+ soundPlayer.startMusic();
+ if(touchArmed&&selected===i){tryPlace(i);return;}
+ selected=i;touchArmed=true;
+ const ghost=E.placementPreview(player,i,player.fleet[placed],vertical);
+ message(t(ghost?.valid?"ready":"invalid"));draw();
 }
 function tryPlace(i){
  if(phase!=="place"||placed>=player.fleet.length)return;
- soundPlayer.startMusic();selected=i;const [x,y]=E.xy(i,player);
- if(!E.place(player,x,y,player.fleet[placed],vertical)){message(t("invalid"));draw();return;}
- placed++;message(t(placed===player.fleet.length?"placed":"ready"));draw();
+ soundPlayer.startMusic();selected=i;
+ const ghost=E.placementPreview(player,i,player.fleet[placed],vertical);
+ if(!ghost?.valid||!E.place(player,ghost.x,ghost.y,player.fleet[placed],vertical)){message(t("invalid"));draw();return;}
+ placed++;touchArmed=false;
+ if(placed<player.fleet.length){
+  // Select a legal next position, preferring the current orientation.
+  for(const direction of [vertical,!vertical]){
+   let found=false;
+   for(let i=0;i<player.size*player.size;i++){
+    if(E.placementPreview(player,i,player.fleet[placed],direction)?.valid){selected=i;vertical=direction;found=true;break;}
+   }
+   if(found)break;
+  }
+ }
+ message(t(placed===player.fleet.length?"placed":"ready"));draw();
+}
+function undoPlacement(){
+ if(phase!=="place"||!placed)return;
+ const last=player.ships.pop();placed--;selected=last.cells[0];
+ vertical=last.cells[1]-last.cells[0]===player.size;
+ touchArmed=false;message(t("ready"));draw();
+}
+function rotatePlacement(){
+ if(phase!=="place"||placed===player.fleet.length)return;
+ vertical=!vertical;
+ const ghost=E.placementPreview(player,selected,player.fleet[placed],vertical);
+ message(t(ghost?.valid?"ready":"invalid"));draw();
 }
 function randomPlacement(){
  if(phase!=="place")return;
- soundPlayer.startMusic();player=E.randomFleet($("mode").value);placed=player.fleet.length;message(t("placed"));draw();
+ soundPlayer.startMusic();player=E.randomFleet($("mode").value);placed=player.fleet.length;touchArmed=false;message(t("placed"));draw();
 }
 function begin(){
  if(phase!=="place"||placed!==player.fleet.length)return;
@@ -170,7 +210,9 @@ function tryFire(i){
 $("exit").onclick=()=>{epoch++;soundPlayer.stopMusic();sdk.exit().then(ok=>{if(ok===false)message(t("preview"));}).catch(()=>{});};
 $("restart").onclick=newRound;$("again").onclick=newRound;
 $("start").onclick=begin;$("auto").onclick=randomPlacement;
-$("rotate").onclick=()=>{vertical=!vertical;draw();};
+$("rotate").onclick=rotatePlacement;
+$("confirm").onclick=()=>tryPlace(selected);
+$("undo").onclick=undoPlacement;
 const VOLUME_KEY="waterbattle.audio.v1";
 function updateAudioControls(){
  $("volume").value=String(volume);
@@ -218,11 +260,12 @@ sdk.storage.get(VOLUME_KEY).then(data=>{
 $("level").onchange=newRound;$("mode").onchange=newRound;$("view").onclick=toggleView;
 sdk.on("input",({button,action})=>{
  if(action!=="press")return;
+ if(button==="B"&&phase==="place"&&placed&&$("audio-popover").hidden){undoPlacement();return;}
  if(button==="BACK"||button==="B"){
   if(!$("audio-popover").hidden){openAudio(false);return;}
   epoch++;soundPlayer.stopMusic();sdk.exit().catch(()=>{});return;
  }
- if(button==="X"&&phase==="place"){vertical=!vertical;draw();return;}
+ if(button==="X"&&phase==="place"){rotatePlacement();return;}
  if(button==="Y"&&phase==="place"){randomPlacement();return;}
  if(button==="Y"&&phase!=="place"){toggleView();return;}
  if(button==="START"&&phase==="place"&&placed===player.fleet.length){begin();return;}
@@ -230,18 +273,22 @@ sdk.on("input",({button,action})=>{
   let [x,y]=E.xy(selected,player);
   if(button==="UP")y=(y+player.size-1)%player.size;else if(button==="DOWN")y=(y+1)%player.size;
   else if(button==="LEFT")x=(x+player.size-1)%player.size;else x=(x+1)%player.size;
-  selected=E.index(x,y,player);draw();
+  selected=E.index(x,y,player);touchArmed=false;
+  if(phase==="place"&&placed<player.fleet.length)message(t(E.placementPreview(player,selected,player.fleet[placed],vertical)?.valid?"ready":"invalid"));
+  draw();
  }
  if(button==="A"||button==="START"){
   if(phase==="place")tryPlace(selected);else if(phase==="play")tryFire(selected);else newRound();
  }
 });
-sdk.on("lifecycle.pause",()=>{soundPlayer.pause();epoch++;if(phase==="play"&&turn==="computer"){turn="player";draw();}});
+let resumeMusic=false;
+sdk.on("lifecycle.pause",()=>{resumeMusic=resumeMusic||soundPlayer.musicStarted;soundPlayer.pause();epoch++;if(phase==="play"&&turn==="computer"){turn="player";draw();}});
+sdk.on("lifecycle.resume",()=>{if(resumeMusic&&phase!=="finished")soundPlayer.startMusic();resumeMusic=false;});
 translate();newRound();
 sdk.getContext().then(ctx=>{
  const tag=String(ctx?.language||"de").toLowerCase();lang=tag.startsWith("en")?"en":"de";
  // Older NG hosts omit these fields and only understand audio.note.
  soundPlayer.setNativeAvailable(ctx?.audioSamples===true&&ctx?.audioMusic===true,ctx?.audioVolumeControl===true);
- translate();draw();if(phase==="place")message(t("ready"));
+ translate();draw();if(phase==="place")message(t(placed===player.fleet.length?"placed":"ready"));
 }).catch(()=>{});
 })();
