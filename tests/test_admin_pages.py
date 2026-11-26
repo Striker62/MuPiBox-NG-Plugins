@@ -67,3 +67,25 @@ class NativeAdminSurfaceTests(unittest.TestCase):
         no_admin.pop("admin")
         with self.assertRaises(PackageError):
             validate_manifest(no_admin,files)
+
+
+class AudioRecordingManifestTests(unittest.TestCase):
+    def test_audio_recording_demo_and_scope(self):
+        demo = ROOT / "examples/admin-audio-recording-demo"
+        manifest = json.loads((demo / "manifest.json").read_text(encoding="utf-8"))
+        files = {p.relative_to(demo).as_posix() for p in demo.rglob("*") if p.is_file()}
+        self.assertEqual(validate_manifest(copy.deepcopy(manifest), files)["id"], "community.admin-audio-demo")
+        only_record = copy.deepcopy(manifest)
+        only_record["admin"]["capabilities"] = ["audio.record"]
+        validate_manifest(only_record, files)
+        for mutation in (
+            lambda m: m["permissionReasons"].pop("admin.audio.record"),
+            lambda m: m["permissionReasons"].update({"admin.audio.record": " "}),
+            lambda m: m["admin"].update(directories=[]),
+            lambda m: m.update(permissions=[]),
+            lambda m: m["admin"].update(capabilities=["files.read"]),
+        ):
+            changed = copy.deepcopy(manifest)
+            mutation(changed)
+            with self.subTest(manifest=changed), self.assertRaises(PackageError):
+                validate_manifest(changed, files)

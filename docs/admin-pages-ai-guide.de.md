@@ -181,9 +181,12 @@ await admin.files.trash("books/mein-buch", {confirmName:"mein-buch"});
 | `files.read` | Datei als Blob lesen | nur app-eigene Pfade, max. 8 MiB |
 | `files.write` | Dateien hochladen/aktualisieren | Dateitypen und Quota geprüft |
 | `files.trash` | Datei/Ordner in Papierkorb verschieben | Namensbestätigung |
+| `audio.record` | Browser-/Box-Mikrofon aufnehmen (Alpha 87+) | separate Freigabe, Host-Bestätigung, 120 s / 8 MiB |
+
+[Audioaufnahme: Manifest, SDK, vollständige Demo und Hardwaregrenzen](community-admin-audio-recording.md).
 
 Uploadfähig sind `.json`, `.txt`, `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`,
-`.mp3`, `.ogg`, `.wav` und `.pdf`. Die Host-API prüft Dateiendung und
+`.mp3`, `.ogg`, `.wav` und `.pdf` (ab Alpha 87 auch `.webm`). Die Host-API prüft Dateiendung und
 Inhalt (z. B. JPEG-/PNG-Signatur, gültiges JSON, UTF‑8). Keine ausführbaren
 Formate, HTML, SVG, Shell-Skripte oder ZIP-Archive. Maximal 8 MiB pro
 Datei, 128 MiB und 2000 Dateien pro app-eigenem Dateibaum einschließlich
@@ -263,3 +266,7 @@ Kein universeller Dateimanager, keine neue Spotify-/TIDAL-Anbindung,
 keine Medienquellensuche über den gesamten Player und kein frei
 ausführbares Linux-Skript. Für solche Vorgänge ist eine eigene
 explizit geprüfte Host-Funktion erforderlich.
+
+### Dialoge und Formulare in Admin-Seiten
+
+Die Admin-Sandbox erlaubt Skripte, aber weder native Browserdialoge (`window.prompt`, `window.confirm`, `window.alert`) noch Formularnavigation. Eingaben und Bestätigungen deshalb als eigene HTML-Bedienelemente umsetzen, z. B. ein `<dialog>` mit expliziten Buttons und `dialog.close()`. Dateien ausschließlich über das freigegebene Admin-SDK schreiben.

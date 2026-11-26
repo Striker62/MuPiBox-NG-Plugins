@@ -7,12 +7,14 @@ on:
       - 'examples/Buecherkiste/**'
       - 'tests/test_buecherkiste_shared.js'
       - 'tests/test_buecherkiste_admin_store.cjs'
+      - 'tests/test_buecherkiste_recording*.cjs'
       - '.github/workflows/buecherkiste-audit.yml'
   pull_request:
     paths:
       - 'examples/Buecherkiste/**'
       - 'tests/test_buecherkiste_shared.js'
       - 'tests/test_buecherkiste_admin_store.cjs'
+      - 'tests/test_buecherkiste_recording*.cjs'
       - '.github/workflows/buecherkiste-audit.yml'
 permissions:
   contents: read
@@ -29,8 +31,9 @@ jobs:
           node --check examples/Buecherkiste/app.js
           node --check examples/Buecherkiste/admin/app.js
           node --check examples/Buecherkiste/admin/book-store.js
+          node --check examples/Buecherkiste/admin/book-recorder.js
       - name: Test book administration persistence
-        run: node --test tests/test_buecherkiste_admin_store.cjs
+        run: node --test tests/test_buecherkiste_admin_store.cjs tests/test_buecherkiste_recording.cjs tests/test_buecherkiste_recording_ui.cjs
       - name: Test additional SMB books and SDK
         run: node --test tests/test_buecherkiste_shared.js tests/test_sdk_shared.js
       - name: Check CSS brace and comment structure

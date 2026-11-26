@@ -2,6 +2,80 @@
 
 Mit der Bücherkiste können Kinder Bilderbücher auswählen, durchblättern, vergrößern und vorlesen lassen. Die App bringt **Ole und der verschwundene Knopf** (16 Bildseiten) und **Henne und Adler** (10 Bild- und Textseiten plus eine Urheberseite) mit. Eigene Bücher erscheinen zusätzlich im Regal.
 
+## 1.2.0-beta.1: Buchseiten in der Verwaltung einsprechen
+
+Die bestehende Buchverwaltung mit Seitenvorschau und Vorlesetext bleibt erhalten.
+Unter der ausgewählten Inhaltsseite gibt es **Seite selbst einsprechen**:
+
+1. Ein neues Buch zuerst speichern oder ein vorhandenes eigenes Buch öffnen.
+2. Inhaltsseite wählen und **Mikrofone suchen** drücken. Das separate Cover
+   erhält keine Aufnahme. Über die HTTP-Adresse der Box ein **Box-Mikrofon**
+   wählen; das PC-Mikrofon wird nur bei sicherem Browser-Kontext angeboten
+   (HTTPS oder localhost). Box-Aufnahmen sind Ogg/Opus; für den PC stehen
+   WebM/Opus und Ogg/Opus zur Auswahl, sofern der Browser sie unterstützt.
+3. **Aufnehmen** drücken und den vertrauenswürdigen MuPiBox-Dialog bestätigen.
+   **Stoppen und speichern** beendet die Aufnahme und legt die Datei ab;
+   **Aufnahme abbrechen** verwirft den laufenden Vorgang. Grenzen: 120 Sekunden
+   Wandzeit und 8 MiB je Aufnahme. Währenddessen ist die Seitenauswahl gesperrt.
+4. Die neue Datei **Anhören** und anschließend **Aufnahme übernehmen**.
+   Alternativ über **Neue Aufnahme verwerfen** mit Bestätigung in den
+   Papierkorb verschieben. Eine vorhandene Seitenaufnahme bleibt bis zur
+   erfolgreichen Übernahme und zum Buchspeichern unverändert.
+5. **Buch speichern** sichert die neue Seitenzuordnung in `book.json`.
+   Die Aufnahme folgt beim Umsortieren dem Seitenbild und nicht seiner alten
+   Seitennummer. Die Vorlesetexte werden nicht durch Aufnahme-Metadaten ersetzt.
+
+**Wichtig:** Dies ist eine Aufnahmeverwaltung, noch keine Wiedergabe eigener
+Aufnahmen in der Kinderansicht auf dem Touchdisplay. Die öffentliche
+Admin-Audio-Dokumentation für Alpha 87 sperrt dort direkte Blob-Audio-Ausgabe.
+Die Bücherkiste liest weiterhin mit ihrer vorhandenen TTS-Funktion vor.
+
+Die neue **Admin-Capability `audio.record`** muss separat in der App-Verwaltung
+freigegeben werden; die normale Kinder-App erhält kein Mikrofonrecht.
+Die bestehende Freigabe `shared-assets` und die Admin-Dateirechte bleiben
+erforderlich. Das Manifest enthält die Pflichtbegründung `admin.audio.record`.
+Ein fehlendes SDK oder eine verweigerte Freigabe blockiert die übrige
+Buchverwaltung nicht. Die Audio-SDK wird ausschließlich vom Host bereitgestellt.
+
+### Dateien und Zuordnung
+
+Die vom Host gespeicherten Dateien liegen appgetrennt unter
+`CommunityApps/community.buecherkiste/books/<buch-id>/audio/`.
+Neuaufnahmen verwenden eindeutige Namen, z. B.
+`seite-001-<zufallskennung>.ogg`. Vorhandene Dateien werden nicht überschrieben.
+Die gemeinsame Host-Quote (128 MiB und 2000 Dateien inklusive Papierkorb)
+gilt weiterhin. Die App verwendet in `book.json` das eigene Feld:
+
+```json
+{
+  "pageRecordings": {
+    "images/01.jpg": {
+      "path": "audio/seite-001-aufnahmekennung.ogg",
+      "revision": "vom-host-gelieferte-dateirevision",
+      "size": 12345
+    }
+  }
+}
+```
+
+Die Bildpfade werden beim Speichern neuer Bildgenerationen passend umgeordnet.
+Vor dem Veröffentlichen der Buchbeschreibung prüft die Verwaltung Existenz
+und Revision der verknüpften Aufnahmen. Scheitert die Veröffentlichung, bleibt
+die zuvor veröffentlichte Zuordnung erhalten. Alte oder entfernte Aufnahmen
+werden nicht automatisch gelöscht. **Zuordnung entfernen** entfernt nur die
+Verknüpfung nach dem nächsten Buchspeichern; die Audiodatei bleibt erhalten.
+
+Stoppen speichert bereits eine neue Datei. Wer danach die Verwaltung verlässt
+oder den Buchentwurf verwirft, bevor er die Zuordnung speichert, kann deshalb
+eine unzugeordnete Audiodatei im Buchordner zurücklassen. Beim Verlassen wird
+eine laufende Aufnahme abgebrochen und eine Vorschau beendet. Bei verlorenem
+Kontakt gelten zusätzlich die Heartbeat-Abbruchregeln des Hosts.
+
+Automatische Tests verwenden simulierte Aufnahmegeräte und prüfen Aufnahme,
+Abbruch, Vorschau, Bestätigung, Revisionen, Fehler und die Seitenzuordnung.
+Die reale Abnahme mit PC-/USB-Mikrofon, Audioformat und Box ist noch offen.
+Offizielle Schnittstelle: [Admin-Audio-Aufnahmen](../../docs/community-admin-audio-recording.md).
+
 
 ## Neu: Bücher direkt in der MuPiBox-Administration verwalten (1.1.0)
 

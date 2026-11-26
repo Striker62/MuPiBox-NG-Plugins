@@ -29,12 +29,24 @@
         <div class="admin-preview"><img id="admin-image" alt="Seitenvorschau"></div>
         <div class="admin-text-heading"><label for="admin-page-text">Vorlesetext dieser Seite</label><span id="admin-text-count">0 Zeichen</span></div>
         <textarea id="admin-page-text" placeholder="Was soll auf dieser Seite vorgelesen werden? Leer lassen, wenn die Seite stumm bleiben soll."></textarea>
+        <section id="page-audio" aria-labelledby="page-audio-heading">
+          <h3 id="page-audio-heading">Seite selbst einsprechen</h3>
+          <p class="audio-note">Aufnehmen und Anhören sind hier in der Verwaltung möglich. Die Bücherkiste auf dem Touchdisplay liest vorerst weiterhin mit TTS; eigene Aufnahmen können dort noch nicht abgespielt werden.</p>
+          <p id="audio-assignment"></p>
+          <div class="audio-device-row"><label for="audio-device">Mikrofon</label><select id="audio-device"><option value="">Mikrofone suchen …</option></select><button id="audio-scan" type="button">Mikrofone suchen</button></div>
+          <label id="audio-format-label" for="audio-format" hidden>PC-Aufnahmeformat <select id="audio-format"><option value="webm">WebM / Opus</option><option value="ogg">Ogg / Opus</option></select></label>
+          <p class="audio-note">Maximal 120 Sekunden / 8 MiB pro Aufnahme. PC-Mikrofon benötigt HTTPS oder localhost; über HTTP ein Box-Mikrofon wählen. Das Mikrofonrecht muss in der App-Verwaltung separat freigegeben sein.</p>
+          <div class="audio-actions"><button id="audio-start" type="button">● Aufnehmen</button><button id="audio-stop" type="button" disabled>■ Stoppen und speichern</button><button id="audio-cancel" type="button" disabled>Aufnahme abbrechen</button></div>
+          <div class="audio-actions"><button id="audio-play" type="button" disabled>▶ Anhören</button><button id="audio-play-stop" type="button" disabled>Wiedergabe stoppen</button><button id="audio-adopt" type="button" hidden>Aufnahme übernehmen</button><button id="audio-discard" type="button" hidden>Neue Aufnahme verwerfen</button><button id="audio-unassign" type="button" hidden>Zuordnung entfernen</button></div>
+          <p id="audio-status" role="status" aria-live="polite"></p>
+        </section>
       </div>
     </section>
   </div>
   <footer class="admin-footer"><p id="editor-save-status" role="status">Noch nicht gespeichert. Beim Neuladen gehen ungespeicherte Änderungen verloren.</p><button id="editor-save" type="button">Buch speichern</button></footer>
+  <div id="audio-discard-dialog" role="alertdialog" aria-modal="true" aria-labelledby="audio-discard-heading" hidden><div class="admin-confirm"><h3 id="audio-discard-heading">Neue Aufnahme verwerfen?</h3><p>Nur die neue, noch nicht zugeordnete Aufnahme wird in den Papierkorb verschoben. Die bisherige Seitenaufnahme bleibt erhalten.</p><div><button id="audio-discard-keep" type="button">Behalten</button><button id="audio-discard-yes" type="button">In den Papierkorb</button></div></div></div>
   <div id="admin-discard" role="alertdialog" aria-modal="true" aria-labelledby="admin-discard-heading" hidden>
-    <div class="admin-confirm"><h3 id="admin-discard-heading">Neues Buch beginnen?</h3><p>Der aktuelle Entwurf mit allen ausgewählten Bildern und Texten wird verworfen.</p><div><button id="admin-keep" type="button">Weiter bearbeiten</button><button id="admin-discard-confirm" type="button">Entwurf verwerfen</button></div></div>
+    <div class="admin-confirm"><h3 id="admin-discard-heading">Neues Buch beginnen?</h3><p>Der aktuelle Entwurf mit allen ausgewählten Bildern, Texten und noch nicht gespeicherten Aufnahmezuordnungen wird verworfen. Bereits gespeicherte Audiodateien bleiben im Buchordner erhalten.</p><div><button id="admin-keep" type="button">Weiter bearbeiten</button><button id="admin-discard-confirm" type="button">Entwurf verwerfen</button></div></div>
   </div>
 </section>
-<script src="book-store.js"></script><script src="app.js"></script></body></html>
+<script src="book-store.js"></script><script src="book-recorder.js"></script><script src="app.js"></script></body></html>

@@ -4,7 +4,7 @@
   "name": "Bücherkiste",
   "description": "Bilderbücher mit automatischem Vorlesen und eigenen SMB-Büchern",
   "author": "MuPiBox Community",
-  "version": "1.1.1-beta.2",
+  "version": "1.2.0-beta.1",
   "runtime": "web",
   "entry": "index.html",
   "permissions": [
@@ -24,7 +24,8 @@
   "icon": "icon-axolotl-v028.png",
   "permissionReasons": {
     "shared-assets": "Liest die Bücher und Bilder aus dem app-eigenen Bücherordner.",
-    "audio": "Liest Buchtexte auf Wunsch vor und steuert die Sprachausgabe."
+    "audio": "Liest Buchtexte auf Wunsch vor und steuert die Sprachausgabe.",
+    "admin.audio.record": "Buchseiten mit einem ausdrücklich ausgewählten PC- oder Box-Mikrofon einsprechen."
   },
   "admin": {
     "entry": "admin/index.html",
@@ -34,7 +35,8 @@
       "files.list",
       "files.read",
       "files.write",
-      "files.trash"
+      "files.trash",
+      "audio.record"
     ],
     "directories": [
       "books"

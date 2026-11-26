@@ -89,3 +89,38 @@ test('read-only failures name the saving step and retain the published book',asy
   });
   assert.equal(f.data.get('books/buch/book.json'),original);
 });
+
+test('page recordings are stored separately from unchanged TTS and follow reordered images',async()=>{
+  const f=fixture();f.put('books/buch/audio/a.ogg',new Blob(['audio']));
+  const item={path:'audio/a.ogg',revision:f.data.get('books/buch/audio/a.ogg').revision,size:5};
+  const loaded=await f.store.load('buch'),input=draft(loaded);input.pages[1].recording=item;
+  [input.pages[1],input.pages[2]]=[input.pages[2],input.pages[1]];
+  const saved=await f.store.save(input),updated=await f.store.load('buch');
+  assert.equal(updated.pages[0].recording,null);assert.equal(updated.pages[1].recording,null);
+  assert.deepEqual(updated.pages[2].recording,item);
+  assert.deepEqual(saved.info.pageRecordings[saved.pages[2].path],item);
+  const tts=JSON.parse(await f.data.get('books/buch/'+saved.info.tts).blob.text());
+  assert.deepEqual(tts.pages,[{text:''},{text:'Lang '.repeat(500)}]);
+  assert.ok(f.data.has('books/buch/images/01.jpg'));assert.ok(f.data.has('books/buch/audio/a.ogg'));
+});
+
+test('unsafe or changed recordings cannot publish book metadata',async()=>{
+  const f=fixture(),loaded=await f.store.load('buch'),input=draft(loaded);
+  input.pages[1].recording={path:'../other.ogg',revision:'1',size:5};
+  await assert.rejects(f.store.save(input),/Ungültige Seitenaufnahme/);assert.equal(f.writes.length,0);
+  f.put('books/buch/audio/a.ogg',new Blob(['audio']));
+  input.pages[1].recording={path:'audio/a.ogg',revision:'outdated',size:5};
+  await assert.rejects(f.store.save(input),/zwischenzeitlich geändert/);assert.equal(f.writes.length,0);
+});
+
+test('failed metadata replacement keeps previous recording assignment and its audio file',async()=>{
+  const f=fixture();f.put('books/buch/audio/old.ogg',new Blob(['old']));f.put('books/buch/audio/new.ogg',new Blob(['new']));
+  const info=JSON.parse(await f.data.get('books/buch/book.json').blob.text());
+  info.pageRecordings={'images/01.jpg':{path:'audio/old.ogg',revision:f.data.get('books/buch/audio/old.ogg').revision,size:3}};
+  f.put('books/buch/book.json',info);const before=f.data.get('books/buch/book.json');
+  const input=draft(await f.store.load('buch'));
+  input.pages[1].recording={path:'audio/new.ogg',revision:f.data.get('books/buch/audio/new.ogg').revision,size:3};
+  const write=f.sdk.files.write;f.sdk.files.write=async(path,...args)=>{if(path==='books/buch/book.json')throw Error('409');return write(path,...args);};
+  await assert.rejects(f.store.save(input),/409/);
+  assert.equal(f.data.get('books/buch/book.json'),before);assert.ok(f.data.has('books/buch/audio/old.ogg'));assert.ok(f.data.has('books/buch/audio/new.ogg'));
+});

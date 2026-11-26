@@ -71,6 +71,8 @@ python3 tools/mupitheme.py pack examples/themes/starfield dist/sternenreise.mupi
 
 ## Für Entwickler
 
+**Neu ab NG Alpha 87 – Audioaufnahmen in der eigenen App-Verwaltung:** [Manifest, Admin-SDK, USB-/PC-Mikrofone und vollständiges Testbeispiel](docs/community-admin-audio-recording.md). Das Beispiel kann als separates `.mupiapp`-Paket lokal installiert werden.
+
 **SDK Revision 1.1:** [Plattform-API, Capabilities, Berechtigungen und
 Codebeispiele](docs/sdk-api-reference.md). Geräte-/Systemstatus,
 Player-Status, Warteschlange und geschützte Transportsteuerung sind nun über

@@ -5,6 +5,12 @@
   const imagePath = value => typeof value === 'string' && /^images\/[A-Za-z0-9_-][A-Za-z0-9_.-]*\.(jpe?g|png|webp|gif)$/i.test(value) && !value.includes('..');
   const textPath = value => typeof value === 'string' && /^(tts|text)\/[A-Za-z0-9_-][A-Za-z0-9_.-]*\.json$/.test(value) && !value.includes('..');
   const jsonBlob = value => new Blob([JSON.stringify(value, null, 2)], {type:'application/json'});
+  const audioPath = value => typeof value === 'string' && /^audio\/[A-Za-z0-9_-][A-Za-z0-9_.-]*\.(ogg|webm)$/.test(value) && !value.includes('..');
+  function recording(value) {
+    if (!value) return null;
+    if (!audioPath(value.path) || typeof value.revision !== 'string' || !value.revision || !Number.isFinite(value.size) || value.size < 1 || value.size > 8*1024*1024) throw Error('Ungültige Seitenaufnahme.');
+    return {path:value.path,revision:value.revision,size:value.size};
+  }
   function create(sdk) {
     async function readJSON(path) {
       const result = await sdk.files.read(path);
@@ -42,6 +48,7 @@
       const base = 'books/' + id + '/';
       const result = await readJSON(base + 'book.json');
       const info = result.value;
+      if (info.pageRecordings !== undefined && (!info.pageRecordings || typeof info.pageRecordings !== 'object' || Array.isArray(info.pageRecordings))) throw Error('Ungültige Aufnahmezuordnung im Buch.');
       if ((info.layout || 'full-page') !== 'full-page') throw Error('Dieses Layout bearbeitet derzeit Vollseitenbücher. Bild-und-Text-Bücher bleiben unverändert.');
       const pattern = info.imagePattern || 'images/{page:02d}.jpg';
       const matches = [...pattern.matchAll(/\{(page|page_plus_one)(?::0?([1-4])d)?\}/g)];
@@ -72,7 +79,7 @@
       for (let i = 0; i < ordered.length; i++) {
         const path = ordered[i];
         const file = await sdk.files.read(base + path);
-        pages.push({path, blob:file.blob, text:coverOnly && i === 0 ? '' : texts[i - (coverOnly ? 1 : 0)] || ''});
+        pages.push({path, blob:file.blob, text:coverOnly && i === 0 ? '' : texts[i - (coverOnly ? 1 : 0)] || '',recording:coverOnly && i === 0 ? null : recording(info.pageRecordings?.[path])});
       }
       return {id, info, revision:result.revision, pages, coverOnly};
     }
@@ -98,6 +105,15 @@
       }
       const generation = 'edit-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
       const base = 'books/' + id + '/';
+      const audio = new Map();
+      for (let i = coverOnly ? 1 : 0; i < pages.length; i++) {
+        const item = recording(pages[i].recording);
+        if (!item) continue;
+        stage = 'Seitenaufnahme prüfen: ' + base + item.path;
+        if (!audio.has(item.path)) audio.set(item.path, await sdk.files.read(base + item.path));
+        const current = audio.get(item.path);
+        if (current.revision !== item.revision) throw Error('Die Aufnahme wurde zwischenzeitlich geändert. Bitte das Buch neu öffnen.');
+      }
       const reuse = previous && previous.coverOnly === coverOnly && previous.pages?.length === pages.length &&
         pages.every((page,i) => page.path && page.path === previous.pages[i].path);
       // New, immutable assets keep the published book intact until book.json
@@ -121,6 +137,12 @@
       const ext = output[coverOnly ? 1 : 0].split('.').pop();
       const info = {...(previous?.info || {}), id, title, layout:'full-page', firstPage:1,
         cover:output[0], imagePattern:reuse ? previous.info.imagePattern : 'images/' + generation + '-{page:02d}.' + ext, tts};
+      const pageRecordings = {};
+      for (let i = coverOnly ? 1 : 0; i < pages.length; i++) {
+        const item = recording(pages[i].recording);
+        if (item) pageRecordings[output[i]] = item;
+      }
+      if (Object.keys(pageRecordings).length || previous?.info?.pageRecordings !== undefined) info.pageRecordings = pageRecordings;
       stage = 'Buchbeschreibung speichern: ' + base + 'book.json';
       progress('Buchbeschreibung speichern …');
       const saved = await sdk.files.write(base + 'book.json', jsonBlob(info), {expectedRevision:previous?.revision || ''});
@@ -132,7 +154,7 @@
         await sdk.files.write('books/index.json', jsonBlob(index.value), {expectedRevision:index.revision});
       } catch (error) { warning = 'Buch gespeichert, aber index.json nicht aktualisiert: ' + error.message + ' Bitte erneut speichern.'; }
       return {id, info, revision:saved.revision, warning, coverOnly,
-        pages:pages.map((page,i) => ({path:output[i],text:page.text,blob:page.file}))};
+        pages:pages.map((page,i) => ({path:output[i],text:page.text,blob:page.file,recording:coverOnly && i === 0 ? null : recording(page.recording)}))};
       } catch (error) {
         const detail = error?.message || String(error);
         const explanation = /read.only file system|EROFS/i.test(detail)

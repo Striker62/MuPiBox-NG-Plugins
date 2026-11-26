@@ -31,6 +31,55 @@
   let selected = -1;
   let importing = false;
   let importVersion = 0;
+  let recordLocked = false;
+  let inputSignature = '';
+  let recorder = window.BookRecorder.create(sdk, {update:renderRecording,lock:setRecordingLock});
+  function setRecordingLock(value) {
+    recordLocked = value;
+    for (const id of ['admin-title','editor-cover','editor-save','editor-load','editor-refresh','editor-existing','admin-add','admin-new','admin-up','admin-down','admin-remove']) get(id).disabled = busy || value;
+    get('admin-pages').inert = busy || value;
+    if (!value && !busy) renderSelection();
+  }
+  function renderRecording() {
+    if (!recorder) return;
+    const state = recorder.snapshot;
+    const page = pages[selected],cover = get('editor-cover').checked && selected === 0;
+    const devices = JSON.stringify(state.inputs);
+    if (devices !== inputSignature) {
+      inputSignature = devices;get('audio-device').replaceChildren();
+      state.inputs.forEach((device,index) => {const option = document.createElement('option');option.value = String(index);option.textContent = (device.source === 'box' ? 'Box: ' : 'PC: ') + device.label;get('audio-device').append(option);});
+    }
+    const device = state.inputs[Number(get('audio-device').value)];
+    get('audio-format-label').hidden = device?.source !== 'browser';
+    get('audio-scan').disabled = !state.supported || state.scanning || state.locked;
+    get('audio-device').disabled = state.locked;get('audio-format').disabled = state.locked;
+    get('audio-start').disabled = !state.supported || state.locked || !device || !loadedId || !page?.path || cover || busy || importing || recordLocked;
+    get('audio-start').textContent = page?.recording ? '● Neu aufnehmen' : '● Aufnehmen';
+    get('audio-stop').disabled = !state.active || state.command;
+    get('audio-cancel').disabled = !state.active || state.command;
+    get('audio-play').disabled = !state.supported || state.active || state.command || !(state.candidate || page?.recording);
+    get('audio-play-stop').disabled = !state.playing;
+    get('audio-adopt').hidden = get('audio-discard').hidden = !state.candidate;
+    get('audio-adopt').disabled = !state.candidate?.heard || state.command;
+    get('audio-discard').disabled = state.command;
+    get('audio-unassign').hidden = !page?.recording || Boolean(state.candidate);
+    get('audio-unassign').disabled = state.locked;
+    get('audio-assignment').textContent = page?.recording ? 'Zugeordnet: ' + page.recording.path : 'Noch keine eigene Aufnahme zugeordnet.';
+    get('audio-status').textContent = state.message || (cover ? 'Das separate Cover hat keine Seitenaufnahme.' : !loadedId || !page?.path ? 'Das Buch zuerst speichern. Danach kannst du diese Seite einsprechen.' : 'Seite bereit. Mikrofon auswählen und aufnehmen.');
+    if (state.active) get('audio-status').textContent += ' · ' + Math.floor(state.durationMs/1000) + ' / 120 s';
+  }
+  function audioAction(id, action) {
+    get(id).onclick = async () => {try {await action();} catch (error) {get('audio-status').textContent = error.message;showError(error);} };
+  }
+  get('audio-device').onchange = renderRecording;
+  audioAction('audio-scan',()=>recorder.scan());
+  audioAction('audio-start',()=>recorder.start(Number(get('audio-device').value),get('audio-format').value));
+  audioAction('audio-stop',()=>recorder.stop());audioAction('audio-cancel',()=>recorder.cancel());
+  audioAction('audio-play',()=>recorder.play());audioAction('audio-play-stop',()=>recorder.stopPreview());
+  audioAction('audio-adopt',()=>recorder.adopt());audioAction('audio-unassign',()=>recorder.unassign());
+  get('audio-discard').onclick = () => {get('audio-discard-dialog').hidden = false;get('audio-discard-keep').focus();};
+  get('audio-discard-keep').onclick = () => {get('audio-discard-dialog').hidden = true;};
+  audioAction('audio-discard-yes',async()=>{await recorder.discard();get('audio-discard-dialog').hidden = true;});
 
   function message(text) {
     get('admin-message').textContent = text;
@@ -56,6 +105,8 @@
     for (const button of get('admin-pages').children) {
       button.setAttribute('aria-current', String(Number(button.dataset.index) === selected));
     }
+    if (recordLocked) for (const id of ['admin-up','admin-down','admin-remove']) get(id).disabled = true;
+    recorder.setPage({bookId:loadedId,page,number:selected+1-(get('editor-cover').checked?1:0),isCover:get('editor-cover').checked&&selected===0,saved:Boolean(loadedId&&page?.path)});
     get('admin-page-count').textContent = pages.length + (pages.length === 1 ? ' Seite' : ' Seiten');
   }
 
@@ -89,11 +140,12 @@
   panel.addEventListener('keydown', event => {
     event.stopPropagation();
     if (event.key === 'Escape') {
-      if (!get('admin-discard').hidden) get('admin-keep').click();
+      if (!get('audio-discard-dialog').hidden) get('audio-discard-keep').click();
+      else if (!get('admin-discard').hidden) get('admin-keep').click();
 
     }
     if (event.key === 'Tab') {
-      const scope = get('admin-discard').hidden ? panel : get('admin-discard');
+      const scope = !get('audio-discard-dialog').hidden ? get('audio-discard-dialog') : get('admin-discard').hidden ? panel : get('admin-discard');
       const controls = Array.from(scope.querySelectorAll('button,input,textarea,[tabindex]'))
         .filter(node => !node.disabled && node.getClientRects().length);
       const first = controls[0], last = controls[controls.length - 1];
@@ -172,7 +224,7 @@
   }
 
   get('admin-files').onchange = async () => {
-    if (importing || busy) return;
+    if (importing || busy || recordLocked) return;
     const files = Array.from(get('admin-files').files).sort((a, b) =>
       a.name.localeCompare(b.name, 'de', {numeric: true}));
     if (!files.length) return;
@@ -209,12 +261,17 @@
     message(added + ' Bilder hinzugefügt.' + (rejected ? ' ' + rejected + ' Bilder konnten nicht geladen werden (Format oder Größenlimit).' : ''));
   };
   window.addEventListener('pagehide', () => {
-    importVersion++;
+    importVersion++;recorder.dispose();
     for (const page of pages) URL.revokeObjectURL(page.url);
   });
   // A restored browser page keeps File objects but needs fresh object URLs.
   window.addEventListener('pageshow', event => {
-    if (event.persisted) { for (const page of pages) page.url = URL.createObjectURL(page.file); renderPages(); }
+    if (event.persisted) {
+      recorder = window.BookRecorder.create(sdk, {update:renderRecording,lock:setRecordingLock});
+      setRecordingLock(false);
+      for (const page of pages) page.url = URL.createObjectURL(page.file);
+      renderPages();
+    }
   });
 
   async function loadLibrary() {
@@ -228,9 +285,9 @@
   }
   function setBusy(value) {
     busy = value;
-    for (const id of ['admin-title','editor-cover','editor-save','editor-load','editor-refresh','admin-add','admin-new']) get(id).disabled = value;
+    for (const id of ['admin-title','editor-cover','editor-save','editor-load','editor-refresh','admin-add','admin-new']) get(id).disabled = value || recordLocked;
     get('admin-page-editor').inert = value;
-    get('admin-pages').inert = value;
+    get('admin-pages').inert = value || recordLocked;
   }
   function showError(error) {
     const detail = error?.message || String(error || 'Unbekannter Fehler');
@@ -243,14 +300,14 @@
   }
   get('editor-error-close').onclick = () => { get('editor-error').hidden = true; };
   async function openBook(id) {
-    if (busy || importing || !id) return;
+    if (busy || importing || recordLocked || !id) return;
     setBusy(true);
     const incoming = [];
     try {
       const data = await store.load(id);
       for (const page of data.pages) {
         const file = new File([page.blob],page.path.split('/').pop(),{type:page.blob.type});
-        incoming.push({file,url:URL.createObjectURL(file),text:page.text,path:page.path});
+        incoming.push({file,url:URL.createObjectURL(file),text:page.text,path:page.path,recording:page.recording});
       }
       for (const page of pages) URL.revokeObjectURL(page.url);
       pages = incoming;
@@ -266,22 +323,22 @@
     } catch (error) {
       for (const page of incoming) URL.revokeObjectURL(page.url);
       showError(error);
-    } finally { setBusy(false); }
+    } finally { setBusy(false);renderSelection(); }
   }
   get('editor-load').onclick = () => {
-    if (busy || importing) return;
+    if (busy || importing || recordLocked) return;
     const id = get('editor-existing').value;
     if (id) confirmDiscard(() => openBook(id)); else message('Bitte zuerst ein Buch auswählen.');
   };
   get('editor-refresh').onclick = async () => {
-    if (busy || importing) return;
+    if (busy || importing || recordLocked) return;
     setBusy(true);
     try { await loadLibrary(); message('Bücherliste aktualisiert. Der Entwurf bleibt erhalten.'); }
-    catch (error) { showError(error); } finally { setBusy(false); }
+    catch (error) { showError(error); } finally { setBusy(false);renderSelection(); }
   };
   get('editor-cover').onchange = renderPages;
   get('editor-save').onclick = async () => {
-    if (busy || importing) return;
+    if (busy || importing || recordLocked) return;
     if (!store) { message('Die MuPiBox-Admin-SDK ist nicht verfügbar.'); return; }
     setBusy(true);
     get('editor-error').hidden = true;
@@ -301,7 +358,7 @@
     } catch (error) {
       const detail = showError(error);
       get('editor-save-status').textContent = 'Speichern fehlgeschlagen: ' + detail + ' – Der Entwurf bleibt geöffnet.';
-    } finally { setBusy(false); }
+    } finally { setBusy(false);renderSelection(); }
   };
   window.addEventListener('beforeunload',event => {
     if (pages.length || get('admin-title').value) { event.preventDefault(); event.returnValue = ''; }
