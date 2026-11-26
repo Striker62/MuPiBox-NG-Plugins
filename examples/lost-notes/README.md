@@ -7,12 +7,26 @@ Sammle Noten, öffne Klangbrücken und bring die Musik zurück. Du findest das S
 Spring über 36 Äste und zwei Trommeln zum Gitarrenbaumhaus. Der Grollnebel
 steigt unter dir in Wellen. Am Baumhaus erklingen beim Weitergehen auch die
 Saiten, die du bei der Landung übersprungen hast. Nach der sechsten Saite
-öffnet sich das Fenster und eine Bonusnote schwebt an der Tür zu MuPi.
+öffnet sich das Fenster und eine Bonusnote im Wert von drei Punkten schwebt an der Tür zu MuPi.
 Mit mindestens **26 von 40 Punkten** endet das Level an der Tür.
 
 Für einen Lauf mit allen Noten erhältst du je nach Schwierigkeitsgrad eine,
 zwei oder drei funkelnde **Levelnoten** auf Leicht, Normal oder Schwer.
 Die Levelwahl zeigt deine beste Wertung je Level.
+
+## Level 4 · Grummels Gewitter
+
+Regen, Blitze und Donner begleiten dich bis zu Grummel. Auf **Schwer** brechen
+manche Plattformen unter MuPi weg. Die letzte Note beim Endgegner zählt drei
+Punkte.
+
+## Level 5 · Grummel-Rock
+
+Lauf los, um die Musik und die Verfolgungsjagd zu starten. Die Töne des
+E-Gitarren-Riffs geben die Plattformwechsel vor. Spring über Lücken und
+Gegner oder betäube die Gegner mit der Klangwelle. Die obere und die untere
+Route führen dich auf unterschiedlichen Wegen ans Ziel. Verpasste Noten
+bleiben an ihrem Platz.
 
 ## Gegner und Klangwelle
 
