@@ -127,9 +127,37 @@ function controls(){
  $('save-photo').disabled=!frozen||saving;buttonLabel('save-photo',saving?'Speichere …':'Foto speichern');$('undo').disabled=!frozen||history.length===0||undoBusy;$('clear').disabled=!frozen;$('smaller').disabled=!selected;$('larger').disabled=!selected;$('remove-sticker').disabled=!selected;$('finish-sticker').disabled=!selected;
 }
 async function scan(autostart=false){try{const list=await sdk.camera.list(),old=select.value;select.replaceChildren();for(const d of list){const o=document.createElement('option');o.value=d.id;o.textContent=d.name+' ('+d.id+')';select.append(o)}if(list.some(d=>d.id===old))select.value=old;else if(list.some(d=>d.id===lastCameraId))select.value=lastCameraId;if(!list.length){const o=document.createElement('option');o.value='';o.textContent='Keine Kamera gefunden';select.append(o)}cameraState(list.length?'Kamera erkannt – starte …':'Keine Kamera erkannt',list.length?'off':'error');say(list.length?'Kamera erkannt.':'Keine USB-Kamera gefunden.');controls();if(autostart&&list.length&&!autoStartSuppressed&&!active&&!frozen){autoStarting=true;controls();try{await start()}finally{autoStarting=false;controls()}}}catch(e){cameraState('Kamerazugriff nicht verfügbar','error');say('Kamerazugriff nur am MuPiBox-Touchdisplay: '+e.message);controls()}}
-async function frame(){if(!active||frozen||busy||document.hidden)return;busy=true;const current=epoch;try{const f=await sdk.camera.capture();if(active&&!frozen&&current===epoch){preview.src=f.image;preview.hidden=false;$('placeholder').hidden=true}}catch(e){if(!frozen){say('Kamerafehler: '+e.message);await stop()}}finally{busy=false}}
-async function start(){if(active||!select.value||exitBusy||exitComplete)return;$('start').disabled=true;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;preview.hidden=true;preview.removeAttribute('src');$('placeholder').hidden=false;$('placeholder').textContent='Livebild wird geladen …';try{await sdk.camera.start(select.value);if(exitBusy||exitComplete){await sdk.camera.stop();return}active=true;lastCameraId=select.value;frozen=false;epoch++;controls();cameraState('Kamera aktiv','on');say('Livebild läuft. Countdown auswählen und Foto machen.');await frame();timer=setInterval(()=>void frame(),1350)}catch(e){active=false;controls();cameraState('Kamera nicht verfügbar','error');say('Kamera konnte nicht starten: '+e.message)}}
-async function stop(callHost=true){if(frozen)return;if(!callHost)autoStartSuppressed=true;cancelCountdown();epoch++;if(timer){clearInterval(timer);timer=null}const was=active;active=false;frozen=false;painting=false;preview.hidden=true;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;$('placeholder').hidden=false;$('placeholder').textContent='Kamera ausgeschaltet';cameraState('Kamera aus');controls();if(was&&callHost){try{await sdk.camera.stop()}catch(e){say('Stoppen: '+e.message)}}}
+// A single capture at a time, with a small margin above the host's ~1 fps.
+const PREVIEW_INTERVAL_MS=1100;
+let lastCaptureStarted=-Infinity;
+function scheduleFrame(delay=0){
+ if(timer!==null){clearTimeout(timer);timer=null}
+ if(!active||frozen||exitBusy||exitComplete)return;
+ const current=epoch;
+ timer=setTimeout(()=>{timer=null;if(current===epoch)void frame()},Math.max(0,delay));
+}
+async function frame(){
+ if(!active||frozen||exitBusy||exitComplete)return;
+ if(document.hidden){scheduleFrame(PREVIEW_INTERVAL_MS);return}
+ if(busy){scheduleFrame(100);return}
+ const wait=PREVIEW_INTERVAL_MS-(performance.now()-lastCaptureStarted);
+ if(wait>0){scheduleFrame(wait);return}
+ busy=true;
+ lastCaptureStarted=performance.now();
+ const current=epoch;
+ try{
+  const f=await sdk.camera.capture();
+  if(active&&!frozen&&current===epoch){preview.src=f.image;preview.hidden=false;$('placeholder').hidden=true}
+ }catch(e){
+  if(current===epoch&&!frozen){say('Kamerafehler: '+e.message);await stop()}
+ }finally{
+  busy=false;
+  if(current===epoch)scheduleFrame(Math.max(0,PREVIEW_INTERVAL_MS-(performance.now()-lastCaptureStarted)));
+ }
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active&&!frozen)scheduleFrame()});
+async function start(){if(active||!select.value||exitBusy||exitComplete)return;$('start').disabled=true;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;preview.hidden=true;preview.removeAttribute('src');$('placeholder').hidden=false;$('placeholder').textContent='Livebild wird geladen …';try{await sdk.camera.start(select.value);if(exitBusy||exitComplete){await sdk.camera.stop();return}active=true;lastCameraId=select.value;frozen=false;epoch++;controls();cameraState('Kamera aktiv','on');say('Livebild läuft. Countdown auswählen und Foto machen.');await frame()}catch(e){active=false;controls();cameraState('Kamera nicht verfügbar','error');say('Kamera konnte nicht starten: '+e.message)}}
+async function stop(callHost=true){if(frozen)return;if(!callHost)autoStartSuppressed=true;cancelCountdown();epoch++;if(timer!==null){clearTimeout(timer);timer=null}const was=active;active=false;frozen=false;painting=false;preview.hidden=true;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;$('placeholder').hidden=false;$('placeholder').textContent='Kamera ausgeschaltet';cameraState('Kamera aus');controls();if(was&&callHost){try{await sdk.camera.stop()}catch(e){say('Stoppen: '+e.message)}}}
 function saveHistory(){
  if(!frozen||!canvas.width||!canvas.height)return;
  photoDirty=true;++photoRevision;
@@ -148,7 +176,7 @@ function restore(state){
 }
 function photoBox(){const r=$('stage').getBoundingClientRect(),w=preview.naturalWidth||320,h=preview.naturalHeight||240,scale=Math.min(r.width/w,r.height/h);return{left:(r.width-w*scale)/2,top:(r.height-h*scale)/2,width:w*scale,height:h*scale}}
 function updateStickerBox(){const b=photoBox();stickersBox.style.left=b.left+'px';stickersBox.style.top=b.top+'px';stickersBox.style.width=b.width+'px';stickersBox.style.height=b.height+'px'}
-async function freeze(){if(!active||preview.hidden||!preview.complete||!preview.naturalWidth){say('Bitte auf das erste Kamerabild warten.');return}frozen=true;photoDirty=true;++photoRevision;epoch++;photo.width=canvas.width=preview.naturalWidth;photo.height=canvas.height=preview.naturalHeight;photoCtx.drawImage(preview,0,0,photo.width,photo.height);ctx.clearRect(0,0,canvas.width,canvas.height);photo.hidden=false;history=[];items=[];selected=null;canvas.hidden=false;preview.hidden=true;stickersBox.hidden=false;updateStickerBox();renderStickers();setMode('stickers');controls();say('Foto aufgenommen. Kamera wird ausgeschaltet.');if(timer){clearInterval(timer);timer=null}active=false;try{await sdk.camera.stop();cameraState('Kamera aus');say('Kamera aus. Accessoire auswählen oder malen.')}catch(e){say('Foto bereit; Kamera-Stopp: '+e.message)}controls()}
+async function freeze(){if(!active||preview.hidden||!preview.complete||!preview.naturalWidth){say('Bitte auf das erste Kamerabild warten.');return}frozen=true;photoDirty=true;++photoRevision;epoch++;photo.width=canvas.width=preview.naturalWidth;photo.height=canvas.height=preview.naturalHeight;photoCtx.drawImage(preview,0,0,photo.width,photo.height);ctx.clearRect(0,0,canvas.width,canvas.height);photo.hidden=false;history=[];items=[];selected=null;canvas.hidden=false;preview.hidden=true;stickersBox.hidden=false;updateStickerBox();renderStickers();setMode('stickers');controls();say('Foto aufgenommen. Kamera wird ausgeschaltet.');if(timer!==null){clearTimeout(timer);timer=null}active=false;try{await sdk.camera.stop();cameraState('Kamera aus');say('Kamera aus. Accessoire auswählen oder malen.')}catch(e){say('Foto bereit; Kamera-Stopp: '+e.message)}controls()}
 function resume(){cancelCountdown();photoDirty=false;++photoRevision;frozen=false;painting=false;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;preview.hidden=true;preview.removeAttribute('src');history=[];items=[];selected=null;$('placeholder').hidden=false;$('placeholder').textContent='Kamera neu starten';controls();say('Kamera wird für das nächste Foto gestartet.');void scan(true)}
 function cancelCountdown(){if(countTimer!==null){clearInterval(countTimer);countTimer=null}counting=false;$('countdown').hidden=true;controls()}
 function beginCountdown(){if(!active||frozen||counting)return;if(preview.hidden||!preview.complete||!preview.naturalWidth){say('Bitte auf das erste Kamerabild warten.');return}counting=true;countValue=Number(delay.value);$('count-number').textContent=String(countValue);controls();say('In '+countValue+' Sekunden wird das Foto aufgenommen.');countTimer=setInterval(()=>{if(!active||frozen){cancelCountdown();return}countValue--;if(countValue>0){$('count-number').textContent=String(countValue)}else{cancelCountdown();void freeze()}},1000)}
@@ -256,7 +284,7 @@ async function performExit(){
  exitBusy=true;autoStartSuppressed=true;
  $('exit-confirm').hidden=true;
  cancelCountdown();++epoch;active=false;painting=false;drag=null;
- if(timer){clearInterval(timer);timer=null}
+ if(timer!==null){clearTimeout(timer);timer=null}
  controls();
  try{
   try{await sdk.camera.stop()}catch(e){console.warn('Kamera-Stopp vor App-Ende:',e)}

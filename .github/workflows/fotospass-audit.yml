@@ -2,7 +2,7 @@ name: FotoSpass code audit
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'dev/fotospass-*']
+    branches: [main, 'dev/fotospass-*', 'feature/fotospass-*']
     paths:
       - 'examples/fotospass/**'
       - 'tests/test_fotospass_shared.js'

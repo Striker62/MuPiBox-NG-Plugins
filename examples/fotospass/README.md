@@ -168,3 +168,16 @@ Die Accessoire-Schaltflächen verwenden einfache Zeichen für Vergrößern (+),
 Fertig (Häkchen) und Entfernen (×), um die fehlerhafte Symbolanzeige auf der
 MuPiBox zu vermeiden. Der transparente Countdown aus 0.5.6 ist enthalten.
 Der App-Entwickler hat die korrekte Darstellung auf der MuPiBox bestätigt.
+# Testversion 1.0.2-beta.1: gleichmäßigere Kameravorschau
+
+Die Vorschau fordert Bilder mit mindestens 1100 ms Abstand zwischen den
+Aufnahmestarts an. Die nächste Anfrage wird nach Abschluss der laufenden
+Aufnahme geplant, statt auf einen festen 1350-ms-Takt zu warten. Dauert die
+Aufnahme länger, entsteht dadurch keine zusätzliche Wartezeit bis zum nächsten
+Takt. Es läuft höchstens eine Aufnahme gleichzeitig. Verdeckte Seiten pausieren
+die Aufnahmen; Stoppen, Fotoaufnahme und App-Ende verwerfen ausstehende Ergebnisse.
+
+Das ist weiterhin eine Einzelbildvorschau innerhalb der dokumentierten
+Kamera-SDK-Grenzen, kein Video-Stream. Die tatsächliche Bildrate hängt von
+Kamera und Host ab und muss auf der MuPiBox gemessen werden. Das Design und
+die Foto-/Accessoire-Funktionen bleiben erhalten.

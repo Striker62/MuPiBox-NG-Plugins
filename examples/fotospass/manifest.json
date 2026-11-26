@@ -4,7 +4,7 @@
   "name": "FotoSpaß",
   "description": "FotoSpaß mit bildbasierten Kategorien und zusätzlichen PNG-Accessoires aus dem eigenen SMB-Ordner.",
   "author": "Striker62",
-  "version": "1.0.1",
+  "version": "1.0.2-beta.1",
   "runtime": "web",
   "entry": "index.html",
   "permissions": [

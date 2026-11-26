@@ -8,7 +8,7 @@ const source=fs.readFileSync(path.join(__dirname,'../examples/fotospass/app.js')
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgAAIAAAUAAXpeqz8AAAAASUVORK5CYII=','base64');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function setup(mode='ok'){
- const nodes=new Map(),events={},calls=[],urls=new Set(),draws=[],saved=[],intervals=new Map();let nextURL=0;
+ const nodes=new Map(),events={},calls=[],urls=new Set(),draws=[],saved=[],intervals=new Map(),timeouts=new Map();let nextURL=0,nextTimer=0,now=0;
  class Element{
   constructor(tag='div'){this.tag=tag;this.children=[];this.hidden=false;this.disabled=false;this.value='';this.style={};this.dataset={};this.listeners={};this.classList={toggle(){},add(){},remove(){}};this.isConnected=true;this.complete=true;this.naturalWidth=320;this.naturalHeight=240;this.width=320;this.height=240;}
   append(...values){for(const value of values){this.children.push(value);if(this.tag==='select'&&!this.value)this.value=value.value}}
@@ -44,11 +44,13 @@ function setup(mode='ok'){
  const context={Blob,Uint8Array,DataView,Image:MockImage,console:{warn(){}},
   URL:{createObjectURL(){const url='blob:'+ ++nextURL;urls.add(url);return url},revokeObjectURL(url){urls.delete(url)}},
   setInterval(cb){const id=intervals.size+1;intervals.set(id,cb);return id},clearInterval(id){intervals.delete(id)},
+  performance:{now:()=>now},setTimeout(cb,delay){const id=++nextTimer;timeouts.set(id,{cb,at:now+delay});return id},clearTimeout(id){timeouts.delete(id)},
   window:{MuPiBoxSDK:sdk,addEventListener(name,cb){const previous=events[name];events[name]=(...args)=>{previous?.(...args);cb(...args)}}},
   document:{hidden:false,getElementById:get,createElement:tag=>new Element(tag),createTextNode:text=>({textContent:text}),querySelectorAll:()=>[],addEventListener(name,cb){events['document:'+name]=cb}}};
- const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={categories,sharedAccessories,accessoryCache,loadSharedAccessories,accessorySource,safeAccessoryName,addSticker,freeze,savePhoto,accessoryHeight,releaseUnusedAccessories,requestExit,performExit,beginCountdown,resume,get dirty(){return photoDirty},get counting(){return counting},get active(){return active}, get items(){return items},setCategory(id){accessoryCategory=id;renderAccessoryMenu()}};})();`);
+ const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={categories,sharedAccessories,accessoryCache,loadSharedAccessories,accessorySource,safeAccessoryName,addSticker,freeze,savePhoto,accessoryHeight,releaseUnusedAccessories,requestExit,performExit,beginCountdown,resume,start,stop,frame,get dirty(){return photoDirty},get counting(){return counting},get active(){return active}, get items(){return items},setCategory(id){accessoryCategory=id;renderAccessoryMenu()}};})();`);
  vm.runInNewContext(exposed,context);
- return {app:context.app,get,calls,urls,draws,saved,events,sdk};
+ return {app:context.app,get,calls,urls,draws,saved,events,sdk,timeouts,context,
+  async advance(ms){now+=ms;const ready=[...timeouts].filter(([,task])=>task.at<=now);for(const [id,task] of ready){timeouts.delete(id);task.cb()}await tick();await tick()}};
 }
 test('existing five categories retain built-ins and add PNG files only from their own directories',async()=>{
  const h=setup();await tick();await tick();
@@ -145,4 +147,38 @@ test('a camera start completing after exit cannot reactivate the preview',async(
  h.sdk.camera.start=()=>new Promise(resolve=>{finish=resolve});
  h.app.resume();await tick();assert.equal(typeof finish,'function');
  await h.app.requestExit();finish();await tick();assert.equal(h.app.active,false);
+});
+
+test('preview requests are spaced by at least 1100 ms without duplicate timers',async()=>{
+ const h=setup();await tick();await tick();let captures=0;
+ h.sdk.camera.capture=async()=>{captures++;return {image:'new'}};
+ await h.advance(1099);assert.equal(captures,0);
+ await h.advance(1);assert.equal(captures,1);assert.equal(h.timeouts.size,1);
+ await h.app.frame();assert.equal(captures,1);assert.equal(h.timeouts.size,1);
+ await h.advance(1100);assert.equal(captures,2);
+});
+test('slow capture is followed immediately when ready, with no parallel requests',async()=>{
+ const h=setup();await tick();await tick();let finish,captures=0;
+ h.sdk.camera.capture=()=>{captures++;return new Promise(resolve=>{finish=resolve})};
+ await h.advance(1100);assert.equal(captures,1);
+ await h.advance(1600);await h.app.frame();assert.equal(captures,1);
+ finish({image:'slow'});await tick();await tick();
+ await h.advance(0);assert.equal(captures,2);
+});
+test('hidden preview suspends capture and resumes without exceeding the rate',async()=>{
+ const h=setup();await tick();await tick();let captures=0;
+ h.sdk.camera.capture=async()=>{captures++;return {image:'new'}};
+ h.context.document.hidden=true;await h.advance(2200);assert.equal(captures,0);
+ h.context.document.hidden=false;h.events['document:visibilitychange']();
+ await h.advance(0);assert.equal(captures,1);
+ await h.advance(100);assert.equal(captures,1);
+});
+test('stop cancels pending scheduling and a late result cannot restore the preview',async()=>{
+ const h=setup();await tick();await tick();let finish;
+ h.sdk.camera.capture=()=>new Promise(resolve=>{finish=resolve});
+ await h.advance(1100);await h.app.stop();
+ assert.equal(h.timeouts.size,0);
+ finish({image:'late'});await tick();await tick();
+ assert.equal(h.get('preview').hidden,true);assert.equal(h.app.active,false);
+ assert.equal(h.timeouts.size,0);
 });
