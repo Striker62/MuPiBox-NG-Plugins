@@ -137,7 +137,7 @@ test('persistent preview failure stops once and preserves error after host stop 
  const h=setup('ok',true);await tick();await tick();let stops=0;
  h.sdk.camera.preview=async()=>{throw Error('rate limit exceeded')};
  h.sdk.camera.stop=async()=>{stops++;h.events['sdk:camera.stopped']()};
- for(const elapsed of [125,250,500,750])await h.advance(elapsed);
+ for(const elapsed of [125,250,500,1000])await h.advance(elapsed);
  assert.equal(h.app.active,false);assert.equal(stops,1);
  assert.match(h.get('message').textContent,/rate limit exceeded/);
  assert.match(h.get('camera-state').textContent,/Vorschau fehlgeschlagen/);
@@ -149,6 +149,19 @@ test('permission errors never restart or retry the camera',async()=>{
  await h.advance(125);await h.advance(2000);
  assert.equal(h.app.active,false);assert.equal(attempts,1);
  assert.match(h.get('message').textContent,/permission denied/);
+});
+
+test('preview learns a slower host rate and retains it after successful frames',async()=>{
+ const h=setup('ok',true);await tick();await tick();let calls=0;
+ // The first frame succeeded at time zero. Simulate a host accepting only
+ // one preview per second, regardless of the requested camera FPS.
+ let now=0,lastAccepted=0;
+ h.sdk.camera.preview=async()=>{calls++;if(now-lastAccepted<1000)throw Error('preview rate limited');lastAccepted=now;return {image:'data:image/jpeg;base64,/9j/2Q=='}};
+ for(const elapsed of [125,250,500,1000]){now+=elapsed;await h.advance(elapsed)}
+ assert.equal(h.app.active,true);assert.equal(calls,4);
+ assert.match(h.get('message').textContent,/angepasst/);
+ now+=999;await h.advance(999);assert.equal(calls,4);
+ now++;await h.advance(1);assert.equal(calls,5);assert.equal(h.app.active,true);
 });
 test('existing five categories retain built-ins and add PNG files only from their own directories',async()=>{
  const h=setup();await tick();await tick();

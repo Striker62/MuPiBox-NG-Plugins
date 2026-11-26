@@ -183,12 +183,17 @@ async function frame(){
  try{
   framePending=fastPreview?sdk.camera.preview():sdk.camera.capture();
   const f=await framePending;
-  if(active&&!frozen&&current===epoch){previewFailures=0;preview.src=f.image;preview.hidden=false;$('placeholder').hidden=true}
+  if(active&&!frozen&&current===epoch){if(previewFailures)say('Livebild läuft. Vorschau an die Geschwindigkeit der Box angepasst.');previewFailures=0;preview.src=f.image;preview.hidden=false;$('placeholder').hidden=true}
  }catch(e){
   if(current===epoch&&!frozen){
    const message=String(e?.message||e);
    if(fastPreview&&++previewFailures<=3&&/rate.?limit|too many|429|not ready|not yet|no.*frame|kein.*bild|noch.*bild|temporar|warming|EAGAIN|503/i.test(message)){
-    retryDelay=250*previewFailures;say('Livebild wartet auf die Kamera … '+message);
+    if(/rate.?limit|too many|429/i.test(message)){
+     // Keep the accepted rate for this session instead of returning to the
+     // original polling interval after every successful frame.
+     PREVIEW_INTERVAL_MS=Math.min(1500,Math.max(250,PREVIEW_INTERVAL_MS*2));
+    }
+    retryDelay=Math.max(PREVIEW_INTERVAL_MS,250*previewFailures);say('Livebild wartet auf die Kamera … '+message);
    }else{
     await stop();cameraState('Vorschau fehlgeschlagen','error');
     say('Kameravorschau gestoppt: '+message+'. Unter Kamera einstellen erneut starten.');

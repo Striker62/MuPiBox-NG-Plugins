@@ -2,6 +2,16 @@
 
 FotoSpaß ist ein kindgerechtes Fotobox-Plugin für MuPiBox-NG.
 
+## 1.3.0-beta.3: automatische Anpassung an Vorschau-Limits
+
+Bei „preview rate limited“ erhöht die App den Abfrageabstand schrittweise
+(250, 500, 1000, maximal 1500 ms) und behält den angepassten Abstand für die
+Kamerasitzung auch nach erfolgreichen Bildern bei. Das verhindert, dass sie
+nach jeder erfolgreichen Vorschau erneut die gleiche Grenze überschreitet.
+Ein Test simuliert eine Box, die nur eine Vorschau pro Sekunde zulässt.
+Die Fotoauflösung ist unabhängig davon unter **Kamera einstellen** wählbar,
+sofern die Box native Kameramodi liefert.
+
 ## 1.3.0-beta.2: Vorschaufehler und Startdiagnose
 
 Die neue Vorschau wird mit 125 ms Mindestabstand abgefragt, mit Reserve zur
@@ -142,7 +152,7 @@ Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginv
 
 ## Version
 
-1.3.0-beta.2 (robustere Vorschau und sichtbare Kamerafehler)
+1.3.0-beta.3 (Vorschau passt sich an das tatsächliche Abfragelimit an)
 
 ## Neue Oberfläche (ab 0.5.5)
 
