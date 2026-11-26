@@ -116,13 +116,14 @@ window.addEventListener('pagehide',()=>{
 const say=s=>{$('message').textContent=s};
 function buttonLabel(id,text){const button=$(id),label=button.querySelector?.('.button-label');(label||button).textContent=text}
 function controls(){
+ $('editor-view').classList.toggle('aligning',frozen&&mode==='photo');$('align-actions').hidden=!frozen||mode!=='photo';
  $('app-exit').disabled=saving||exitBusy||exitComplete;
  buttonLabel('freeze',autoStarting?'Kamera startet …':active?'Foto machen ('+delay.value+' Sek.)':'Kamera starten');delay.disabled=counting||autoStarting;
  $('freeze').disabled=frozen||counting||capturing||autoStarting||exitBusy||exitComplete;
  $('devices').disabled=counting;$('cancel').hidden=!counting;
  $('countdown').hidden=!counting;
  $('camera-panel').hidden=frozen;$('edit-panel').hidden=!frozen;$('edit-actions').hidden=!frozen;$('sticker-controls').hidden=mode!=='stickers';
- $('mode').textContent=frozen?'Bearbeiten':'Live';
+ $('mode').textContent=frozen?(mode==='photo'?'Bild ausrichten':'Bearbeiten'):'Live';
  $('status').textContent=frozen?'Standbild bearbeiten':counting?'Countdown läuft':active?'Kamera aktiv':'Kamera aus';
  $('save-photo').disabled=!frozen||saving;buttonLabel('save-photo',saving?'Speichere …':'Foto speichern');$('undo').disabled=!frozen||history.length===0||undoBusy;$('clear').disabled=!frozen;$('smaller').disabled=!selected;$('larger').disabled=!selected;$('remove-sticker').disabled=!selected;$('finish-sticker').disabled=!selected;
 }
@@ -233,10 +234,11 @@ function restore(state){
 }
 // Render only the background photo. Paint and accessories remain independent.
 let imageSource=null,imageView={zoom:1,x:0,y:0,mirror:false},imageDrag=null;
+const imagePointers=new Map();let imageGesture=null;
 function resetImageSource(source,mirror=false){
  imageSource=document.createElement('canvas');imageSource.width=photo.width;imageSource.height=photo.height;
  imageSource.getContext('2d').drawImage(source,0,0);
- imageView={zoom:1,x:0,y:0,mirror};imageDrag=null;renderImageView();
+ imageView={zoom:1,x:0,y:0,mirror};clearImageGesture();renderImageView();
 }
 function renderImageView(){
  if(!imageSource)return;
@@ -246,33 +248,48 @@ function renderImageView(){
  photoCtx.save();photoCtx.translate(w/2+imageView.x*w,h/2+imageView.y*h);
  photoCtx.scale(imageView.mirror?-imageView.zoom:imageView.zoom,imageView.zoom);
  photoCtx.drawImage(imageSource,-w/2,-h/2,w,h);photoCtx.restore();
- $('image-zoom-out').disabled=imageView.zoom<=1;$('image-zoom-in').disabled=imageView.zoom>=4;
- $('image-mirror').setAttribute('aria-pressed',String(imageView.mirror));
+
 }
-function changeImageView(action){
- if(!frozen||saving||!imageSource)return;
- saveHistory();
- if(action==='in')imageView.zoom=Math.min(4,imageView.zoom*1.2);
- if(action==='out')imageView.zoom=Math.max(1,imageView.zoom/1.2);
- if(action==='mirror')imageView.mirror=!imageView.mirror;
- if(action==='reset')imageView={zoom:1,x:0,y:0,mirror:imageView.mirror};
- renderImageView();controls();say('Foto bereit!');
+function clearImageGesture(){imagePointers.clear();imageGesture=null;imageDrag=null}
+function imagePosition(point){
+ const r=canvas.getBoundingClientRect(),box=photoBox();
+ return {x:(point.x-r.left-box.left)/box.width-.5,y:(point.y-r.top-box.top)/box.height-.5};
+}
+function beginImageGesture(){
+ const points=[...imagePointers.values()];
+ if(!points.length){imageGesture=null;return}
+ const center=points.length>1?{x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2}:points[0];
+ imageGesture={view:{...imageView},center:imagePosition(center),distance:points.length>1?Math.hypot(points[1].x-points[0].x,points[1].y-points[0].y):0,count:points.length};
 }
 canvas.addEventListener('pointerdown',e=>{
- if(!frozen||mode!=='photo'||saving||imageView.zoom<=1)return;
- e.preventDefault();saveHistory();const box=photoBox();
- imageDrag={pointer:e.pointerId,startX:e.clientX,startY:e.clientY,x:imageView.x,y:imageView.y,width:box.width,height:box.height};
- canvas.setPointerCapture(e.pointerId);
+ if(!frozen||mode!=='photo'||saving||imagePointers.size>=2)return;
+ e.preventDefault();
+ if(!imagePointers.size)saveHistory();
+ imagePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});canvas.setPointerCapture(e.pointerId);beginImageGesture();
 });
 canvas.addEventListener('pointermove',e=>{
- if(!imageDrag||e.pointerId!==imageDrag.pointer||mode!=='photo'||saving)return;
- e.preventDefault();imageView.x=imageDrag.x+(e.clientX-imageDrag.startX)/imageDrag.width;
- imageView.y=imageDrag.y+(e.clientY-imageDrag.startY)/imageDrag.height;
+ if(!imagePointers.has(e.pointerId)||!imageGesture||mode!=='photo'||saving)return;
+ e.preventDefault();imagePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ const points=[...imagePointers.values()],g=imageGesture;
+ const center=imagePosition(points.length>1?{x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2}:points[0]);
+ const distance=points.length>1?Math.hypot(points[1].x-points[0].x,points[1].y-points[0].y):0;
+ const zoom=g.distance>0?Math.max(1,Math.min(4,g.view.zoom*distance/g.distance)):g.view.zoom;
+ imageView={...g.view,zoom,x:center.x-(g.center.x-g.view.x)*zoom/g.view.zoom,y:center.y-(g.center.y-g.view.y)*zoom/g.view.zoom};
  photoDirty=true;++photoRevision;renderImageView();
 });
-for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,()=>{imageDrag=null});
-for(const [id,action] of [['image-zoom-in','in'],['image-zoom-out','out'],['image-mirror','mirror'],['image-reset','reset']])$(id).addEventListener('click',()=>changeImageView(action));
-$('tab-photo').addEventListener('click',()=>{setMode('photo');selected=null;renderSelection();controls()});
+for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,e=>{
+ if(imagePointers.delete(e.pointerId))beginImageGesture();
+});
+canvas.addEventListener('wheel',e=>{
+ if(!frozen||mode!=='photo'||saving||!imageSource)return;
+ e.preventDefault();saveHistory();const center=imagePosition({x:e.clientX,y:e.clientY}),old=imageView.zoom;
+ const zoom=Math.max(1,Math.min(4,old*Math.exp(-Math.max(-100,Math.min(100,e.deltaY))*.002)));
+ imageView={...imageView,zoom,x:center.x-(center.x-imageView.x)*zoom/old,y:center.y-(center.y-imageView.y)*zoom/old};renderImageView();
+},{passive:false});
+$('image-done').addEventListener('click',()=>{
+ if(!frozen||mode!=='photo')return;
+ clearImageGesture();setMode('stickers');controls();say('Foto bereit!');
+});
 function photoBox(){const r=$('stage').getBoundingClientRect(),w=(frozen?photo.width:preview.naturalWidth)||320,h=(frozen?photo.height:preview.naturalHeight)||240,scale=Math.min(r.width/w,r.height/h);return{left:(r.width-w*scale)/2,top:(r.height-h*scale)/2,width:w*scale,height:h*scale}}
 function updateStickerBox(){const b=photoBox();stickersBox.style.left=b.left+'px';stickersBox.style.top=b.top+'px';stickersBox.style.width=b.width+'px';stickersBox.style.height=b.height+'px'}
 async function freeze(){
@@ -307,7 +324,7 @@ function point(e){const r=canvas.getBoundingClientRect(),scale=Math.min(r.width/
 function draw(e){if(!painting||!frozen||mode!=='paint')return;photoDirty=true;++photoRevision;e.preventDefault();const p=point(e);ctx.lineWidth=size;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineTo(p.x,p.y);ctx.stroke()}
 canvas.addEventListener('pointerdown',e=>{if(!frozen||mode!=='paint')return;e.preventDefault();saveHistory();painting=true;canvas.setPointerCapture(e.pointerId);const p=point(e);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.strokeStyle=color;ctx.globalCompositeOperation=eraser?'destination-out':'source-over';ctx.lineWidth=size;ctx.lineCap='round';ctx.lineTo(p.x+.01,p.y+.01);ctx.stroke()});
 canvas.addEventListener('pointermove',draw);for(const ev of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(ev,()=>{painting=false;ctx.beginPath();ctx.globalCompositeOperation='source-over'});
-function setMode(m){imageDrag=null;mode=m;$('tab-photo').classList.toggle('chosen',m==='photo');$('image-tools').hidden=m!=='photo';$('sticker-controls').hidden=m!=='stickers';$('tab-stickers').classList.toggle('chosen',m==='stickers');$('tab-paint').classList.toggle('chosen',m==='paint');$('sticker-tools').hidden=m!=='stickers';$('paint-tools').hidden=m!=='paint';canvas.classList.toggle('passthrough',m==='stickers');canvas.classList.toggle('drawable',m==='paint'||m==='photo');canvas.classList.toggle('positioning',m==='photo');stickersBox.style.pointerEvents=m==='stickers'?'auto':'none';for(const el of stickersBox.children)el.style.pointerEvents=m==='stickers'?'auto':'none'}
+function setMode(m){clearImageGesture();mode=m;$('editor-view').classList.toggle('aligning',m==='photo'&&frozen);$('align-actions').hidden=m!=='photo'||!frozen;$('sticker-controls').hidden=m!=='stickers';$('tab-stickers').classList.toggle('chosen',m==='stickers');$('tab-paint').classList.toggle('chosen',m==='paint');$('sticker-tools').hidden=m!=='stickers';$('paint-tools').hidden=m!=='paint';canvas.classList.toggle('passthrough',m==='stickers');canvas.classList.toggle('drawable',m==='paint'||m==='photo');canvas.classList.toggle('positioning',m==='photo');stickersBox.style.pointerEvents=m==='stickers'?'auto':'none';for(const el of stickersBox.children)el.style.pointerEvents=m==='stickers'?'auto':'none';if(frozen)updateStickerBox()}
 function renderStickers(){stickersBox.replaceChildren();for(const item of items){const el=document.createElement('img');setAccessoryImage(el,item.type);el.alt=accessoryLabel(item.type);el.draggable=false;el.className='sticker'+(selected===item.id?' selected':'');el.dataset.id=String(item.id);el.style.left=item.x+'%';el.style.top=item.y+'%';el.style.width=item.width+'%';el.style.height=accessoryHeight(item)+'%';el.style.pointerEvents=mode==='stickers'?'auto':'none';el.addEventListener('pointerdown',stickerDown);stickersBox.append(el)}}
 async function addSticker(type){
  if(!frozen)return;

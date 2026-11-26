@@ -181,30 +181,35 @@ test('external camera stop waits for the simple start action and then resumes th
  assert.equal(h.app.active,true);assert.equal(starts(),2);assert.match(h.get('freeze').textContent,/Foto machen/);
 });
 
-test('camera still is mirrored by default, zoom and pan are bounded and undo restores the view',async()=>{
+test('two-finger zoom and pan are bounded and confirmation locks the photo for editing',async()=>{
  const h=setup();await tick();await tick();await h.app.freeze();
  assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[-1,1]);
- h.get('image-zoom-in').listeners.click();
- assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[-1.2,1.2]);
- const event={pointerId:1,clientX:0,clientY:0,preventDefault(){}};
- h.get('painting').listeners.pointerdown(event);
- h.get('painting').listeners.pointermove({...event,clientX:100000,clientY:-100000});
+ assert.equal(h.get('align-actions').hidden,false);
+ const event=(pointerId,clientX,clientY)=>({pointerId,clientX,clientY,preventDefault(){}}),events=h.get('painting').listeners;
+ events.pointerdown(event(1,200,240));events.pointerdown(event(2,440,240));
+ events.pointermove(event(1,80,240));events.pointermove(event(2,560,240));
+ assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[-2,2]);
+ events.pointerup(event(1,80,240));events.pointerup(event(2,560,240));
+ events.pointerdown(event(1,0,0));events.pointermove(event(1,100000,-100000));
  const shift=h.draws.filter(row=>row.operation==='translate').at(-1).args;
- assert.ok(Math.abs(shift[0]-192)<0.001);assert.ok(Math.abs(shift[1]-96)<0.001,'photo remains inside the fixed 320 × 240 frame');
+ assert.deepEqual(shift,[320,0],'photo remains inside its fixed frame');
+ events.pointercancel(event(1,100000,-100000));
+ h.get('image-done').listeners.click();assert.equal(h.get('align-actions').hidden,true);
+ const before=h.draws.filter(row=>row.operation==='scale').length;
+ events.pointerdown(event(1,200,240));events.pointerdown(event(2,440,240));events.pointermove(event(2,600,240));
+ assert.equal(h.draws.filter(row=>row.operation==='scale').length,before,'gestures cannot move the background in accessory mode');
  h.get('undo').listeners.click();
  assert.deepEqual(h.draws.filter(row=>row.operation==='translate').at(-1).args,[160,120]);
- h.get('image-mirror').listeners.click();
- assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[1.2,1.2]);
- h.get('image-reset').listeners.click();
- assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[1,1]);
 });
 
 test('loaded images keep their orientation and the saved result uses the transformed photo',async()=>{
  const h=setup();await tick();await tick();h.app.gallerySwitch(true);await tick();
  await h.app.galleryOpenDetail('saved');await h.app.galleryEditPhoto('saved');
  assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[1,1]);
- h.get('image-zoom-in').listeners.click();h.get('image-mirror').listeners.click();
- assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[-1.2,1.2]);
+ h.get('painting').listeners.wheel({clientX:320,clientY:240,deltaY:-100,preventDefault(){}});
+ const scale=h.draws.filter(row=>row.operation==='scale').at(-1).args;
+ assert.ok(scale[0]>1);assert.equal(scale[0],scale[1]);
+ h.get('image-done').listeners.click();
  const before=h.draws.length;await h.app.savePhoto();
  assert.ok(h.draws.slice(before).some(row=>row.image===h.get('photo')),'JPEG composition reads the same rendered canvas shown in the editor');
  assert.equal(h.saved.length,1);assert.equal(h.saved[0].type,'image/jpeg');

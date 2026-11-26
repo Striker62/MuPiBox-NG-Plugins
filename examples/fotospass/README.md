@@ -2,6 +2,28 @@
 
 FotoSpaß ist ein kindgerechtes Fotobox-Plugin für MuPiBox-NG.
 
+## 1.3.0-beta.7: Ausrichten vor dem Bearbeiten
+
+Nach der Aufnahme oder dem Laden erscheint zuerst das große Foto ohne
+Bearbeitungsleiste. Zwei Finger auseinander/zusammen vergrößern/verkleinern
+den Ausschnitt (1- bis 4-fach). Mit zwei Fingern lässt sich der Ausschnitt
+gleichzeitig verschieben; nach dem Vergrößern geht Verschieben auch mit
+einem Finger. Das Bild bleibt innerhalb des Rahmens. Für die Bedienung am
+PC funktionieren Mausrad und Ziehen mit der Maus.
+
+Der große **✓-Button** übernimmt den Ausschnitt und öffnet anschließend die
+bisherigen zwei Reiter **Accessoires** und **Malen**. In diesem Schritt sind
+die Foto-Gesten deaktiviert. Die zusätzlichen Bild-, Zoom-, Spiegel- und
+Zurücksetzen-Werkzeuge aus beta.6 entfallen. Kamerabilder bleiben automatisch
+gespiegelt, geladene Fotos behalten ihre Ausrichtung. Schutz ungespeicherter
+Änderungen und Sicherung der unbearbeiteten Originale bleiben erhalten.
+
+Die Gesten werden mit simulierten Pointer-Ereignissen geprüft, einschließlich
+Verschieben, Gestenabschluss und Sperren nach ✓. Der reale Touchscreen muss
+zwei gleichzeitige Berührungen an die App liefern; dies ist auf der Box noch
+zu testen. Der gemeldete Helligkeitsunterschied bei der Kameraaufnahme ist
+weiterhin offen.
+
 ## 1.3.0-beta.6: Bildausschnitt und Spiegelbild
 
 Nach einer Aufnahme oder dem Laden eines Fotos öffnet sich der Reiter **Bild**:
@@ -213,7 +235,7 @@ Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginv
 
 ## Version
 
-1.3.0-beta.6 (Bildausschnitt, Verschieben und Spiegelbild)
+1.3.0-beta.7 (Zwischenschritt mit Zwei-Finger-Gesten und Bestätigung)
 
 ## Neue Oberfläche (ab 0.5.5)
 
