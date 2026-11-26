@@ -117,10 +117,10 @@ const say=s=>{$('message').textContent=s};
 function buttonLabel(id,text){const button=$(id),label=button.querySelector?.('.button-label');(label||button).textContent=text}
 function controls(){
  $('app-exit').disabled=saving||exitBusy||exitComplete;
- buttonLabel('freeze','Foto machen ('+delay.value+' Sek.)');delay.disabled=counting;
- $('start').disabled=active||!select.value||autoStarting;$('freeze').disabled=!active||counting||capturing;
- $('scan').disabled=counting;$('devices').disabled=counting;$('cancel').hidden=!counting;
- $('stop').disabled=!active||counting;$('countdown').hidden=!counting;
+ buttonLabel('freeze',autoStarting?'Kamera startet …':active?'Foto machen ('+delay.value+' Sek.)':'Kamera starten');delay.disabled=counting||autoStarting;
+ $('freeze').disabled=frozen||counting||capturing||autoStarting||exitBusy||exitComplete;
+ $('devices').disabled=counting;$('cancel').hidden=!counting;
+ $('countdown').hidden=!counting;
  $('camera-panel').hidden=frozen;$('edit-panel').hidden=!frozen;$('edit-actions').hidden=!frozen;$('sticker-controls').hidden=mode!=='stickers';
  $('mode').textContent=frozen?'Bearbeiten':'Live';
  $('status').textContent=frozen?'Standbild bearbeiten':counting?'Countdown läuft':active?'Kamera aktiv':'Kamera aus';
@@ -203,7 +203,7 @@ async function frame(){
     retryDelay=Math.max(PREVIEW_INTERVAL_MS,250*previewFailures);say('Livebild wartet auf die Kamera … '+message);
    }else{
     await stop();cameraState('Vorschau fehlgeschlagen','error');
-    say('Kameravorschau gestoppt: '+message+'. Unter Kamera einstellen erneut starten.');
+    say('Kameravorschau gestoppt: '+message+'. Bitte auf Kamera starten tippen.');
    }
   }
  }finally{
@@ -212,7 +212,7 @@ async function frame(){
  }
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active&&!frozen)scheduleFrame()});
-async function start(){const startEpoch=epoch;if(active||!select.value||exitBusy||exitComplete)return;$('start').disabled=true;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;preview.hidden=true;preview.removeAttribute('src');$('placeholder').hidden=false;$('placeholder').textContent='Livebild wird geladen …';try{const options=await prepareCamera();if(exitBusy||exitComplete||startEpoch!==epoch||galleryOpen)return;await sdk.camera.start(select.value,options);if(exitBusy||exitComplete||startEpoch!==epoch||galleryOpen){await sdk.camera.stop();return}active=true;lastCameraId=select.value;frozen=false;epoch++;controls();cameraState('Kamera aktiv','on');say('Livebild läuft. Countdown auswählen und Foto machen.');await frame()}catch(e){active=false;controls();cameraState('Kamera nicht verfügbar','error');say('Kamera konnte nicht starten: '+e.message)}}
+async function start(){const startEpoch=epoch;if(active||!select.value||exitBusy||exitComplete)return;$('freeze').disabled=true;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;preview.hidden=true;preview.removeAttribute('src');$('placeholder').hidden=false;$('placeholder').textContent='Livebild wird geladen …';try{const options=await prepareCamera();if(exitBusy||exitComplete||startEpoch!==epoch||galleryOpen)return;await sdk.camera.start(select.value,options);if(exitBusy||exitComplete||startEpoch!==epoch||galleryOpen){await sdk.camera.stop();return}active=true;lastCameraId=select.value;frozen=false;epoch++;controls();cameraState('Kamera aktiv','on');say('Livebild läuft. Countdown auswählen und Foto machen.');await frame()}catch(e){active=false;controls();cameraState('Kamera nicht verfügbar','error');say('Kamera konnte nicht starten: '+e.message)}}
 async function stop(callHost=true){if(frozen)return;if(!callHost)autoStartSuppressed=true;cancelCountdown();epoch++;if(timer!==null){clearTimeout(timer);timer=null}const was=active;active=false;frozen=false;painting=false;preview.hidden=true;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;$('placeholder').hidden=false;$('placeholder').textContent='Kamera ausgeschaltet';cameraState('Kamera aus');controls();if(was&&callHost){try{await sdk.camera.stop()}catch(e){say('Stoppen: '+e.message)}}}
 function saveHistory(){
  if(!frozen||!canvas.width||!canvas.height)return;
@@ -368,7 +368,14 @@ async function savePhoto(){
 }
 $('save-photo').addEventListener('click',()=>void savePhoto());
 
-$('camera-settings').addEventListener('click',()=>{const e=$('advanced-camera');e.hidden=!e.hidden;buttonLabel('camera-settings',e.hidden?'Kamera einstellen':'Schließen')});delay.addEventListener('change',controls);$('scan').addEventListener('click',()=>{autoStartSuppressed=false;void scan(false)});$('start').addEventListener('click',()=>{autoStartSuppressed=false;void start()});$('stop').addEventListener('click',()=>{autoStartSuppressed=true;void stop()});$('freeze').addEventListener('click',beginCountdown);$('cancel').addEventListener('click',()=>{cancelCountdown();say('Countdown abgebrochen. Livebild läuft weiter.')});$('resume').addEventListener('click',resume);
+delay.addEventListener('change',controls);
+$('freeze').addEventListener('click',async()=>{
+ if(active){beginCountdown();return}
+ if(autoStarting||frozen||capturing||exitBusy||exitComplete)return;
+ autoStartSuppressed=false;autoStarting=true;controls();
+ try{await scan(true)}finally{autoStarting=false;controls()}
+});
+$('cancel').addEventListener('click',()=>{cancelCountdown();say('Countdown abgebrochen. Livebild läuft weiter.')});$('resume').addEventListener('click',resume);
 window.addEventListener('resize',()=>{if(frozen)updateStickerBox()});
 sdk.on('camera.stopped',()=>{if(frozen||!active)return;autoStartSuppressed=true;void stop(false);say('Kamera von der MuPiBox gestoppt. Zum erneuten Starten auf Kamera starten tippen.')});sdk.on('lifecycle.pause',()=>{if(frozen)return;void stop()});window.addEventListener('pagehide',()=>void stop());setMode('stickers');void discoverPhotoFeatures().then(()=>scan(true));
 // Leave through the SDK; a frozen, unsaved photo requires confirmation.
@@ -524,7 +531,7 @@ async function galleryOpenDetail(id){
  $('gallery-delete').hidden=source!=='photos';
  $('gallery-edit').hidden=source==='album';$('album-import').hidden=source!=='album';gallerySay('Bild wird geladen …');
  try{const url=await galleryImage(id,source);if(gallerySelected!==id||request!==galleryEditRun||source!==gallerySource)return;$('gallery-large').src=url;
-  gallerySay(source==='album'?'In Originale übernehmen, um das Bild anschließend zu bearbeiten. Das Fotoalbum bleibt unverändert.':source==='templates'?'Vorlage bearbeiten. Speichern erstellt ein neues JPEG in „Meine Fotos“. Die Vorlage bleibt unverändert.':'Foto bearbeiten, ansehen oder einzeln löschen. Beim Bearbeiten bleibt das Original erhalten.');
+  gallerySay('Foto bereit!');
  }catch(e){if(request===galleryEditRun)gallerySay('Bild konnte nicht geladen werden: '+e.message)}
 }
 function galleryCloseDetail(){++galleryEditRun;pendingGalleryEdit=null;$('gallery-edit-confirm').hidden=true;gallerySelected=null;$('gallery-grid').hidden=false;$('gallery-detail').hidden=true;$('gallery-confirm').hidden=true;$('gallery-large').removeAttribute('src')}
@@ -584,7 +591,7 @@ async function galleryEditPhoto(id){
   gallerySwitch(false);
   updateStickerBox();renderStickers();releaseUnusedAccessories();setMode('stickers');controls();
   cameraState('Kamera aus');
-  say('Galeriefoto geladen. Bearbeite es mit Accessoires oder male darauf. Speichern erstellt eine neue Kopie; das Original bleibt erhalten.');
+  say('Foto bereit!');
  }catch(error){
   if(valid())gallerySay('Bearbeiten fehlgeschlagen: '+(error?.message||String(error))+'. Dein bisheriger Entwurf bleibt erhalten.');
  }finally{

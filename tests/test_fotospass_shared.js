@@ -168,6 +168,17 @@ test('unsupported admin resolution selects a native mode within the limit withou
  const h=setup('ok',true,'1280x720');await tick();await tick();await h.app.freeze();
  const capture=h.calls.find(row=>row[0]==='camera.capture');assert.equal(capture[1].width,640);assert.equal(capture[1].height,480);
 });
+
+test('external camera stop waits for the simple start action and then resumes the automatic camera',async()=>{
+ const h=setup('ok',true);await tick();await tick();
+ const starts=()=>h.calls.filter(row=>row[0]==='camera.start').length;
+ assert.equal(starts(),1);
+ h.events['sdk:camera.stopped']();await tick();await h.advance(2000);
+ assert.equal(h.app.active,false);assert.equal(starts(),1,'never bypass the host stop with an automatic restart');
+ assert.equal(h.get('freeze').textContent,'Kamera starten');assert.equal(h.get('freeze').disabled,false);
+ await h.get('freeze').listeners.click();await tick();
+ assert.equal(h.app.active,true);assert.equal(starts(),2);assert.match(h.get('freeze').textContent,/Foto machen/);
+});
 test('existing five categories retain built-ins and add PNG files only from their own directories',async()=>{
  const h=setup();await tick();await tick();
  assert.equal(h.app.categories.length,5);

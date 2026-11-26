@@ -2,6 +2,20 @@
 
 FotoSpaß ist ein kindgerechtes Fotobox-Plugin für MuPiBox-NG.
 
+## 1.3.0-beta.5: einfachere Kinderoberfläche
+
+**Kamera einstellen**, Kameraauswahl, Gerätesuche und Kamera-Ausschalten sind
+aus der Kinderoberfläche entfernt. FotoSpaß wählt die vorhandene Kamera
+automatisch; die Fotoauflösung bleibt eine Einstellung der Adminseite.
+Nach einem Stopp gibt es statt des technischen Dialogs die einfache Aktion
+**Kamera starten** an derselben Stelle wie **Foto machen**. Ein Stopp durch
+die Box wird weiterhin respektiert und führt nicht zum automatischen Neustart.
+
+Beim Öffnen eines Bildes und beim Laden in den Editor steht nur noch
+**Foto bereit!**. Die Erklärung für Eltern: Bearbeitungen werden als neue
+Kopien gespeichert; das geladene Original bleibt erhalten. Die vorhandenen
+Bestätigungen zum Löschen und zum Verwerfen ungespeicherter Änderungen bleiben.
+
 ## 1.3.0-beta.4: Fotoauflösung in der Adminseite
 
 Die Auflösung wird unter **FotoSpaß · Verwaltung → Kamera** eingestellt.
@@ -166,7 +180,7 @@ Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginv
 
 ## Version
 
-1.3.0-beta.4 (Fotoauflösung in der Adminseite und adaptive Kameravorschau)
+1.3.0-beta.5 (vereinfachte Kinderoberfläche ohne Kamera-Einstelldialog)
 
 ## Neue Oberfläche (ab 0.5.5)
 

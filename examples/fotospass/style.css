@@ -36,7 +36,6 @@ button.chosen:not(.swatch){background:var(--teal);border-color:var(--teal);color
 aside{display:flex;flex-direction:column;min-width:0;min-height:0;gap:7px;padding:8px;background:#fffdf7d9;border:1px solid #fff;border-radius:22px;box-shadow:0 3px 0 #e4dbca}
 #camera-panel,#edit-panel{display:flex;flex-direction:column;gap:7px;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#9bc6b8 transparent;padding:1px 2px 3px}
 #camera-panel{justify-content:center}
-#advanced-camera:not([hidden]){display:flex;flex-direction:column;gap:5px}
 #camera-state{display:flex;align-items:center;justify-content:center;gap:7px;flex:none;padding:8px 6px;border-radius:12px;background:#eeeee5;color:#667570;font-size:12px;font-weight:bold;text-align:center}
 #camera-state::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
 #camera-state[data-kind="on"]{background:#e0f3e7;color:#226d52}
@@ -46,7 +45,6 @@ aside{display:flex;flex-direction:column;min-width:0;min-height:0;gap:7px;paddin
 #freeze{min-height:80px;flex:none;gap:10px;border:0;border-radius:22px;background:var(--coral);color:#253f40;box-shadow:0 4px 0 #c85e50;padding:12px;font-size:18px;text-align:left}
 #freeze svg{width:44px;height:44px;padding:8px;border-radius:50%;background:#fff9}
 #freeze .button-label{max-width:135px}
-#camera-settings{border:0;background:transparent;font-size:11px;color:var(--muted);min-height:32px}
 .tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex:none}
 .tabs button{font-size:12px;min-height:36px;padding:5px}
 #sticker-tools,#paint-tools{display:flex;flex-direction:column;gap:6px;flex:none}
