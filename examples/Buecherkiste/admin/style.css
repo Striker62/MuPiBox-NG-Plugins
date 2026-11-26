@@ -19,3 +19,5 @@ input,select,textarea{font:inherit;padding:10px;border:1px solid #bacbdc;border-
 #texts label{font-size:14px}#state{min-height:26px;color:#175a9b}
 #state.error{color:#af2424}
 @media(max-width:700px){main{padding:12px}.layout{grid-template-columns:1fr}header{flex-wrap:wrap}.pages{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
+
+[hidden]{display:none!important}dialog{max-width:min(460px,90vw);border:1px solid #bacbdc;border-radius:15px;padding:20px;color:#142b43}dialog::backdrop{background:#142b4370}
