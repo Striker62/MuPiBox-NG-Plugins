@@ -112,10 +112,10 @@
       "description": "Interaktive Bilderbücher mit drei großen Vorlesetasten: Seite einmal vorlesen, beim Blättern vorlesen oder automatisch ganzes Buch lesen. Eigene SMB-Bücher werden unterstützt.",
       "category": "learning",
       "author": "MuPiBox Community",
-      "version": "1.0.0",
-      "releaseTag": "v0.1.0-preview.59",
+      "version": "1.1.1",
+      "releaseTag": "v0.1.0-preview.69",
       "asset": "buecherkiste.mupiapp",
-      "sha256": "d3ea29b05f2384178c491227722c500b4de5f17fe07f932f5984e7a4b1a63ab0",
+      "sha256": "7c8c5260425e592ed5c8453f8e456a6028ee7ab2b197cec3409f326bf8a8423c",
       "permissions": [
         "shared-assets",
         "audio"
