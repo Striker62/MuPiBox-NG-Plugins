@@ -125,3 +125,7 @@ footer{grid-area:3/1/4/3;align-self:center;text-align:center;font-size:9px;line-
 .gallery-sources{display:flex;gap:6px;flex-wrap:wrap}.gallery-sources button{min-height:44px;font-size:13px}.gallery-sources .chosen{background:#187a75;color:white;border-color:#187a75}
 
 .gallery-sources{flex-wrap:wrap}.gallery-head{flex-wrap:wrap}#album-navigation{display:flex;flex-wrap:wrap;gap:8px;align-items:center}#album-choices{display:flex;flex-wrap:wrap;gap:8px;width:100%}#capture-resolution{min-height:44px;width:100%}
+
+#preview{transform:scaleX(-1)}
+.tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.tabs button{font-size:11px;padding:5px 3px;gap:3px}.tabs button svg{width:18px;height:18px}
+.image-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.image-actions button{min-height:54px}.image-actions button>span[aria-hidden]{font-size:32px;line-height:1}.image-drag-hint{display:block;width:64px;height:64px;margin:18px auto;color:var(--teal);opacity:.65}#painting.positioning{cursor:grab}#painting.positioning:active{cursor:grabbing}

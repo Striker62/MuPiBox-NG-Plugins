@@ -2,6 +2,39 @@
 
 FotoSpaß ist ein kindgerechtes Fotobox-Plugin für MuPiBox-NG.
 
+## 1.3.0-beta.6: Bildausschnitt und Spiegelbild
+
+Nach einer Aufnahme oder dem Laden eines Fotos öffnet sich der Reiter **Bild**:
+
+- **+ / −** vergrößert den Bildausschnitt bis auf das Vierfache. Anschließend
+  das Foto mit einem Finger oder der Maus verschieben. Der Ausschnitt bleibt
+  innerhalb des Bildes; die Ausgabe behält ihre ursprünglichen Abmessungen.
+- **Spiegeln** dreht die Ausrichtung horizontal um.
+- **Zurück** setzt Zoom und Position zurück; die gewählte Spiegelung bleibt.
+- **Rückgängig** stellt auch den vorherigen Ausschnitt wieder her.
+
+Das Kameralivebild und neue Kameraaufnahmen erscheinen standardmäßig gespiegelt.
+Geladene Fotos werden zunächst unverändert ausgerichtet. Die Spiegelung der
+Aufnahme und der Ausschnitt werden in die gespeicherte JPEG-Kopie übernommen.
+Das unbearbeitete Kameraoriginal im SDK-Bereich `originals` bleibt ungespiegelt
+und ohne Zuschnitt. Vorlagen und bereits vorhandene Originaldateien bleiben
+unverändert. Malerei und Accessoires liegen separat über dem Foto und werden
+beim Ändern des Hintergrund-Ausschnitts nicht verschoben oder gespiegelt.
+
+Die Editoransicht und der JPEG-Export verwenden denselben gerenderten Foto-Canvas.
+Automatische Tests prüfen Spiegelung, begrenztes Verschieben, Rückgängig und
+die Verwendung dieses Canvas beim Speichern. Die Touchbedienung auf der Box
+muss noch getestet werden.
+
+**Helligkeit:** Beim Gerätetest wurde gemeldet, dass das Foto bereits nach der
+Aufnahme dunkler als die Live-Vorschau ist. Der App-Code setzt keinen
+Helligkeitsfilter. Vorschau und hochauflösende Aufnahme sind getrennte
+SDK-Aufrufe; ein Belichtungswechsel der Kamera ist eine mögliche Ursache.
+Die öffentliche SDK bietet keine Einstellung für Belichtung oder Aufwärmzeit.
+Diese Version korrigiert diesen Helligkeitsunterschied nicht durch einen
+pauschalen Bildfilter; die Ursache auf dem Gerät ist noch nicht abschließend
+geklärt.
+
 ## 1.3.0-beta.5: einfachere Kinderoberfläche
 
 **Kamera einstellen**, Kameraauswahl, Gerätesuche und Kamera-Ausschalten sind
@@ -180,7 +213,7 @@ Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginv
 
 ## Version
 
-1.3.0-beta.5 (vereinfachte Kinderoberfläche ohne Kamera-Einstelldialog)
+1.3.0-beta.6 (Bildausschnitt, Verschieben und Spiegelbild)
 
 ## Neue Oberfläche (ab 0.5.5)
 

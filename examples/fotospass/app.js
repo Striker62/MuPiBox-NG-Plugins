@@ -219,7 +219,7 @@ function saveHistory(){
  photoDirty=true;++photoRevision;
  try{
   if(history.length>=10)history.shift();
-  history.push({pixels:ctx.getImageData(0,0,canvas.width,canvas.height),items:items.map(x=>({...x})),selected});
+  history.push({view:{...imageView},pixels:ctx.getImageData(0,0,canvas.width,canvas.height),items:items.map(x=>({...x})),selected});
   controls();
  }catch(e){say('Rückgängig-Speicher nicht verfügbar.');history=[];controls()}
 }
@@ -227,9 +227,52 @@ function restore(state){
  if(!state||!frozen)return;
  photoDirty=true;++photoRevision;
  ctx.putImageData(state.pixels,0,0);
+ if(state.view){imageView={...state.view};renderImageView()}
  items=state.items.map(x=>({...x}));selected=state.selected;
  renderStickers();controls();
 }
+// Render only the background photo. Paint and accessories remain independent.
+let imageSource=null,imageView={zoom:1,x:0,y:0,mirror:false},imageDrag=null;
+function resetImageSource(source,mirror=false){
+ imageSource=document.createElement('canvas');imageSource.width=photo.width;imageSource.height=photo.height;
+ imageSource.getContext('2d').drawImage(source,0,0);
+ imageView={zoom:1,x:0,y:0,mirror};imageDrag=null;renderImageView();
+}
+function renderImageView(){
+ if(!imageSource)return;
+ const w=photo.width,h=photo.height,bound=(imageView.zoom-1)/2;
+ imageView.x=Math.max(-bound,Math.min(bound,imageView.x));imageView.y=Math.max(-bound,Math.min(bound,imageView.y));
+ photoCtx.clearRect(0,0,w,h);photoCtx.fillStyle='#fff';photoCtx.fillRect(0,0,w,h);
+ photoCtx.save();photoCtx.translate(w/2+imageView.x*w,h/2+imageView.y*h);
+ photoCtx.scale(imageView.mirror?-imageView.zoom:imageView.zoom,imageView.zoom);
+ photoCtx.drawImage(imageSource,-w/2,-h/2,w,h);photoCtx.restore();
+ $('image-zoom-out').disabled=imageView.zoom<=1;$('image-zoom-in').disabled=imageView.zoom>=4;
+ $('image-mirror').setAttribute('aria-pressed',String(imageView.mirror));
+}
+function changeImageView(action){
+ if(!frozen||saving||!imageSource)return;
+ saveHistory();
+ if(action==='in')imageView.zoom=Math.min(4,imageView.zoom*1.2);
+ if(action==='out')imageView.zoom=Math.max(1,imageView.zoom/1.2);
+ if(action==='mirror')imageView.mirror=!imageView.mirror;
+ if(action==='reset')imageView={zoom:1,x:0,y:0,mirror:imageView.mirror};
+ renderImageView();controls();say('Foto bereit!');
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(!frozen||mode!=='photo'||saving||imageView.zoom<=1)return;
+ e.preventDefault();saveHistory();const box=photoBox();
+ imageDrag={pointer:e.pointerId,startX:e.clientX,startY:e.clientY,x:imageView.x,y:imageView.y,width:box.width,height:box.height};
+ canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!imageDrag||e.pointerId!==imageDrag.pointer||mode!=='photo'||saving)return;
+ e.preventDefault();imageView.x=imageDrag.x+(e.clientX-imageDrag.startX)/imageDrag.width;
+ imageView.y=imageDrag.y+(e.clientY-imageDrag.startY)/imageDrag.height;
+ photoDirty=true;++photoRevision;renderImageView();
+});
+for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,()=>{imageDrag=null});
+for(const [id,action] of [['image-zoom-in','in'],['image-zoom-out','out'],['image-mirror','mirror'],['image-reset','reset']])$(id).addEventListener('click',()=>changeImageView(action));
+$('tab-photo').addEventListener('click',()=>{setMode('photo');selected=null;renderSelection();controls()});
 function photoBox(){const r=$('stage').getBoundingClientRect(),w=(frozen?photo.width:preview.naturalWidth)||320,h=(frozen?photo.height:preview.naturalHeight)||240,scale=Math.min(r.width/w,r.height/h);return{left:(r.width-w*scale)/2,top:(r.height-h*scale)/2,width:w*scale,height:h*scale}}
 function updateStickerBox(){const b=photoBox();stickersBox.style.left=b.left+'px';stickersBox.style.top=b.top+'px';stickersBox.style.width=b.width+'px';stickersBox.style.height=b.height+'px'}
 async function freeze(){
@@ -249,22 +292,22 @@ async function freeze(){
   if(!image.naturalWidth||!image.naturalHeight||image.naturalWidth*image.naturalHeight>16000000)throw Error('Ungültige Fotoabmessungen');
   frozen=true;photoSession={source:'camera',originalId:null};photoDirty=true;++photoRevision;
   photo.width=canvas.width=image.naturalWidth;photo.height=canvas.height=image.naturalHeight;
-  photoCtx.drawImage(image,0,0,photo.width,photo.height);ctx.clearRect(0,0,canvas.width,canvas.height);
+  resetImageSource(image,true);ctx.clearRect(0,0,canvas.width,canvas.height);
   photo.hidden=false;history=[];items=[];selected=null;canvas.hidden=false;preview.hidden=true;stickersBox.hidden=false;
-  updateStickerBox();renderStickers();setMode('stickers');active=false;
+  updateStickerBox();renderStickers();setMode('photo');active=false;
   try{await sdk.camera.stop();cameraState('Kamera aus')}catch(e){say('Foto bereit; Kamera-Stopp: '+e.message)}
-  say('Foto aufgenommen: '+photo.width+' × '+photo.height+'. Accessoire auswählen oder malen.');
+  say('Foto bereit!');
  }catch(e){if(current===epoch){say('Aufnahme fehlgeschlagen: '+e.message);scheduleFrame()}}
  finally{capturing=false;controls()}
 }
-function resume(){cancelCountdown();photoDirty=false;++photoRevision;frozen=false;painting=false;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;preview.hidden=true;preview.removeAttribute('src');history=[];items=[];selected=null;$('placeholder').hidden=false;$('placeholder').textContent='Kamera neu starten';controls();say('Kamera wird für das nächste Foto gestartet.');void scan(true)}
+function resume(){cancelCountdown();photoDirty=false;++photoRevision;frozen=false;painting=false;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;preview.hidden=true;preview.removeAttribute('src');imageSource=null;imageDrag=null;history=[];items=[];selected=null;$('placeholder').hidden=false;$('placeholder').textContent='Kamera neu starten';controls();say('Kamera wird für das nächste Foto gestartet.');void scan(true)}
 function cancelCountdown(){if(countTimer!==null){clearInterval(countTimer);countTimer=null}counting=false;$('countdown').hidden=true;controls()}
 function beginCountdown(){if(!active||frozen||counting||capturing)return;if(preview.hidden||!preview.complete||!preview.naturalWidth){say('Bitte auf das erste Kamerabild warten.');return}counting=true;countValue=Number(delay.value);$('count-number').textContent=String(countValue);controls();say('In '+countValue+' Sekunden wird das Foto aufgenommen.');countTimer=setInterval(()=>{if(!active||frozen){cancelCountdown();return}countValue--;if(countValue>0){$('count-number').textContent=String(countValue)}else{cancelCountdown();void freeze()}},1000)}
 function point(e){const r=canvas.getBoundingClientRect(),scale=Math.min(r.width/canvas.width,r.height/canvas.height),w=canvas.width*scale,h=canvas.height*scale;return{x:(e.clientX-r.left-(r.width-w)/2)/scale,y:(e.clientY-r.top-(r.height-h)/2)/scale}}
 function draw(e){if(!painting||!frozen||mode!=='paint')return;photoDirty=true;++photoRevision;e.preventDefault();const p=point(e);ctx.lineWidth=size;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineTo(p.x,p.y);ctx.stroke()}
 canvas.addEventListener('pointerdown',e=>{if(!frozen||mode!=='paint')return;e.preventDefault();saveHistory();painting=true;canvas.setPointerCapture(e.pointerId);const p=point(e);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.strokeStyle=color;ctx.globalCompositeOperation=eraser?'destination-out':'source-over';ctx.lineWidth=size;ctx.lineCap='round';ctx.lineTo(p.x+.01,p.y+.01);ctx.stroke()});
 canvas.addEventListener('pointermove',draw);for(const ev of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(ev,()=>{painting=false;ctx.beginPath();ctx.globalCompositeOperation='source-over'});
-function setMode(m){mode=m;$('sticker-controls').hidden=m!=='stickers';$('tab-stickers').classList.toggle('chosen',m==='stickers');$('tab-paint').classList.toggle('chosen',m==='paint');$('sticker-tools').hidden=m!=='stickers';$('paint-tools').hidden=m!=='paint';canvas.classList.toggle('passthrough',m==='stickers');canvas.classList.toggle('drawable',m==='paint');stickersBox.style.pointerEvents=m==='stickers'?'auto':'none';for(const el of stickersBox.children)el.style.pointerEvents=m==='stickers'?'auto':'none'}
+function setMode(m){imageDrag=null;mode=m;$('tab-photo').classList.toggle('chosen',m==='photo');$('image-tools').hidden=m!=='photo';$('sticker-controls').hidden=m!=='stickers';$('tab-stickers').classList.toggle('chosen',m==='stickers');$('tab-paint').classList.toggle('chosen',m==='paint');$('sticker-tools').hidden=m!=='stickers';$('paint-tools').hidden=m!=='paint';canvas.classList.toggle('passthrough',m==='stickers');canvas.classList.toggle('drawable',m==='paint'||m==='photo');canvas.classList.toggle('positioning',m==='photo');stickersBox.style.pointerEvents=m==='stickers'?'auto':'none';for(const el of stickersBox.children)el.style.pointerEvents=m==='stickers'?'auto':'none'}
 function renderStickers(){stickersBox.replaceChildren();for(const item of items){const el=document.createElement('img');setAccessoryImage(el,item.type);el.alt=accessoryLabel(item.type);el.draggable=false;el.className='sticker'+(selected===item.id?' selected':'');el.dataset.id=String(item.id);el.style.left=item.x+'%';el.style.top=item.y+'%';el.style.width=item.width+'%';el.style.height=accessoryHeight(item)+'%';el.style.pointerEvents=mode==='stickers'?'auto':'none';el.addEventListener('pointerdown',stickerDown);stickersBox.append(el)}}
 async function addSticker(type){
  if(!frozen)return;
@@ -329,7 +372,8 @@ async function loadAccessory(type){const source=await accessorySource(type);retu
 async function savePhoto(){
  if(!frozen||saving)return;
  const savedRevision=photoRevision,session=photoSession;
- const base=document.createElement('canvas');base.width=photo.width;base.height=photo.height;const baseContext=base.getContext('2d');baseContext.fillStyle='#fff';baseContext.fillRect(0,0,base.width,base.height);baseContext.drawImage(photo,0,0);
+ const originalSource=imageSource;
+ const base=document.createElement('canvas');base.width=photo.width;base.height=photo.height;const baseContext=base.getContext('2d');baseContext.fillStyle='#fff';baseContext.fillRect(0,0,base.width,base.height);baseContext.drawImage(originalSource||photo,0,0);
  saving=true;controls();say('Fertiges Foto wird gespeichert …');
  try{
   if(!sdk.photos||typeof sdk.photos.save!=='function')throw new Error('Die Foto-Speicher-API fehlt.');
@@ -580,7 +624,7 @@ async function galleryEditPhoto(id){
   active=false;frozen=true;painting=false;drag=null;
   photo.width=canvas.width=prepared.width;
   photo.height=canvas.height=prepared.height;
-  photoCtx.drawImage(prepared,0,0);
+  resetImageSource(prepared,false);
   ctx.clearRect(0,0,canvas.width,canvas.height);
   history=[];items=[];selected=null;undoBusy=false;
   photoSession={source:'gallery',originalId:id};
@@ -589,7 +633,7 @@ async function galleryEditPhoto(id){
   photo.hidden=false;canvas.hidden=false;stickersBox.hidden=false;
   $('placeholder').hidden=true;
   gallerySwitch(false);
-  updateStickerBox();renderStickers();releaseUnusedAccessories();setMode('stickers');controls();
+  updateStickerBox();renderStickers();releaseUnusedAccessories();setMode('photo');controls();
   cameraState('Kamera aus');
   say('Foto bereit!');
  }catch(error){

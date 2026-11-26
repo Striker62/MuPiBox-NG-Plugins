@@ -75,12 +75,13 @@ function setup(mode='ok',extended=false,preferred='auto'){
   append(...values){for(const value of values){this.children.push(value);if(this.tag==='select'&&!this.value)this.value=value.value}}
   appendChild(value){this.append(value)}
   replaceChildren(){for(const child of this.children)child.isConnected=false;this.children=[]}
-  addEventListener(name,callback){this.listeners[name]=callback}
+  addEventListener(name,callback){const previous=this.listeners[name];this.listeners[name]=previous?function(...args){previous(...args);return callback(...args)}:callback}
   setAttribute(name,value){this[name]=value}
   removeAttribute(name){delete this[name]}
   focus(){context.document.activeElement=this}
   getBoundingClientRect(){return {left:0,top:0,width:640,height:480}}
-  getContext(){return {drawImage:(image,...args)=>draws.push({image,args}),fillRect(...args){fills.push({color:this.fillStyle,args})},clearRect(){},getImageData(){return{}},putImageData(){},beginPath(){},moveTo(){},lineTo(){},stroke(){}}}
+  setPointerCapture(){}
+  getContext(){return {save(){},restore(){},translate:(...args)=>draws.push({operation:'translate',args}),scale:(...args)=>draws.push({operation:'scale',args}),drawImage:(image,...args)=>draws.push({image,args}),fillRect(...args){fills.push({color:this.fillStyle,args})},clearRect(){},getImageData(){return{}},putImageData(){},beginPath(){},moveTo(){},lineTo(){},stroke(){}}}
   toBlob(callback,type='image/png',quality){encodings.push({type,quality});const actual=mode==='jpeg-fallback'?'image/png':type;callback(new Blob([mode==='jpeg-oversize'?new Uint8Array(8*1024*1024+1):actual==='image/jpeg'?Buffer.from([255,216,255,217]):png],{type:actual}))}
  }
  const get=id=>{if(!nodes.has(id))nodes.set(id,new Element(id==='devices'?'select':'div'));return nodes.get(id)};
@@ -178,6 +179,35 @@ test('external camera stop waits for the simple start action and then resumes th
  assert.equal(h.get('freeze').textContent,'Kamera starten');assert.equal(h.get('freeze').disabled,false);
  await h.get('freeze').listeners.click();await tick();
  assert.equal(h.app.active,true);assert.equal(starts(),2);assert.match(h.get('freeze').textContent,/Foto machen/);
+});
+
+test('camera still is mirrored by default, zoom and pan are bounded and undo restores the view',async()=>{
+ const h=setup();await tick();await tick();await h.app.freeze();
+ assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[-1,1]);
+ h.get('image-zoom-in').listeners.click();
+ assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[-1.2,1.2]);
+ const event={pointerId:1,clientX:0,clientY:0,preventDefault(){}};
+ h.get('painting').listeners.pointerdown(event);
+ h.get('painting').listeners.pointermove({...event,clientX:100000,clientY:-100000});
+ const shift=h.draws.filter(row=>row.operation==='translate').at(-1).args;
+ assert.ok(Math.abs(shift[0]-192)<0.001);assert.ok(Math.abs(shift[1]-96)<0.001,'photo remains inside the fixed 320 × 240 frame');
+ h.get('undo').listeners.click();
+ assert.deepEqual(h.draws.filter(row=>row.operation==='translate').at(-1).args,[160,120]);
+ h.get('image-mirror').listeners.click();
+ assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[1.2,1.2]);
+ h.get('image-reset').listeners.click();
+ assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[1,1]);
+});
+
+test('loaded images keep their orientation and the saved result uses the transformed photo',async()=>{
+ const h=setup();await tick();await tick();h.app.gallerySwitch(true);await tick();
+ await h.app.galleryOpenDetail('saved');await h.app.galleryEditPhoto('saved');
+ assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[1,1]);
+ h.get('image-zoom-in').listeners.click();h.get('image-mirror').listeners.click();
+ assert.deepEqual(h.draws.filter(row=>row.operation==='scale').at(-1).args,[-1.2,1.2]);
+ const before=h.draws.length;await h.app.savePhoto();
+ assert.ok(h.draws.slice(before).some(row=>row.image===h.get('photo')),'JPEG composition reads the same rendered canvas shown in the editor');
+ assert.equal(h.saved.length,1);assert.equal(h.saved[0].type,'image/jpeg');
 });
 test('existing five categories retain built-ins and add PNG files only from their own directories',async()=>{
  const h=setup();await tick();await tick();
