@@ -210,3 +210,35 @@ umgewandelt. Bearbeitete Bilder werden weiterhin als neue Kopie gespeichert.
 Ergebnisse über 8 MiB werden mit einem sichtbaren Fehler abgewiesen, der
 Entwurf bleibt erhalten. Die Original-/Ergebnisordner-Trennung und der
 allgemeine Fotoalbum-Import sind weiterhin separate Erweiterungen.
+# Testversion 1.2.0-beta.1: FotoSpaß-Verwaltung mit Upload
+
+In der MuPiBox-Administration bei FotoSpaß „App-Verwaltung öffnen“ wählen.
+Die neue Seite lädt Fotos vom Computer in den explizit freigegebenen
+SMB-Ordner `CommunityApps/community.fotospass/originale/`. Angefordert werden
+nur die Admin-Capabilities `files.list`, `files.read` und `files.write`,
+beschränkt auf `originale`. Die vorhandene Accessoire-Freigabe bleibt bestehen.
+Die zusätzlichen Berechtigungen beim Update bestätigen. Alpha 85 oder neuer
+wird für die Verwaltung vorausgesetzt; tatsächlichen Upload auf der Box testen.
+
+JPEG, PNG, WebP und GIF können ausgewählt werden (max. 100 Dateien pro Batch,
+32 MiB pro Ausgangsdatei und 50 Megapixel vor der Konvertierung). GIF wird
+als Standbild übernommen. Die Upload-Kopie wird als JPEG mit Qualität 90 %
+auf weißem Hintergrund erzeugt. Standardmäßig wird die Kantenlänge auf
+2560 Pixel begrenzt; ohne Verkleinerung werden höchstens 16 Megapixel
+akzeptiert. Das Ergebnis darf höchstens 8 MiB groß sein. Eindeutige Dateinamen
+und leere `expectedRevision` verhindern das Überschreiben bestehender Dateien.
+Die Ausgangsdateien auf dem Computer bleiben unverändert.
+
+„Bereitgestellte Fotos“ zeigt den Ordnerinhalt. Vorschaubilder werden erst
+auf Knopfdruck geladen, um größere Sammlungen nicht vollständig in den
+Browser-Arbeitsspeicher zu laden. Eine gekürzte Host-Ordnerliste wird als
+solche gekennzeichnet. Stoppen erfolgt nach dem laufenden Upload. Bei einem
+Fehler bleiben offene Dateien in der Auswahl; erfolgreich hochgeladene
+Dateien werden bei einem erneuten Versuch nicht erneut gesendet.
+
+Dies ist zunächst eine Admin-Uploadfunktion. Die Touch-App zeigt diese
+Originale noch nicht in ihrer Galerie. Der Zugriff auf das allgemeine
+MuPiBox-Fotoalbum und die Auswahl der bereitgestellten Originale zum Bearbeiten
+folgen separat. Bisherige Foto-SDK-Aufnahmen und Ergebnisse bleiben im
+bestehenden Host-Fotospeicher und werden nicht verschoben. Diese neue
+Verwaltungsseite kann einen Schreibschutz des Host-Dateisystems nicht umgehen.

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FotoSpaß · Fotoverwaltung</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+  <header><div><span class="eyebrow">FOTOSPAẞ · VERWALTUNG</span><h1>Fotos für neue Ideen</h1><p>Lade Bilder von deinem Computer in den eigenen FotoSpaß-Ordner.</p></div><span class="badge">Originale</span></header>
+  <section class="notice"><strong>Erster Schritt: Fotos bereitstellen</strong><p>Die Uploads liegen unter <code>CommunityApps/community.fotospass/originale/</code> und sind auch über SMB erreichbar. Die Auswahl dieser Bilder in der Kinder-App folgt separat. „Meine Fotos“ zeigt weiterhin die über die Foto-SDK gespeicherten Aufnahmen und Ergebnisse.</p></section>
+  <div id="error" role="alert" hidden></div>
+  <div class="columns">
+    <section class="panel"><h2>Fotos hochladen</h2>
+      <label class="field" for="files">Bilder auswählen</label>
+      <input id="files" type="file" accept=".jpg,.jpeg,.png,.webp,.gif" multiple>
+      <p class="hint">JPEG, PNG, WebP oder GIF · bis 32 MiB pro Ausgangsdatei · höchstens 100 Bilder pro Upload. Bei GIF wird das erste Bild verwendet.</p>
+      <label class="check"><input id="resize" type="checkbox" checked> Upload-Kopien auf höchstens 2560 Pixel Kantenlänge verkleinern</label>
+      <p class="hint">Die Dateien werden als JPEG mit 90 % Qualität gespeichert. Transparenz wird weiß. Deine Ausgangsdateien auf dem Computer bleiben unverändert. Ohne Verkleinerung sind höchstens 16 Megapixel möglich.</p>
+      <ul id="selection" aria-label="Ausgewählte Fotos"><li>Noch keine Bilder ausgewählt.</li></ul>
+      <div class="actions"><button id="upload" class="primary" disabled>Fotos hochladen</button><button id="cancel" hidden>Nach diesem Bild stoppen</button></div>
+      <progress id="progress" value="0" max="1" hidden aria-label="Upload-Fortschritt"></progress>
+      <p id="status" class="status" role="status" aria-live="polite">Bitte Bilder auswählen.</p>
+    </section>
+    <section class="panel"><div class="heading"><h2>Bereitgestellte Fotos</h2><button id="refresh">Aktualisieren</button></div>
+      <p id="list-status" role="status">Fotos werden geladen …</p>
+      <div id="gallery" class="gallery"></div>
+    </section>
+  </div>
+  <footer>Neue Dateien erhalten eindeutige Namen. Vorhandene Bilder werden nicht überschrieben oder gelöscht. Die MuPiBox prüft Dateitypen, Berechtigungen und Speichergrenzen.</footer>
+</main><script src="upload-store.js"></script><script src="app.js"></script></body></html>

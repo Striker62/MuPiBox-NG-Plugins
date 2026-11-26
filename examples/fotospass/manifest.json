@@ -4,7 +4,7 @@
   "name": "FotoSpaß",
   "description": "FotoSpaß mit bildbasierten Kategorien und zusätzlichen PNG-Accessoires aus dem eigenen SMB-Ordner.",
   "author": "Striker62",
-  "version": "1.1.0-beta.2",
+  "version": "1.2.0-beta.1",
   "runtime": "web",
   "entry": "index.html",
   "permissions": [
@@ -20,8 +20,25 @@
     "showBackButton": false
   },
   "sharedDirectories": [
-    "accessoires"
+    "accessoires",
+    "originale"
   ],
   "cover": "cover.jpg",
-  "icon": "icon.png"
+  "icon": "icon.png",
+  "permissionReasons": {
+    "camera": "Nutzt die Kamera auf Wunsch für neue Fotoaufnahmen.",
+    "photo-save": "Speichert auf Wunsch Kameraaufnahmen und bearbeitete Bilder als neue Fotos.",
+    "shared-assets": "Liest eigene Accessoires und stellt einen app-eigenen Originalfoto-Ordner bereit."
+  },
+  "admin": {
+    "entry": "admin/index.html",
+    "capabilities": [
+      "files.list",
+      "files.read",
+      "files.write"
+    ],
+    "directories": [
+      "originale"
+    ]
+  }
 }
