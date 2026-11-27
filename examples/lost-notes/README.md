@@ -1,6 +1,24 @@
 # MuPi und die verlorenen Noten
 
-Sammle Noten, öffne Klangbrücken und bring die Musik zurück. Du findest das Spiel auf der MuPiBox unter **Community-Apps → Katalog**. Für den Start brauchst du einen Controller und die Freigabe der Qt-Laufzeit im Reiter **Sicherheit**.
+Sammle Noten, öffne Klangbrücken und bring die Musik zurück. Installiere das
+Spiel im Web-Admin unter **Community-Apps → Katalog**. Gespielt wird mit einem
+Gamepad am Touchdisplay der MuPiBox.
+
+## Berechtigungen und Freigaben
+
+Ab **MuPiBox NG 0.2.0-alpha.90** findest du alle Schalter beim installierten
+Spiel unter **App verwalten → Berechtigungen & Freigaben**. Stelle zuerst
+die boxweite Qt-Laufzeit frei und bestätige anschließend die Freigabe für
+die angezeigte Spielversion. Auf NG Alpha 89 stehen die beiden Qt-Schalter
+unter **Einstellungen → Sicherheit**.
+
+| Option | Wofür das Spiel sie braucht |
+| --- | --- |
+| Native Qt-Laufzeit auf der Box | Qt Quick zeichnet das Spiel und seine Animationen auf dem Touchdisplay. Die Box startet Qt dafür in einem isolierten Prozess. |
+| Qt-Freigabe für die installierte Version | Erlaubt genau das signierte Paket in dieser Laufzeit. Nach einem Spielupdate bestätigst du die neue Version. |
+| Gamepad / Controller | Nimmt Eingaben für Menü, Laufen, Springen und Klangwelle vom Host entgegen. |
+| Audio und Sprachausgabe | Spielt Musik und Effekte über die Audioausgabe der MuPiBox ab. |
+| App-Datenspeicher | Speichert freigeschaltete Level, Ergebnisse und eigene Audioeinstellungen lokal für dieses Spiel. |
 
 ## Level 3 · Klangbäume
 
