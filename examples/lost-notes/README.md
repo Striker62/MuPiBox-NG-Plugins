@@ -1,18 +1,50 @@
 # MuPi und die verlorenen Noten
 
-Sammle Noten, öffne Klangbrücken und bring die Musik zurück. Du findest das Spiel auf der MuPiBox unter **Community-Apps → Katalog**. Für den Start brauchst du einen Controller und die Freigabe der Qt-Laufzeit im Reiter **Sicherheit**.
+Sammle Noten, öffne Klangbrücken und bring die Musik zurück. Installiere das
+Spiel im Web-Admin unter **Community-Apps → Katalog**. Gespielt wird mit einem
+Gamepad am Touchdisplay der MuPiBox.
+
+## Berechtigungen und Freigaben
+
+Ab **MuPiBox NG 0.2.0-alpha.90** findest du alle Schalter beim installierten
+Spiel unter **App verwalten → Berechtigungen & Freigaben**. Stelle zuerst
+die boxweite Qt-Laufzeit frei und bestätige anschließend die Freigabe für
+die angezeigte Spielversion. Auf NG Alpha 89 stehen die beiden Qt-Schalter
+unter **Einstellungen → Sicherheit**.
+
+| Option | Wofür das Spiel sie braucht |
+| --- | --- |
+| Native Qt-Laufzeit auf der Box | Qt Quick zeichnet das Spiel und seine Animationen auf dem Touchdisplay. Die Box startet Qt dafür in einem isolierten Prozess. |
+| Qt-Freigabe für die installierte Version | Erlaubt genau das signierte Paket in dieser Laufzeit. Nach einem Spielupdate bestätigst du die neue Version. |
+| Gamepad / Controller | Nimmt Eingaben für Menü, Laufen, Springen und Klangwelle vom Host entgegen. |
+| Audio und Sprachausgabe | Spielt Musik und Effekte über die Audioausgabe der MuPiBox ab. |
+| App-Datenspeicher | Speichert freigeschaltete Level, Ergebnisse und eigene Audioeinstellungen lokal für dieses Spiel. |
 
 ## Level 3 · Klangbäume
 
 Spring über 36 Äste und zwei Trommeln zum Gitarrenbaumhaus. Der Grollnebel
 steigt unter dir in Wellen. Am Baumhaus erklingen beim Weitergehen auch die
 Saiten, die du bei der Landung übersprungen hast. Nach der sechsten Saite
-öffnet sich das Fenster und eine Bonusnote schwebt an der Tür zu MuPi.
+öffnet sich das Fenster und eine Bonusnote im Wert von drei Punkten schwebt an der Tür zu MuPi.
 Mit mindestens **26 von 40 Punkten** endet das Level an der Tür.
 
 Für einen Lauf mit allen Noten erhältst du je nach Schwierigkeitsgrad eine,
 zwei oder drei funkelnde **Levelnoten** auf Leicht, Normal oder Schwer.
 Die Levelwahl zeigt deine beste Wertung je Level.
+
+## Level 4 · Grummels Gewitter
+
+Regen, Blitze und Donner begleiten dich bis zu Grummel. Auf **Schwer** brechen
+manche Plattformen unter MuPi weg. Die letzte Note beim Endgegner zählt drei
+Punkte.
+
+## Level 5 · Grummel-Rock
+
+Lauf los, um die Musik und die Verfolgungsjagd zu starten. Die Töne des
+E-Gitarren-Riffs geben die Plattformwechsel vor. Spring über Lücken und
+Gegner oder betäube die Gegner mit der Klangwelle. Die obere und die untere
+Route führen dich auf unterschiedlichen Wegen ans Ziel. Verpasste Noten
+bleiben an ihrem Platz.
 
 ## Gegner und Klangwelle
 

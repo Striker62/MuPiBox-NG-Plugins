@@ -1,18 +1,17 @@
-MuPi Water Battle – Audioquellen und Lizenzen (Version 0.2.2)
+MuPi Water Battle – Audioquellen und Lizenzen (Version 0.2.6)
 =========================================================
 
 Die folgenden Dateien sind Offline-Bestandteile des App-Pakets. Dateien
 wurden für platzsparende Wiedergabe in Ogg Vorbis (44,1 kHz) konvertiert.
 Die Musik wird in der Browser-Vorschau als Loop wiedergegeben.
-Auf MuPiBox-NG-Geräten ist native Audiodatei-Wiedergabe über das
-Community-App-SDK derzeit nicht verfügbar; dort werden Soundaktionen
-durch sichere, vorhandene SDK-Tonfolgen ersetzt. Der native Musikloop
-ist bis zur Einführung einer gesicherten Sample-API nicht hörbar.
+Auf aktuellen NG-Geräten werden Samples und Musik über das native SDK
+wiedergegeben. Ältere Hosts nutzen SDK-Tonfolgen ohne Musik.
 
 bg-music.ogg — "Loading screen loop", TremLoadingloopl.wav
 Autor: Brandon Morris (eingereicht von HaelDB)
 Quelle: https://opengameart.org/content/loading-screen-loop
 Lizenz: CC0 1.0
+Bearbeitung 0.2.6: 48 kHz Mono, 120 ms Loop-Überblendung und Pegelreduktion.
 https://creativecommons.org/publicdomain/zero/1.0/
 
 miss.ogg — "Fisheefects", bloop.wav [nicht "bloob.wav"]
