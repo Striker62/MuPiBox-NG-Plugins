@@ -190,3 +190,8 @@ auch ohne diese optionale Funktion freies Malen anbieten.
 ## Extended camera and photo album SDK
 
 See [Photo and camera SDK](photo-camera-sdk.md) for permission scopes, separate photo buckets, gallery import, native capture modes and bounded preview polling. Check host capabilities before use.
+
+## Admin-SDK: Audioaufnahmen (Alpha 87+)
+
+Nur in der eigenen, authentifizierten App-Verwaltung: `MuPiBoxAdminSDK.audio`.
+[Manifest, vollständige Methodenreferenz und Test-App](community-admin-audio-recording.md).

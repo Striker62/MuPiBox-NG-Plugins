@@ -69,3 +69,23 @@ test("same seeded random stream is deterministic per mode",()=>{
   assert.deepEqual(a.ships,b.ships);
  }
 });
+
+test("placement preview fits edges and rejects contact without changing the board",()=>{
+ for(const mode of Object.keys(expected)){
+  const b=E.empty(mode),len=b.fleet[0],last=b.size*b.size-1;
+  for(const vertical of [true,false]){
+   const ghost=E.placementPreview(b,last,len,vertical);
+   assert.equal(ghost.valid,true);
+   assert.equal(ghost.cells.length,len);
+   assert.equal(ghost.cells.at(-1),last);
+   assert.equal(b.ships.length,0);
+  }
+  const g=E.placementPreview(b,last,len,false);
+  assert.ok(E.place(b,g.x,g.y,len,false));
+  assert.equal(E.placementPreview(b,last,b.fleet[1],false).valid,false);
+  assert.equal(b.ships.length,1);
+  b.ships.pop();
+  assert.equal(E.placementPreview(b,last,len,false).valid,true);
+  assert.equal(E.placementPreview(b,-1,len,false),null);
+ }
+});

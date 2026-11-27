@@ -148,7 +148,7 @@ def validate_admin_surface(surface: object, manifest: dict, files: set[str]) -> 
             or not entry.endswith(".html") or entry not in files):
         raise PackageError("admin.entry must exist under admin/ as .html")
     checked_path(entry)
-    supported = {"settings.read", "settings.write", "files.list", "files.read", "files.write", "files.trash"}
+    supported = {"settings.read", "settings.write", "files.list", "files.read", "files.write", "files.trash", "audio.record"}
     permissions = surface.get("capabilities")
     if (not isinstance(permissions, list) or not 1 <= len(permissions) <= len(supported)
             or any(not isinstance(p, str) for p in permissions)
@@ -158,7 +158,12 @@ def validate_admin_surface(surface: object, manifest: dict, files: set[str]) -> 
     if (not isinstance(folders, list) or len(folders) > 8 or
             any(not isinstance(x, str) for x in folders) or len(set(folders)) != len(folders)):
         raise PackageError("invalid admin.directories")
-    file_caps = any(p.startswith("files.") for p in permissions)
+    file_caps = any(p.startswith("files.") or p == "audio.record" for p in permissions)
+    if "audio.record" in permissions:
+        reasons = manifest.get("permissionReasons")
+        reason = reasons.get("admin.audio.record") if isinstance(reasons, dict) else None
+        if not isinstance(reason, str) or not reason.strip():
+            raise PackageError("admin.audio.record requires a permission reason")
     if file_caps and not folders:
         raise PackageError("admin files.* requires declared directories")
     if folders and not file_caps:
@@ -295,7 +300,7 @@ def validate_manifest(data: object, files: set[str]) -> dict:
     if "admin" in data:
         validate_admin_surface(data["admin"], data, files)
     if "permissionReasons" in data:
-        validate_permission_reasons(data["permissionReasons"], perms)
+        validate_permission_reasons(data["permissionReasons"], [*perms, *("admin." + c for c in data.get("admin", {}).get("capabilities", []))])
     return data
 
 

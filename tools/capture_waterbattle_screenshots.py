@@ -48,8 +48,10 @@ SCENARIOS = {
         "budget": 850,
         "script": """
           selectMode('quick');
-          document.getElementById('auto').click();
-          ready('Quick: two boats placed');
+          document.getElementById('own').children[0].click();
+          document.getElementById('confirm').click();
+          document.getElementById('own').children[27].click();
+          ready('Quick: next boat preview');
         """,
     },
     "02-classic-treffer": {

@@ -113,3 +113,23 @@ test("on capable NG: dragging music level changes gain without restarting the lo
  p.stopMusic();await p.musicQueue;
  assert.equal(calls.filter(c=>c[0]==="stopMusic").length,1);
 });
+
+test("repeated placement actions do not restart music or resend unchanged effect gain",async()=>{
+ const calls=[];
+ const native={
+  playMusic:async()=>{calls.push("music");},
+  stopMusic:async()=>{},
+  playSample:async()=>true,
+  setMusicVolume:async()=>{},
+  setSampleVolume:async()=>{calls.push("effect gain");}
+ };
+ const p=new Player(true,native);
+ p.setNativeAvailable(true,true);
+ p.startMusic();
+ await new Promise(r=>setTimeout(r,140));
+ for(let i=0;i<20;i++){p.startMusic();p.configure({volume:40,musicVolume:20});}
+ await new Promise(r=>setTimeout(r,140));await p.musicQueue;
+ assert.deepEqual(calls.filter(c=>c==="music"),["music"]);
+ assert.deepEqual(calls.filter(c=>c==="effect gain"),["effect gain"]);
+ p.stopMusic();await p.musicQueue;
+});
