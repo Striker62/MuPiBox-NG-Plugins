@@ -4,10 +4,38 @@ FotoSpaß ist ein kindgerechtes Fotobox-Plugin für MuPiBox-NG.
 
 ## 1.3.0: stabile Version
 
-Der auf der Box getestete Stand bündelt Kameraaufnahmen mit administrierbarer
-Auflösung, gespiegelter Vorschau, Ausrichten per Fingergesten, Albumimport,
-Foto-Uploads und die kompakte Galerie. Originale bleiben beim Bearbeiten
-erhalten; Ergebnisse werden als neue JPEG-Fotos gespeichert.
+Der auf der Box getestete Stand enthält folgende Funktionen:
+
+- **Fotobox:** Kamera starten, Countdown wählen und ein Foto aufnehmen.
+  Kameravorschau und Kamerafoto werden gespiegelt. Die Vorschau passt ihre
+  Aktualisierung bei einem Kamera-Limit automatisch an.
+- **Einfache Bedienung:** Die Kamera wird automatisch gewählt. Die
+  Aufnahmeauflösung legen Eltern in der Adminseite fest.
+- **Ausschnitt ausrichten:** Nach der Aufnahme oder dem Laden wird zuerst
+  das große Bild angezeigt. Mit zwei Fingern lässt es sich zoomen und
+  verschieben; nach dem Vergrößern geht Verschieben auch mit einem Finger.
+  Der Haken übernimmt den Ausschnitt und öffnet die Bearbeitung.
+- **Bearbeiten:** Malen und Accessoires hinzufügen, auch bei bereits
+  gespeicherten Fotos. Originale bleiben erhalten; Ergebnisse werden als
+  neue JPEG-Fotos gespeichert.
+- **Galerie:** Getrennte Bereiche für „Meine Fotos“, „Originale“,
+  „Fotoalbum“ und „Vorlagen“. Die kompakte Album-Navigation lässt mehr Platz
+  für Vorschaubilder und blendet technische Dateipfade aus.
+- **Fotoalbum:** Freigegebene Alben der Box durchsuchen und ausgewählte
+  Bilder als Originale zum Bearbeiten übernehmen. Bearbeitete Fotos sind
+  weiterhin im Fotoalbum verfügbar, wenn die entsprechende Freigabe für
+  FotoSpaß aktiviert ist.
+- **Adminseite:** Fotos vom Computer hochladen und die Kameraauflösung
+  einstellen. Uploads werden in JPEG umgewandelt; optional wird ihre längste
+  Kante auf 2560 Pixel verkleinert.
+- **Eigene Inhalte über SMB:** Hochgeladene Vorlagen liegen unter
+  `CommunityApps/community.fotospass/originale/`, eigene PNG-Accessoires
+  unter `CommunityApps/community.fotospass/accessoires/`.
+
+Die über das Foto-SDK gespeicherten Aufnahmen und Bearbeitungen liegen
+getrennt von diesen SMB-Vorlagen im app-eigenen Fotospeicher. Neue Kamera-
+und Albumfunktionen benötigen einen Host mit den entsprechenden
+SDK-Capabilities und die freigegebenen App-Berechtigungen.
 
 Drucken bleibt als nächste Erweiterung offen. Der gemeldete
 Helligkeitsunterschied bei automatischer Kameraauflösung bleibt ein bekannter
