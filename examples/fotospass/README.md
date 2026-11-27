@@ -2,6 +2,18 @@
 
 FotoSpaß ist ein kindgerechtes Fotobox-Plugin für MuPiBox-NG.
 
+## 1.3.0-beta.8: mehr Platz für die Fotos
+
+Die Albumansicht hat eine kompakte Navigationszeile: **Alben · ‹ · Seite · ›**.
+Sie erscheint nur innerhalb eines geöffneten Albums und verschwindet in der
+Bildansicht. In der Albumauswahl werden nur die Album-Schaltflächen angezeigt.
+Zurück-/Weiter-Pfeile sind am Anfang/Ende und während des Ladens deaktiviert.
+Die Schaltfläche zum Aktualisieren ist auf ihr Symbol reduziert. Dateipfade
+und Dateinamen werden nicht unter den Vorschaubildern angezeigt; die Bilder
+haben kurze zugängliche Bezeichnungen wie „Foto 1“. Die Statuszeile zeigt
+nach dem Laden nur noch die Bildanzahl. Aufnahme, Originale, Vorlagen,
+Albumimport und Bearbeitung bleiben erhalten.
+
 ## 1.3.0-beta.7: Ausrichten vor dem Bearbeiten
 
 Nach der Aufnahme oder dem Laden erscheint zuerst das große Foto ohne
@@ -235,7 +247,7 @@ Das Paket kann anschließend über die Entwicklerfunktion der MuPiBox-NG-Pluginv
 
 ## Version
 
-1.3.0-beta.7 (Zwischenschritt mit Zwei-Finger-Gesten und Bestätigung)
+1.3.0-beta.8 (kompakte Albumansicht mit mehr Platz für Bilder)
 
 ## Neue Oberfläche (ab 0.5.5)
 

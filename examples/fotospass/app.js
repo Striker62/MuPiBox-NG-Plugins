@@ -533,10 +533,10 @@ function selectGallerySource(source){
  if(!['photos','templates','originals','album'].includes(source)||source===gallerySource)return;
  gallerySource=source;galleryCloseDetail();void galleryLoad();
 }
-function gallerySwitch(open){galleryOpen=open;$('editor-view').hidden=open;$('gallery-view').hidden=!open;$('show-gallery').classList.toggle('chosen',open);$('show-camera').classList.toggle('chosen',!open);if(open){if(active&&!frozen)void stop();void galleryLoad()}else{galleryCloseDetail();galleryRevoke()}}
+function gallerySwitch(open){galleryOpen=open;$('status').hidden=open;$('editor-view').hidden=open;$('gallery-view').hidden=!open;$('show-gallery').classList.toggle('chosen',open);$('show-camera').classList.toggle('chosen',!open);if(open){if(active&&!frozen)void stop();void galleryLoad()}else{galleryCloseDetail();galleryRevoke()}}
 async function galleryLoad(){
  galleryLoading=true;galleryCloseDetail();galleryRevoke();
- $('album-navigation').hidden=gallerySource!=='album';
+ updateAlbumNavigation();
  const run=galleryLoadRun,source=gallerySource;
  for(const name of ['originals','album']){$('gallery-source-'+name).classList.toggle('chosen',source===name);$('gallery-source-'+name).setAttribute('aria-pressed',String(source===name))}
  $('gallery-source-photos').classList.toggle('chosen',source==='photos');
@@ -566,28 +566,28 @@ async function galleryLoad(){
   }
   if(run!==galleryLoadRun||!galleryOpen)return;
   galleryEntries=entries;
-  gallerySay(entries.length?entries.length+(source==='templates'?' Vorlage(n).':' Foto(s) gespeichert.')+' Bild antippen zum Bearbeiten.'+(truncated?' Die Liste wurde von der Box gekürzt.':''):
+  gallerySay(entries.length?entries.length+(source==='templates'?' Vorlagen':' Fotos')+(truncated?' Die Liste wurde von der Box gekürzt.':''):
    source==='album'?'Ein Fotoalbum auswählen. Falls keines erscheint, Freigabe für Fotoalbum-Import prüfen.':source==='templates'?'Noch keine Vorlagen. Bilder über die FotoSpaß-Verwaltung oder SMB im Ordner originale bereitstellen.':'Noch keine gespeicherten Fotos.');
-  for(const entry of entries){
+  for(const [index,entry] of entries.entries()){
    if(run!==galleryLoadRun||!galleryOpen)return;
    const tile=document.createElement('button');tile.className='gallery-tile';
    const img=document.createElement('img');img.alt=source==='templates'?'Vorlage':'Foto';
-   const label=document.createElement('span');label.textContent=entry.name||entry.filename||entry.id.slice(0,20);
+   const label=document.createElement('span');label.textContent=(source==='templates'?'Vorlage ':'Foto ')+(index+1);tile.setAttribute('aria-label',label.textContent);
    tile.append(img,label);tile.addEventListener('click',()=>void galleryOpenDetail(entry.id));$('gallery-grid').append(tile);
    // Template previews are small JPEGs, decoded sequentially rather than
    // retaining all high-resolution originals in memory at the same time.
    if(source==='templates'||photoBuckets||source==='album'){
     try{const thumb=await templateThumbnail(entry.id,source);if(run!==galleryLoadRun||!galleryOpen)return;const url=URL.createObjectURL(thumb);galleryUrls.set('thumb:'+entry.id,url);if(tile.isConnected)img.src=url}
-    catch{if(tile.isConnected&&run===galleryLoadRun)label.textContent=entry.name+' – Vorschau nicht verfügbar'}
+    catch{if(tile.isConnected&&run===galleryLoadRun){img.hidden=true;tile.classList.add('image-failed');label.textContent='Bild nicht verfügbar'}}
    }else{
-    void galleryImage(entry.id,source).then(url=>{if(run===galleryLoadRun&&tile.isConnected)img.src=url}).catch(()=>{if(run===galleryLoadRun&&tile.isConnected)label.textContent='Bild nicht ladbar'});
+    void galleryImage(entry.id,source).then(url=>{if(run===galleryLoadRun&&tile.isConnected)img.src=url}).catch(()=>{if(run===galleryLoadRun&&tile.isConnected){img.hidden=true;tile.classList.add('image-failed');label.textContent='Bild nicht verfügbar'}});
    }
   }
  }catch(e){if(run===galleryLoadRun)gallerySay('Galerie fehlgeschlagen: '+(e?.message||String(e)))}
- finally{if(run===galleryLoadRun)galleryLoading=false}
+ finally{if(run===galleryLoadRun){galleryLoading=false;updateAlbumNavigation()}}
 }
 async function galleryOpenDetail(id){
- const request=++galleryEditRun,source=gallerySource;gallerySelected=id;
+ const request=++galleryEditRun,source=gallerySource;gallerySelected=id;updateAlbumNavigation();
  $('gallery-grid').hidden=true;$('gallery-detail').hidden=false;$('gallery-large').removeAttribute('src');
  $('gallery-delete').hidden=source!=='photos';
  $('gallery-edit').hidden=source==='album';$('album-import').hidden=source!=='album';gallerySay('Bild wird geladen …');
@@ -595,7 +595,7 @@ async function galleryOpenDetail(id){
   gallerySay('Foto bereit!');
  }catch(e){if(request===galleryEditRun)gallerySay('Bild konnte nicht geladen werden: '+e.message)}
 }
-function galleryCloseDetail(){++galleryEditRun;pendingGalleryEdit=null;$('gallery-edit-confirm').hidden=true;gallerySelected=null;$('gallery-grid').hidden=false;$('gallery-detail').hidden=true;$('gallery-confirm').hidden=true;$('gallery-large').removeAttribute('src')}
+function galleryCloseDetail(){++galleryEditRun;pendingGalleryEdit=null;$('gallery-edit-confirm').hidden=true;gallerySelected=null;$('gallery-grid').hidden=false;$('gallery-detail').hidden=true;$('gallery-confirm').hidden=true;$('gallery-large').removeAttribute('src');updateAlbumNavigation()}
 async function galleryDelete(){const id=gallerySelected;if(!id||gallerySource!=='photos')return;$('delete-yes').disabled=true;gallerySay('Foto wird gelöscht …');try{await sdk.photos.delete(id,photoBuckets?(galleryEntries.find(row=>row.id===id)?.bucket||'photos'):undefined);galleryCloseDetail();galleryLoading=false;await galleryLoad();gallerySay('Foto gelöscht. '+galleryEntries.length+' Foto(s) verbleiben.')}catch(e){gallerySay('Löschen fehlgeschlagen: '+(e?.message||String(e)));$('gallery-confirm').hidden=true}finally{$('delete-yes').disabled=false}}
 function requestGalleryEdit(){
  const id=gallerySelected;
@@ -670,6 +670,14 @@ $('gallery-edit-discard').addEventListener('click',()=>{
 
 // Album references come only from the host; never construct filesystem paths.
 let albumSelected=null,albumPage=1,albumHasMore=false,albumImporting=false;
+function updateAlbumNavigation(){
+ const album=gallerySource==='album',detail=gallerySelected!==null;
+ $('album-navigation').hidden=!album||!albumSelected||detail;
+ $('album-choices').hidden=!album||Boolean(albumSelected)||detail;
+ $('gallery-grid').hidden=detail||(album&&!albumSelected);
+ $('album-previous').disabled=galleryLoading||albumPage<=1;
+ $('album-next').disabled=galleryLoading||!albumHasMore;
+}
 async function loadAlbumPage(run){
  if(!sdk.photos?.album)throw Error('Fotoalbum-Import benötigt eine neuere MuPiBox-Version.');
  if(!albumSelected){
@@ -705,11 +713,11 @@ async function importAlbumPhoto(){
  finally{albumImporting=false;$('album-import').disabled=false}
 }
 $('gallery-source-originals').addEventListener('click',()=>selectGallerySource('originals'));
-$('gallery-source-album').addEventListener('click',()=>{albumSelected=null;albumPage=1;selectGallerySource('album')});
+$('gallery-source-album').addEventListener('click',()=>{albumSelected=null;albumPage=1;if(gallerySource==='album')void galleryLoad();else selectGallerySource('album')});
 $('album-import').addEventListener('click',()=>void importAlbumPhoto());
 $('album-back').addEventListener('click',()=>{albumSelected=null;albumPage=1;void galleryLoad()});
-$('album-previous').addEventListener('click',()=>{if(albumPage>1){albumPage--;void galleryLoad()}});
-$('album-next').addEventListener('click',()=>{if(albumHasMore){albumPage++;void galleryLoad()}});
+$('album-previous').addEventListener('click',()=>{if(!galleryLoading&&albumPage>1){albumPage--;void galleryLoad()}});
+$('album-next').addEventListener('click',()=>{if(!galleryLoading&&albumHasMore){albumPage++;void galleryLoad()}});
 $('gallery-source-photos').addEventListener('click',()=>selectGallerySource('photos'));
 $('gallery-source-templates').addEventListener('click',()=>selectGallerySource('templates'));
 $('show-gallery').addEventListener('click',()=>gallerySwitch(true));$('show-camera').addEventListener('click',()=>gallerySwitch(false));$('refresh-gallery').addEventListener('click',()=>void galleryLoad());$('gallery-back').addEventListener('click',galleryCloseDetail);$('gallery-delete').addEventListener('click',()=>{if(gallerySelected&&gallerySource==='photos')$('gallery-confirm').hidden=false});$('delete-cancel').addEventListener('click',()=>{$('gallery-confirm').hidden=true});$('delete-yes').addEventListener('click',()=>void galleryDelete());

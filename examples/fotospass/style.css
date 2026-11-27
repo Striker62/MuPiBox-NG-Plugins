@@ -131,3 +131,11 @@ footer{grid-area:3/1/4/3;align-self:center;text-align:center;font-size:9px;line-
 .body.aligning{grid-template-columns:minmax(0,1fr)}.body.aligning>aside{display:none}
 #align-actions{position:absolute;right:16px;bottom:16px;z-index:10}#image-done{width:68px;height:60px;min-height:60px;border:3px solid white;border-radius:18px;box-shadow:0 3px 12px #123e4250}#image-done svg{width:36px;height:36px}
 #painting.positioning{cursor:grab}#painting.positioning:active{cursor:grabbing}
+
+/* Keep album browsing on one line, leaving the screen to the pictures. */
+#gallery-view{gap:8px}.gallery-head{flex-wrap:nowrap;gap:8px}.gallery-sources{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);flex:1;min-width:0;gap:6px}.gallery-sources button{width:100%;padding:6px 4px;min-height:44px;font-size:12px}
+#refresh-gallery{width:44px;height:44px;min-height:44px;padding:10px;flex:none}
+#album-navigation{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;flex:none;min-height:44px}#album-navigation button{width:auto;min-height:44px;margin:0}#album-back{margin-right:auto!important}#album-previous,#album-next{width:44px!important;height:44px;padding:9px}#album-page{min-width:64px;text-align:center;font-size:12px;white-space:nowrap}
+#album-choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;overflow-y:auto;min-height:0;flex:1;align-content:start}#album-choices button{min-height:72px}
+#gallery-grid{flex:1;gap:8px}.gallery-tile{height:104px;padding:6px;gap:0}.gallery-tile img{height:100%;width:100%}.gallery-tile span{display:none}.gallery-tile.image-failed span{display:block;font-size:12px;white-space:normal}.gallery-tile.image-failed{justify-content:center}
+@media(min-height:600px){.gallery-tile{height:156px}}

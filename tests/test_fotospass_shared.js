@@ -63,6 +63,22 @@ test('album import is explicit and only imports the selected host reference',asy
  assert.deepEqual(h.calls.filter(row=>row[0]==='album.import'),[['album.import','/api/gallery/local/photo/1']]);
 });
 
+test('album navigation appears only for photo pages and keeps paths out of picture labels',async()=>{
+ const h=setup('ok',true);await tick();await tick();const pages=[];
+ h.sdk.photos.album.page=async url=>{pages.push(url);return {photos:[{url:'/api/gallery/local/photo/1'}],has_more:url.includes('page=1&')};};
+ h.app.gallerySwitch(true);h.app.selectGallerySource('album');await tick();await tick();
+ assert.equal(h.get('album-navigation').hidden,true);assert.equal(h.get('album-choices').hidden,false);
+ h.get('album-choices').children[0].listeners.click();await tick();await tick();
+ assert.equal(h.get('album-navigation').hidden,false);assert.equal(h.get('album-choices').hidden,true);
+ assert.equal(h.get('album-previous').disabled,true);assert.equal(h.get('album-next').disabled,false);
+ const tile=h.get('gallery-grid').children[0];assert.equal(tile['aria-label'],'Foto 1');assert.equal(tile.children[1].textContent,'Foto 1');
+ h.get('album-next').listeners.click();await tick();await tick();
+ assert.ok(pages.at(-1).includes('page=2&'));assert.equal(h.get('album-previous').disabled,false);assert.equal(h.get('album-next').disabled,true);
+ await h.app.galleryOpenDetail('/api/gallery/local/photo/1');assert.equal(h.get('album-navigation').hidden,true);
+ h.get('gallery-back').listeners.click();assert.equal(h.get('album-navigation').hidden,false);
+ h.get('album-back').listeners.click();await tick();await tick();assert.equal(h.get('album-navigation').hidden,true);assert.equal(h.get('album-choices').hidden,false);
+});
+
 test('camera mode enumeration failure retains the legacy capture route',async()=>{
  const h=setup('ok',true);h.sdk.camera.modes=async()=>{throw Error('unavailable')};await tick();await tick();
  assert.equal(h.app.active,true);assert.equal(h.calls.filter(row=>row[0]==='camera.preview').length,0);
