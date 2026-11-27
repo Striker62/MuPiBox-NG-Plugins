@@ -2,6 +2,18 @@
 
 Mit der Bücherkiste können Kinder Bilderbücher auswählen, durchblättern, vergrößern und vorlesen lassen. Die App bringt **Ole und der verschwundene Knopf** (16 Bildseiten) und **Henne und Adler** (10 Bild- und Textseiten plus eine Urheberseite) mit. Eigene Bücher erscheinen zusätzlich im Regal.
 
+## 1.2.0-beta.2: Buchwechsel nach dem Speichern
+
+Die Rückfrage zum Verwerfen erscheint nur noch bei tatsächlichen ungespeicherten
+Änderungen. Ein frisch geöffnetes oder erfolgreich gespeichertes Buch lässt
+sich ohne Rückfrage verlassen, um ein anderes Buch zu öffnen oder einen neuen
+Entwurf anzulegen. Verglichen werden Titel, Cover-Einstellung, Seitenbilder,
+Reihenfolge, Vorlesetexte und Aufnahmezuordnungen. Änderungen, die wieder auf
+den gespeicherten Stand zurückgesetzt wurden, lösen ebenfalls keine Warnung aus.
+Nach einem fehlgeschlagenen Speichern bleibt der Schutz aktiv. Laufende Importe,
+Speichervorgänge und noch nicht abgeschlossene Aufnahmeentscheidungen bleiben
+vor einem versehentlichen Verlassen geschützt.
+
 ## 1.2.0-beta.1: Buchseiten in der Verwaltung einsprechen
 
 Die bestehende Buchverwaltung mit Seitenvorschau und Vorlesetext bleibt erhalten.

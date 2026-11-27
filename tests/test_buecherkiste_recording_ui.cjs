@@ -4,7 +4,7 @@ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const Recorder=require('../examples/Buecherkiste/admin/book-recorder.js');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function setup(){
- const nodes=new Map(),events={},writes=[];let finish;
+ const nodes=new Map(),events={},writes=[],loads=[];let finish;
  const html=fs.readFileSync(path.join(__dirname,'../examples/Buecherkiste/admin/index.html'),'utf8');
  const ids=new Set([...html.matchAll(/id="([^"]+)"/g)].map(match=>match[1]));
  class Node{
@@ -16,6 +16,7 @@ function setup(){
  }
  const get=id=>{assert.ok(ids.has(id),'unknown HTML id: '+id);if(!nodes.has(id))nodes.set(id,new Node());return nodes.get(id);};
  get('audio-format').value='webm';
+ get('admin-discard').hidden=true;
  const data={id:'buch',revision:'b1',info:{title:'Mein Buch'},coverOnly:false,pages:[{path:'images/01.jpg',blob:new Blob(['image']),text:'Hallo'}]};
  const sdk={audio:{
   listInputDevices:async()=>({box:[{id:'mic',label:'USB'}],secureContext:false}),
@@ -23,13 +24,14 @@ function setup(){
   getRecordingStatus:async()=>({state:'recording',durationMs:100}),stopRecording:async()=>finish(),cancelRecording:async()=>{},
   playRecording:async()=>({player:{pause(){}},release(){}}),deleteRecording:async()=>{}
  }};
+ const store={list:async()=>[{id:'buch',title:'Mein Buch'},{id:'anderes',title:'Anderes Buch'}],load:async id=>{loads.push(id);return {...data,id,info:{title:id==='buch'?'Mein Buch':'Anderes Buch'}};},save:async draft=>{writes.push(draft.pages.map(page=>({...page})));return {...data,id:draft.id,revision:'b2',pages:draft.pages};}};
  const context={Blob,File,Option:class extends Node{constructor(text,value){super();this.textContent=text;this.value=value;}},
   URL:{createObjectURL:()=> 'blob:preview',revokeObjectURL(){}},
   window:{MuPiBoxAdminSDK:sdk,BookRecorder:{create:(sdk,opts)=>Recorder.create(sdk,{...opts,unique:()=> 'recording123'})},
-   BookStore:{create:()=>({list:async()=>[{id:'buch',title:'Mein Buch'}],load:async()=>data,save:async draft=>{writes.push(draft.pages.map(page=>({...page})));return {...data,revision:'b2',pages:draft.pages};}})},
+   BookStore:{create:()=>store},
    addEventListener(name,fn){events[name]=fn;}},document:{getElementById:get,createElement:()=>new Node()}};
  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../examples/Buecherkiste/admin/app.js'),'utf8'),context);
- return {get,events,writes};
+ return {get,events,writes,loads,store};
 }
 test('book administration locks page changes during recording and enables publication only after preview/adoption',async()=>{
  const h=setup();await tick();h.get('editor-existing').value='buch';h.get('editor-load').onclick();await tick();await tick();
@@ -41,7 +43,37 @@ test('book administration locks page changes during recording and enables public
  assert.equal(h.get('audio-adopt').disabled,true);assert.equal(h.get('editor-save').disabled,true);
  await h.get('audio-play').onclick();assert.equal(h.get('audio-adopt').disabled,false);
  await h.get('audio-adopt').onclick();assert.equal(h.get('editor-save').disabled,false);
+ let warned=false;h.events.beforeunload({preventDefault(){warned=true;}});assert.equal(warned,true,'new recording assignment is unsaved');
  assert.match(h.get('audio-assignment').textContent,/audio\/seite-001-recording123\.ogg/);
  await h.get('editor-save').onclick();assert.equal(h.writes[0][0].recording.path,'audio/seite-001-recording123.ogg');
+ warned=false;h.events.beforeunload({preventDefault(){warned=true;}});assert.equal(warned,false,'saved assignment no longer warns');
  h.events.pagehide();
+});
+
+test('loaded and successfully saved books can be switched or cleared without a discard warning',async()=>{
+ const h=setup();await tick();h.get('editor-existing').value='buch';await h.get('editor-load').onclick();
+ h.get('editor-existing').value='anderes';await h.get('editor-load').onclick();
+ assert.deepEqual(h.loads,['buch','anderes']);assert.equal(h.get('admin-discard').hidden,true);
+ h.get('admin-title').value='Neuer Titel';h.get('admin-title').oninput();await h.get('editor-save').onclick();
+ await h.get('admin-new').onclick();assert.equal(h.get('admin-discard').hidden,true);assert.equal(h.get('admin-title').value,'');
+});
+
+test('only actual edits prompt; cancellation retains them and restoring the text clears the warning',async()=>{
+ const h=setup();await tick();h.get('editor-existing').value='buch';await h.get('editor-load').onclick();
+ h.get('admin-page-text').value='Geändert';h.get('admin-page-text').oninput();
+ h.get('editor-existing').value='anderes';await h.get('editor-load').onclick();
+ assert.equal(h.get('admin-discard').hidden,false);assert.deepEqual(h.loads,['buch']);
+ h.get('admin-keep').onclick();assert.equal(h.get('admin-page-text').value,'Geändert');
+ h.get('admin-page-text').value='Hallo';h.get('admin-page-text').oninput();await h.get('editor-load').onclick();
+ assert.deepEqual(h.loads,['buch','anderes']);assert.equal(h.get('admin-discard').hidden,true);
+});
+
+test('failed save retains unsaved-change protection; explicit discard opens the requested book',async()=>{
+ const h=setup();await tick();h.get('editor-existing').value='buch';await h.get('editor-load').onclick();
+ h.get('admin-title').value='Nicht gespeichert';h.get('admin-title').oninput();h.store.save=async()=>{throw Error('read-only file system');};
+ await h.get('editor-save').onclick();
+ h.get('editor-existing').value='anderes';await h.get('editor-load').onclick();
+ assert.equal(h.get('admin-discard').hidden,false);assert.deepEqual(h.loads,['buch']);
+ h.get('admin-discard-confirm').onclick();await tick();await tick();
+ assert.deepEqual(h.loads,['buch','anderes']);assert.equal(h.get('admin-title').value,'Anderes Buch');
 });

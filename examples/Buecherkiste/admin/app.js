@@ -31,6 +31,16 @@
   let selected = -1;
   let importing = false;
   let importVersion = 0;
+  const fileIds = new WeakMap();let nextFileId = 0, cleanSnapshot = '';
+  function draftSnapshot() {
+    return JSON.stringify({id:loadedId,title:get('admin-title').value,coverOnly:get('editor-cover').checked,
+      pages:pages.map(page => {
+        if (!fileIds.has(page.file)) fileIds.set(page.file,++nextFileId);
+        return {file:fileIds.get(page.file),path:page.path || '',text:page.text,recording:page.recording || null};
+      })});
+  }
+  function markClean() { cleanSnapshot = draftSnapshot(); }
+  function hasUnsavedChanges() { return busy || importing || recordLocked || draftSnapshot() !== cleanSnapshot; }
   let recordLocked = false;
   let inputSignature = '';
   let recorder = window.BookRecorder.create(sdk, {update:renderRecording,lock:setRecordingLock});
@@ -181,18 +191,20 @@
     get('admin-title').value = '';
     get('admin-files').value = '';
     get('admin-discard').hidden = true;
+    markClean();
     updateFolder();
     renderPages();
     message('Neuer Entwurf. Wähle die Bilder für dein Buch.');
     get('admin-title').focus();
   }
   function confirmDiscard(action) {
-    if (pages.length || get('admin-title').value) {
+    if (busy || importing || recordLocked) return;
+    if (hasUnsavedChanges()) {
       pendingAction = action;
       get('admin-discard-heading').textContent = 'Aktuellen Entwurf verlassen?';
       get('admin-discard').hidden = false;
       get('admin-keep').focus();
-    } else action();
+    } else {pendingAction = null;get('admin-discard').hidden = true;return action();}
   }
   get('admin-new').onclick = () => confirmDiscard(clearDraft);
   get('admin-keep').onclick = () => { pendingAction = null; get('admin-discard').hidden = true; };
@@ -317,6 +329,7 @@
       selected = 0;
       get('admin-title').value = data.info.title;
       get('editor-cover').checked = data.coverOnly;
+      markClean();
       updateFolder(); renderPages();
       get('editor-save-status').textContent = 'Buch geladen. Änderungen werden erst mit „Buch speichern“ übernommen.';
       message('Seiten und Vorlesetexte geladen. Ein separates Cover hat keinen Vorlesetext.');
@@ -328,7 +341,7 @@
   get('editor-load').onclick = () => {
     if (busy || importing || recordLocked) return;
     const id = get('editor-existing').value;
-    if (id) confirmDiscard(() => openBook(id)); else message('Bitte zuerst ein Buch auswählen.');
+    if (id) return confirmDiscard(() => openBook(id)); else message('Bitte zuerst ein Buch auswählen.');
   };
   get('editor-refresh').onclick = async () => {
     if (busy || importing || recordLocked) return;
@@ -350,6 +363,7 @@
       previous = result;
       pages.forEach((page,i) => { page.path = result.pages[i].path; });
       loadedRevision = result.revision;
+      markClean();
       get('editor-save-status').textContent = result.warning || 'Buch und index.json gespeichert.';
       message(result.warning || 'Gespeichert. Vorlesetexte bleiben vollständig erhalten.');
       if (result.warning) showError(result.warning);
@@ -361,8 +375,8 @@
     } finally { setBusy(false);renderSelection(); }
   };
   window.addEventListener('beforeunload',event => {
-    if (pages.length || get('admin-title').value) { event.preventDefault(); event.returnValue = ''; }
+    if (hasUnsavedChanges()) { event.preventDefault(); event.returnValue = ''; }
   });
-  updateFolder(); renderPages();
+  updateFolder(); renderPages();markClean();
   loadLibrary().catch(showError);
 })();
