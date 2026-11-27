@@ -186,3 +186,8 @@ vorhandenen lokalen Ausmalbilder-Ordner. `sdk.coloring.get(id)` liefert eine
 transparente PNG-Kontur als Data-URL, höchstens 1024 × 768 Pixel. Kein
 Schreibzugriff, keine beliebigen Pfade und keine Netzwerkfreigabe. Apps müssen
 auch ohne diese optionale Funktion freies Malen anbieten.
+
+## Admin-SDK: Audioaufnahmen (Alpha 87+)
+
+Nur in der eigenen, authentifizierten App-Verwaltung: `MuPiBoxAdminSDK.audio`.
+[Manifest, vollständige Methodenreferenz und Test-App](community-admin-audio-recording.md).

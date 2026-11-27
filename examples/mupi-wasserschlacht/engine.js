@@ -38,6 +38,13 @@ const WaterBattle = (() => {
       return true;
     });
   }
+  // Fit the full preview inside the board even when the player selects its edge.
+  function placementPreview(board,i,length,vertical){
+    if(!Number.isInteger(i)||i<0||i>=board.size*board.size||!Number.isInteger(length)||length<1||length>board.size)return null;
+    let [x,y]=xy(i,board);
+    if(vertical)y=Math.min(y,board.size-length);else x=Math.min(x,board.size-length);
+    return {x,y,cells:cellsFor(board,x,y,length,vertical),valid:canPlace(board,x,y,length,vertical)};
+  }
   function place(board,x,y,length,vertical){
     if(!canPlace(board,x,y,length,vertical))return false;
     board.ships.push({cells:cellsFor(board,x,y,length,vertical),length});
@@ -115,6 +122,6 @@ const WaterBattle = (() => {
     return pick(free.filter(i=>heat[i]===max));
   }
   const sunkCount=board=>board.ships.filter(s=>s.cells.every(c=>board.shots[c]==="sunk")).length;
-  return {MODES,DEFAULT,rules,empty,xy,index,cellsFor,canPlace,place,randomFleet,fire,chooseShot,sunkCount};
+  return {MODES,DEFAULT,rules,empty,xy,index,cellsFor,canPlace,placementPreview,place,randomFleet,fire,chooseShot,sunkCount};
 })();
 if(typeof module!=="undefined")module.exports=WaterBattle;

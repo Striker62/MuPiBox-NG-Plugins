@@ -21,7 +21,7 @@ const WaterBattleAudio=(()=>{
    this.musicStarted=false;this.nativeMusicState="off";this.nativeMusicVolume=-1;
    this.nativeAvailable=false;this.nativeVolumeControl=false;this.warned=false;
    this.nativeMethodsExist=!!(nativeAudio&&typeof nativeAudio.playMusic==="function"&&typeof nativeAudio.playSample==="function");
-   this.musicQueue=Promise.resolve();this.musicTimer=null;this.sampleTimer=null;
+   this.musicQueue=Promise.resolve();this.musicTimer=null;this.sampleTimer=null;this.effectLevel=-1;
    this.sync();
   }
   report(error){
@@ -38,7 +38,7 @@ const WaterBattleAudio=(()=>{
    const available=!!(enabled&&this.nativeMethodsExist);
    const controls=!!(available&&volumeControl&&typeof this.native.setMusicVolume==="function"&&typeof this.native.setSampleVolume==="function");
    if(available===this.nativeAvailable&&controls===this.nativeVolumeControl)return;
-   this.nativeAvailable=available;this.nativeVolumeControl=controls;this.sync();
+   this.nativeAvailable=available;this.nativeVolumeControl=controls;this.effectLevel=-1;this.sync();
   }
   scheduleMusicLevel(){
    clearTimeout(this.musicTimer);
@@ -89,12 +89,15 @@ const WaterBattleAudio=(()=>{
      if(this.nativeVolumeControl)this.scheduleMusicLevel();
      else this.queueMusic(()=>this.native.playMusic(MUSIC,this.musicVolume,{relative:true}));
     }
-    if(this.nativeVolumeControl)this.scheduleEffectLevel();
+    const effectLevel=this.muted?0:this.volume;
+    if(this.nativeVolumeControl&&effectLevel!==this.effectLevel){
+     this.effectLevel=effectLevel;this.scheduleEffectLevel();
+    }
    }
    if(this.music){
     this.music.volume=this.muted||!this.musicEnabled?0:Math.min(1,this.musicVolume/100);
     if(!active)this.music.pause();
-    else this.music.play().catch(()=>{});
+    else if(this.music.paused)this.music.play().catch(()=>{});
    }
    for(const e of Object.values(this.sfx))if(e)e.volume=this.muted?0:Math.min(1,this.volume/100);
   }
@@ -103,7 +106,7 @@ const WaterBattleAudio=(()=>{
    this.musicVolume=Math.max(0,Math.min(100,Number(musicVolume)));
    this.muted=Boolean(muted);this.musicEnabled=Boolean(musicEnabled);this.sync();
   }
-  startMusic(){this.musicStarted=true;this.sync();}
+  startMusic(){if(!this.musicStarted){this.musicStarted=true;this.sync();}}
   stopMusic(){
    this.musicStarted=false;this.sync();
    if(this.music){this.music.pause();this.music.currentTime=0;}

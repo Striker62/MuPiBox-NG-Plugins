@@ -1,4 +1,7 @@
 """Regression checks for the packaged MuPi Water Battle graphics and audio controls."""
+import array
+import shutil
+import subprocess
 import json
 import struct
 import unittest
@@ -10,7 +13,7 @@ class WaterBattleAssetTests(unittest.TestCase):
     def test_cover_is_raster_and_has_correct_manifest(self):
         m = json.loads((ROOT / "manifest.json").read_text())
         self.assertEqual(m["cover"], "cover.jpg")
-        self.assertEqual(m["version"], "0.2.5")
+        self.assertEqual(m["version"], "0.2.6")
         self.assertEqual(m["name"], "MuPi Water Battle")
         self.assertIn("storage", m["permissions"])
         cover = (ROOT / m["cover"]).read_bytes()
@@ -41,6 +44,15 @@ class WaterBattleAssetTests(unittest.TestCase):
         self.assertIn("CC BY 3.0", credits)
         self.assertIn("Fisheefects", credits)
         self.assertIn("CC0", credits)
+
+    @unittest.skipUnless(shutil.which("ffmpeg"), "ffmpeg required to check decoded samples")
+    def test_music_headroom_and_loop_seam(self):
+        samples = array.array("f", subprocess.check_output([
+            "ffmpeg", "-v", "error", "-i", str(ROOT / "assets/audio/bg-music.ogg"),
+            "-f", "f32le", "-ac", "1", "-ar", "48000", "-"
+        ]))
+        self.assertLess(max(map(abs, samples)), 0.8)
+        self.assertLess(abs(samples[-1] - samples[0]), 0.05)
 
     def test_volume_controls_use_scoped_sdk(self):
         html = (ROOT / "index.html").read_text()
