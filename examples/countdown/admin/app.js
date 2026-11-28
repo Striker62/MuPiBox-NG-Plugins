@@ -7,8 +7,8 @@
   const unique=()=>{const bytes=new Uint8Array(12);crypto.getRandomValues(bytes);return Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('');};
   function confirmAction(text){
     $('confirm-text').textContent=text;$('confirm').hidden=false;$('confirm-no').focus();
-    document.querySelector('main').inert=true;document.querySelector('footer').inert=true;
-    return new Promise(resolve=>{const finish=value=>{$('confirm').hidden=true;document.querySelector('main').inert=false;document.querySelector('footer').inert=false;resolve(value);};$('confirm-no').onclick=()=>finish(false);$('confirm-yes').onclick=()=>finish(true);});
+    document.querySelector('main').inert=true;document.querySelector('footer').inert=true;document.querySelector('.countdown-picker').inert=true;
+    return new Promise(resolve=>{const finish=value=>{$('confirm').hidden=true;document.querySelector('main').inert=false;document.querySelector('footer').inert=false;document.querySelector('.countdown-picker').inert=false;resolve(value);};$('confirm-no').onclick=()=>finish(false);$('confirm-yes').onclick=()=>finish(true);});
   }
   function status(text,error=false){$('status').textContent=text;$('status').className=error?'error':'';}
   const snapshot=()=>JSON.stringify(events);
@@ -25,7 +25,7 @@
     $('countdown-choice').replaceChildren();
     events.forEach((item,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=(index+1)+'. '+(item.title.trim()||'Ohne Titel');$('countdown-choice').append(option);});
     $('countdown-choice').value=String(selected);
-    $('list').replaceChildren();events.forEach((item,index)=>{const button=document.createElement('button');button.type='button';button.textContent=item.title;button.className=index===selected?'active':'';button.disabled=busy;button.onclick=()=>{if(!busy){selected=index;render();}};$('list').append(button);});controls();
+    controls();
   }
   function preview(){
     const item=events[selected];if(!item)return;

@@ -1,6 +1,10 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.5** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.6** · eigenständige Community-App von Striker62.
+
+Beta 6 verwendet ausschließlich das Dropdown zur Countdown-Auswahl.
+Anlegen und Neuladen stehen ebenfalls oben; der linke Bereich bleibt für
+künftige Vorlagen reserviert. Noch keine fertigen Vorlagen enthalten.
 
 Beta 5 zeigt direkt oben in der Verwaltung eine Auswahl aller Countdowns
 mit Anzahl und Nummer. Damit lassen sich auch bei schmalen Ansichten und
