@@ -34,6 +34,11 @@ test('sleeps uses saved event timezone rather than runtime machine timezone',()=
  const item=event({target:'2026-12-25T02:00:00Z',zone:'America/New_York'});
  assert.equal(model.remaining(item,Date.parse('2026-12-24T01:00:00Z')).sleeps,1);
 });
+test('background choice is retained and older countdowns keep the side image layout',()=>{
+ assert.equal(model.validate([event()])[0].imageLayout,'side');
+ assert.equal(model.validate([event({imageLayout:'background'})])[0].imageLayout,'background');
+ assert.throws(()=>model.validate([event({imageLayout:'unknown'})]));
+});
 test('GIF validation accepts animation and rejects oversized or truncated content',()=>{
  const bytes=new Uint8Array(Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64'));
  assert.equal(model.validateGif(bytes).frames,1);

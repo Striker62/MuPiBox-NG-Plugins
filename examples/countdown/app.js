@@ -18,13 +18,16 @@
     }
   }
   async function render(){
-    const item=events[index],run=++loadRun;shown=item?.id||'';notice='';releaseImage();$('picture').hidden=true;$('picture').removeAttribute('src');$('confetti').replaceChildren();
+    const item=events[index],run=++loadRun;shown=item?.id||'';notice='';releaseImage();
+    for(const id of ['picture','background-picture']){$(id).hidden=true;$(id).removeAttribute('src');}
+    document.body.classList.toggle('background-mode',Boolean(item?.image&&item.imageLayout==='background'));
+    $('confetti').replaceChildren();
     $('prev').disabled=index===0;$('next').disabled=index>=events.length-1;$('dots').replaceChildren();
     events.forEach((event,i)=>{const button=document.createElement('button');button.className=i===index?'active':'';button.setAttribute('aria-label',event.title);button.setAttribute('aria-current',i===index?'true':'false');button.onclick=()=>{index=i;void render();};$('dots').append(button);});
     if(!item){$('title').textContent='Worauf freust du dich?';$('numbers').replaceChildren();$('target').textContent='';$('message').textContent='Deine Eltern können in der App-Verwaltung einen Countdown einrichten.';return;}
     $('card').className=item.theme;$('symbol').textContent={birthday:'★',winter:'❄',travel:'➜'}[item.theme];$('title').textContent=item.title;
     $('target').textContent=new Intl.DateTimeFormat('de-DE',{timeZone:item.zone,dateStyle:'long',timeStyle:item.mode==='clock'?'short':undefined}).format(new Date(item.target));tick();
-    if(item.image){try{const blob=await sdk.shared.read(item.image);if(run!==loadRun)return;if(!(blob instanceof Blob)||blob.size>2*1024*1024)throw Error('Ungültiges Bild');const gif=item.image.endsWith('.gif');if(gif)model.validateGif(new Uint8Array(await blob.arrayBuffer()));if(run!==loadRun)return;imageURL=URL.createObjectURL(new Blob([blob],{type:gif?'image/gif':'image/jpeg'}));$('picture').src=imageURL;$('picture').hidden=false;}catch{if(run===loadRun){notice='Das eigene Bild konnte nicht geladen werden.';$('message').textContent=notice;}}}
+    if(item.image){try{const blob=await sdk.shared.read(item.image);if(run!==loadRun)return;if(!(blob instanceof Blob)||blob.size>2*1024*1024)throw Error('Ungültiges Bild');const gif=item.image.endsWith('.gif');if(gif)model.validateGif(new Uint8Array(await blob.arrayBuffer()));if(run!==loadRun)return;imageURL=URL.createObjectURL(new Blob([blob],{type:gif?'image/gif':'image/jpeg'}));const image=$(item.imageLayout==='background'?'background-picture':'picture');image.src=imageURL;image.hidden=false;}catch{if(run===loadRun){document.body.classList.remove('background-mode');notice='Das eigene Bild konnte nicht geladen werden.';$('message').textContent=notice;}}}
   }
   async function load(){
     $('reload').disabled=true;

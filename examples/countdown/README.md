@@ -1,6 +1,15 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.6** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.7** · eigenständige Community-App von Striker62.
+
+Beta 7 bietet je Countdown die Bilddarstellung **„Bild links“** oder
+**„Bild als Hintergrund für den ganzen Bildschirm“**. Der Hintergrund
+füllt die App-Fläche einschließlich der Bereiche hinter Navigation und
+App-Kopfzeile; die native MuPiBox-Systemleiste bleibt davon unabhängig.
+Der Countdown liegt rechts auf einer hellen, leicht durchscheinenden Karte.
+Auch GIFs sind als Hintergrund möglich. Die Bildränder können zum Füllen
+beschnitten werden. Ohne eigenes Bild bleibt das gewählte Design sichtbar;
+bestehende Countdowns behalten ihre seitliche Darstellung.
 
 Beta 6 verwendet ausschließlich das Dropdown zur Countdown-Auswahl.
 Anlegen und Neuladen stehen ebenfalls oben; der linke Bereich bleibt für

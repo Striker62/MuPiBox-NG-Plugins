@@ -32,6 +32,7 @@
     return events.map(item=>{
       if(!item||typeof item!=='object')throw Error('Ungültiger Countdown.');
       const {id,title,target,zone,theme,mode,image,animation}=item;
+      const imageLayout=item.imageLayout===undefined?'side':item.imageLayout;
       if(typeof id!=='string'||!/^[a-zA-Z0-9_-]{1,64}$/.test(id)||ids.has(id))throw Error('Ungültige oder doppelte Countdown-Kennung.');ids.add(id);
       if(typeof title!=='string'||!title.trim()||title.length>80)throw Error('Bitte einen Titel mit höchstens 80 Zeichen eingeben.');
       if(typeof target!=='string'||!/^\d{4}-\d\d-\d\dT/.test(target)||!Number.isFinite(Date.parse(target)))throw Error('Bitte ein gültiges Zieldatum auswählen.');
@@ -39,7 +40,8 @@
       if(typeof zone!=='string'||zone.length>80)throw Error('Ungültige Zeitzone.');
       try{new Intl.DateTimeFormat('de',{timeZone:zone}).format(new Date());}catch{throw Error('Ungültige Zeitzone.');}
       if(!themes.includes(theme)||!modes.includes(mode)||!picture(image)||typeof animation!=='boolean')throw Error('Ungültiges Design oder Bild.');
-      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation};
+      if(!['side','background'].includes(imageLayout))throw Error('Ungültige Bilddarstellung.');
+      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation,imageLayout};
     });
   }
   function day(date,zone){

@@ -41,12 +41,12 @@
     $('heading').textContent='Countdown '+(selected+1)+' von '+events.length+' bearbeiten';$('title').value=item.title;
     const date=new Date(item.target),pad=n=>String(n).padStart(2,'0');
     $('date').value=Number.isFinite(date.getTime())?date.getFullYear()+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate()):'';$('time').value=Number.isFinite(date.getTime())?pad(date.getHours())+':'+pad(date.getMinutes()):'00:00';
-    $('theme').value=item.theme;$('mode').value=item.mode;$('animation').checked=item.animation;$('image').value='';
+    $('theme').value=item.theme;$('mode').value=item.mode;$('image-layout').value=item.imageLayout||'side';$('animation').checked=item.animation;$('image').value='';
     $('zone').textContent='Zeitzone: '+zone;preview();
   }
   function edit(){
     const item=events[selected];if(!item||busy)return;
-    item.title=$('title').value;item.theme=$('theme').value;item.mode=$('mode').value;item.animation=$('animation').checked;
+    item.title=$('title').value;item.theme=$('theme').value;item.mode=$('mode').value;item.imageLayout=$('image-layout').value;item.animation=$('animation').checked;
     const value=$('date').value+'T'+$('time').value;
     const target=new Date(value);item.target=Number.isFinite(target.getTime())?target.toISOString():'';item.zone=zone;
     preview();
@@ -103,7 +103,7 @@
     }catch(error){status('Speichern nicht abgeschlossen: '+error.message+' Deine Eingaben bleiben geöffnet.',true);}
     finally{busy=false;render();}
   };
-  for(const id of ['title','date','time','theme','mode','animation'])$(id).addEventListener('input',edit);
+  for(const id of ['title','date','time','theme','mode','image-layout','animation'])$(id).addEventListener('input',edit);
   $('image').onchange=()=>{const item=events[selected],file=$('image').files[0];if(item&&file&&!busy){uploads.set(item.id,{file,name:file.name});preview();}};
   $('remove-image').onclick=()=>{const item=events[selected];if(!item||busy)return;item.image='';uploads.delete(item.id);$('image').value='';preview();};
   $('add').onclick=()=>{if(busy||!settings||events.length>=12)return;const date=new Date();date.setDate(date.getDate()+7);date.setHours(0,0,0,0);events.push({id:unique(),title:'Mein nächstes Abenteuer',target:date.toISOString(),zone,theme:'birthday',mode:'days',image:'',animation:true});selected=events.length-1;render();};

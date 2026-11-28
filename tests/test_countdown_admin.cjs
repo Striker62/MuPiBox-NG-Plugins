@@ -13,8 +13,9 @@ function setup(){
 test('admin creates and saves countdowns while retaining unrelated settings',async()=>{
  const h=setup();await tick();assert.equal(h.get('add').disabled,false);h.get('add').onclick();
  assert.equal(h.get('editor').hidden,false);assert.equal(h.get('save').disabled,false);
- h.get('title').value='Mein Urlaub';h.get('title').input();await h.get('save').onclick();
+ h.get('title').value='Mein Urlaub';h.get('title').input();h.get('image-layout').value='background';h.get('image-layout').input();await h.get('save').onclick();
  assert.equal(h.writes,1);assert.equal(h.stored.unrelated,'keep');assert.equal(h.stored.countdowns[0].title,'Mein Urlaub');assert.equal(h.get('save').disabled,true);
+ assert.equal(h.stored.countdowns[0].imageLayout,'background');
 });
 test('conflicts retain edits and discard requires explicit in-page confirmation',async()=>{
  const h=setup();await tick();h.get('add').onclick();h.conflict();await h.get('save').onclick();
