@@ -1,6 +1,21 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.10** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.11** · eigenständige Community-App von Striker62.
+
+Beta 11 ergänzt bis zu zwölf **eigene Vorlagen** im linken Bereich der
+Verwaltung. Einen Countdown einrichten, optional einen Vorlagennamen eingeben
+und **„Als Vorlage speichern“** wählen. **„Alles speichern“** sichert Countdowns
+und Vorlagen gemeinsam. Links über **„Countdown anlegen“** eine Vorlage
+verwenden; das Zieldatum ist bewusst leer und muss neu festgelegt werden.
+Bei der Warte-Uhr wird der Start auf den Zeitpunkt des Anlegens gesetzt.
+
+Bild/GIF, Design, Textoption, Zeiteinheiten, Uhrdarstellung und Bildanpassung
+werden übernommen. Vorlagen und neue Countdowns sind unabhängig: Änderungen
+oder Entfernen des ursprünglichen Countdowns verändern die Vorlage nicht.
+Eine Vorlage kann nach Bestätigung entfernt werden; bereits daraus angelegte
+Countdowns bleiben erhalten. Gemeinsame Bilder werden nicht gelöscht.
+Auch ein gerade ausgewähltes, noch nicht hochgeladenes Bild wird beim
+gemeinsamen Speichern für Vorlage und Countdown sicher übernommen.
 
 Beta 10 ergänzt die **Warte-Uhr mit einem Zeiger**. In der Verwaltung unter
 „Countdown darstellen“ wählen und einen Start vor dem Ziel festlegen;
@@ -132,8 +147,8 @@ spätere Erweiterungen. Die App ist noch nicht im offiziellen Katalog.
 
 ```sh
 node --test tests/test_countdown.cjs tests/test_countdown_admin.cjs tests/test_countdown_runtime.cjs
-python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.10.mupiapp --exclude README.md
-python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.10.mupiapp
+python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.11.mupiapp --exclude README.md
+python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.11.mupiapp
 ```
 
 Die grundlegende Logik ist automatisiert geprüft. Gerätetest und visuelle

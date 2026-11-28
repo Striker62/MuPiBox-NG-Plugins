@@ -5,3 +5,5 @@
 .countdown-picker{max-width:1180px;margin:0 auto 24px;padding:16px 20px;background:#fffdf7;border:1px solid #dfd9c9;border-radius:14px}.countdown-picker label{margin:0 0 8px}.countdown-picker select{font-weight:650}#countdown-count{font-weight:400}
 
 .unit-options{display:flex;flex-wrap:wrap;gap:12px 24px}.unit-options .check{margin:8px 0}
+
+.template-card{display:flex;flex-direction:column;gap:9px;border:1px solid #d5dfd1;background:#f4f6ed;padding:14px;border-radius:13px;margin:12px 0}.template-card strong{overflow-wrap:anywhere}.template-card button{text-align:left}.template-remove{font-size:13px;background:transparent;min-height:36px}#template-count{font-size:14px;font-weight:400}

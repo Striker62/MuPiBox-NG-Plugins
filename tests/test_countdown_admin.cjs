@@ -6,7 +6,7 @@ function setup(){
  const nodes=new Map(),get=id=>{if(!nodes.has(id))nodes.set(id,{value:'',hidden:false,disabled:false,textContent:'',children:[],className:'',checked:false,files:[],focus(){},replaceChildren(){this.children=[];},append(item){this.children.push(item);},reportValidity(){return true;},addEventListener(name,fn){this[name]=fn;}});return nodes.get(id);};
  let stored={unrelated:'keep',countdowns:[]},revision='1',writes=0;
  const sdk={settings:{async get(){return {value:structuredClone(stored),revision};},async set(value,opts){assert.equal(opts.expectedRevision,revision);stored=structuredClone(value);revision=String(Number(revision)+1);writes++;}}};
- const context={window:{MuPiBoxAdminSDK:sdk,CountdownModel:model,addEventListener(){}},document:{getElementById:get,createElement:()=>({}),querySelectorAll:()=>[],querySelector:get,addEventListener(){}},Intl,Date,Map,JSON,crypto:require('node:crypto').webcrypto,Uint8Array,console};
+ const context={window:{MuPiBoxAdminSDK:sdk,CountdownModel:model,addEventListener(){}},document:{getElementById:get,createElement:()=>({children:[],append(...items){this.children.push(...items);}}),querySelectorAll:()=>[],querySelector:get,addEventListener(){}},Intl,Date,Map,JSON,crypto:require('node:crypto').webcrypto,Uint8Array,Blob,console};
  vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../examples/countdown/admin/app.js'),'utf8'),context);
  return {get,sdk,get stored(){return stored;},get writes(){return writes;},conflict(){revision='8';}};
 }
@@ -50,4 +50,24 @@ test('parents can save a fixed clock start which survives reloading and reject s
  await h.get('save').onclick();assert.equal(h.stored.countdowns[0].display,'dial');
  const start=h.stored.countdowns[0].waitStart;await h.get('reload').onclick();await tick();assert.equal(h.stored.countdowns[0].waitStart,start);
  h.get('start-date').value='2100-12-31';h.get('start-date').input();await h.get('save').onclick();assert.equal(h.writes,1);assert.match(h.get('status').textContent,/Start vor dem Ziel/);
+});
+test('templates survive source deletion and create independent countdowns requiring a new target',async()=>{
+ const h=setup();await tick();h.get('add').onclick();h.get('title').value='Gute Nacht';h.get('title').input();
+ h.get('template-name').value='Schlafenszeit';h.get('save-template').onclick();await h.get('save').onclick();
+ assert.equal(h.stored.countdownTemplates.length,1);assert.equal(h.stored.countdownTemplates[0].title,'Schlafenszeit');
+ const templateId=h.stored.countdownTemplates[0].id,sourceId=h.stored.countdowns[0].id;assert.notEqual(templateId,sourceId);
+ const remove=h.get('delete').onclick();h.get('confirm-yes').onclick();await remove;await h.get('save').onclick();
+ await h.get('reload').onclick();await tick();assert.equal(h.stored.countdowns.length,0);assert.equal(h.get('templates').children.length,1);
+ h.get('templates').children[0].children[1].onclick();assert.equal(h.get('title').value,'Schlafenszeit');assert.equal(h.get('date').value,'');
+ await h.get('save').onclick();assert.match(h.get('status').textContent,/Zieldatum/);
+ h.get('date').value='2030-01-02';h.get('date').input();h.get('title').value='Heute schlafen gehen';h.get('title').input();await h.get('save').onclick();
+ assert.equal(h.stored.countdowns.length,1);assert.notEqual(h.stored.countdowns[0].id,templateId);assert.equal(h.stored.countdownTemplates[0].title,'Schlafenszeit');
+});
+test('template and source share a pending GIF upload safely without duplicating the file',async()=>{
+ const h=setup();await tick();let uploads=0;h.sdk.files={write:async(path,blob,opts)=>{uploads++;assert.match(path,/^bilder\/.+\.gif$/);assert.equal(opts.expectedRevision,'');return {revision:'image'};}};
+ h.get('add').onclick();
+ const file=new Blob([Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64')],{type:'image/gif'});file.name='test.gif';
+ h.get('image').files=[file];h.get('image').onchange();h.get('save-template').onclick();await h.get('save').onclick();
+ assert.equal(uploads,1);assert.equal(h.stored.countdowns[0].image,h.stored.countdownTemplates[0].image);
+ assert.equal(h.get('save').disabled,true);
 });
