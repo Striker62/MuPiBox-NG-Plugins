@@ -1,0 +1,17 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wie lange noch? · Verwaltung</title><link rel="stylesheet" href="style.css"></head><body>
+<header><p>WIE LANGE NOCH? · VERWALTUNG</p><h1>Vorfreude einrichten</h1><p>Geburtstage, Weihnachten oder die nächste Reise: Ein Ziel, auf das sich dein Kind freuen kann.</p></header>
+<div id="status" role="status" aria-live="polite">Einstellungen werden geladen …</div>
+<main><aside><h2>Unsere Countdowns</h2><div id="list"></div><button id="add" type="button" disabled>+ Neuer Countdown</button><p>Bis zu 12 Ereignisse. Die Reihenfolge hier entspricht der Anzeige auf der Box.</p><button id="reload" type="button">Gespeicherten Stand laden</button></aside>
+<section><form id="editor" hidden><div class="heading"><h2 id="heading">Countdown</h2><span id="zone"></span></div>
+<label>Titel<input id="title" maxlength="80" required placeholder="Zum Beispiel: Emmas Geburtstag"></label>
+<div class="row"><label>Datum<input id="date" type="date" min="2020-01-01" max="2100-12-31" required></label><label>Uhrzeit<input id="time" type="time" required value="00:00"></label></div>
+<p class="hint">Datum und Uhrzeit werden in der Zeitzone dieses Browsers gespeichert. Für eine Reise an einen anderen Ort zählt die hier eingestellte Zeit.</p>
+<div class="row"><label>Design<select id="theme"><option value="birthday">Geburtstag · Sonnengelb</option><option value="winter">Winter · Eisblau</option><option value="travel">Reise · Wiesengrün</option></select></label><label>Zeitanzeige<select id="mode"><option value="days">Tage</option><option value="clock">Tage, Stunden und Minuten</option><option value="sleeps">Noch so oft schlafen</option></select></label></div>
+<label class="check"><input id="animation" type="checkbox" checked> Kleine Konfetti-Animation am Ziel</label>
+<fieldset><legend>Eigenes Bild (optional)</legend><p>JPEG, PNG oder WebP bis 20 MiB. Es wird eine JPEG-Kopie mit höchstens 1600 Pixeln Kantenlänge erstellt. Das Original auf deinem Computer bleibt erhalten.</p><input id="image" type="file" accept="image/jpeg,image/png,image/webp"><p id="image-name">Design ohne eigenes Bild</p><button id="remove-image" type="button">Bild aus diesem Countdown entfernen</button></fieldset>
+<div id="preview" class="birthday"><span id="preview-symbol" aria-hidden="true">★</span><div><small>VORSCHAU</small><h3 id="preview-title"></h3><p id="preview-time"></p></div></div>
+<div class="actions"><button id="up" type="button">↑ Nach oben</button><button id="down" type="button">↓ Nach unten</button><button id="delete" type="button" class="danger">Countdown entfernen</button></div>
+</form><div id="empty"><h2>Ein schöner Grund zum Warten</h2><p>Lege links einen Countdown an. Die Kinder sehen auf der Box nur die fertigen Karten.</p></div></section></main>
+<footer><p id="dirty">Keine ungespeicherten Änderungen.</p><button id="save" type="button" disabled>Alle Countdowns speichern</button></footer>
+<div id="confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-text" hidden><div class="confirm-card"><h2 id="confirm-text"></h2><div class="actions"><button id="confirm-no" type="button">Abbrechen</button><button id="confirm-yes" type="button" class="danger">Fortfahren</button></div></div></div>
+<script src="../model.js"></script><script src="app.js"></script></body></html>

@@ -1,0 +1,44 @@
+name: Countdown checks
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, 'feature/countdown*']
+    paths: ['examples/countdown/**', 'tests/test_countdown*', '.github/workflows/countdown-audit.yml']
+  pull_request:
+    paths: ['examples/countdown/**', 'tests/test_countdown*', '.github/workflows/countdown-audit.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check JavaScript and behavior
+        run: |
+          node --check examples/countdown/app.js
+          node --check examples/countdown/admin/app.js
+          node --test tests/test_countdown.cjs tests/test_countdown_admin.cjs tests/test_countdown_runtime.cjs
+          python3 -c "from pathlib import Path; assert Path('sdk/mupibox-sdk.js').read_bytes() == Path('examples/countdown/mupibox-sdk.js').read_bytes()"
+      - name: Build installation package
+        id: package
+        shell: python
+        run: |
+          import json, os, subprocess, sys
+          from pathlib import Path
+          version = json.loads(Path('examples/countdown/manifest.json').read_text())['version']
+          path = f'dist/Wie-lange-noch-{version}.mupiapp'
+          subprocess.run([sys.executable, 'tools/mupiapp.py', 'pack', 'examples/countdown', path, '--exclude', 'README.md'], check=True)
+          subprocess.run([sys.executable, 'tools/mupiapp.py', 'validate', path], check=True)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write(f'path={path}\nname=Wie-lange-noch-{version}\n')
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.name }}
+          path: ${{ steps.package.outputs.path }}
+          if-no-files-found: error
