@@ -3,6 +3,14 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const model=require('../examples/countdown/model.js');
 const event=(extra={})=>({id:'birthday',title:'Mein Geburtstag',target:'2026-12-24T11:00:00.000Z',zone:'Europe/Berlin',theme:'winter',mode:'days',image:'',animation:true,...extra});
+test('admin dependencies stay within its asset directory and model copies match',()=>{
+ const fs=require('node:fs'),path=require('node:path'),root=path.join(__dirname,'../examples/countdown');
+ assert.equal(fs.readFileSync(path.join(root,'model.js'),'utf8'),fs.readFileSync(path.join(root,'admin/model.js'),'utf8'));
+ const html=fs.readFileSync(path.join(root,'admin/index.html'),'utf8');
+ for(const match of html.matchAll(/<script src="([^"]+)"/g)){
+  assert.ok(!match[1].includes('..'));assert.ok(fs.existsSync(path.join(root,'admin',match[1])));
+ }
+});
 test('only scoped JPEG paths, valid dates and bounded event lists are accepted',()=>{
  assert.equal(model.validate([event()])[0].title,'Mein Geburtstag');
  for(const image of ['../x.jpg','bilder/../x.jpg','https://example.com/x.jpg','bilder/a.png','bilder/a.jpg?q=x'])assert.throws(()=>model.validate([event({image})]));

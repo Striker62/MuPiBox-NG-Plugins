@@ -28,7 +28,7 @@ class CountdownBrowserTests(unittest.TestCase):
         folder = APP / 'admin' if admin else APP
         html = (folder / 'index.html').read_text(encoding='utf-8')
         html = html.replace('<link rel="stylesheet" href="style.css">', '<style>' + (folder / 'style.css').read_text(encoding='utf-8') + '</style>')
-        scripts = ['../model.js', 'app.js'] if admin else ['mupibox-sdk.js', 'model.js', 'app.js']
+        scripts = ['model.js', 'app.js'] if admin else ['mupibox-sdk.js', 'model.js', 'app.js']
         html = html.replace('<script src="' + scripts[0] + '"></script>', '<script>' + bootstrap + '</script><script src="' + scripts[0] + '"></script>')
         for script in scripts:
             html = html.replace('<script src="' + script + '"></script>', '<script>' + (folder / script).read_text(encoding='utf-8') + '</script>')

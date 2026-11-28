@@ -1,6 +1,10 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.1** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.2** · eigenständige Community-App von Striker62.
+
+Beta 2 lädt das gemeinsame Datumsmodul direkt aus dem Admin-Verzeichnis.
+Die Verwaltung benötigt dadurch keinen Zugriff auf einen übergeordneten
+Paketordner mehr.
 
 Eltern richten bis zu zwölf Countdowns in der App-Verwaltung ein. Kinder
 blättern auf der Box durch große Karten für Geburtstag, Weihnachten, Urlaub
