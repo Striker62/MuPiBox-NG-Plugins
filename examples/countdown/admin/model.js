@@ -1,7 +1,15 @@
 /* Shared validation and time arithmetic; no host or DOM dependencies. */
 (() => {
   'use strict';
-  const themes=['birthday','winter','travel'],modes=['days','clock','sleeps'];
+  const themes=['birthday','winter','travel'],modes=['days','clock','sleeps','hms','hours-minutes','minutes','custom'];
+  const allUnits=['days','hours','minutes','seconds'];
+  function unitsFor(item){
+    if(item.units!==undefined){
+      if(!Array.isArray(item.units)||!item.units.length||item.units.length>4||new Set(item.units).size!==item.units.length||item.units.some(unit=>!allUnits.includes(unit)))throw Error('Bitte mindestens eine Zeiteinheit auswählen.');
+      return allUnits.filter(unit=>item.units.includes(unit));
+    }
+    return {days:['days'],sleeps:['days'],clock:['days','hours','minutes'],hms:['hours','minutes','seconds'],'hours-minutes':['hours','minutes'],minutes:['minutes'],custom:['days']}[item.mode]||['days'];
+  }
   const picture=value=>value==='' || (typeof value==='string' && /^bilder\/[a-zA-Z0-9_-]+\.(jpg|gif)$/.test(value));
   function validateGif(bytes){
     const fail=()=>{throw Error('Bitte ein gültiges GIF bis 2 MiB, 800 × 800 Pixel und 40 Einzelbilder auswählen.');};
@@ -33,6 +41,7 @@
       if(!item||typeof item!=='object')throw Error('Ungültiger Countdown.');
       const {id,title,target,zone,theme,mode,image,animation}=item;
       const imageLayout=item.imageLayout===undefined?'side':item.imageLayout;
+      const showText=item.showText===undefined?false:item.showText;
       if(typeof id!=='string'||!/^[a-zA-Z0-9_-]{1,64}$/.test(id)||ids.has(id))throw Error('Ungültige oder doppelte Countdown-Kennung.');ids.add(id);
       if(typeof title!=='string'||!title.trim()||title.length>80)throw Error('Bitte einen Titel mit höchstens 80 Zeichen eingeben.');
       if(typeof target!=='string'||!/^\d{4}-\d\d-\d\dT/.test(target)||!Number.isFinite(Date.parse(target)))throw Error('Bitte ein gültiges Zieldatum auswählen.');
@@ -41,7 +50,8 @@
       try{new Intl.DateTimeFormat('de',{timeZone:zone}).format(new Date());}catch{throw Error('Ungültige Zeitzone.');}
       if(!themes.includes(theme)||!modes.includes(mode)||!picture(image)||typeof animation!=='boolean')throw Error('Ungültiges Design oder Bild.');
       if(!['side','background'].includes(imageLayout))throw Error('Ungültige Bilddarstellung.');
-      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation,imageLayout};
+      if(typeof showText!=='boolean')throw Error('Ungültige Textdarstellung.');
+      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation,imageLayout,showText,units:unitsFor(item)};
     });
   }
   function day(date,zone){
@@ -50,11 +60,17 @@
     return Date.UTC(get('year'),get('month')-1,get('day'))/86400000;
   }
   function remaining(event,now=Date.now()){
-    const diff=Math.max(0,Date.parse(event.target)-now),minutes=Math.ceil(diff/60000);
+    const diff=Math.max(0,Date.parse(event.target)-now),minutes=Math.ceil(diff/60000),seconds=Math.ceil(diff/1000);
     return {done:diff===0,days:Math.ceil(diff/86400000),sleeps:Math.max(0,day(new Date(event.target),event.zone)-day(new Date(now),event.zone)),
-      fullDays:Math.floor(minutes/1440),hours:Math.floor(minutes%1440/60),minutes:minutes%60};
+      fullDays:Math.floor(minutes/1440),hours:Math.floor(minutes%1440/60),minutes:minutes%60,
+      totalMinutes:minutes,totalHours:Math.floor(minutes/60),secondHours:Math.floor(seconds/3600),secondMinutes:Math.floor(seconds%3600/60),seconds:seconds%60};
   }
-  const api={validate,remaining,picture,validateGif};
+  function parts(item,now=Date.now()){
+    const units=unitsFor(item),scales={days:86400,hours:3600,minutes:60,seconds:1},smallest=scales[units[units.length-1]];
+    let rest=Math.ceil(Math.max(0,Date.parse(item.target)-now)/(smallest*1000))*smallest;
+    return units.map(unit=>{const value=Math.floor(rest/scales[unit]);rest%=scales[unit];return {unit,value};});
+  }
+  const api={validate,remaining,picture,validateGif,unitsFor,parts};
   if(typeof module!=='undefined')module.exports=api;
   if(typeof window!=='undefined')window.CountdownModel=api;
 })();

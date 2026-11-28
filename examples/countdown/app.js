@@ -8,19 +8,19 @@
   function tick(){
     const item=events[index];if(!item||paused)return;
     const time=model.remaining(item);$('numbers').replaceChildren();
-    if(time.done){unit('Hurra!','Es ist so weit');$('message').textContent=notice||'Dein großer Moment ist da!';
+    if(time.done){unit(item.showText?'Hurra!':'★','Es ist so weit');$('message').textContent=notice||(item.showText?'Dein großer Moment ist da!':'');
       const key=item.id+item.target;if(!celebrated.has(key)){celebrated.add(key);if(item.animation){$('confetti').replaceChildren();for(let i=0;i<24;i++){const piece=document.createElement('i');piece.style.left=(i*41%100)+'%';piece.style.animationDelay=(i%8)*.12+'s';$('confetti').append(piece);}}}
     }else{
       $('message').textContent=notice;
-      if(item.mode==='clock'){unit(time.fullDays,time.fullDays===1?'Tag':'Tage');unit(time.hours,'Stunden');unit(time.minutes,'Minuten');}
-      else if(item.mode==='sleeps'){unit(time.sleeps,time.sleeps===0?'Heute ist es so weit':time.sleeps===1?'noch einmal schlafen':'noch so oft schlafen');}
-      else unit(time.days,time.days===1?'Tag voller Vorfreude':'Tage voller Vorfreude');
+      if(item.mode==='sleeps'){unit(time.sleeps,time.sleeps===0?'Heute ist es so weit':time.sleeps===1?'noch einmal schlafen':'noch so oft schlafen');}
+      else{const labels={days:'Tage',hours:'Stunden',minutes:'Minuten',seconds:'Sekunden'};model.parts(item).forEach((part,index)=>unit(index?String(part.value).padStart(2,'0'):part.value,labels[part.unit]));}
     }
   }
   async function render(){
     const item=events[index],run=++loadRun;shown=item?.id||'';notice='';releaseImage();
     for(const id of ['picture','background-picture']){$(id).hidden=true;$(id).removeAttribute('src');}
     document.body.classList.toggle('background-mode',Boolean(item?.image&&item.imageLayout==='background'));
+    document.body.classList.toggle('text-free',Boolean(item&&!item.showText));
     $('confetti').replaceChildren();
     $('prev').disabled=index===0;$('next').disabled=index>=events.length-1;$('dots').replaceChildren();
     events.forEach((event,i)=>{const button=document.createElement('button');button.className=i===index?'active':'';button.setAttribute('aria-label',event.title);button.setAttribute('aria-current',i===index?'true':'false');button.onclick=()=>{index=i;void render();};$('dots').append(button);});
@@ -30,13 +30,11 @@
     if(item.image){try{const blob=await sdk.shared.read(item.image);if(run!==loadRun)return;if(!(blob instanceof Blob)||blob.size>2*1024*1024)throw Error('Ungültiges Bild');const gif=item.image.endsWith('.gif');if(gif)model.validateGif(new Uint8Array(await blob.arrayBuffer()));if(run!==loadRun)return;imageURL=URL.createObjectURL(new Blob([blob],{type:gif?'image/gif':'image/jpeg'}));const image=$(item.imageLayout==='background'?'background-picture':'picture');image.src=imageURL;image.hidden=false;}catch{if(run===loadRun){document.body.classList.remove('background-mode');notice='Das eigene Bild konnte nicht geladen werden.';$('message').textContent=notice;}}}
   }
   async function load(){
-    $('reload').disabled=true;
     try{const config=await sdk.config.get();const previous=shown;events=model.validate(config.countdowns||[]);index=Math.max(0,events.findIndex(item=>item.id===previous));await render();}
     catch(error){notice='Countdowns konnten nicht geladen werden: '+error.message;$('message').textContent=notice;}
-    finally{$('reload').disabled=false;}
   }
   function move(offset){const next=Math.max(0,Math.min(events.length-1,index+offset));if(next!==index){index=next;void render();}}
-  $('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('reload').onclick=()=>void load();
+  $('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);
   $('exit').onclick=async()=>{try{await sdk.exit();}catch{$('message').textContent='Bitte über die MuPiBox zurückgehen.';}};
   function resume(){paused=false;document.body.classList.remove('paused');stop();timer=setInterval(tick,1000);void load();}
   function pause(){paused=true;stop();document.body.classList.add('paused');}

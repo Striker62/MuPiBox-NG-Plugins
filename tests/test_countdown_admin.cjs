@@ -37,3 +37,10 @@ test('two countdowns remain selectable and editable after saving and reloading',
  h.get('countdown-choice').value='1';h.get('countdown-choice').onchange();assert.equal(h.get('title').value,'Urlaub');
  assert.equal(h.stored.countdowns[0].title,'Geburtstag mit Freunden');assert.equal(h.stored.countdowns[1].title,'Urlaub');
 });
+test('unit checkboxes and optional text persist and empty unit selection is rejected',async()=>{
+ const h=setup();await tick();h.get('add').onclick();
+ h.get('unit-days').checked=false;h.get('unit-hours').checked=true;h.get('unit-minutes').checked=true;h.get('unit-seconds').checked=true;h.get('show-text').checked=true;h.get('show-text').input();
+ await h.get('save').onclick();assert.deepEqual(h.stored.countdowns[0].units,['hours','minutes','seconds']);assert.equal(h.stored.countdowns[0].showText,true);
+ for(const name of ['hours','minutes','seconds'])h.get('unit-'+name).checked=false;h.get('unit-seconds').input();await h.get('save').onclick();
+ assert.equal(h.writes,1);assert.match(h.get('status').textContent,/mindestens eine/);
+});

@@ -39,6 +39,20 @@ test('background choice is retained and older countdowns keep the side image lay
  assert.equal(model.validate([event({imageLayout:'background'})])[0].imageLayout,'background');
  assert.throws(()=>model.validate([event({imageLayout:'unknown'})]));
 });
+test('all unit checkbox combinations roll larger units into the first selected unit',()=>{
+ const units=['days','hours','minutes','seconds'],scales={days:86400,hours:3600,minutes:60,seconds:1};
+ const now=Date.parse('2026-12-01T00:00:00Z'),diff=25*3600+61;
+ for(let mask=1;mask<16;mask++){
+  const selected=units.filter((unit,index)=>mask&(1<<index));
+  const item=model.validate([event({mode:'custom',units:selected,target:new Date(now+diff*1000+1).toISOString()})])[0];
+  const result=model.parts(item,now),smallest=scales[selected.at(-1)];
+  assert.deepEqual(result.map(part=>part.unit),selected);
+  assert.equal(result.reduce((sum,part)=>sum+part.value*scales[part.unit],0),Math.ceil((diff+.001)/smallest)*smallest);
+ }
+ assert.throws(()=>model.validate([event({mode:'custom',units:[]})]));
+ assert.equal(model.validate([event()])[0].showText,false);
+ assert.equal(model.validate([event({showText:true})])[0].showText,true);
+});
 test('GIF validation accepts animation and rejects oversized or truncated content',()=>{
  const bytes=new Uint8Array(Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64'));
  assert.equal(model.validateGif(bytes).frames,1);

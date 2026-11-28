@@ -18,6 +18,7 @@
     $('save').disabled=busy||!settings||!dirty();$('add').disabled=busy||!settings||events.length>=12;$('reload').disabled=busy;
     $('dirty').textContent=dirty()?'Änderungen noch nicht gespeichert.':'Alle Änderungen gespeichert.';
     for(const input of document.querySelectorAll('#editor input,#editor select,#editor button'))input.disabled=busy;
+    for(const unit of ['days','hours','minutes','seconds'])$('unit-'+unit).disabled=busy||events[selected]?.mode==='sleeps';
     $('up').disabled=busy||selected<=0;$('down').disabled=busy||selected<0||selected>=events.length-1;
   }
   function list(){
@@ -32,7 +33,7 @@
     $('preview').className=item.theme;$('preview-symbol').textContent={birthday:'★',winter:'❄',travel:'➜'}[item.theme];$('preview-title').textContent=item.title;
     if(!Number.isFinite(Date.parse(item.target))){$('preview-time').textContent='Bitte Datum und Uhrzeit vervollständigen.';list();return;}
     const value=model.remaining(item);
-    $('preview-time').textContent=value.done?'Es ist so weit!':item.mode==='sleeps'?'Noch '+value.sleeps+'-mal schlafen':item.mode==='clock'?value.fullDays+' Tage · '+value.hours+' Stunden · '+value.minutes+' Minuten':'Noch '+value.days+' Tage';
+    try{const labels={days:'Tage',hours:'Stunden',minutes:'Minuten',seconds:'Sekunden'};$('preview-time').textContent=value.done?'Es ist so weit!':item.mode==='sleeps'?'Noch '+value.sleeps+'-mal schlafen':model.parts(item).map(part=>part.value+' '+labels[part.unit]).join(' · ');}catch(error){$('preview-time').textContent=error.message;}
     $('image-name').textContent=uploads.has(item.id)?uploads.get(item.id).name+' · wird beim Speichern hochgeladen':item.image?'Eigenes Bild hinterlegt':'Design ohne eigenes Bild';
     list();
   }
@@ -41,12 +42,14 @@
     $('heading').textContent='Countdown '+(selected+1)+' von '+events.length+' bearbeiten';$('title').value=item.title;
     const date=new Date(item.target),pad=n=>String(n).padStart(2,'0');
     $('date').value=Number.isFinite(date.getTime())?date.getFullYear()+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate()):'';$('time').value=Number.isFinite(date.getTime())?pad(date.getHours())+':'+pad(date.getMinutes()):'00:00';
-    $('theme').value=item.theme;$('mode').value=item.mode;$('image-layout').value=item.imageLayout||'side';$('animation').checked=item.animation;$('image').value='';
+    $('theme').value=item.theme;$('sleep-mode').checked=item.mode==='sleeps';
+    const units=Array.isArray(item.units)?item.units:model.unitsFor(item);for(const unit of ['days','hours','minutes','seconds'])$('unit-'+unit).checked=units.includes(unit);
+    $('image-layout').value=item.imageLayout||'side';$('show-text').checked=item.showText===true;$('animation').checked=item.animation;$('image').value='';
     $('zone').textContent='Zeitzone: '+zone;preview();
   }
   function edit(){
     const item=events[selected];if(!item||busy)return;
-    item.title=$('title').value;item.theme=$('theme').value;item.mode=$('mode').value;item.imageLayout=$('image-layout').value;item.animation=$('animation').checked;
+    item.title=$('title').value;item.theme=$('theme').value;item.mode=$('sleep-mode').checked?'sleeps':'custom';item.units=['days','hours','minutes','seconds'].filter(unit=>$('unit-'+unit).checked);if(item.mode==='sleeps'&&!item.units.length)item.units=['days'];item.imageLayout=$('image-layout').value;item.showText=$('show-text').checked;item.animation=$('animation').checked;
     const value=$('date').value+'T'+$('time').value;
     const target=new Date(value);item.target=Number.isFinite(target.getTime())?target.toISOString():'';item.zone=zone;
     preview();
@@ -99,11 +102,11 @@
       const result=await sdk.settings.get();if(typeof result?.revision!=='string')throw Error('Gespeichert. Bitte vor weiteren Änderungen den Stand neu laden.');
       if(JSON.stringify(model.validate(result.value?.countdowns||[]))!==JSON.stringify(valid))throw Error('Gespeichert, danach wurden die Countdowns an anderer Stelle geändert. Bitte den Stand neu laden.');
       settings=result.value;revision=result.revision;
-      status('Gespeichert! Auf der Box „Aktualisieren“ antippen oder die App neu öffnen.');
+      status('Gespeichert! Die App auf der Box schließen und erneut öffnen.');
     }catch(error){status('Speichern nicht abgeschlossen: '+error.message+' Deine Eingaben bleiben geöffnet.',true);}
     finally{busy=false;render();}
   };
-  for(const id of ['title','date','time','theme','mode','image-layout','animation'])$(id).addEventListener('input',edit);
+  for(const id of ['title','date','time','theme','sleep-mode','unit-days','unit-hours','unit-minutes','unit-seconds','image-layout','show-text','animation'])$(id).addEventListener('input',edit);
   $('image').onchange=()=>{const item=events[selected],file=$('image').files[0];if(item&&file&&!busy){uploads.set(item.id,{file,name:file.name});preview();}};
   $('remove-image').onclick=()=>{const item=events[selected];if(!item||busy)return;item.image='';uploads.delete(item.id);$('image').value='';preview();};
   $('add').onclick=()=>{if(busy||!settings||events.length>=12)return;const date=new Date();date.setDate(date.getDate()+7);date.setHours(0,0,0,0);events.push({id:unique(),title:'Mein nächstes Abenteuer',target:date.toISOString(),zone,theme:'birthday',mode:'days',image:'',animation:true});selected=events.length-1;render();};

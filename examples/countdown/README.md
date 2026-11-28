@@ -1,6 +1,22 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.7** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.8** · eigenständige Community-App von Striker62.
+
+Beta 8 vereinfacht die Kinderansicht: oben bleibt nur ein transparenter
+Zurück-Pfeil. App-Titel und Aktualisieren-Schaltfläche entfallen; zum Laden
+gespeicherter Änderungen die App erneut öffnen. Die Countdown-Zahlen liegen
+im Hintergrundmodus ohne Kartenfläche direkt über dem Bild, mit Schatten
+für die Lesbarkeit. Titel, Datum und Einheitenbeschriftungen sind über
+**„Texte anzeigen“** optional und zunächst aus. Am Ziel erscheint ohne Texte
+ein Stern mit der optionalen Konfetti-Animation.
+
+**Tage, Stunden, Minuten und Sekunden** werden einzeln per Häkchen ausgewählt.
+Mindestens eine Einheit ist erforderlich. Nicht angezeigte größere Einheiten
+werden umgerechnet: nur Stunden zeigt z. B. 49 Stunden; nur Minuten 2940.
+Es wird zur kleinsten ausgewählten Einheit aufgerundet. Bei gewählten Sekunden
+aktualisiert sich die Anzeige im Sekundentakt. Alte Einstellungen werden auf
+die entsprechenden Häkchen übertragen. „Noch so oft schlafen“ bleibt als
+eigene Alternative erhalten.
 
 Beta 7 bietet je Countdown die Bilddarstellung **„Bild links“** oder
 **„Bild als Hintergrund für den ganzen Bildschirm“**. Der Hintergrund
@@ -94,8 +110,8 @@ spätere Erweiterungen. Die App ist noch nicht im offiziellen Katalog.
 
 ```sh
 node --test tests/test_countdown.cjs tests/test_countdown_admin.cjs tests/test_countdown_runtime.cjs
-python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.3.mupiapp --exclude README.md
-python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.3.mupiapp
+python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.8.mupiapp --exclude README.md
+python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.8.mupiapp
 ```
 
 Die grundlegende Logik ist automatisiert geprüft. Gerätetest und visuelle

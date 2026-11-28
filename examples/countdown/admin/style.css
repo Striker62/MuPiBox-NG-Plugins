@@ -3,3 +3,5 @@
 #confirm{position:fixed;inset:0;z-index:10;background:#163c42aa;display:grid;place-items:center;padding:24px}.confirm-card{background:#fffdf7;border-radius:20px;padding:28px;max-width:500px}
 
 .countdown-picker{max-width:1180px;margin:0 auto 24px;padding:16px 20px;background:#fffdf7;border:1px solid #dfd9c9;border-radius:14px}.countdown-picker label{margin:0 0 8px}.countdown-picker select{font-weight:650}#countdown-count{font-weight:400}
+
+.unit-options{display:flex;flex-wrap:wrap;gap:12px 24px}.unit-options .check{margin:8px 0}
