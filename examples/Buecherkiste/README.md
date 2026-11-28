@@ -2,6 +2,11 @@
 
 Mit der Bücherkiste können Kinder Bilderbücher auswählen, durchblättern, vergrößern und vorlesen lassen. Die App bringt **Ole und der verschwundene Knopf** (16 Bildseiten) und **Henne und Adler** (10 Bild- und Textseiten plus eine Urheberseite) mit. Eigene Bücher erscheinen zusätzlich im Regal.
 
+## 1.2.0-beta.4: kompakte Wiedergabezeile
+
+Seitenbezeichnung, Fortschritt und Zeit stehen rechts neben „Anhören“ und
+„Wiedergabe stoppen“. Auf schmalen Fenstern bricht die Anzeige bei Bedarf um.
+
 ## 1.2.0-beta.3: Aufnahme- und Wiedergabeanzeige
 
 Die Verwaltung zeigt die ausgewählte Buchseite sowie bei der Wiedergabe

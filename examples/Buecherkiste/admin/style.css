@@ -92,4 +92,4 @@ body{height:100vh;} #book-admin #editor-refresh{width:100%;margin:0 0 8px;}
 
 #book-admin #audio-start,#book-admin #audio-adopt{background:#246c59;color:white}#book-admin #page-audio select{font:inherit;min-height:44px;border:1px solid #b7c8bf;border-radius:9px;padding:8px;background:#fffdf7;max-width:100%}
 
-.audio-timeline{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px;border-radius:12px;background:#fffdf7;font-size:18px}.audio-timeline strong{flex:1}.audio-timeline span{font-variant-numeric:tabular-nums}.audio-timeline progress{flex-basis:100%;width:100%;height:16px;accent-color:#246c59}
+.audio-timeline{display:flex;flex:1 1 350px;min-width:0;flex-wrap:wrap;align-items:center;gap:10px;min-height:44px;padding:6px 12px;box-sizing:border-box;border-radius:9px;background:#fffdf7;font-size:15px}.audio-timeline strong{flex:0 1 auto;overflow-wrap:anywhere}.audio-timeline span{font-variant-numeric:tabular-nums}.audio-timeline progress{flex:1 1 90px;width:90px;min-width:60px;height:12px;accent-color:#246c59}
