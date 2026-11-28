@@ -1,7 +1,7 @@
 {
   "apiVersion":"1","id":"community.countdown","name":"Wie lange noch?",
   "description":"Kinder-Countdowns für Geburtstag, Weihnachten und Urlaub – eingerichtet von Eltern.",
-  "author":"Striker62","version":"0.1.0-beta.2","runtime":"web","entry":"index.html",
+  "author":"Striker62","version":"0.1.0-beta.3","runtime":"web","entry":"index.html",
   "category":"tools","permissions":["storage","shared-assets"],
   "permissionReasons":{"storage":"Liest die von Eltern eingerichteten Countdowns.","shared-assets":"Liest eigene Countdown-Bilder aus dem freigegebenen App-Ordner."},
   "sharedDirectories":["bilder"],

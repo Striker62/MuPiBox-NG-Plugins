@@ -79,7 +79,12 @@
       const latest=await sdk.settings.get();if(latest.revision!==revision)throw Error('Die Einstellungen wurden an anderer Stelle geändert. Bitte den gespeicherten Stand neu laden.');
       for(const item of valid){
         const pending=uploads.get(item.id);if(!pending)continue;
-        if(!pending.path){pending.blob=await jpeg(pending.file);pending.path='bilder/bild-'+unique()+'.jpg';}
+        if(!pending.path){
+          const gif=pending.file.type==='image/gif'||/\.gif$/i.test(pending.file.name);
+          if(gif){if(pending.file.size>2*1024*1024)throw Error('GIF ist größer als 2 MiB.');model.validateGif(new Uint8Array(await pending.file.arrayBuffer()));pending.blob=new Blob([pending.file],{type:'image/gif'});}
+          else pending.blob=await jpeg(pending.file);
+          pending.path='bilder/bild-'+unique()+(gif?'.gif':'.jpg');
+        }
         if(!pending.uploaded){await sdk.files.write(pending.path,pending.blob,{expectedRevision:''});pending.uploaded=true;}
         item.image=pending.path;
       }

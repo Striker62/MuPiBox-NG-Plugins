@@ -34,3 +34,13 @@ test('sleeps uses saved event timezone rather than runtime machine timezone',()=
  const item=event({target:'2026-12-25T02:00:00Z',zone:'America/New_York'});
  assert.equal(model.remaining(item,Date.parse('2026-12-24T01:00:00Z')).sleeps,1);
 });
+test('GIF validation accepts animation and rejects oversized or truncated content',()=>{
+ const bytes=new Uint8Array(Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64'));
+ assert.equal(model.validateGif(bytes).frames,1);
+ const oversized=bytes.slice();oversized[6]=33;oversized[7]=3;assert.throws(()=>model.validateGif(oversized));
+ assert.throws(()=>model.validateGif(bytes.slice(0,-1)));assert.throws(()=>model.validateGif(new Uint8Array([1,2,3])));
+ const start=bytes.indexOf(0x2c),frame=bytes.slice(start,-1);
+ const animated=new Uint8Array(bytes.length+frame.length);animated.set(bytes.slice(0,-1));animated.set(frame,bytes.length-1);animated[animated.length-1]=0x3b;
+ assert.equal(model.validateGif(animated).frames,2);
+ assert.equal(model.validate([event({image:'bilder/pinguin.gif'})])[0].image,'bilder/pinguin.gif');
+});

@@ -24,7 +24,7 @@
     if(!item){$('title').textContent='Worauf freust du dich?';$('numbers').replaceChildren();$('target').textContent='';$('message').textContent='Deine Eltern können in der App-Verwaltung einen Countdown einrichten.';return;}
     $('card').className=item.theme;$('symbol').textContent={birthday:'★',winter:'❄',travel:'➜'}[item.theme];$('title').textContent=item.title;
     $('target').textContent=new Intl.DateTimeFormat('de-DE',{timeZone:item.zone,dateStyle:'long',timeStyle:item.mode==='clock'?'short':undefined}).format(new Date(item.target));tick();
-    if(item.image){try{const blob=await sdk.shared.read(item.image);if(run!==loadRun)return;if(!(blob instanceof Blob)||blob.size>2*1024*1024)throw Error('Ungültiges Bild');imageURL=URL.createObjectURL(new Blob([blob],{type:'image/jpeg'}));$('picture').src=imageURL;$('picture').hidden=false;}catch{if(run===loadRun){notice='Das eigene Bild konnte nicht geladen werden.';$('message').textContent=notice;}}}
+    if(item.image){try{const blob=await sdk.shared.read(item.image);if(run!==loadRun)return;if(!(blob instanceof Blob)||blob.size>2*1024*1024)throw Error('Ungültiges Bild');const gif=item.image.endsWith('.gif');if(gif)model.validateGif(new Uint8Array(await blob.arrayBuffer()));if(run!==loadRun)return;imageURL=URL.createObjectURL(new Blob([blob],{type:gif?'image/gif':'image/jpeg'}));$('picture').src=imageURL;$('picture').hidden=false;}catch{if(run===loadRun){notice='Das eigene Bild konnte nicht geladen werden.';$('message').textContent=notice;}}}
   }
   async function load(){
     $('reload').disabled=true;

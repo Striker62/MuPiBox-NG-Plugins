@@ -1,6 +1,12 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.2** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.3** · eigenständige Community-App von Striker62.
+
+Beta 3 unterstützt animierte GIFs als eigene Bilder. Sie bleiben im
+Originalformat erhalten: bis 2 MiB, 800 × 800 Pixel, 40 Einzelbilder und
+insgesamt 20 Millionen Bildpunkte über alle Frames. Dateikopf, Bildblöcke
+und Größen werden vor dem Speichern und Anzeigen geprüft. Die tatsächliche
+Animation auf dem Touchdisplay ist noch auf der Box zu testen.
 
 Beta 2 lädt das gemeinsame Datumsmodul direkt aus dem Admin-Verzeichnis.
 Die Verwaltung benötigt dadurch keinen Zugriff auf einen übergeordneten
@@ -65,8 +71,8 @@ spätere Erweiterungen. Die App ist noch nicht im offiziellen Katalog.
 
 ```sh
 node --test tests/test_countdown.cjs tests/test_countdown_admin.cjs tests/test_countdown_runtime.cjs
-python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.1.mupiapp --exclude README.md
-python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.1.mupiapp
+python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.3.mupiapp --exclude README.md
+python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.3.mupiapp
 ```
 
 Die grundlegende Logik ist automatisiert geprüft. Gerätetest und visuelle
