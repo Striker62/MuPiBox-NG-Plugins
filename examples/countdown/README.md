@@ -1,6 +1,11 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.3** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.4** · eigenständige Community-App von Striker62.
+
+Beta 4 verkleinert den Ereignistitel und passt Abstände sowie Zahlen an die
+durch die MuPiBox-Leiste reduzierte Displayhöhe an. Titelzeilen werden nicht
+mehr durch die Flex-Anordnung zusammengedrückt. Das eigene GIF wurde auf der
+Box erfolgreich angezeigt; die flüssige Animation ist im Gerätetest zu prüfen.
 
 Beta 3 unterstützt animierte GIFs als eigene Bilder. Sie bleiben im
 Originalformat erhalten: bis 2 MiB, 800 × 800 Pixel, 40 Einzelbilder und
