@@ -1,6 +1,11 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.4** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.5** · eigenständige Community-App von Striker62.
+
+Beta 5 zeigt direkt oben in der Verwaltung eine Auswahl aller Countdowns
+mit Anzahl und Nummer. Damit lassen sich auch bei schmalen Ansichten und
+ähnlichen Titeln alle Ereignisse eindeutig auswählen. Ein Regressionstest
+prüft Anlegen, Speichern, Neuladen und Bearbeiten zweier Countdowns.
 
 Beta 4 verkleinert den Ereignistitel und passt Abstände sowie Zahlen an die
 durch die MuPiBox-Leiste reduzierte Displayhöhe an. Titelzeilen werden nicht

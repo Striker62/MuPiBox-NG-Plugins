@@ -14,12 +14,17 @@
   const snapshot=()=>JSON.stringify(events);
   const dirty=()=>snapshot()!==clean||uploads.size>0;
   function controls(){
+    $('countdown-choice').disabled=busy||!events.length;
     $('save').disabled=busy||!settings||!dirty();$('add').disabled=busy||!settings||events.length>=12;$('reload').disabled=busy;
     $('dirty').textContent=dirty()?'Änderungen noch nicht gespeichert.':'Alle Änderungen gespeichert.';
     for(const input of document.querySelectorAll('#editor input,#editor select,#editor button'))input.disabled=busy;
     $('up').disabled=busy||selected<=0;$('down').disabled=busy||selected<0||selected>=events.length-1;
   }
   function list(){
+    $('countdown-count').textContent='('+events.length+' von 12)';
+    $('countdown-choice').replaceChildren();
+    events.forEach((item,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=(index+1)+'. '+(item.title.trim()||'Ohne Titel');$('countdown-choice').append(option);});
+    $('countdown-choice').value=String(selected);
     $('list').replaceChildren();events.forEach((item,index)=>{const button=document.createElement('button');button.type='button';button.textContent=item.title;button.className=index===selected?'active':'';button.disabled=busy;button.onclick=()=>{if(!busy){selected=index;render();}};$('list').append(button);});controls();
   }
   function preview(){
@@ -33,7 +38,7 @@
   }
   function render(){
     const item=events[selected];$('editor').hidden=!item;$('empty').hidden=Boolean(item);list();if(!item)return;
-    $('heading').textContent='Countdown bearbeiten';$('title').value=item.title;
+    $('heading').textContent='Countdown '+(selected+1)+' von '+events.length+' bearbeiten';$('title').value=item.title;
     const date=new Date(item.target),pad=n=>String(n).padStart(2,'0');
     $('date').value=Number.isFinite(date.getTime())?date.getFullYear()+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate()):'';$('time').value=Number.isFinite(date.getTime())?pad(date.getHours())+':'+pad(date.getMinutes()):'00:00';
     $('theme').value=item.theme;$('mode').value=item.mode;$('animation').checked=item.animation;$('image').value='';
@@ -105,6 +110,7 @@
   $('delete').onclick=async()=>{if(busy||selected<0||!await confirmAction('Diesen Countdown entfernen? Die Änderung wird erst beim Speichern übernommen.'))return;uploads.delete(events[selected].id);events.splice(selected,1);selected=Math.min(selected,events.length-1);render();};
   function move(offset){const next=selected+offset;if(busy||next<0||next>=events.length)return;[events[selected],events[next]]=[events[next],events[selected]];selected=next;render();}
   $('up').onclick=()=>move(-1);$('down').onclick=()=>move(1);$('reload').onclick=()=>void load();
+  $('countdown-choice').onchange=()=>{const next=Number($('countdown-choice').value);if(!busy&&Number.isInteger(next)&&next>=0&&next<events.length){selected=next;render();}};
   $('editor').addEventListener('submit',event=>event.preventDefault());
   document.addEventListener('keydown',event=>{
     if($('confirm').hidden)return;

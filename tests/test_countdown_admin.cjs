@@ -26,3 +26,13 @@ test('invalid date in an earlier event cannot silently save its previous target'
  const h=setup();await tick();h.get('add').onclick();h.get('date').value='';h.get('date').input();h.get('add').onclick();
  await h.get('save').onclick();assert.equal(h.writes,0);assert.match(h.get('status').textContent,/Zieldatum/);
 });
+test('two countdowns remain selectable and editable after saving and reloading',async()=>{
+ const h=setup();await tick();h.get('add').onclick();h.get('title').value='Geburtstag';h.get('title').input();
+ await h.get('save').onclick();h.get('add').onclick();h.get('title').value='Urlaub';h.get('title').input();await h.get('save').onclick();
+ await h.get('reload').onclick();await tick();
+ assert.equal(h.get('countdown-choice').children.length,2);assert.equal(h.stored.countdowns.length,2);
+ h.get('countdown-choice').value='0';h.get('countdown-choice').onchange();assert.equal(h.get('title').value,'Geburtstag');
+ h.get('title').value='Geburtstag mit Freunden';h.get('title').input();await h.get('save').onclick();
+ h.get('countdown-choice').value='1';h.get('countdown-choice').onchange();assert.equal(h.get('title').value,'Urlaub');
+ assert.equal(h.stored.countdowns[0].title,'Geburtstag mit Freunden');assert.equal(h.stored.countdowns[1].title,'Urlaub');
+});
