@@ -1,6 +1,15 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.12** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.13** · eigenständige Community-App von Striker62.
+
+Beta 13 trennt Ereignisbild und Schlafensymbol. In der Verwaltung lässt sich
+**„Schlaf-GIF neben Zahl oder Uhr anzeigen“** einschalten. Das kleine
+Gute-Nacht-GIF ist im Paket enthalten und benötigt keinen eigenen Upload.
+Es erscheint neben der Zahl bzw. der Warte-Uhr. Das große eigene Bild oder
+GIF kann weiterhin das Ereignis zeigen, seitlich oder als Hintergrund.
+Die Option ist pro Countdown wählbar und wird in Vorlagen übernommen.
+Die Gute-Nacht-Illustration wurde für dieses Projekt neu generiert und
+als ruhige Animation zusammengesetzt; kein fremdes Bildmaterial verwendet.
 
 Beta 12 sortiert Countdowns automatisch nach Zielzeit, vom frühesten bis
 zum spätesten Ziel, sowohl auf der Box als auch in der Verwaltung. Die
@@ -161,8 +170,8 @@ spätere Erweiterungen. Die App ist noch nicht im offiziellen Katalog.
 
 ```sh
 node --test tests/test_countdown.cjs tests/test_countdown_admin.cjs tests/test_countdown_runtime.cjs
-python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.12.mupiapp --exclude README.md
-python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.12.mupiapp
+python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.13.mupiapp --exclude README.md
+python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.13.mupiapp
 ```
 
 Die grundlegende Logik ist automatisiert geprüft. Gerätetest und visuelle

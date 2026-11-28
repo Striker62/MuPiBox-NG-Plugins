@@ -45,6 +45,7 @@
       const display=item.display===undefined?'numbers':item.display;
       const waitStart=item.waitStart===undefined?'':item.waitStart;
       const showText=item.showText===undefined?false:item.showText;
+      const sleepSymbol=item.sleepSymbol===undefined?false:item.sleepSymbol;
       if(typeof id!=='string'||!/^[a-zA-Z0-9_-]{1,64}$/.test(id)||ids.has(id))throw Error('Ungültige oder doppelte Countdown-Kennung.');ids.add(id);
       if(typeof title!=='string'||!title.trim()||title.length>80)throw Error('Bitte einen Titel mit höchstens 80 Zeichen eingeben.');
       if(typeof target!=='string'||!/^\d{4}-\d\d-\d\dT/.test(target)||!Number.isFinite(Date.parse(target)))throw Error('Bitte ein gültiges Zieldatum auswählen.');
@@ -55,11 +56,12 @@
       if(!['side','background'].includes(imageLayout))throw Error('Ungültige Bilddarstellung.');
       if(!['contain','cover'].includes(imageFit))throw Error('Ungültige Bildanpassung.');
       if(typeof showText!=='boolean')throw Error('Ungültige Textdarstellung.');
+      if(typeof sleepSymbol!=='boolean')throw Error('Ungültiges Schlafensymbol.');
       if(!['numbers','dial'].includes(display))throw Error('Ungültige Countdown-Darstellung.');
       if(typeof waitStart!=='string'||(waitStart!==''&&!Number.isFinite(Date.parse(waitStart))))throw Error('Ungültiger Startzeitpunkt.');
       if(display==='dial'&&(!waitStart||Date.parse(waitStart)>=Date.parse(target)))throw Error('Für die Warte-Uhr muss der Start vor dem Ziel liegen.');
       const units=display==='dial'&&Array.isArray(item.units)&&!item.units.length?['days']:unitsFor(item);
-      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation,imageLayout,imageFit,showText,units,display,waitStart};
+      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation,imageLayout,imageFit,showText,sleepSymbol,units,display,waitStart};
     });
   }
   function day(date,zone){

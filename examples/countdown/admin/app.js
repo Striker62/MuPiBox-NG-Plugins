@@ -71,13 +71,14 @@
     $('start-date').value=start.getFullYear()+'-'+pad(start.getMonth()+1)+'-'+pad(start.getDate());$('start-time').value=pad(start.getHours())+':'+pad(start.getMinutes())+':'+pad(start.getSeconds());
     $('theme').value=item.theme;$('sleep-mode').checked=item.mode==='sleeps';
     const units=Array.isArray(item.units)?item.units:model.unitsFor(item);for(const unit of ['days','hours','minutes','seconds'])$('unit-'+unit).checked=units.includes(unit);
-    $('image-layout').value=item.imageLayout||'side';$('image-fit').value=item.imageFit||'contain';$('show-text').checked=item.showText===true;$('animation').checked=item.animation;$('image').value='';
+    $('image-layout').value=item.imageLayout||'side';$('image-fit').value=item.imageFit||'contain';$('show-text').checked=item.showText===true;$('sleep-symbol').checked=item.sleepSymbol===true;$('animation').checked=item.animation;$('image').value='';
     $('zone').textContent='Zeitzone: '+zone;preview();
   }
   function edit(){
     const item=events[selected];if(!item||busy)return;
     item.title=$('title').value;item.theme=$('theme').value;item.mode=$('sleep-mode').checked?'sleeps':'custom';item.units=['days','hours','minutes','seconds'].filter(unit=>$('unit-'+unit).checked);if(item.mode==='sleeps'&&!item.units.length)item.units=['days'];item.imageLayout=$('image-layout').value;item.imageFit=$('image-fit').value;item.showText=$('show-text').checked;item.animation=$('animation').checked;
     item.display=$('display').value;
+    item.sleepSymbol=$('sleep-symbol').checked;
     if(item.display==='dial'){const start=new Date($('start-date').value+'T'+$('start-time').value);item.waitStart=Number.isFinite(start.getTime())?start.toISOString():'';}
     const value=$('date').value+'T'+$('time').value;
     const target=new Date(value);item.target=Number.isFinite(target.getTime())?target.toISOString():'';item.zone=zone;
@@ -138,7 +139,7 @@
     }catch(error){status('Speichern nicht abgeschlossen: '+error.message+' Deine Eingaben bleiben geöffnet.',true);}
     finally{busy=false;render();}
   };
-  for(const id of ['title','date','time','theme','display','start-date','start-time','sleep-mode','unit-days','unit-hours','unit-minutes','unit-seconds','image-layout','image-fit','show-text','animation'])$(id).addEventListener('input',edit);
+  for(const id of ['title','date','time','theme','display','start-date','start-time','sleep-mode','sleep-symbol','unit-days','unit-hours','unit-minutes','unit-seconds','image-layout','image-fit','show-text','animation'])$(id).addEventListener('input',edit);
   $('start-now').onclick=()=>{if(busy)return;const now=new Date(),pad=n=>String(n).padStart(2,'0');$('start-date').value=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());$('start-time').value=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());edit();};
   $('save-template').onclick=()=>{
     const item=events[selected];if(busy||!settings||!item||templates.length>=12)return;

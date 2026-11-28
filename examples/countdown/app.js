@@ -28,6 +28,8 @@
     document.body.classList.toggle('background-mode',Boolean(item?.image&&item.imageLayout==='background'));
     document.body.classList.toggle('text-free',Boolean(item&&!item.showText));
     document.body.classList.toggle('dial-mode',item?.display==='dial');
+    $('sleep-symbol').hidden=!item?.sleepSymbol;
+    document.body.classList.toggle('sleep-symbol-on',Boolean(item?.sleepSymbol));
     $('confetti').replaceChildren();
     $('prev').disabled=index===0;$('next').disabled=index>=events.length-1;$('dots').replaceChildren();
     events.forEach((event,i)=>{const button=document.createElement('button');button.className=i===index?'active':'';button.setAttribute('aria-label',event.title);button.setAttribute('aria-current',i===index?'true':'false');button.onclick=()=>{index=i;void render();};$('dots').append(button);});
