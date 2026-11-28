@@ -1,0 +1,12 @@
+Ereignis-GIFs fuer Wie lange noch? / Striker62
+
+16 eigens fuer dieses Projekt mit dem Bildgenerator erstellte Illustrationen,
+als ruhige Animationen aus je zwei Bildern zusammengesetzt. Keine externen
+Referenzbilder oder geschuetzten Figuren verwendet. Keine externen Dienste
+werden zur Laufzeit benoetigt. Bestandteil dieses MIT-lizenzierten Projekts.
+
+Sommerurlaub, Winterurlaub, Weihnachten, Geburtstag, Einschulung, Kindergarten
+und Schwimmbad: Varianten mit Maedchen und Jungen.
+Ostern: Osterhase. Ausflug: gemeinsame Kindergruppe.
+
+384 x 384 Pixel, Endlosschleife, Framezeiten 1100 / 900 ms.

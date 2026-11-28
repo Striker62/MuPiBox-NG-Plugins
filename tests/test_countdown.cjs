@@ -89,3 +89,13 @@ test('chronological order and expiry use an exact one-hour grace period and reta
  assert.equal(items.length,5,'does not mutate the original settings');
  assert.deepEqual(model.current(items,now+1).map(item=>item.id),['near','late','draft']);
 });
+test('every built-in event GIF has a valid bounded animated asset including all boy variants',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ assert.equal(model.eventGifs.length,16);
+ for(const gif of model.eventGifs){
+  const data=new Uint8Array(fs.readFileSync(path.join(__dirname,'../examples/countdown/assets/events',gif.id+'.gif')));
+  assert.equal(model.validateGif(data).frames,2);assert.equal(model.validate([event({eventGif:gif.id})])[0].eventGif,gif.id);
+ }
+ assert.throws(()=>model.validate([event({eventGif:'../escape'})]));
+ assert.equal(model.validate([event()])[0].eventGif,'');
+});

@@ -82,3 +82,9 @@ test('loading automatically removes expired events while retaining templates and
  assert.deepEqual(h.stored.countdowns.map(item=>item.id),['near','late']);assert.equal(h.stored.countdownTemplates.length,1);assert.equal(h.stored.unrelated,'keep');
  assert.equal(h.get('countdown-choice').children[0].textContent,'1. '+source.title);
 });
+test('built-in boy GIFs are selectable and preserved in templates without uploading files',async()=>{
+ const h=setup();await tick();h.get('add').onclick();h.get('event-gif').value='geburtstag-junge';h.get('event-gif').onchange();
+ h.get('save-template').onclick();await h.get('save').onclick();
+ assert.equal(h.stored.countdowns[0].eventGif,'geburtstag-junge');assert.equal(h.stored.countdowns[0].image,'');assert.equal(h.stored.countdownTemplates[0].eventGif,'geburtstag-junge');
+ const file=new Blob(['example'],{type:'image/png'});file.name='own.png';h.get('image').files=[file];h.get('image').onchange();assert.equal(h.get('event-gif').value,'');
+});

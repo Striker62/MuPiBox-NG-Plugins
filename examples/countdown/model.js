@@ -3,6 +3,15 @@
   'use strict';
   const themes=['birthday','winter','travel'],modes=['days','clock','sleeps','hms','hours-minutes','minutes','custom'];
   const allUnits=['days','hours','minutes','seconds'];
+  const eventGifs=[
+    ['sommerurlaub','Sommerurlaub · Mädchen'],['sommerurlaub-junge','Sommerurlaub · Junge'],
+    ['winterurlaub','Winterurlaub · Mädchen'],['winterurlaub-junge','Winterurlaub · Junge'],
+    ['weihnachten','Weihnachten · Mädchen'],['weihnachten-junge','Weihnachten · Junge'],
+    ['geburtstag','Geburtstag · Mädchen'],['geburtstag-junge','Geburtstag · Junge'],
+    ['ostern','Ostern · Osterhase'],['einschulung','Einschulung · Mädchen'],['einschulung-junge','Einschulung · Junge'],
+    ['kindergarten','Kindergarten · Mädchen'],['kindergarten-junge','Kindergarten · Junge'],
+    ['schwimmbad','Schwimmbad · Mädchen'],['schwimmbad-junge','Schwimmbad · Junge'],['ausflug','Ausflug · Freunde']
+  ].map(([id,label])=>({id,label}));
   function unitsFor(item){
     if(item.units!==undefined){
       if(!Array.isArray(item.units)||!item.units.length||item.units.length>4||new Set(item.units).size!==item.units.length||item.units.some(unit=>!allUnits.includes(unit)))throw Error('Bitte mindestens eine Zeiteinheit auswählen.');
@@ -46,6 +55,7 @@
       const waitStart=item.waitStart===undefined?'':item.waitStart;
       const showText=item.showText===undefined?false:item.showText;
       const sleepSymbol=item.sleepSymbol===undefined?false:item.sleepSymbol;
+      const eventGif=item.eventGif===undefined?'':item.eventGif;
       if(typeof id!=='string'||!/^[a-zA-Z0-9_-]{1,64}$/.test(id)||ids.has(id))throw Error('Ungültige oder doppelte Countdown-Kennung.');ids.add(id);
       if(typeof title!=='string'||!title.trim()||title.length>80)throw Error('Bitte einen Titel mit höchstens 80 Zeichen eingeben.');
       if(typeof target!=='string'||!/^\d{4}-\d\d-\d\dT/.test(target)||!Number.isFinite(Date.parse(target)))throw Error('Bitte ein gültiges Zieldatum auswählen.');
@@ -57,11 +67,12 @@
       if(!['contain','cover'].includes(imageFit))throw Error('Ungültige Bildanpassung.');
       if(typeof showText!=='boolean')throw Error('Ungültige Textdarstellung.');
       if(typeof sleepSymbol!=='boolean')throw Error('Ungültiges Schlafensymbol.');
+      if(eventGif!==''&&!eventGifs.some(gif=>gif.id===eventGif))throw Error('Ungültiges Ereignis-GIF.');
       if(!['numbers','dial'].includes(display))throw Error('Ungültige Countdown-Darstellung.');
       if(typeof waitStart!=='string'||(waitStart!==''&&!Number.isFinite(Date.parse(waitStart))))throw Error('Ungültiger Startzeitpunkt.');
       if(display==='dial'&&(!waitStart||Date.parse(waitStart)>=Date.parse(target)))throw Error('Für die Warte-Uhr muss der Start vor dem Ziel liegen.');
       const units=display==='dial'&&Array.isArray(item.units)&&!item.units.length?['days']:unitsFor(item);
-      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation,imageLayout,imageFit,showText,sleepSymbol,units,display,waitStart};
+      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation,imageLayout,imageFit,showText,sleepSymbol,eventGif,units,display,waitStart};
     });
   }
   function day(date,zone){
@@ -91,7 +102,7 @@
   }
   function chronological(items){return [...items].sort((a,b)=>{const x=Date.parse(a.target),y=Date.parse(b.target);return (Number.isFinite(x)?x:Infinity)-(Number.isFinite(y)?y:Infinity)||0;});}
   function current(items,now=Date.now()){return chronological(items.filter(item=>!Number.isFinite(Date.parse(item.target))||now<Date.parse(item.target)+3600000));}
-  const api={validate,remaining,picture,validateGif,unitsFor,parts,dial,chronological,current};
+  const api={validate,remaining,picture,validateGif,unitsFor,parts,dial,chronological,current,eventGifs};
   if(typeof module!=='undefined')module.exports=api;
   if(typeof window!=='undefined')window.CountdownModel=api;
 })();

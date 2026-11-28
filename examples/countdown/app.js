@@ -4,7 +4,7 @@
   let events=[],index=0,timer=null,paused=false,loadRun=0,imageURL='',shown='',notice='',celebrated=new Set();
   function stop(){if(timer!==null)clearInterval(timer);timer=null;}
   function releaseImage(){if(imageURL)URL.revokeObjectURL(imageURL);imageURL='';}
-  function unit(value,label){const box=document.createElement('div');box.className='number';const number=document.createElement('b'),name=document.createElement('small');number.textContent=value;name.textContent=label;box.append(number,name);$('numbers').append(box);}
+  function unit(value,label){const box=document.createElement('div');box.className='number';const number=document.createElement('b'),name=document.createElement('small');number.textContent=value;name.textContent=label;box.append(number,name);$('numbers').append(box);$('numbers').setAttribute('data-units',String($('numbers').children.length));}
   function tick(){
     if(paused)return;
     const current=model.current(events);
@@ -25,7 +25,7 @@
   async function render(){
     const item=events[index],run=++loadRun;shown=item?.id||'';notice='';releaseImage();
     for(const id of ['picture','background-picture']){$(id).hidden=true;$(id).removeAttribute('src');$(id).style.objectFit=item?.imageFit||'contain';}
-    document.body.classList.toggle('background-mode',Boolean(item?.image&&item.imageLayout==='background'));
+    document.body.classList.toggle('background-mode',Boolean((item?.image||item?.eventGif)&&item.imageLayout==='background'));
     document.body.classList.toggle('text-free',Boolean(item&&!item.showText));
     document.body.classList.toggle('dial-mode',item?.display==='dial');
     $('sleep-symbol').hidden=!item?.sleepSymbol;
@@ -36,7 +36,8 @@
     if(!item){$('wait-clock').hidden=true;$('title').textContent='Worauf freust du dich?';$('numbers').replaceChildren();$('target').textContent='';$('message').textContent='Deine Eltern können in der App-Verwaltung einen Countdown einrichten.';return;}
     $('card').className=item.theme;$('symbol').textContent={birthday:'★',winter:'❄',travel:'➜'}[item.theme];$('title').textContent=item.title;
     $('target').textContent=new Intl.DateTimeFormat('de-DE',{timeZone:item.zone,dateStyle:'long',timeStyle:item.mode==='clock'?'short':undefined}).format(new Date(item.target));tick();
-    if(item.image){try{const blob=await sdk.shared.read(item.image);if(run!==loadRun)return;if(!(blob instanceof Blob)||blob.size>2*1024*1024)throw Error('Ungültiges Bild');const gif=item.image.endsWith('.gif');if(gif)model.validateGif(new Uint8Array(await blob.arrayBuffer()));if(run!==loadRun)return;imageURL=URL.createObjectURL(new Blob([blob],{type:gif?'image/gif':'image/jpeg'}));const image=$(item.imageLayout==='background'?'background-picture':'picture');image.src=imageURL;image.hidden=false;}catch{if(run===loadRun){document.body.classList.remove('background-mode');notice='Das eigene Bild konnte nicht geladen werden.';$('message').textContent=notice;}}}
+    if(item.eventGif&&!item.image){const image=$(item.imageLayout==='background'?'background-picture':'picture');image.src='assets/events/'+item.eventGif+'.gif';image.hidden=false;}
+    else if(item.image){try{const blob=await sdk.shared.read(item.image);if(run!==loadRun)return;if(!(blob instanceof Blob)||blob.size>2*1024*1024)throw Error('Ungültiges Bild');const gif=item.image.endsWith('.gif');if(gif)model.validateGif(new Uint8Array(await blob.arrayBuffer()));if(run!==loadRun)return;imageURL=URL.createObjectURL(new Blob([blob],{type:gif?'image/gif':'image/jpeg'}));const image=$(item.imageLayout==='background'?'background-picture':'picture');image.src=imageURL;image.hidden=false;}catch{if(run===loadRun){document.body.classList.remove('background-mode');notice='Das eigene Bild konnte nicht geladen werden.';$('message').textContent=notice;}}}
   }
   async function load(){
     try{const config=await sdk.config.get();const previous=shown;events=model.current(model.validate(config.countdowns||[]));index=Math.max(0,events.findIndex(item=>item.id===previous));await render();}

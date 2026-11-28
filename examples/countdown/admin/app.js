@@ -4,6 +4,7 @@
   let settings=null,revision='',events=[],templates=[],selected=-1,busy=false,clean='{"events":[],"templates":[]}';
   const uploads=new Map();
   const zone=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';
+  for(const gif of model.eventGifs){const option=document.createElement('option');option.value=gif.id;option.textContent=gif.label;$('event-gif').append(option);}
   const unique=()=>{const bytes=new Uint8Array(12);crypto.getRandomValues(bytes);return Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('');};
   function confirmAction(text){
     $('confirm-text').textContent=text;$('confirm').hidden=false;$('confirm-no').focus();
@@ -58,7 +59,7 @@
     if(!Number.isFinite(Date.parse(item.target))){$('preview-time').textContent='Bitte Datum und Uhrzeit vervollständigen.';list();return;}
     const value=model.remaining(item);
     try{const labels={days:'Tage',hours:'Stunden',minutes:'Minuten',seconds:'Sekunden'};$('preview-time').textContent=value.done?'Es ist so weit!':item.display==='dial'?'Warte-Uhr · '+Math.round(model.dial(item).progress*100)+' % vergangen':item.mode==='sleeps'?'Noch '+value.sleeps+'-mal schlafen':model.parts(item).map(part=>part.value+' '+labels[part.unit]).join(' · ');}catch(error){$('preview-time').textContent=error.message;}
-    $('image-name').textContent=uploads.has(item.id)?uploads.get(item.id).name+' · wird beim Speichern hochgeladen':item.image?'Eigenes Bild hinterlegt':'Design ohne eigenes Bild';
+    $('image-name').textContent=uploads.has(item.id)?uploads.get(item.id).name+' · wird beim Speichern hochgeladen':item.image?'Eigenes Bild hinterlegt':item.eventGif?'Eingebautes GIF: '+model.eventGifs.find(gif=>gif.id===item.eventGif)?.label:'Design ohne eigenes Bild';
     list();
   }
   function render(){
@@ -71,7 +72,7 @@
     $('start-date').value=start.getFullYear()+'-'+pad(start.getMonth()+1)+'-'+pad(start.getDate());$('start-time').value=pad(start.getHours())+':'+pad(start.getMinutes())+':'+pad(start.getSeconds());
     $('theme').value=item.theme;$('sleep-mode').checked=item.mode==='sleeps';
     const units=Array.isArray(item.units)?item.units:model.unitsFor(item);for(const unit of ['days','hours','minutes','seconds'])$('unit-'+unit).checked=units.includes(unit);
-    $('image-layout').value=item.imageLayout||'side';$('image-fit').value=item.imageFit||'contain';$('show-text').checked=item.showText===true;$('sleep-symbol').checked=item.sleepSymbol===true;$('animation').checked=item.animation;$('image').value='';
+    $('image-layout').value=item.imageLayout||'side';$('image-fit').value=item.imageFit||'contain';$('show-text').checked=item.showText===true;$('sleep-symbol').checked=item.sleepSymbol===true;$('animation').checked=item.animation;$('image').value='';$('event-gif').value=item.eventGif||'';
     $('zone').textContent='Zeitzone: '+zone;preview();
   }
   function edit(){
@@ -150,8 +151,9 @@
       render();status('Vorlage „'+name+'“ angelegt. Mit „Alles speichern“ dauerhaft sichern.');
     }catch(error){status('Vorlage konnte nicht angelegt werden: '+error.message,true);}
   };
-  $('image').onchange=()=>{const item=events[selected],file=$('image').files[0];if(item&&file&&!busy){uploads.set(item.id,{file,name:file.name});preview();}};
-  $('remove-image').onclick=()=>{const item=events[selected];if(!item||busy)return;item.image='';uploads.delete(item.id);$('image').value='';preview();};
+  $('event-gif').onchange=()=>{const item=events[selected];if(!item||busy)return;item.eventGif=$('event-gif').value;if(item.eventGif){item.image='';uploads.delete(item.id);$('image').value='';}preview();};
+  $('image').onchange=()=>{const item=events[selected],file=$('image').files[0];if(item&&file&&!busy){item.eventGif='';$('event-gif').value='';uploads.set(item.id,{file,name:file.name});preview();}};
+  $('remove-image').onclick=()=>{const item=events[selected];if(!item||busy)return;item.image='';item.eventGif='';$('event-gif').value='';uploads.delete(item.id);$('image').value='';preview();};
   $('add').onclick=()=>{if(busy||!settings||events.length>=12)return;const date=new Date();date.setDate(date.getDate()+7);date.setHours(0,0,0,0);events.push({id:unique(),title:'Mein nächstes Abenteuer',target:date.toISOString(),zone,theme:'birthday',mode:'days',image:'',animation:true});selected=events.length-1;render();};
   $('delete').onclick=async()=>{if(busy||selected<0||!await confirmAction('Diesen Countdown entfernen? Die Änderung wird erst beim Speichern übernommen.'))return;uploads.delete(events[selected].id);events.splice(selected,1);selected=Math.min(selected,events.length-1);render();};
   $('reload').onclick=()=>void load();

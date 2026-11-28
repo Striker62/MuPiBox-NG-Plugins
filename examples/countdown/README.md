@@ -1,6 +1,23 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.13** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.14** · eigenständige Community-App von Striker62.
+
+Beta 14 vergrößert das Schlaf-GIF von 96 auf 192 Pixel und die einzelne
+Zahl daneben von 48 auf 96 Pixel. Die Hintergrund-Darstellung nutzt dafür
+eine breitere Vordergrundfläche. Bei mehreren Zeiteinheiten oder schmalen
+Fenstern werden die Ziffern passend verkleinert, damit die Anzeige hineinpasst.
+
+Unter **„Eingebautes Ereignis-GIF“** stehen 16 neue, ruhige Animationen zur
+Auswahl: Sommerurlaub, Winterurlaub, Weihnachten, Geburtstag, Einschulung,
+Kindergarten und Schwimmbad jeweils mit Mädchen oder Jungen sowie Osterhase
+und gemeinsamer Ausflug. Alle GIFs haben 384 × 384 Pixel, zwei Frames und
+liegen zwischen etwa 106 und 165 KB. Die Illustrationen wurden eigens für
+dieses Projekt generiert und als kleine Endlosschleifen zusammengesetzt.
+Keine fremden Figuren oder externen Bilddienste werden zur Laufzeit geladen.
+
+Ereignis-GIFs sind lokal im Paket enthalten und benötigen keinen Upload oder
+SMB-Zugriff. Eigene Bilder/GIFs können sie ersetzen. Die Auswahl wird in
+Vorlagen übernommen; das zusätzliche Schlaf-GIF bleibt unabhängig davon.
 
 Beta 13 trennt Ereignisbild und Schlafensymbol. In der Verwaltung lässt sich
 **„Schlaf-GIF neben Zahl oder Uhr anzeigen“** einschalten. Das kleine
