@@ -24,7 +24,7 @@ function validSharedInfo(info){
  if(info.layout!==undefined&&!['full-page','image-and-text'].includes(info.layout))throw Error('Ungültiges Layout');
  if(info.text!==undefined&&(typeof info.text!=='string'||!/^text\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.json$/.test(info.text)||info.text.includes('..')))throw Error('Ungültiger Textpfad');
  if(info.tts!==undefined&&(typeof info.tts!=='string'||!/^tts\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.json$/.test(info.tts)||info.tts.includes('..')))throw Error('Ungültiger TTS-Pfad');
- return {title:info.title,cover:info.cover,imagePattern:info.imagePattern,layout:info.layout||'full-page',text:info.text,tts:info.tts,pageCount:1,attribution:attributionInfo(info)};
+ return {title:info.title,cover:info.cover,coverText:typeof info.coverText==='string'?info.coverText:'',imagePattern:info.imagePattern,layout:info.layout||'full-page',text:info.text,tts:info.tts,pageCount:1,attribution:attributionInfo(info)};
 }
 function speechLines(data){
  if(!Array.isArray(data?.pages))return [];
@@ -398,7 +398,7 @@ async function loadShelf(){
    bookFolder[folder]=folder;
    bookInfo[folder]={title:info.title,pageCount:1,imagePattern:info.imagePattern||'images/{page:02d}.jpg',layout:info.layout||'full-page',attribution:attributionInfo(info)};
    pageFiles[folder]=[];
-   shelfEntries.push({folder,title:info.title,cover});
+   shelfEntries.push({folder,title:info.title,cover,coverText:typeof info.coverText==='string'?info.coverText:''});
   }
   if(!shelfEntries.length)throw Error('Keine gültigen Bücher gefunden');
   shelfPage=Math.min(shelfPage,Math.ceil(shelfEntries.length/booksPerPage())-1);
@@ -413,6 +413,22 @@ function measureShelf(){
  shelfRows=h<315?1:2;
  document.documentElement.style.setProperty('--shelf-cols',shelfCols);
  document.documentElement.style.setProperty('--shelf-rows',shelfRows);
+}
+async function readCoverAloud(entry,button,generation){
+ const text=(entry.info?.coverText||entry.coverText||'').trim()||entry.title;
+ const run=haltSpeech();await run.done;
+ if(run.version!==speechRun||generation!==coverRender||!reader.hidden)return;
+ try{
+  const sdk=window.MuPiBoxSDK;
+  const status=await sdk?.tts?.status();
+  if(!status?.available||run.version!==speechRun||generation!==coverRender||!reader.hidden)return;
+  button.classList.add('cover-speaking');
+  for(const block of splitSpeechText(text)){
+   if(run.version!==speechRun||generation!==coverRender||!reader.hidden)break;
+   await sdk.tts.speak(block,{waitForCompletion:true});
+  }
+ }catch(error){console.warn('Cover konnte nicht vorgelesen werden:',error)}
+ finally{button.classList.remove('cover-speaking')}
 }
 function renderShelf(){
  releaseCovers();const generation=coverRender;
@@ -441,7 +457,19 @@ function renderShelf(){
      btn.style.setProperty('--spine-height',img.offsetHeight+'px');
    };
    img.addEventListener('load',()=>requestAnimationFrame(fitSpine),{once:true});
-   btn.appendChild(img);btn.onclick=()=>{if(Date.now()-lastShelfSwipe>350)open(entry.folder)};slot.appendChild(btn);
+   let pressTimer=null,pressStart=null,held=false;
+   const cancelPress=()=>{if(pressTimer!==null)clearTimeout(pressTimer);pressTimer=null;pressStart=null;};
+   btn.addEventListener('pointerdown',event=>{
+    cancelPress();held=false;
+    if(event.isPrimary===false||event.button>0)return;
+    pressStart={x:event.clientX,y:event.clientY};
+    pressTimer=setTimeout(()=>{pressTimer=null;pressStart=null;if(generation!==coverRender||!btn.isConnected||!reader.hidden)return;held=true;void readCoverAloud(entry,btn,generation);},650);
+   });
+   btn.addEventListener('pointermove',event=>{if(pressStart&&Math.hypot(event.clientX-pressStart.x,event.clientY-pressStart.y)>12)cancelPress();});
+   for(const name of ['pointerup','pointercancel','pointerleave','lostpointercapture'])btn.addEventListener(name,cancelPress);
+   btn.addEventListener('contextmenu',event=>event.preventDefault());
+   img.draggable=false;
+   btn.appendChild(img);btn.onclick=()=>{cancelPress();if(held){held=false;return}if(Date.now()-lastShelfSwipe>350)open(entry.folder)};slot.appendChild(btn);
    requestAnimationFrame(fitSpine);
   }
   holder.appendChild(slot);

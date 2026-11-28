@@ -47,10 +47,20 @@ function setup(mode='ok'){
    return {ok:true,json:async()=>p.startsWith('books/index')?{books:['ole']}:{...info}};
   }};
  // Expose lexical app functions only in this test VM, without changing shipped code.
- const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={loadShelf,loadSharedShelf,scanPages,open,show,turn,validSharedInfo,sharedImage,releaseCovers,releasePage,renderShelf,splitSpeechText,bookSpeech,bookInfo,pageFiles,bookTexts,sharedBooks,get entries(){return shelfEntries},get current(){return current}};})();`);
+ const exposed=source.replace(/\}\)\(\);\s*$/,`;globalThis.app={loadShelf,loadSharedShelf,scanPages,open,show,turn,validSharedInfo,sharedImage,releaseCovers,releasePage,renderShelf,splitSpeechText,bookSpeech,bookInfo,pageFiles,bookTexts,sharedBooks,readCover:(entry,button)=>readCoverAloud(entry,button,coverRender),get entries(){return shelfEntries},get current(){return current}};})();`);
  vm.runInNewContext(exposed,context);
  return {...context,app:context.app,get,calls,urls,revoked,events,spoken,stopped,prepared};
 }
+test('shelf speech uses cover text, falls back to title and does not open the book',async()=>{
+ const h=setup('smb-speech');await tick();await tick();
+ const button={classList:{add(){},remove(){}}};
+ await h.app.readCover({title:'Titel',info:{coverText:'Mein Covertext'}},button);
+ assert.equal(h.spoken.at(-1),'Mein Covertext');assert.equal(h.get('reader').hidden,true);
+ await h.app.readCover({title:'Titel',coverText:'   '},button);
+ assert.equal(h.spoken.at(-1),'Titel');
+ const info=h.app.validSharedInfo({title:'Buch',cover:'images/00.jpg',imagePattern:'images/{page:02d}.jpg',coverText:'Cover'});
+ assert.equal(info.coverText,'Cover');
+});
 test('SMB books append with separate identities and titles may repeat',async()=>{
  const h=setup();await tick();await tick();
  assert.equal(h.app.entries.length,4);

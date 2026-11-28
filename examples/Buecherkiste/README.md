@@ -2,6 +2,13 @@
 
 Mit der Bücherkiste können Kinder Bilderbücher auswählen, durchblättern, vergrößern und vorlesen lassen. Die App bringt **Ole und der verschwundene Knopf** (16 Bildseiten) und **Henne und Adler** (10 Bild- und Textseiten plus eine Urheberseite) mit. Eigene Bücher erscheinen zusätzlich im Regal.
 
+## 1.2.0-beta.6: Covertext im Regal vorlesen
+
+Ein langer Druck (650 ms) auf ein Cover im Regal liest den eingegebenen
+Covertext per TTS vor. Ist der Text leer, wird der Buchtitel vorgelesen.
+Kurzes Tippen öffnet weiterhin das Buch; Bewegungen beim Wischen brechen
+den langen Druck ab. Die Box muss TTS bereitstellen und freigegeben haben.
+
 ## 1.2.0-beta.5: Cover einsprechen und beschriften
 
 Auch bei einem separaten Cover lassen sich jetzt Vorlesetext und eine eigene
