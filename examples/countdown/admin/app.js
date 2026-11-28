@@ -21,7 +21,6 @@
     for(const input of document.querySelectorAll('#editor input,#editor select,#editor button'))input.disabled=busy;
     for(const unit of ['days','hours','minutes','seconds'])$('unit-'+unit).disabled=busy||dial||events[selected]?.mode==='sleeps';
     for(const id of ['start-date','start-time']){$(id).disabled=busy||!dial;$(id).required=dial;}
-    $('up').disabled=busy||selected<=0;$('down').disabled=busy||selected<0||selected>=events.length-1;
     $('save-template').disabled=busy||!settings||selected<0||templates.length>=12;
   }
   function renderTemplates(){
@@ -44,6 +43,8 @@
     });
   }
   function list(){
+    const selectedId=events[selected]?.id;events=model.chronological(events);selected=selectedId?events.findIndex(item=>item.id===selectedId):-1;
+    if(selected>=0)$('heading').textContent='Countdown '+(selected+1)+' von '+events.length+' bearbeiten';
     $('countdown-count').textContent='('+events.length+' von 12)';
     $('countdown-choice').replaceChildren();
     events.forEach((item,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=(index+1)+'. '+(item.title.trim()||'Ohne Titel');$('countdown-choice').append(option);});
@@ -87,8 +88,10 @@
     busy=true;controls();
     try{
       if(!sdk?.settings?.get||!sdk?.settings?.set)throw Error('Bitte in der angemeldeten MuPiBox-App-Verwaltung öffnen.');
-      const result=await sdk.settings.get();if(typeof result?.revision!=='string'||!result.value||typeof result.value!=='object'||Array.isArray(result.value))throw Error('Ungültige Einstellungen der Box.');
-      const loaded=model.validate(result.value.countdowns||[]),loadedTemplates=model.validate(result.value.countdownTemplates||[]);settings=result.value;revision=result.revision;events=loaded;templates=loadedTemplates;uploads.clear();clean=snapshot();selected=events.length?0:-1;render();status('Gespeicherten Stand geladen.');
+      let result=await sdk.settings.get();if(typeof result?.revision!=='string'||!result.value||typeof result.value!=='object'||Array.isArray(result.value))throw Error('Ungültige Einstellungen der Box.');
+      const original=model.validate(result.value.countdowns||[]),kept=model.current(original);
+      if(original.length!==kept.length){await sdk.settings.set({...result.value,countdowns:kept},{expectedRevision:result.revision});result=await sdk.settings.get();if(typeof result?.revision!=='string')throw Error('Bereinigung gespeichert; bitte erneut laden.');}
+      const previous=events[selected]?.id,loaded=model.current(model.validate(result.value.countdowns||[])),loadedTemplates=model.validate(result.value.countdownTemplates||[]);settings=result.value;revision=result.revision;events=loaded;templates=loadedTemplates;uploads.clear();clean=snapshot();selected=Math.max(0,events.findIndex(item=>item.id===previous));if(!events.length)selected=-1;render();status('Gespeicherten Stand geladen.'+(original.length!==kept.length?' Abgelaufene Countdowns automatisch entfernt.':''));
     }catch(error){status('Laden fehlgeschlagen: '+error.message,true);}
     finally{busy=false;render();}
   }
@@ -108,7 +111,8 @@
   $('save').onclick=async()=>{
     if(busy||!settings)return;
     if(events.length&&!$('editor').reportValidity())return;
-    let valid,validTemplates;try{valid=model.validate(events);validTemplates=model.validate(templates);}catch(error){status(error.message,true);return;}
+    const selectedId=events[selected]?.id;
+    let valid,validTemplates;try{valid=model.validate(model.current(events));validTemplates=model.validate(templates);}catch(error){status(error.message,true);return;}
     busy=true;controls();list();status('Countdowns werden gespeichert …');
     try{
       // Check settings revision before uploading; the final write is also guarded.
@@ -125,7 +129,7 @@
         item.image=pending.path;
       }
       await sdk.settings.set({...settings,countdowns:valid,countdownTemplates:validTemplates},{expectedRevision:revision});
-      events=valid;templates=validTemplates;clean=snapshot();uploads.clear();settings=null;
+      events=valid;templates=validTemplates;selected=events.findIndex(item=>item.id===selectedId);if(selected<0&&events.length)selected=0;clean=snapshot();uploads.clear();settings=null;
       // Refresh revision so the next save cannot use an obsolete one.
       const result=await sdk.settings.get();if(typeof result?.revision!=='string')throw Error('Gespeichert. Bitte vor weiteren Änderungen den Stand neu laden.');
       if(JSON.stringify(model.validate(result.value?.countdowns||[]))!==JSON.stringify(valid)||JSON.stringify(model.validate(result.value?.countdownTemplates||[]))!==JSON.stringify(validTemplates))throw Error('Gespeichert, danach wurden die Countdowns oder Vorlagen an anderer Stelle geändert. Bitte den Stand neu laden.');
@@ -149,8 +153,7 @@
   $('remove-image').onclick=()=>{const item=events[selected];if(!item||busy)return;item.image='';uploads.delete(item.id);$('image').value='';preview();};
   $('add').onclick=()=>{if(busy||!settings||events.length>=12)return;const date=new Date();date.setDate(date.getDate()+7);date.setHours(0,0,0,0);events.push({id:unique(),title:'Mein nächstes Abenteuer',target:date.toISOString(),zone,theme:'birthday',mode:'days',image:'',animation:true});selected=events.length-1;render();};
   $('delete').onclick=async()=>{if(busy||selected<0||!await confirmAction('Diesen Countdown entfernen? Die Änderung wird erst beim Speichern übernommen.'))return;uploads.delete(events[selected].id);events.splice(selected,1);selected=Math.min(selected,events.length-1);render();};
-  function move(offset){const next=selected+offset;if(busy||next<0||next>=events.length)return;[events[selected],events[next]]=[events[next],events[selected]];selected=next;render();}
-  $('up').onclick=()=>move(-1);$('down').onclick=()=>move(1);$('reload').onclick=()=>void load();
+  $('reload').onclick=()=>void load();
   $('countdown-choice').onchange=()=>{const next=Number($('countdown-choice').value);if(!busy&&Number.isInteger(next)&&next>=0&&next<events.length){selected=next;render();}};
   $('editor').addEventListener('submit',event=>event.preventDefault());
   document.addEventListener('keydown',event=>{
@@ -159,5 +162,9 @@
     if(event.key==='Tab'){event.preventDefault();(document.activeElement===$('confirm-no')?$('confirm-yes'):$('confirm-no')).focus();}
   });
   window.addEventListener('beforeunload',event=>{if(dirty()){event.preventDefault();event.returnValue='';}});
+  if(typeof setInterval==='function'){
+    const cleanup=setInterval(()=>{if(!busy&&!dirty()&&!document.hidden&&events.some(item=>Date.now()>=Date.parse(item.target)+3600000))void load();},30000);
+    window.addEventListener('pagehide',()=>clearInterval(cleanup));
+  }
   void load();
 })();

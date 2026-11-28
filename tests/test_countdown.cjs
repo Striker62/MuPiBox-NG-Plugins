@@ -80,3 +80,10 @@ test('wait clock uses one full clockwise turn over minutes or multiple days and 
  assert.throws(()=>model.validate([event({display:'dial',waitStart:'2027-01-01T00:00:00Z'})]));
  assert.equal(model.validate([event()])[0].display,'numbers');
 });
+test('chronological order and expiry use an exact one-hour grace period and retain unfinished drafts',()=>{
+ const now=Date.parse('2026-12-01T12:00:00Z'),item=(id,offset)=>event({id,target:new Date(now+offset).toISOString()});
+ const items=[item('late',86400000),item('boundary',-3600000),item('near',1000),item('grace',-3599999),{...event({id:'draft'}),target:''}];
+ assert.deepEqual(model.current(items,now).map(item=>item.id),['grace','near','late','draft']);
+ assert.equal(items.length,5,'does not mutate the original settings');
+ assert.deepEqual(model.current(items,now+1).map(item=>item.id),['near','late','draft']);
+});

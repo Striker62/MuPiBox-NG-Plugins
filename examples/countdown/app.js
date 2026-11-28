@@ -6,6 +6,9 @@
   function releaseImage(){if(imageURL)URL.revokeObjectURL(imageURL);imageURL='';}
   function unit(value,label){const box=document.createElement('div');box.className='number';const number=document.createElement('b'),name=document.createElement('small');number.textContent=value;name.textContent=label;box.append(number,name);$('numbers').append(box);}
   function tick(){
+    if(paused)return;
+    const current=model.current(events);
+    if(current.length!==events.length){const previous=shown;events=current;index=Math.max(0,events.findIndex(item=>item.id===previous));void render();return;}
     const item=events[index];if(!item||paused)return;
     const time=model.remaining(item);$('numbers').replaceChildren();
     const isDial=item.display==='dial';$('wait-clock').hidden=!isDial;$('numbers').hidden=isDial;
@@ -34,7 +37,7 @@
     if(item.image){try{const blob=await sdk.shared.read(item.image);if(run!==loadRun)return;if(!(blob instanceof Blob)||blob.size>2*1024*1024)throw Error('Ungültiges Bild');const gif=item.image.endsWith('.gif');if(gif)model.validateGif(new Uint8Array(await blob.arrayBuffer()));if(run!==loadRun)return;imageURL=URL.createObjectURL(new Blob([blob],{type:gif?'image/gif':'image/jpeg'}));const image=$(item.imageLayout==='background'?'background-picture':'picture');image.src=imageURL;image.hidden=false;}catch{if(run===loadRun){document.body.classList.remove('background-mode');notice='Das eigene Bild konnte nicht geladen werden.';$('message').textContent=notice;}}}
   }
   async function load(){
-    try{const config=await sdk.config.get();const previous=shown;events=model.validate(config.countdowns||[]);index=Math.max(0,events.findIndex(item=>item.id===previous));await render();}
+    try{const config=await sdk.config.get();const previous=shown;events=model.current(model.validate(config.countdowns||[]));index=Math.max(0,events.findIndex(item=>item.id===previous));await render();}
     catch(error){notice='Countdowns konnten nicht geladen werden: '+error.message;$('message').textContent=notice;}
   }
   function move(offset){const next=Math.max(0,Math.min(events.length-1,index+offset));if(next!==index){index=next;void render();}}

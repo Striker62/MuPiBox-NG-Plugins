@@ -1,6 +1,20 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.11** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.12** · eigenständige Community-App von Striker62.
+
+Beta 12 sortiert Countdowns automatisch nach Zielzeit, vom frühesten bis
+zum spätesten Ziel, sowohl auf der Box als auch in der Verwaltung. Die
+manuellen Sortierbuttons entfallen. Nach Erreichen bleibt ein Countdown
+eine Stunde sichtbar und verschwindet dann automatisch aus der Kinderansicht.
+Beim Öffnen werden bereits abgelaufene Einträge sofort ausgeblendet.
+
+Die normale SDK kann Eltern-Einstellungen nur lesen. Die dauerhafte Löschung
+der Einträge erfolgt daher automatisch beim nächsten Laden/Speichern in der
+Verwaltung und während sie geöffnet ist etwa alle 30 Sekunden, solange keine
+ungespeicherten Änderungen vorliegen. Revisionsprüfungen schützen parallele
+Änderungen. Bei geschlossenen Apps läuft kein eigener Hintergrunddienst.
+Vorlagen und gemeinsame Bild-/GIF-Dateien bleiben erhalten. Die Uhr der Box
+muss korrekt eingestellt sein.
 
 Beta 11 ergänzt bis zu zwölf **eigene Vorlagen** im linken Bereich der
 Verwaltung. Einen Countdown einrichten, optional einen Vorlagennamen eingeben
@@ -147,8 +161,8 @@ spätere Erweiterungen. Die App ist noch nicht im offiziellen Katalog.
 
 ```sh
 node --test tests/test_countdown.cjs tests/test_countdown_admin.cjs tests/test_countdown_runtime.cjs
-python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.11.mupiapp --exclude README.md
-python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.11.mupiapp
+python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.12.mupiapp --exclude README.md
+python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.12.mupiapp
 ```
 
 Die grundlegende Logik ist automatisiert geprüft. Gerätetest und visuelle

@@ -87,7 +87,9 @@
     else if(progress<1){const radians=angle*Math.PI/180,x=120+100*Math.sin(radians),y=120-100*Math.cos(radians);sector=`M120 120 L${x} ${y} A100 100 0 ${progress<.5?1:0} 1 120 20 Z`;}
     return {progress,angle,sector};
   }
-  const api={validate,remaining,picture,validateGif,unitsFor,parts,dial};
+  function chronological(items){return [...items].sort((a,b)=>{const x=Date.parse(a.target),y=Date.parse(b.target);return (Number.isFinite(x)?x:Infinity)-(Number.isFinite(y)?y:Infinity)||0;});}
+  function current(items,now=Date.now()){return chronological(items.filter(item=>!Number.isFinite(Date.parse(item.target))||now<Date.parse(item.target)+3600000));}
+  const api={validate,remaining,picture,validateGif,unitsFor,parts,dial,chronological,current};
   if(typeof module!=='undefined')module.exports=api;
   if(typeof window!=='undefined')window.CountdownModel=api;
 })();

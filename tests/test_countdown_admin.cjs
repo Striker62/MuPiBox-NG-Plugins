@@ -71,3 +71,12 @@ test('template and source share a pending GIF upload safely without duplicating 
  assert.equal(uploads,1);assert.equal(h.stored.countdowns[0].image,h.stored.countdownTemplates[0].image);
  assert.equal(h.get('save').disabled,true);
 });
+test('loading automatically removes expired events while retaining templates and other settings',async()=>{
+ const h=setup();await tick();h.get('add').onclick();await h.get('save').onclick();
+ const source=h.stored.countdowns[0],now=Date.now();
+ h.stored.countdowns=[{...source,id:'late',target:new Date(now+2*86400000).toISOString()},{...source,id:'expired',target:new Date(now-3600001).toISOString()},{...source,id:'near',target:new Date(now+86400000).toISOString()}];
+ h.stored.countdownTemplates=[{...source,id:'template',target:new Date(now-3600001).toISOString()}];
+ await h.get('reload').onclick();await tick();
+ assert.deepEqual(h.stored.countdowns.map(item=>item.id),['near','late']);assert.equal(h.stored.countdownTemplates.length,1);assert.equal(h.stored.unrelated,'keep');
+ assert.equal(h.get('countdown-choice').children[0].textContent,'1. '+source.title);
+});
