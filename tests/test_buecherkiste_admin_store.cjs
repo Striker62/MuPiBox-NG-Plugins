@@ -30,6 +30,16 @@ function draft(loaded) {
   return {id:loaded.id,title:loaded.info.title,coverOnly:loaded.coverOnly,previous:loaded,
     pages:loaded.pages.map(page=>({...page,file:new File([page.blob],page.path.split('/').pop()),text:page.text}))};
 }
+test('cover text and recording survive saving and reopening without shifting page texts',async()=>{
+  const f=fixture(),input=draft(await f.store.load('buch'));
+  f.put('books/buch/audio/cover.ogg',new Blob(['audio']));
+  const item={path:'audio/cover.ogg',revision:f.data.get('books/buch/audio/cover.ogg').revision,size:5};
+  input.pages[0].text='Mein Buchtitel';input.pages[0].recording=item;
+  const saved=await f.store.save(input),reopened=await f.store.load('buch');
+  assert.equal(reopened.pages[0].text,'Mein Buchtitel');assert.deepEqual(reopened.pages[0].recording,item);
+  const tts=JSON.parse(await f.data.get('books/buch/'+saved.info.tts).blob.text());
+  assert.deepEqual(tts.pages,[{text:'Lang '.repeat(500)},{text:''}]);
+});
 test('cover is separate; mixed extensions, blanks and long texts retain their mapping',async()=>{
   const f=fixture(), loaded=await f.store.load('buch');
   assert.equal(loaded.coverOnly,true);

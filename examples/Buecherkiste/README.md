@@ -2,6 +2,15 @@
 
 Mit der Bücherkiste können Kinder Bilderbücher auswählen, durchblättern, vergrößern und vorlesen lassen. Die App bringt **Ole und der verschwundene Knopf** (16 Bildseiten) und **Henne und Adler** (10 Bild- und Textseiten plus eine Urheberseite) mit. Eigene Bücher erscheinen zusätzlich im Regal.
 
+## 1.2.0-beta.5: Cover einsprechen und beschriften
+
+Auch bei einem separaten Cover lassen sich jetzt Vorlesetext und eine eigene
+Aufnahme hinterlegen, etwa für den Buchtitel. Der Covertext wird separat als
+`coverText` in der Buchbeschreibung gespeichert; die Zuordnung der Texte zu
+den Inhaltsseiten bleibt unverändert. Coveraufnahmen werden wie andere
+Seitenaufnahmen revisionsgeprüft gespeichert und können in der Verwaltung
+angehört werden. Die Wiedergabe in der Kinder-App bleibt eine separate Erweiterung.
+
 ## 1.2.0-beta.4: kompakte Wiedergabezeile
 
 Seitenbezeichnung, Fortschritt und Zeit stehen rechts neben „Anhören“ und

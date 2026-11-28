@@ -62,7 +62,7 @@
     async function start(index, browserFormat = 'webm') {
       if (!supported || active || command || candidate || disposed) return;
       const target = context, device = inputs[index];
-      if (!target?.saved || !validBook(target.bookId) || !target.page || target.isCover) throw Error('Buch zuerst speichern und eine Inhaltsseite auswählen.');
+      if (!target?.saved || !validBook(target.bookId) || !target.page) throw Error('Buch zuerst speichern und eine Buchseite oder das Cover auswählen.');
       if (!device) throw Error('Bitte zuerst ein Mikrofon auswählen.');
       if (!['webm','ogg'].includes(browserFormat)) throw Error('Ungültiges Aufnahmeformat.');
       const token = unique();if (!/^[a-zA-Z0-9_-]{8,80}$/.test(token)) throw Error('Ungültige Aufnahmekennung.');

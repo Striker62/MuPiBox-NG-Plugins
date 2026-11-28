@@ -62,10 +62,10 @@ test('insecure PC context offers only box microphones; secure context permits br
   const call=h.calls.find(row=>row[0]==='start')[1];assert.equal(call.source,'browser');assert.equal(call.deviceId,'');assert.match(call.path,/\.ogg$/);
   await h.recorder.cancel();await pending;
 });
-test('covers and unsaved books cannot record; unsafe recording references are rejected',async()=>{
+test('covers can record; unsaved books and unsafe recording references are rejected',async()=>{
   const h=setup();await h.recorder.scan();
   h.recorder.setPage({bookId:'buch',page:h.page,saved:true,isCover:true});
-  await assert.rejects(h.recorder.start(0),/Inhaltsseite/);
+  const pending=h.recorder.start(0);await h.recorder.cancel();await pending;
   h.recorder.setPage({bookId:'../buch',page:h.page,saved:true,isCover:false});
   await assert.rejects(h.recorder.start(0),/Buch zuerst/);
   for(const path of ['../x.ogg','audio/../../x.ogg','https://host/x.ogg','audio/x.mp3','audio/.hidden.ogg'])assert.equal(recordingPath(path),false);

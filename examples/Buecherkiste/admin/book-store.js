@@ -79,7 +79,7 @@
       for (let i = 0; i < ordered.length; i++) {
         const path = ordered[i];
         const file = await sdk.files.read(base + path);
-        pages.push({path, blob:file.blob, text:coverOnly && i === 0 ? '' : texts[i - (coverOnly ? 1 : 0)] || '',recording:coverOnly && i === 0 ? null : recording(info.pageRecordings?.[path])});
+        pages.push({path, blob:file.blob, text:coverOnly && i === 0 ? String(info.coverText || '') : texts[i - (coverOnly ? 1 : 0)] || '',recording:recording(info.pageRecordings?.[path])});
       }
       return {id, info, revision:result.revision, pages, coverOnly};
     }
@@ -91,7 +91,7 @@
       if (!pages.length || pages.length > 200 || (coverOnly && pages.length < 2)) throw Error('Bitte mindestens eine Inhaltsseite hinzufügen (höchstens 200 Bilder).');
       const lines = (coverOnly ? pages.slice(1) : pages).map(page => ({text:page.text}));
       const speech = jsonBlob({pages:lines});
-      if (speech.size > 256 * 1024) throw Error('Die Vorlesetexte überschreiten 256 KiB.');
+      if (speech.size + (coverOnly ? jsonBlob(String(pages[0].text || '')).size : 0) > 256 * 1024) throw Error('Die Vorlesetexte überschreiten 256 KiB.');
       for (const page of pages) {
         if (page.file.size > 8 * 1024 * 1024) throw Error('Ein Bild überschreitet 8 MiB.');
         if (!/\.(jpg|jpeg|png|webp|gif)$/i.test(page.file.name)) throw Error('Nicht unterstütztes Bildformat.');
@@ -106,7 +106,7 @@
       const generation = 'edit-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
       const base = 'books/' + id + '/';
       const audio = new Map();
-      for (let i = coverOnly ? 1 : 0; i < pages.length; i++) {
+      for (let i = 0; i < pages.length; i++) {
         const item = recording(pages[i].recording);
         if (!item) continue;
         stage = 'Seitenaufnahme prüfen: ' + base + item.path;
@@ -138,7 +138,8 @@
       const info = {...(previous?.info || {}), id, title, layout:'full-page', firstPage:1,
         cover:output[0], imagePattern:reuse ? previous.info.imagePattern : 'images/' + generation + '-{page:02d}.' + ext, tts};
       const pageRecordings = {};
-      for (let i = coverOnly ? 1 : 0; i < pages.length; i++) {
+      info.coverText = coverOnly ? String(pages[0].text || '') : '';
+      for (let i = 0; i < pages.length; i++) {
         const item = recording(pages[i].recording);
         if (item) pageRecordings[output[i]] = item;
       }
@@ -154,7 +155,7 @@
         await sdk.files.write('books/index.json', jsonBlob(index.value), {expectedRevision:index.revision});
       } catch (error) { warning = 'Buch gespeichert, aber index.json nicht aktualisiert: ' + error.message + ' Bitte erneut speichern.'; }
       return {id, info, revision:saved.revision, warning, coverOnly,
-        pages:pages.map((page,i) => ({path:output[i],text:page.text,blob:page.file,recording:coverOnly && i === 0 ? null : recording(page.recording)}))};
+        pages:pages.map((page,i) => ({path:output[i],text:page.text,blob:page.file,recording:recording(page.recording)}))};
       } catch (error) {
         const detail = error?.message || String(error);
         const explanation = /read.only file system|EROFS/i.test(detail)

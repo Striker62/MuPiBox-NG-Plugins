@@ -63,7 +63,7 @@
     get('audio-format-label').hidden = device?.source !== 'browser';
     get('audio-scan').disabled = !state.supported || state.scanning || state.locked;
     get('audio-device').disabled = state.locked;get('audio-format').disabled = state.locked;
-    get('audio-start').disabled = !state.supported || state.locked || !device || !loadedId || !page?.path || cover || busy || importing || recordLocked;
+    get('audio-start').disabled = !state.supported || state.locked || !device || !loadedId || !page?.path || busy || importing || recordLocked;
     get('audio-start').textContent = page?.recording ? '● Neu aufnehmen' : '● Aufnehmen';
     get('audio-stop').disabled = !state.active || state.command;
     get('audio-cancel').disabled = !state.active || state.command;
@@ -75,7 +75,7 @@
     get('audio-unassign').hidden = !page?.recording || Boolean(state.candidate);
     get('audio-unassign').disabled = state.locked;
     get('audio-assignment').textContent = page?.recording ? 'Zugeordnet: ' + page.recording.path : 'Noch keine eigene Aufnahme zugeordnet.';
-    get('audio-status').textContent = state.message || (cover ? 'Das separate Cover hat keine Seitenaufnahme.' : !loadedId || !page?.path ? 'Das Buch zuerst speichern. Danach kannst du diese Seite einsprechen.' : 'Seite bereit. Mikrofon auswählen und aufnehmen.');
+    get('audio-status').textContent = state.message || (!loadedId || !page?.path ? 'Das Buch zuerst speichern. Danach kannst du diese Seite einsprechen.' : cover ? 'Cover bereit. Du kannst zum Beispiel den Buchtitel einsprechen.' : 'Seite bereit. Mikrofon auswählen und aufnehmen.');
     const clock = ms => {const seconds=Math.floor(Math.max(0,ms || 0)/1000);return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');};
     const pageLabel = cover ? 'Cover' : state.context?.number > 0 ? 'Seite ' + state.context.number : 'keine Buchseite';
     get('audio-now').textContent = state.active ? (state.state === 'pending' ? 'Aufnahme bestätigen · ' : 'Aufnahme · ') + pageLabel : state.playing ? 'Wiedergabe · ' + pageLabel + (state.candidate ? ' · neue Aufnahme' : ' · gespeicherte Aufnahme') : 'Ausgewählt: ' + pageLabel;
@@ -111,7 +111,7 @@
       get('admin-original-name').textContent = page.file.name;
       get('admin-page-text').value = page.text;
       const isCover = get('editor-cover').checked && selected === 0;
-      get('admin-page-text').disabled = isCover;
+      get('admin-page-text').disabled = false;
       if (isCover) get('admin-page-heading').textContent = 'Cover (00)';
       get('admin-text-count').textContent = Array.from(page.text).length + ' Zeichen';
     } else get('admin-image').removeAttribute('src');
@@ -337,7 +337,7 @@
       markClean();
       updateFolder(); renderPages();
       get('editor-save-status').textContent = 'Buch geladen. Änderungen werden erst mit „Buch speichern“ übernommen.';
-      message('Seiten und Vorlesetexte geladen. Ein separates Cover hat keinen Vorlesetext.');
+      message('Seiten und Vorlesetexte geladen. Auch das Cover kann einen Text und eine Aufnahme erhalten.');
     } catch (error) {
       for (const page of incoming) URL.revokeObjectURL(page.url);
       showError(error);
