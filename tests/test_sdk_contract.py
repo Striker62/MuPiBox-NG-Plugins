@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_PERMISSIONS = {
-    "storage", "controller", "audio", "camera", "photo-save",
+    "storage", "controller", "audio", "camera", "photo-save", "photo-import",
     "shared-assets", "network", "links", "homeassistant",
     "device-status", "playback", "playback-control", "optical-media", "cover-art", "coloring-pages",
 }

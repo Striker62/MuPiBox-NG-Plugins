@@ -116,26 +116,111 @@ window.addEventListener('pagehide',()=>{
 const say=s=>{$('message').textContent=s};
 function buttonLabel(id,text){const button=$(id),label=button.querySelector?.('.button-label');(label||button).textContent=text}
 function controls(){
+ $('editor-view').classList.toggle('aligning',frozen&&mode==='photo');$('align-actions').hidden=!frozen||mode!=='photo';
  $('app-exit').disabled=saving||exitBusy||exitComplete;
- buttonLabel('freeze','Foto machen ('+delay.value+' Sek.)');delay.disabled=counting;
- $('start').disabled=active||!select.value||autoStarting;$('freeze').disabled=!active||counting;
- $('scan').disabled=counting;$('devices').disabled=counting;$('cancel').hidden=!counting;
- $('stop').disabled=!active||counting;$('countdown').hidden=!counting;
+ buttonLabel('freeze',autoStarting?'Kamera startet …':active?'Foto machen ('+delay.value+' Sek.)':'Kamera starten');delay.disabled=counting||autoStarting;
+ $('freeze').disabled=frozen||counting||capturing||autoStarting||exitBusy||exitComplete;
+ $('devices').disabled=counting;$('cancel').hidden=!counting;
+ $('countdown').hidden=!counting;
  $('camera-panel').hidden=frozen;$('edit-panel').hidden=!frozen;$('edit-actions').hidden=!frozen;$('sticker-controls').hidden=mode!=='stickers';
- $('mode').textContent=frozen?'Bearbeiten':'Live';
+ $('mode').textContent=frozen?(mode==='photo'?'Bild ausrichten':'Bearbeiten'):'Live';
  $('status').textContent=frozen?'Standbild bearbeiten':counting?'Countdown läuft':active?'Kamera aktiv':'Kamera aus';
  $('save-photo').disabled=!frozen||saving;buttonLabel('save-photo',saving?'Speichere …':'Foto speichern');$('undo').disabled=!frozen||history.length===0||undoBusy;$('clear').disabled=!frozen;$('smaller').disabled=!selected;$('larger').disabled=!selected;$('remove-sticker').disabled=!selected;$('finish-sticker').disabled=!selected;
 }
 async function scan(autostart=false){try{const list=await sdk.camera.list(),old=select.value;select.replaceChildren();for(const d of list){const o=document.createElement('option');o.value=d.id;o.textContent=d.name+' ('+d.id+')';select.append(o)}if(list.some(d=>d.id===old))select.value=old;else if(list.some(d=>d.id===lastCameraId))select.value=lastCameraId;if(!list.length){const o=document.createElement('option');o.value='';o.textContent='Keine Kamera gefunden';select.append(o)}cameraState(list.length?'Kamera erkannt – starte …':'Keine Kamera erkannt',list.length?'off':'error');say(list.length?'Kamera erkannt.':'Keine USB-Kamera gefunden.');controls();if(autostart&&list.length&&!autoStartSuppressed&&!active&&!frozen){autoStarting=true;controls();try{await start()}finally{autoStarting=false;controls()}}}catch(e){cameraState('Kamerazugriff nicht verfügbar','error');say('Kamerazugriff nur am MuPiBox-Touchdisplay: '+e.message);controls()}}
-async function frame(){if(!active||frozen||busy||document.hidden)return;busy=true;const current=epoch;try{const f=await sdk.camera.capture();if(active&&!frozen&&current===epoch){preview.src=f.image;preview.hidden=false;$('placeholder').hidden=true}}catch(e){if(!frozen){say('Kamerafehler: '+e.message);await stop()}}finally{busy=false}}
-async function start(){if(active||!select.value||exitBusy||exitComplete)return;$('start').disabled=true;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;preview.hidden=true;preview.removeAttribute('src');$('placeholder').hidden=false;$('placeholder').textContent='Livebild wird geladen …';try{await sdk.camera.start(select.value);if(exitBusy||exitComplete){await sdk.camera.stop();return}active=true;lastCameraId=select.value;frozen=false;epoch++;controls();cameraState('Kamera aktiv','on');say('Livebild läuft. Countdown auswählen und Foto machen.');await frame();timer=setInterval(()=>void frame(),1350)}catch(e){active=false;controls();cameraState('Kamera nicht verfügbar','error');say('Kamera konnte nicht starten: '+e.message)}}
-async function stop(callHost=true){if(frozen)return;if(!callHost)autoStartSuppressed=true;cancelCountdown();epoch++;if(timer){clearInterval(timer);timer=null}const was=active;active=false;frozen=false;painting=false;preview.hidden=true;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;$('placeholder').hidden=false;$('placeholder').textContent='Kamera ausgeschaltet';cameraState('Kamera aus');controls();if(was&&callHost){try{await sdk.camera.stop()}catch(e){say('Stoppen: '+e.message)}}}
+// A single capture at a time, with a small margin above the host's ~1 fps.
+let PREVIEW_INTERVAL_MS=1100;
+let fastPreview=false,previewSupported=false,highResolution=false,photoBuckets=false,capturing=false;
+let framePending=Promise.resolve(),captureMode=null,photoSession=null,previewFailures=0,preferredResolution='auto';
+async function discoverPhotoFeatures(){
+ try{
+  const settings=await sdk.config?.get();
+  const value=settings?.fotoCaptureResolution;
+  if(typeof value==='string'&&/^(auto|640x480|1280x720|1920x1080|2560x1440|3840x2160)$/.test(value))preferredResolution=value;
+ }catch{ /* No app configuration on older hosts: retain automatic mode. */ }
+ try{
+  const info=await sdk.capabilities?.();
+  const methods=Array.isArray(info?.methods)?info.methods:[];
+  const available=name=>methods.some(row=>row.method===name&&row.available===true);
+  previewSupported=available('camera.preview')&&typeof sdk.camera.preview==='function';
+  highResolution=available('camera.modes')&&typeof sdk.camera.modes==='function';
+  // The bucket extension is shipped with the album API. Permission approval
+  // remains the host's decision for each individual operation.
+  photoBuckets=methods.some(row=>row.method==='photos.album.import');
+ }catch{ /* Older hosts keep the original camera and photo behaviour. */ }
+ $('gallery-source-originals').hidden=!photoBuckets;
+ $('gallery-source-album').hidden=!sdk.photos?.album;
+}
+async function prepareCamera(){
+ captureMode=null;fastPreview=false;PREVIEW_INTERVAL_MS=1100;previewFailures=0;
+ if(!highResolution)return {};
+ let modes;
+ try{modes=await sdk.camera.modes(select.value)}catch{return {}};
+ const seen=new Set();
+ const usable=(Array.isArray(modes)?modes:[]).filter(m=>Number.isInteger(m.width)&&Number.isInteger(m.height)&&m.width>0&&m.height>0&&m.width<=3840&&m.height<=2160).filter(m=>{const key=m.width+'x'+m.height;if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>b.width*b.height-a.width*a.height);
+ if(!usable.length)return {};
+ captureMode=usable[0];
+ if(preferredResolution!=='auto'){
+  const [width,height]=preferredResolution.split('x').map(Number);
+  captureMode=usable.find(mode=>mode.width===width&&mode.height===height)||
+   usable.find(mode=>mode.width<=width&&mode.height<=height)||usable[usable.length-1];
+ }
+ const previewMode=usable.filter(m=>m.width<=640&&m.height<=480)[0];
+ // Leave headroom below the requested 10 FPS, including timer rounding and
+ // different clocks on the browser and host. Never poll on the rate boundary.
+ if(previewSupported&&previewMode){fastPreview=true;PREVIEW_INTERVAL_MS=125;return {preview:{width:previewMode.width,height:previewMode.height},fps:10}}
+ fastPreview=false;PREVIEW_INTERVAL_MS=1100;return {};
+}
+let lastCaptureStarted=-Infinity;
+function scheduleFrame(delay=0){
+ if(timer!==null){clearTimeout(timer);timer=null}
+ if(!active||frozen||exitBusy||exitComplete)return;
+ const current=epoch;
+ timer=setTimeout(()=>{timer=null;if(current===epoch)void frame()},Math.max(0,delay));
+}
+async function frame(){
+ if(!active||frozen||exitBusy||exitComplete)return;
+ if(document.hidden){scheduleFrame(PREVIEW_INTERVAL_MS);return}
+ if(busy){scheduleFrame(100);return}
+ const wait=PREVIEW_INTERVAL_MS-(performance.now()-lastCaptureStarted);
+ if(wait>0){scheduleFrame(wait);return}
+ busy=true;
+ lastCaptureStarted=performance.now();
+ const current=epoch;
+ let retryDelay=0;
+ try{
+  framePending=fastPreview?sdk.camera.preview():sdk.camera.capture();
+  const f=await framePending;
+  if(active&&!frozen&&current===epoch){if(previewFailures)say('Livebild läuft. Vorschau an die Geschwindigkeit der Box angepasst.');previewFailures=0;preview.src=f.image;preview.hidden=false;$('placeholder').hidden=true}
+ }catch(e){
+  if(current===epoch&&!frozen){
+   const message=String(e?.message||e);
+   if(fastPreview&&++previewFailures<=3&&/rate.?limit|too many|429|not ready|not yet|no.*frame|kein.*bild|noch.*bild|temporar|warming|EAGAIN|503/i.test(message)){
+    if(/rate.?limit|too many|429/i.test(message)){
+     // Keep the accepted rate for this session instead of returning to the
+     // original polling interval after every successful frame.
+     PREVIEW_INTERVAL_MS=Math.min(1500,Math.max(250,PREVIEW_INTERVAL_MS*2));
+    }
+    retryDelay=Math.max(PREVIEW_INTERVAL_MS,250*previewFailures);say('Livebild wartet auf die Kamera … '+message);
+   }else{
+    await stop();cameraState('Vorschau fehlgeschlagen','error');
+    say('Kameravorschau gestoppt: '+message+'. Bitte auf Kamera starten tippen.');
+   }
+  }
+ }finally{
+  busy=false;
+  if(current===epoch)scheduleFrame(Math.max(retryDelay,PREVIEW_INTERVAL_MS-(performance.now()-lastCaptureStarted),0));
+ }
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active&&!frozen)scheduleFrame()});
+async function start(){const startEpoch=epoch;if(active||!select.value||exitBusy||exitComplete)return;$('freeze').disabled=true;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;preview.hidden=true;preview.removeAttribute('src');$('placeholder').hidden=false;$('placeholder').textContent='Livebild wird geladen …';try{const options=await prepareCamera();if(exitBusy||exitComplete||startEpoch!==epoch||galleryOpen)return;await sdk.camera.start(select.value,options);if(exitBusy||exitComplete||startEpoch!==epoch||galleryOpen){await sdk.camera.stop();return}active=true;lastCameraId=select.value;frozen=false;epoch++;controls();cameraState('Kamera aktiv','on');say('Livebild läuft. Countdown auswählen und Foto machen.');await frame()}catch(e){active=false;controls();cameraState('Kamera nicht verfügbar','error');say('Kamera konnte nicht starten: '+e.message)}}
+async function stop(callHost=true){if(frozen)return;if(!callHost)autoStartSuppressed=true;cancelCountdown();epoch++;if(timer!==null){clearTimeout(timer);timer=null}const was=active;active=false;frozen=false;painting=false;preview.hidden=true;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;$('placeholder').hidden=false;$('placeholder').textContent='Kamera ausgeschaltet';cameraState('Kamera aus');controls();if(was&&callHost){try{await sdk.camera.stop()}catch(e){say('Stoppen: '+e.message)}}}
 function saveHistory(){
  if(!frozen||!canvas.width||!canvas.height)return;
  photoDirty=true;++photoRevision;
  try{
   if(history.length>=10)history.shift();
-  history.push({pixels:ctx.getImageData(0,0,canvas.width,canvas.height),items:items.map(x=>({...x})),selected});
+  history.push({view:{...imageView},pixels:ctx.getImageData(0,0,canvas.width,canvas.height),items:items.map(x=>({...x})),selected});
   controls();
  }catch(e){say('Rückgängig-Speicher nicht verfügbar.');history=[];controls()}
 }
@@ -143,20 +228,103 @@ function restore(state){
  if(!state||!frozen)return;
  photoDirty=true;++photoRevision;
  ctx.putImageData(state.pixels,0,0);
+ if(state.view){imageView={...state.view};renderImageView()}
  items=state.items.map(x=>({...x}));selected=state.selected;
  renderStickers();controls();
 }
-function photoBox(){const r=$('stage').getBoundingClientRect(),w=preview.naturalWidth||320,h=preview.naturalHeight||240,scale=Math.min(r.width/w,r.height/h);return{left:(r.width-w*scale)/2,top:(r.height-h*scale)/2,width:w*scale,height:h*scale}}
+// Render only the background photo. Paint and accessories remain independent.
+let imageSource=null,imageView={zoom:1,x:0,y:0,mirror:false},imageDrag=null;
+const imagePointers=new Map();let imageGesture=null;
+function resetImageSource(source,mirror=false){
+ imageSource=document.createElement('canvas');imageSource.width=photo.width;imageSource.height=photo.height;
+ imageSource.getContext('2d').drawImage(source,0,0);
+ imageView={zoom:1,x:0,y:0,mirror};clearImageGesture();renderImageView();
+}
+function renderImageView(){
+ if(!imageSource)return;
+ const w=photo.width,h=photo.height,bound=(imageView.zoom-1)/2;
+ imageView.x=Math.max(-bound,Math.min(bound,imageView.x));imageView.y=Math.max(-bound,Math.min(bound,imageView.y));
+ photoCtx.clearRect(0,0,w,h);photoCtx.fillStyle='#fff';photoCtx.fillRect(0,0,w,h);
+ photoCtx.save();photoCtx.translate(w/2+imageView.x*w,h/2+imageView.y*h);
+ photoCtx.scale(imageView.mirror?-imageView.zoom:imageView.zoom,imageView.zoom);
+ photoCtx.drawImage(imageSource,-w/2,-h/2,w,h);photoCtx.restore();
+
+}
+function clearImageGesture(){imagePointers.clear();imageGesture=null;imageDrag=null}
+function imagePosition(point){
+ const r=canvas.getBoundingClientRect(),box=photoBox();
+ return {x:(point.x-r.left-box.left)/box.width-.5,y:(point.y-r.top-box.top)/box.height-.5};
+}
+function beginImageGesture(){
+ const points=[...imagePointers.values()];
+ if(!points.length){imageGesture=null;return}
+ const center=points.length>1?{x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2}:points[0];
+ imageGesture={view:{...imageView},center:imagePosition(center),distance:points.length>1?Math.hypot(points[1].x-points[0].x,points[1].y-points[0].y):0,count:points.length};
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(!frozen||mode!=='photo'||saving||imagePointers.size>=2)return;
+ e.preventDefault();
+ if(!imagePointers.size)saveHistory();
+ imagePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});canvas.setPointerCapture(e.pointerId);beginImageGesture();
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!imagePointers.has(e.pointerId)||!imageGesture||mode!=='photo'||saving)return;
+ e.preventDefault();imagePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ const points=[...imagePointers.values()],g=imageGesture;
+ const center=imagePosition(points.length>1?{x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2}:points[0]);
+ const distance=points.length>1?Math.hypot(points[1].x-points[0].x,points[1].y-points[0].y):0;
+ const zoom=g.distance>0?Math.max(1,Math.min(4,g.view.zoom*distance/g.distance)):g.view.zoom;
+ imageView={...g.view,zoom,x:center.x-(g.center.x-g.view.x)*zoom/g.view.zoom,y:center.y-(g.center.y-g.view.y)*zoom/g.view.zoom};
+ photoDirty=true;++photoRevision;renderImageView();
+});
+for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,e=>{
+ if(imagePointers.delete(e.pointerId))beginImageGesture();
+});
+canvas.addEventListener('wheel',e=>{
+ if(!frozen||mode!=='photo'||saving||!imageSource)return;
+ e.preventDefault();saveHistory();const center=imagePosition({x:e.clientX,y:e.clientY}),old=imageView.zoom;
+ const zoom=Math.max(1,Math.min(4,old*Math.exp(-Math.max(-100,Math.min(100,e.deltaY))*.002)));
+ imageView={...imageView,zoom,x:center.x-(center.x-imageView.x)*zoom/old,y:center.y-(center.y-imageView.y)*zoom/old};renderImageView();
+},{passive:false});
+$('image-done').addEventListener('click',()=>{
+ if(!frozen||mode!=='photo')return;
+ clearImageGesture();setMode('stickers');controls();say('Foto bereit!');
+});
+function photoBox(){const r=$('stage').getBoundingClientRect(),w=(frozen?photo.width:preview.naturalWidth)||320,h=(frozen?photo.height:preview.naturalHeight)||240,scale=Math.min(r.width/w,r.height/h);return{left:(r.width-w*scale)/2,top:(r.height-h*scale)/2,width:w*scale,height:h*scale}}
 function updateStickerBox(){const b=photoBox();stickersBox.style.left=b.left+'px';stickersBox.style.top=b.top+'px';stickersBox.style.width=b.width+'px';stickersBox.style.height=b.height+'px'}
-async function freeze(){if(!active||preview.hidden||!preview.complete||!preview.naturalWidth){say('Bitte auf das erste Kamerabild warten.');return}frozen=true;photoDirty=true;++photoRevision;epoch++;photo.width=canvas.width=preview.naturalWidth;photo.height=canvas.height=preview.naturalHeight;photoCtx.drawImage(preview,0,0,photo.width,photo.height);ctx.clearRect(0,0,canvas.width,canvas.height);photo.hidden=false;history=[];items=[];selected=null;canvas.hidden=false;preview.hidden=true;stickersBox.hidden=false;updateStickerBox();renderStickers();setMode('stickers');controls();say('Foto aufgenommen. Kamera wird ausgeschaltet.');if(timer){clearInterval(timer);timer=null}active=false;try{await sdk.camera.stop();cameraState('Kamera aus');say('Kamera aus. Accessoire auswählen oder malen.')}catch(e){say('Foto bereit; Kamera-Stopp: '+e.message)}controls()}
-function resume(){cancelCountdown();photoDirty=false;++photoRevision;frozen=false;painting=false;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;preview.hidden=true;preview.removeAttribute('src');history=[];items=[];selected=null;$('placeholder').hidden=false;$('placeholder').textContent='Kamera neu starten';controls();say('Kamera wird für das nächste Foto gestartet.');void scan(true)}
+async function freeze(){
+ if(capturing||!active||preview.hidden||!preview.complete||!preview.naturalWidth){say('Bitte auf das erste Kamerabild warten.');return}
+ capturing=true;epoch++;const current=epoch;
+ if(timer!==null){clearTimeout(timer);timer=null}
+ controls();$('freeze').disabled=true;say('Foto wird aufgenommen …');
+ try{
+  await framePending.catch(()=>{});
+  if(current!==epoch||!active)return;
+  let image=preview;
+  if(captureMode){
+   const frame=await sdk.camera.capture({width:captureMode.width,height:captureMode.height});
+   image=await new Promise((resolve,reject)=>{const value=new Image();value.onload=()=>resolve(value);value.onerror=()=>reject(Error('Foto konnte nicht geladen werden'));value.src=frame.image});
+  }
+  if(current!==epoch||!active)return;
+  if(!image.naturalWidth||!image.naturalHeight||image.naturalWidth*image.naturalHeight>16000000)throw Error('Ungültige Fotoabmessungen');
+  frozen=true;photoSession={source:'camera',originalId:null};photoDirty=true;++photoRevision;
+  photo.width=canvas.width=image.naturalWidth;photo.height=canvas.height=image.naturalHeight;
+  resetImageSource(image,true);ctx.clearRect(0,0,canvas.width,canvas.height);
+  photo.hidden=false;history=[];items=[];selected=null;canvas.hidden=false;preview.hidden=true;stickersBox.hidden=false;
+  updateStickerBox();renderStickers();setMode('photo');active=false;
+  try{await sdk.camera.stop();cameraState('Kamera aus')}catch(e){say('Foto bereit; Kamera-Stopp: '+e.message)}
+  say('Foto bereit!');
+ }catch(e){if(current===epoch){say('Aufnahme fehlgeschlagen: '+e.message);scheduleFrame()}}
+ finally{capturing=false;controls()}
+}
+function resume(){cancelCountdown();photoDirty=false;++photoRevision;frozen=false;painting=false;photo.hidden=true;canvas.hidden=true;stickersBox.hidden=true;preview.hidden=true;preview.removeAttribute('src');imageSource=null;imageDrag=null;history=[];items=[];selected=null;$('placeholder').hidden=false;$('placeholder').textContent='Kamera neu starten';controls();say('Kamera wird für das nächste Foto gestartet.');void scan(true)}
 function cancelCountdown(){if(countTimer!==null){clearInterval(countTimer);countTimer=null}counting=false;$('countdown').hidden=true;controls()}
-function beginCountdown(){if(!active||frozen||counting)return;if(preview.hidden||!preview.complete||!preview.naturalWidth){say('Bitte auf das erste Kamerabild warten.');return}counting=true;countValue=Number(delay.value);$('count-number').textContent=String(countValue);controls();say('In '+countValue+' Sekunden wird das Foto aufgenommen.');countTimer=setInterval(()=>{if(!active||frozen){cancelCountdown();return}countValue--;if(countValue>0){$('count-number').textContent=String(countValue)}else{cancelCountdown();void freeze()}},1000)}
+function beginCountdown(){if(!active||frozen||counting||capturing)return;if(preview.hidden||!preview.complete||!preview.naturalWidth){say('Bitte auf das erste Kamerabild warten.');return}counting=true;countValue=Number(delay.value);$('count-number').textContent=String(countValue);controls();say('In '+countValue+' Sekunden wird das Foto aufgenommen.');countTimer=setInterval(()=>{if(!active||frozen){cancelCountdown();return}countValue--;if(countValue>0){$('count-number').textContent=String(countValue)}else{cancelCountdown();void freeze()}},1000)}
 function point(e){const r=canvas.getBoundingClientRect(),scale=Math.min(r.width/canvas.width,r.height/canvas.height),w=canvas.width*scale,h=canvas.height*scale;return{x:(e.clientX-r.left-(r.width-w)/2)/scale,y:(e.clientY-r.top-(r.height-h)/2)/scale}}
 function draw(e){if(!painting||!frozen||mode!=='paint')return;photoDirty=true;++photoRevision;e.preventDefault();const p=point(e);ctx.lineWidth=size;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineTo(p.x,p.y);ctx.stroke()}
 canvas.addEventListener('pointerdown',e=>{if(!frozen||mode!=='paint')return;e.preventDefault();saveHistory();painting=true;canvas.setPointerCapture(e.pointerId);const p=point(e);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.strokeStyle=color;ctx.globalCompositeOperation=eraser?'destination-out':'source-over';ctx.lineWidth=size;ctx.lineCap='round';ctx.lineTo(p.x+.01,p.y+.01);ctx.stroke()});
 canvas.addEventListener('pointermove',draw);for(const ev of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(ev,()=>{painting=false;ctx.beginPath();ctx.globalCompositeOperation='source-over'});
-function setMode(m){mode=m;$('sticker-controls').hidden=m!=='stickers';$('tab-stickers').classList.toggle('chosen',m==='stickers');$('tab-paint').classList.toggle('chosen',m==='paint');$('sticker-tools').hidden=m!=='stickers';$('paint-tools').hidden=m!=='paint';canvas.classList.toggle('passthrough',m==='stickers');canvas.classList.toggle('drawable',m==='paint');stickersBox.style.pointerEvents=m==='stickers'?'auto':'none';for(const el of stickersBox.children)el.style.pointerEvents=m==='stickers'?'auto':'none'}
+function setMode(m){clearImageGesture();mode=m;$('editor-view').classList.toggle('aligning',m==='photo'&&frozen);$('align-actions').hidden=m!=='photo'||!frozen;$('sticker-controls').hidden=m!=='stickers';$('tab-stickers').classList.toggle('chosen',m==='stickers');$('tab-paint').classList.toggle('chosen',m==='paint');$('sticker-tools').hidden=m!=='stickers';$('paint-tools').hidden=m!=='paint';canvas.classList.toggle('passthrough',m==='stickers');canvas.classList.toggle('drawable',m==='paint'||m==='photo');canvas.classList.toggle('positioning',m==='photo');stickersBox.style.pointerEvents=m==='stickers'?'auto':'none';for(const el of stickersBox.children)el.style.pointerEvents=m==='stickers'?'auto':'none';if(frozen)updateStickerBox()}
 function renderStickers(){stickersBox.replaceChildren();for(const item of items){const el=document.createElement('img');setAccessoryImage(el,item.type);el.alt=accessoryLabel(item.type);el.draggable=false;el.className='sticker'+(selected===item.id?' selected':'');el.dataset.id=String(item.id);el.style.left=item.x+'%';el.style.top=item.y+'%';el.style.width=item.width+'%';el.style.height=accessoryHeight(item)+'%';el.style.pointerEvents=mode==='stickers'?'auto':'none';el.addEventListener('pointerdown',stickerDown);stickersBox.append(el)}}
 async function addSticker(type){
  if(!frozen)return;
@@ -220,12 +388,17 @@ $('smaller').addEventListener('click',()=>resizeSticker(.85));$('larger').addEve
 async function loadAccessory(type){const source=await accessorySource(type);return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('Accessoire konnte nicht geladen werden: '+type));im.src=source})}
 async function savePhoto(){
  if(!frozen||saving)return;
- const savedRevision=photoRevision;
+ const savedRevision=photoRevision,session=photoSession;
+ const originalSource=imageSource;
+ const base=document.createElement('canvas');base.width=photo.width;base.height=photo.height;const baseContext=base.getContext('2d');baseContext.fillStyle='#fff';baseContext.fillRect(0,0,base.width,base.height);baseContext.drawImage(originalSource||photo,0,0);
  saving=true;controls();say('Fertiges Foto wird gespeichert …');
  try{
   if(!sdk.photos||typeof sdk.photos.save!=='function')throw new Error('Die Foto-Speicher-API fehlt.');
   const out=document.createElement('canvas');out.width=photo.width;out.height=photo.height;
-  const c=out.getContext('2d');c.drawImage(photo,0,0);c.drawImage(canvas,0,0);
+  const c=out.getContext('2d');
+  // JPEG has no alpha channel: flatten any transparent source onto white.
+  c.fillStyle='#fff';c.fillRect(0,0,out.width,out.height);
+  c.drawImage(photo,0,0);c.drawImage(canvas,0,0);
   // Sticker liegen im Editor in einer Prozent-Box; die Darstellung ist auf 160:100 normiert.
   const snapshot=items.map(item=>({...item}));
   for(const item of snapshot)savingAccessoryTypes.add(item.type);
@@ -237,8 +410,18 @@ async function savePhoto(){
    const y=out.height*item.y/100-h/2;
    c.drawImage(im,x,y,w,h);
   }
-  const blob=await new Promise((resolve,reject)=>out.toBlob(b=>b?resolve(b):reject(new Error('PNG konnte nicht erzeugt werden')),'image/png'));
-  const result=await sdk.photos.save(blob);
+  const blob=await new Promise((resolve,reject)=>out.toBlob(b=>b?resolve(b):reject(new Error('JPEG konnte nicht erzeugt werden')),'image/jpeg',0.9));
+  if(blob.type!=='image/jpeg')throw Error('Dieser Browser konnte kein JPEG erzeugen. Das Foto wurde nicht gespeichert.');
+  if(blob.size>8*1024*1024)throw Error('Das JPEG ist größer als 8 MiB. Bitte ein kleineres Ausgangsfoto verwenden.');
+  let result;
+  if(photoBuckets){
+   if(session?.source==='camera'&&!session.originalId){
+    const original=await new Promise((resolve,reject)=>base.toBlob(b=>b?resolve(b):reject(Error('Original konnte nicht erzeugt werden')),'image/jpeg',0.9));
+    if(original.type!=='image/jpeg'||original.size>8*1024*1024)throw Error('Original überschreitet die JPEG-Speichergrenze');
+    const stored=await sdk.photos.save({blob:original,bucket:'originals'});session.originalId=stored?.id;
+   }
+   result=await sdk.photos.save({blob,bucket:'edited'});
+  }else result=await sdk.photos.save(blob);
   if(photoRevision===savedRevision)photoDirty=false;
   say('✓ Foto gespeichert!'+(result?.id?' ID: '+result.id:''));
  }catch(e){say('Speichern fehlgeschlagen: '+(e?.message||String(e)))}
@@ -246,9 +429,16 @@ async function savePhoto(){
 }
 $('save-photo').addEventListener('click',()=>void savePhoto());
 
-$('camera-settings').addEventListener('click',()=>{const e=$('advanced-camera');e.hidden=!e.hidden;buttonLabel('camera-settings',e.hidden?'Kamera einstellen':'Schließen')});delay.addEventListener('change',controls);$('scan').addEventListener('click',()=>{autoStartSuppressed=false;void scan(false)});$('start').addEventListener('click',()=>{autoStartSuppressed=false;void start()});$('stop').addEventListener('click',()=>{autoStartSuppressed=true;void stop()});$('freeze').addEventListener('click',beginCountdown);$('cancel').addEventListener('click',()=>{cancelCountdown();say('Countdown abgebrochen. Livebild läuft weiter.')});$('resume').addEventListener('click',resume);
+delay.addEventListener('change',controls);
+$('freeze').addEventListener('click',async()=>{
+ if(active){beginCountdown();return}
+ if(autoStarting||frozen||capturing||exitBusy||exitComplete)return;
+ autoStartSuppressed=false;autoStarting=true;controls();
+ try{await scan(true)}finally{autoStarting=false;controls()}
+});
+$('cancel').addEventListener('click',()=>{cancelCountdown();say('Countdown abgebrochen. Livebild läuft weiter.')});$('resume').addEventListener('click',resume);
 window.addEventListener('resize',()=>{if(frozen)updateStickerBox()});
-sdk.on('camera.stopped',()=>{if(frozen)return;autoStartSuppressed=true;void stop(false);say('Kamera über die MuPiBox-Leiste ausgeschaltet. Zum erneuten Starten auf Kamera starten tippen.')});sdk.on('lifecycle.pause',()=>{if(frozen)return;void stop()});window.addEventListener('pagehide',()=>void stop());setMode('stickers');void scan(true);
+sdk.on('camera.stopped',()=>{if(frozen||!active)return;autoStartSuppressed=true;void stop(false);say('Kamera von der MuPiBox gestoppt. Zum erneuten Starten auf Kamera starten tippen.')});sdk.on('lifecycle.pause',()=>{if(frozen)return;void stop()});window.addEventListener('pagehide',()=>void stop());setMode('stickers');void discoverPhotoFeatures().then(()=>scan(true));
 // Leave through the SDK; a frozen, unsaved photo requires confirmation.
 function cancelExit(){ $('exit-confirm').hidden=true;$('app-exit').focus() }
 async function performExit(){
@@ -256,7 +446,7 @@ async function performExit(){
  exitBusy=true;autoStartSuppressed=true;
  $('exit-confirm').hidden=true;
  cancelCountdown();++epoch;active=false;painting=false;drag=null;
- if(timer){clearInterval(timer);timer=null}
+ if(timer!==null){clearTimeout(timer);timer=null}
  controls();
  try{
   try{await sdk.camera.stop()}catch(e){console.warn('Kamera-Stopp vor App-Ende:',e)}
@@ -285,9 +475,11 @@ document.addEventListener('keydown',event=>{
 });
 // Galerie: Alle Aktionen erfolgen ausschliesslich ueber die Host-Foto-API.
 let galleryOpen=false,galleryEntries=[],gallerySelected=null,galleryLoading=false;
+let galleryEditing=false,galleryEditRun=0,pendingGalleryEdit=null;
+let gallerySource='photos',galleryLoadRun=0;
 const galleryUrls=new Map();
 const gallerySay=message=>{$('gallery-status').textContent=message};
-function galleryRevoke(){for(const url of galleryUrls.values())if(url.startsWith('blob:'))URL.revokeObjectURL(url);galleryUrls.clear()}
+function galleryRevoke(){++galleryLoadRun;for(const url of galleryUrls.values())if(url.startsWith('blob:'))URL.revokeObjectURL(url);galleryUrls.clear()}
 function galleryNormalizeList(value){const entries=Array.isArray(value)?value:Array.isArray(value?.photos)?value.photos:Array.isArray(value?.items)?value.items:[];return entries.map(x=>typeof x==='string'?{id:x}:x).filter(x=>x&&typeof x.id==='string'&&x.id.length>0)}
 function galleryDataUrl(result){
  if(typeof result==='string'&&result.startsWith('data:image/'))return result;
@@ -300,19 +492,233 @@ function galleryDataUrl(result){
  if(typeof raw==='string'&&/^[A-Za-z0-9+/=]+$/.test(raw))return 'data:'+(result?.mime||result?.mimeType||'image/png')+';base64,'+raw;
  throw new Error('Unbekanntes Bildformat der Foto-API');
 }
-async function galleryImage(id){if(galleryUrls.has(id))return galleryUrls.get(id);const result=await sdk.photos.get(id);const url=galleryDataUrl(result);galleryUrls.set(id,url);return url}
-function gallerySwitch(open){galleryOpen=open;$('editor-view').hidden=open;$('gallery-view').hidden=!open;$('show-gallery').classList.toggle('chosen',open);$('show-camera').classList.toggle('chosen',!open);if(open){if(active&&!frozen)void stop();void galleryLoad()}else{galleryCloseDetail();galleryRevoke()}}
-async function galleryLoad(){if(galleryLoading)return;galleryLoading=true;galleryCloseDetail();galleryRevoke();$('gallery-grid').replaceChildren();gallerySay('Fotos werden geladen …');try{
- if(!sdk.photos?.list||!sdk.photos?.get||!sdk.photos?.delete)throw new Error('Die Galerie-API fehlt in dieser Plugin-Version.');
- const result=await sdk.photos.list();galleryEntries=galleryNormalizeList(result);
- gallerySay(galleryEntries.length?galleryEntries.length+' Foto(s) gespeichert. Foto antippen zum Ansehen.':'Noch keine gespeicherten Fotos.');
- for(const entry of galleryEntries){const tile=document.createElement('button');tile.className='gallery-tile';const img=document.createElement('img');img.alt='Foto';const label=document.createElement('span');label.textContent=entry.name||entry.filename||entry.id.slice(0,20);tile.append(img,label);tile.addEventListener('click',()=>void galleryOpenDetail(entry.id));$('gallery-grid').append(tile);
- // Einzelne Ladefehler duerfen die restliche Galerie nicht blockieren.
- void galleryImage(entry.id).then(url=>{if(tile.isConnected)img.src=url}).catch(()=>{if(tile.isConnected)label.textContent='Bild nicht ladbar'});
+const templateName=name=>typeof name==='string'&&/^[A-Za-z0-9_-][A-Za-z0-9_.-]*\.(jpe?g|png|webp|gif)$/i.test(name)&&!name.includes('..');
+async function templateBlob(id){
+ if(!templateName(id))throw Error('Ungültiger Vorlagenname');
+ const blob=await sdk.shared.read('originale/'+id);
+ if(!(blob instanceof Blob)||blob.size<12||blob.size>8*1024*1024)throw Error('Vorlagen müssen Bilder bis 8 MiB sein');
+ const bytes=new Uint8Array(await blob.slice(0,12).arrayBuffer());
+ let type;
+ if(bytes[0]===255&&bytes[1]===216&&bytes[2]===255)type='image/jpeg';
+ else if([137,80,78,71,13,10,26,10].every((n,i)=>bytes[i]===n))type='image/png';
+ else if(/^GIF8[79]a$/.test(String.fromCharCode(...bytes.slice(0,6))))type='image/gif';
+ else if(String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP')type='image/webp';
+ else throw Error('Keine gültige Bildvorlage');
+ return new Blob([blob],{type});
+}
+async function galleryImage(id,source=gallerySource){
+ const key=source+':'+id;if(galleryUrls.has(key))return galleryUrls.get(key);
+ const run=galleryLoadRun;
+ const result=await galleryBlob(id,source);
+ if(run!==galleryLoadRun)throw Error('Bildauswahl wurde gewechselt');
+ const url=galleryDataUrl(result);galleryUrls.set(key,url);return url;
+}
+async function galleryBlob(id,source){
+ return source==='templates'?templateBlob(id):source==='album'?sdk.photos.album.get(id):sdk.photos.get(id,source==='originals'?'originals':source==='photos'&&photoBuckets?(galleryEntries.find(x=>x.id===id)?.bucket||'photos'):undefined);
+}
+async function templateThumbnail(id,source='templates'){
+ const blob=await galleryBlob(id,source),url=URL.createObjectURL(blob);
+ try{
+  const image=await new Promise((resolve,reject)=>{const value=new Image();value.onload=()=>resolve(value);value.onerror=()=>reject(Error('Vorlage nicht lesbar'));value.src=url});
+  if(!image.naturalWidth||!image.naturalHeight||image.naturalWidth*image.naturalHeight>16000000)throw Error('Vorlage größer als 16 Megapixel');
+  const scale=Math.min(1,256/Math.max(image.naturalWidth,image.naturalHeight));
+  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+  const context=canvas.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);
+  const thumb=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.8));
+  if(!thumb)throw Error('Vorschau nicht verfügbar');
+  return thumb;
+ }finally{URL.revokeObjectURL(url)}
+}
+function selectGallerySource(source){
+ if(!['photos','templates','originals','album'].includes(source)||source===gallerySource)return;
+ gallerySource=source;galleryCloseDetail();void galleryLoad();
+}
+function gallerySwitch(open){galleryOpen=open;$('status').hidden=open;$('editor-view').hidden=open;$('gallery-view').hidden=!open;$('show-gallery').classList.toggle('chosen',open);$('show-camera').classList.toggle('chosen',!open);if(open){if(active&&!frozen)void stop();void galleryLoad()}else{galleryCloseDetail();galleryRevoke()}}
+async function galleryLoad(){
+ galleryLoading=true;galleryCloseDetail();galleryRevoke();
+ updateAlbumNavigation();
+ const run=galleryLoadRun,source=gallerySource;
+ for(const name of ['originals','album']){$('gallery-source-'+name).classList.toggle('chosen',source===name);$('gallery-source-'+name).setAttribute('aria-pressed',String(source===name))}
+ $('gallery-source-photos').classList.toggle('chosen',source==='photos');
+ $('gallery-source-templates').classList.toggle('chosen',source==='templates');
+ $('gallery-source-photos').setAttribute('aria-pressed',String(source==='photos'));
+ $('gallery-source-templates').setAttribute('aria-pressed',String(source==='templates'));
+ $('gallery-delete').hidden=source!=='photos';
+ $('gallery-edit').hidden=source==='album';$('album-import').hidden=source!=='album';
+ $('gallery-grid').replaceChildren();gallerySay(source==='templates'?'Vorlagen werden geladen …':'Fotos werden geladen …');
+ try{
+  let entries,truncated=false;
+  if(source==='album'){
+   entries=await loadAlbumPage(run);
+  }else if(source==='templates'){
+   if(!sdk.shared?.list||!sdk.shared?.read)throw Error('Die Freigabe für den Vorlagenordner fehlt.');
+   const result=await sdk.shared.list('originale');
+   entries=(result.entries||[]).filter(row=>!row.isDir&&templateName(row.name)).map(row=>({id:row.name,name:row.name}));
+   entries.sort((a,b)=>a.name.localeCompare(b.name,'de',{numeric:true}));truncated=result.truncated===true;
+  }else{
+   if(!sdk.photos?.list||!sdk.photos?.get)throw Error('Die Galerie-API fehlt in dieser Plugin-Version.');
+   if(source==='originals')entries=galleryNormalizeList(await sdk.photos.list('originals'));
+   else if(photoBuckets){
+    const edited=galleryNormalizeList(await sdk.photos.list('edited')).map(row=>({...row,bucket:'edited'}));
+    const legacy=galleryNormalizeList(await sdk.photos.list()).map(row=>({...row,bucket:'photos'}));
+    entries=[...edited,...legacy];
+   }else entries=galleryNormalizeList(await sdk.photos.list());
+  }
+  if(run!==galleryLoadRun||!galleryOpen)return;
+  galleryEntries=entries;
+  gallerySay(entries.length?entries.length+(source==='templates'?' Vorlagen':' Fotos')+(truncated?' Die Liste wurde von der Box gekürzt.':''):
+   source==='album'?'Ein Fotoalbum auswählen. Falls keines erscheint, Freigabe für Fotoalbum-Import prüfen.':source==='templates'?'Noch keine Vorlagen. Bilder über die FotoSpaß-Verwaltung oder SMB im Ordner originale bereitstellen.':'Noch keine gespeicherten Fotos.');
+  for(const [index,entry] of entries.entries()){
+   if(run!==galleryLoadRun||!galleryOpen)return;
+   const tile=document.createElement('button');tile.className='gallery-tile';
+   const img=document.createElement('img');img.alt=source==='templates'?'Vorlage':'Foto';
+   const label=document.createElement('span');label.textContent=(source==='templates'?'Vorlage ':'Foto ')+(index+1);tile.setAttribute('aria-label',label.textContent);
+   tile.append(img,label);tile.addEventListener('click',()=>void galleryOpenDetail(entry.id));$('gallery-grid').append(tile);
+   // Template previews are small JPEGs, decoded sequentially rather than
+   // retaining all high-resolution originals in memory at the same time.
+   if(source==='templates'||photoBuckets||source==='album'){
+    try{const thumb=await templateThumbnail(entry.id,source);if(run!==galleryLoadRun||!galleryOpen)return;const url=URL.createObjectURL(thumb);galleryUrls.set('thumb:'+entry.id,url);if(tile.isConnected)img.src=url}
+    catch{if(tile.isConnected&&run===galleryLoadRun){img.hidden=true;tile.classList.add('image-failed');label.textContent='Bild nicht verfügbar'}}
+   }else{
+    void galleryImage(entry.id,source).then(url=>{if(run===galleryLoadRun&&tile.isConnected)img.src=url}).catch(()=>{if(run===galleryLoadRun&&tile.isConnected){img.hidden=true;tile.classList.add('image-failed');label.textContent='Bild nicht verfügbar'}});
+   }
+  }
+ }catch(e){if(run===galleryLoadRun)gallerySay('Galerie fehlgeschlagen: '+(e?.message||String(e)))}
+ finally{if(run===galleryLoadRun){galleryLoading=false;updateAlbumNavigation()}}
+}
+async function galleryOpenDetail(id){
+ const request=++galleryEditRun,source=gallerySource;gallerySelected=id;updateAlbumNavigation();
+ $('gallery-grid').hidden=true;$('gallery-detail').hidden=false;$('gallery-large').removeAttribute('src');
+ $('gallery-delete').hidden=source!=='photos';
+ $('gallery-edit').hidden=source==='album';$('album-import').hidden=source!=='album';gallerySay('Bild wird geladen …');
+ try{const url=await galleryImage(id,source);if(gallerySelected!==id||request!==galleryEditRun||source!==gallerySource)return;$('gallery-large').src=url;
+  gallerySay('Foto bereit!');
+ }catch(e){if(request===galleryEditRun)gallerySay('Bild konnte nicht geladen werden: '+e.message)}
+}
+function galleryCloseDetail(){++galleryEditRun;pendingGalleryEdit=null;$('gallery-edit-confirm').hidden=true;gallerySelected=null;$('gallery-grid').hidden=false;$('gallery-detail').hidden=true;$('gallery-confirm').hidden=true;$('gallery-large').removeAttribute('src');updateAlbumNavigation()}
+async function galleryDelete(){const id=gallerySelected;if(!id||gallerySource!=='photos')return;$('delete-yes').disabled=true;gallerySay('Foto wird gelöscht …');try{await sdk.photos.delete(id,photoBuckets?(galleryEntries.find(row=>row.id===id)?.bucket||'photos'):undefined);galleryCloseDetail();galleryLoading=false;await galleryLoad();gallerySay('Foto gelöscht. '+galleryEntries.length+' Foto(s) verbleiben.')}catch(e){gallerySay('Löschen fehlgeschlagen: '+(e?.message||String(e)));$('gallery-confirm').hidden=true}finally{$('delete-yes').disabled=false}}
+function requestGalleryEdit(){
+ const id=gallerySelected;
+ if(!id||galleryEditing||saving||exitBusy||exitComplete)return;
+ if(frozen&&photoDirty){
+  pendingGalleryEdit=id;
+  $('gallery-edit-confirm').hidden=false;
+  $('gallery-edit-cancel').focus();
+  return;
  }
- }catch(e){gallerySay('Galerie fehlgeschlagen: '+(e?.message||String(e)))}finally{galleryLoading=false}}
-async function galleryOpenDetail(id){gallerySelected=id;$('gallery-grid').hidden=true;$('gallery-detail').hidden=false;$('gallery-large').removeAttribute('src');gallerySay('Foto wird geladen …');try{const url=await galleryImage(id);if(gallerySelected!==id)return;$('gallery-large').src=url;gallerySay('Foto ansehen oder einzeln löschen.')}catch(e){gallerySay('Foto konnte nicht geladen werden: '+e.message)}}
-function galleryCloseDetail(){gallerySelected=null;$('gallery-grid').hidden=false;$('gallery-detail').hidden=true;$('gallery-confirm').hidden=true;$('gallery-large').removeAttribute('src')}
-async function galleryDelete(){const id=gallerySelected;if(!id)return;$('delete-yes').disabled=true;gallerySay('Foto wird gelöscht …');try{await sdk.photos.delete(id);galleryCloseDetail();galleryLoading=false;await galleryLoad();gallerySay('Foto gelöscht. '+galleryEntries.length+' Foto(s) verbleiben.')}catch(e){gallerySay('Löschen fehlgeschlagen: '+(e?.message||String(e)));$('gallery-confirm').hidden=true}finally{$('delete-yes').disabled=false}}
-$('show-gallery').addEventListener('click',()=>gallerySwitch(true));$('show-camera').addEventListener('click',()=>gallerySwitch(false));$('refresh-gallery').addEventListener('click',()=>void galleryLoad());$('gallery-back').addEventListener('click',galleryCloseDetail);$('gallery-delete').addEventListener('click',()=>{if(gallerySelected)$('gallery-confirm').hidden=false});$('delete-cancel').addEventListener('click',()=>{$('gallery-confirm').hidden=true});$('delete-yes').addEventListener('click',()=>void galleryDelete());
+ void galleryEditPhoto(id);
+}
+async function galleryEditPhoto(id){
+ if(!id||galleryEditing||saving||exitBusy||exitComplete)return;
+ galleryEditing=true;
+ $('gallery-edit').disabled=true;
+ $('gallery-delete').disabled=true;
+ const request=++galleryEditRun,source=gallerySource;
+ const valid=()=>request===galleryEditRun&&source===gallerySource&&galleryOpen&&gallerySelected===id&&!exitBusy&&!exitComplete;
+ gallerySay('Foto wird zum Bearbeiten geladen …');
+ try{
+  const url=await galleryImage(id);
+  if(!valid())return;
+  const image=await new Promise((resolve,reject)=>{
+   const value=new Image();
+   value.onload=()=>resolve(value);
+   value.onerror=()=>reject(Error('Das Foto konnte nicht als Bild geladen werden.'));
+   value.src=url;
+  });
+  if(!valid())return;
+  if(!image.naturalWidth||!image.naturalHeight||image.naturalWidth*image.naturalHeight>16000000){
+   throw Error('Das Foto hat ungültige Abmessungen oder mehr als 16 Megapixel.');
+  }
+  // Prepare the pixels before touching the current draft. A decode/draw failure
+  // must leave its image, paint and accessories intact.
+  const prepared=document.createElement('canvas');
+  prepared.width=image.naturalWidth;prepared.height=image.naturalHeight;
+  prepared.getContext('2d').drawImage(image,0,0);
+  if(active&&!frozen)await stop();
+  if(!valid())return;
+  cancelCountdown();++epoch;
+  if(timer!==null){clearTimeout(timer);timer=null}
+  active=false;frozen=true;painting=false;drag=null;
+  photo.width=canvas.width=prepared.width;
+  photo.height=canvas.height=prepared.height;
+  resetImageSource(prepared,false);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  history=[];items=[];selected=null;undoBusy=false;
+  photoSession={source:'gallery',originalId:id};
+  photoDirty=true;++photoRevision;
+  preview.hidden=true;preview.removeAttribute('src');
+  photo.hidden=false;canvas.hidden=false;stickersBox.hidden=false;
+  $('placeholder').hidden=true;
+  gallerySwitch(false);
+  updateStickerBox();renderStickers();releaseUnusedAccessories();setMode('photo');controls();
+  cameraState('Kamera aus');
+  say('Foto bereit!');
+ }catch(error){
+  if(valid())gallerySay('Bearbeiten fehlgeschlagen: '+(error?.message||String(error))+'. Dein bisheriger Entwurf bleibt erhalten.');
+ }finally{
+  galleryEditing=false;$('gallery-edit').disabled=false;$('gallery-delete').disabled=false;
+ }
+}
+$('gallery-edit').addEventListener('click',requestGalleryEdit);
+$('gallery-edit-cancel').addEventListener('click',()=>{
+ pendingGalleryEdit=null;$('gallery-edit-confirm').hidden=true;gallerySwitch(false);
+});
+$('gallery-edit-discard').addEventListener('click',()=>{
+ const id=pendingGalleryEdit;pendingGalleryEdit=null;$('gallery-edit-confirm').hidden=true;
+ if(id&&gallerySelected===id)void galleryEditPhoto(id);
+});
+
+// Album references come only from the host; never construct filesystem paths.
+let albumSelected=null,albumPage=1,albumHasMore=false,albumImporting=false;
+function updateAlbumNavigation(){
+ const album=gallerySource==='album',detail=gallerySelected!==null;
+ $('album-navigation').hidden=!album||!albumSelected||detail;
+ $('album-choices').hidden=!album||Boolean(albumSelected)||detail;
+ $('gallery-grid').hidden=detail||(album&&!albumSelected);
+ $('album-previous').disabled=galleryLoading||albumPage<=1;
+ $('album-next').disabled=galleryLoading||!albumHasMore;
+}
+async function loadAlbumPage(run){
+ if(!sdk.photos?.album)throw Error('Fotoalbum-Import benötigt eine neuere MuPiBox-Version.');
+ if(!albumSelected){
+  const albums=await sdk.photos.album.list();
+  if(run!==galleryLoadRun||gallerySource!=='album'||!galleryOpen)return [];
+  const grid=$('album-choices');grid.replaceChildren();
+  for(const album of albums){
+   if(typeof album.photos_url!=='string')continue;
+   const button=document.createElement('button');button.textContent=album.name||album.title||'Fotoalbum';
+   button.addEventListener('click',()=>{albumSelected=album;albumPage=1;void galleryLoad()});grid.append(button);
+  }
+  $('album-previous').disabled=true;$('album-next').disabled=true;
+  return [];
+ }
+ $('album-choices').replaceChildren();
+ const url=albumSelected.photos_url+(albumSelected.photos_url.includes('?')?'&':'?')+'page='+albumPage+'&size=24';
+ const page=await sdk.photos.album.page(url);
+ if(run!==galleryLoadRun||gallerySource!=='album'||!galleryOpen)return [];
+ albumHasMore=page.has_more===true;
+ $('album-previous').disabled=albumPage<=1;$('album-next').disabled=!albumHasMore;
+ $('album-page').textContent='Seite '+albumPage;
+ return (Array.isArray(page.photos)?page.photos:[]).filter(row=>typeof row.url==='string').map(row=>({...row,id:row.url}));
+}
+async function importAlbumPhoto(){
+ const id=gallerySelected;if(gallerySource!=='album'||!id||albumImporting)return;
+ albumImporting=true;$('album-import').disabled=true;gallerySay('Foto wird in die Originale übernommen …');
+ try{
+  await sdk.photos.album.import(id);
+  if(galleryOpen&&gallerySource==='album'){
+   gallerySource='originals';await galleryLoad();gallerySay('Foto übernommen. Unter Originale auswählen und bearbeiten. Das Fotoalbum bleibt unverändert.');
+  }
+ }catch(error){gallerySay('Übernehmen fehlgeschlagen: '+error.message)}
+ finally{albumImporting=false;$('album-import').disabled=false}
+}
+$('gallery-source-originals').addEventListener('click',()=>selectGallerySource('originals'));
+$('gallery-source-album').addEventListener('click',()=>{albumSelected=null;albumPage=1;if(gallerySource==='album')void galleryLoad();else selectGallerySource('album')});
+$('album-import').addEventListener('click',()=>void importAlbumPhoto());
+$('album-back').addEventListener('click',()=>{albumSelected=null;albumPage=1;void galleryLoad()});
+$('album-previous').addEventListener('click',()=>{if(!galleryLoading&&albumPage>1){albumPage--;void galleryLoad()}});
+$('album-next').addEventListener('click',()=>{if(!galleryLoading&&albumHasMore){albumPage++;void galleryLoad()}});
+$('gallery-source-photos').addEventListener('click',()=>selectGallerySource('photos'));
+$('gallery-source-templates').addEventListener('click',()=>selectGallerySource('templates'));
+$('show-gallery').addEventListener('click',()=>gallerySwitch(true));$('show-camera').addEventListener('click',()=>gallerySwitch(false));$('refresh-gallery').addEventListener('click',()=>void galleryLoad());$('gallery-back').addEventListener('click',galleryCloseDetail);$('gallery-delete').addEventListener('click',()=>{if(gallerySelected&&gallerySource==='photos')$('gallery-confirm').hidden=false});$('delete-cancel').addEventListener('click',()=>{$('gallery-confirm').hidden=true});$('delete-yes').addEventListener('click',()=>void galleryDelete());
 })();

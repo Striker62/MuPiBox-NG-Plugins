@@ -10,7 +10,8 @@ function setup() {
    invoke:async(method,payload)=>{
     calls.push({method,payload});
     if(method==='camera.list')return {devices:[{id:'video0',name:'USB Camera'}]};
-    if(method==='camera.capture')return {image:'data:image/jpeg;base64,/9j/2Q==',width:320,height:240};
+    if(method==='camera.modes')return {modes:[{width:640,height:480}]};
+    if(method==='camera.capture'||method==='camera.preview')return {image:'data:image/jpeg;base64,/9j/2Q==',width:320,height:240};
     return {ok:true};
    },
    subscribe:()=>()=>{}
@@ -44,4 +45,14 @@ test('camera path injection and arbitrary methods are rejected before invoking t
   await assert.rejects(()=>sdk.camera.start(id),{name:'TypeError'});
  }
  assert.equal(calls.length,0);
+});
+
+test('camera modes, preview and high resolution capture use explicit capabilities',async()=>{
+ const {sdk,calls}=setup();
+ const modes=await sdk.camera.modes('video0');assert.equal(modes[0].width,640);
+ await sdk.camera.start('video0',{preview:{width:640,height:480},fps:15});
+ await sdk.camera.preview();
+ await sdk.camera.capture({width:1920,height:1080});
+ assert.deepEqual(calls.map(c=>c.method),['camera.modes','camera.start','camera.preview','camera.capture']);
+ assert.equal(calls[1].payload.fps,15);assert.equal(calls[3].payload.width,1920);
 });

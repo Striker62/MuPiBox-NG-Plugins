@@ -47,7 +47,7 @@ Example manifest:
 | `runtime` | `"web"` or experimental `"qtquick-scene"` (declarative JSON; no QML code) |
 | `entry`, `icon` | Relative paths inside the package, no absolute paths or `..` |
 | `cover` | Optional raster home-tile image (PNG/JPG/JPEG/WebP) relative to the package root; not the app background |
-| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `shared-assets`, `links`, `homeassistant`, `device-status`, `playback`, `playback-control`, `cover-art`, `coloring-pages` (`network` is reserved in the packaging schema for backwards compatibility but not supported by the host; see [SDK API reference](sdk-api-reference.md)) |
+| `permissions` | Requested privileges, **not grants**: `storage`, `controller`, `audio`, `camera`, `photo-save`, `photo-import`, `shared-assets`, `links`, `homeassistant`, `device-status`, `playback`, `playback-control`, `cover-art`, `coloring-pages` (`network` is reserved in the packaging schema for backwards compatibility but not supported by the host; see [SDK API reference](sdk-api-reference.md)) |
 | `networkHosts` | Explicit hostname allowlist **required** when requesting `network` |
 | `category` | Preferred native menu location: `games`, `creative`, `learning`, `tools`, or `other` (defaults to `games`) |
 | `display` | Preferred orientation, minimum size and optional native MuPiBox chrome settings |
@@ -487,3 +487,5 @@ Do not add the demo to the public catalog until its NG host version and real
 Raspberry Pi UI behavior have been verified.
 
 The reserved first-party MuPi Run development preview pairs `community.mupi-run-native` with the fixed scene selector `mupi-run-v1`. Its matching NG development host ships the executable implementation. The package has an empty elements array, reviewed media and exactly storage/audio/controller permissions. The regular element-scene format remains available to other authors. Stock alpha.71 cannot install this preview. See [native runner](../examples/mupi-run-native/README.md).
+
+**`photo-import`:** Local touchscreen only; separately approved read/import access to enabled JPEG/PNG gallery sources. Saving imports also needs `photo-save`. See [Photo and camera SDK](photo-camera-sdk.md).

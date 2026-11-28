@@ -276,13 +276,23 @@
       const data = await invoke('camera.list', {});
       return Array.isArray(data?.devices) ? data.devices : [];
     },
-    async start(id) {
+    async modes(id) {
+      if (typeof id !== "string" || !/^video(?:0|[1-9][0-9]{0,2})$/.test(id)) throw new TypeError("invalid camera ID");
+      const result=await invoke('camera.modes',{id});
+      return Array.isArray(result?.modes)?result.modes:[];
+    },
+    async start(id, options = {}) {
       if (typeof id !== 'string' || !/^video(?:0|[1-9][0-9]{0,2})$/.test(id))
         throw new TypeError('camera ID must be an enumerated video device');
-      return invoke('camera.start', {id});
+      return invoke('camera.start', {id,...(options.preview===undefined?{}:{preview:options.preview}),...(options.fps===undefined?{}:{fps:options.fps})});
     },
-    async capture() {
-      const result = await invoke('camera.capture', {});
+    async preview() {
+      const result=await invoke('camera.preview',{});
+      if (!result || typeof result.image !== 'string' || !result.image.startsWith('data:image/jpeg;base64,')) throw new Error('invalid camera frame');
+      return result;
+    },
+    async capture(options = {}) {
+      const result = await invoke('camera.capture', options);
       if (!result || typeof result.image !== 'string' || !result.image.startsWith('data:image/jpeg;base64,'))
         throw new Error('invalid camera frame');
       return result;
@@ -298,27 +308,50 @@
     if (typeof id !== 'string' || !photoID.test(id))
       throw new TypeError('invalid photo ID');
   }
+  function photoBucket(bucket) {
+    if (bucket===undefined) return {};
+    if (!['photos','originals','edited'].includes(bucket)) throw new TypeError('invalid photo bucket');
+    return {bucket};
+  }
+  function albumURL(url) {
+    if(typeof url!=='string'||!url.startsWith('/api/gallery/')||url.length>2048) throw new TypeError('invalid gallery reference');
+    return url;
+  }
+  const album = Object.freeze({
+    async list() {
+      const result=await invoke('photos.album.list',{});
+      return Array.isArray(result?.albums)?result.albums:[];
+    },
+    async page(url) {return invoke('photos.album.page',{url:albumURL(url)});},
+    async get(url) {
+      const result=await invoke('photos.album.get',{url:albumURL(url)});
+      if (!(result?.blob instanceof global.Blob)) throw new Error('invalid photo response');
+      return result.blob;
+    },
+    async import(url) {return invoke('photos.album.import',{url:albumURL(url)});}
+  });
   const photos = Object.freeze({
+    album,
     async save(input) {
       const blob = input instanceof global.Blob ? input : input?.blob;
       if (!(blob instanceof global.Blob) || !['image/png', 'image/jpeg'].includes(blob.type) ||
           blob.size < 1 || blob.size > 8 * 1024 * 1024)
         throw new TypeError('save requires a PNG or JPEG Blob up to 8 MiB');
-      return invoke('photos.save', {blob});
+      return invoke('photos.save', {blob,...photoBucket(input?.bucket)});
     },
-    async list() {
-      const result = await invoke('photos.list', {});
+    async list(bucket) {
+      const result = await invoke('photos.list', photoBucket(bucket));
       return Array.isArray(result?.photos) ? result.photos : [];
     },
-    async get(id) {
+    async get(id,bucket) {
       checkPhotoID(id);
-      const result = await invoke('photos.get', {id});
+      const result = await invoke('photos.get', {id,...photoBucket(bucket)});
       if (!(result?.blob instanceof global.Blob)) throw new Error('invalid photo response');
       return result.blob;
     },
-    async delete(id) {
+    async delete(id,bucket) {
       checkPhotoID(id);
-      return invoke('photos.delete', {id});
+      return invoke('photos.delete', {id,...photoBucket(bucket)});
     }
   });
 

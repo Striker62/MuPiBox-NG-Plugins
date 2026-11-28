@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FotoSpaß · Fotoverwaltung</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+  <header><div><span class="eyebrow">FOTOSPAẞ · VERWALTUNG</span><h1>Fotos für neue Ideen</h1><p>Lade Bilder von deinem Computer in den eigenen FotoSpaß-Ordner.</p></div><span class="badge">Originale</span></header>
+  <section class="notice"><strong>Erster Schritt: Fotos bereitstellen</strong><p>Die Uploads liegen unter <code>CommunityApps/community.fotospass/originale/</code> und sind auch über SMB erreichbar. In der Kinder-App findest du diese Bilder unter „Meine Fotos“ → „Vorlagen“; Bearbeitungen werden als neue Kopien gespeichert. „Meine Fotos“ zeigt weiterhin die über die Foto-SDK gespeicherten Aufnahmen und Ergebnisse.</p></section>
+  <div id="error" role="alert" hidden></div>
+  <section class="panel camera-settings" aria-labelledby="camera-heading">
+    <h2 id="camera-heading">Kamera</h2>
+    <label class="field" for="capture-resolution">Auflösung für neue Fotoaufnahmen</label>
+    <select id="capture-resolution" disabled>
+      <option value="auto">Automatisch – größte unterstützte Auflösung</option>
+      <option value="640x480">640 × 480</option><option value="1280x720">1280 × 720 (HD)</option>
+      <option value="1920x1080">1920 × 1080 (Full HD)</option><option value="2560x1440">2560 × 1440</option>
+      <option value="3840x2160">3840 × 2160 (4K)</option>
+    </select>
+    <p class="hint">Gilt ab dem nächsten Start der FotoSpaß-App. Die Kamera muss die Auflösung unterstützen. Ist sie nicht verfügbar, verwendet FotoSpaß die größte angebotene Auflösung innerhalb der Vorgabe; falls keine passt, die kleinste. Bilder werden nicht hochskaliert. Die Live-Vorschau verwendet unabhängig davon eine kleinere Auflösung. Ältere Box-Versionen verwenden weiterhin die bisherige Kameraaufnahme.</p>
+    <div class="actions"><button id="camera-save" class="primary" disabled>Kameraeinstellung speichern</button><button id="camera-reload">Einstellung neu laden</button></div>
+    <p id="camera-status" class="status" role="status" aria-live="polite">Kameraeinstellung wird geladen …</p>
+  </section>
+  <div class="columns">
+    <section class="panel"><h2>Fotos hochladen</h2>
+      <label class="field" for="files">Bilder auswählen</label>
+      <input id="files" type="file" accept=".jpg,.jpeg,.png,.webp,.gif" multiple>
+      <p class="hint">JPEG, PNG, WebP oder GIF · bis 32 MiB pro Ausgangsdatei · höchstens 100 Bilder pro Upload. Bei GIF wird das erste Bild verwendet.</p>
+      <label class="check"><input id="resize" type="checkbox" checked> Upload-Kopien auf höchstens 2560 Pixel Kantenlänge verkleinern</label>
+      <p class="hint">Die Dateien werden als JPEG mit 90 % Qualität gespeichert. Transparenz wird weiß. Deine Ausgangsdateien auf dem Computer bleiben unverändert. Ohne Verkleinerung sind höchstens 16 Megapixel möglich.</p>
+      <ul id="selection" aria-label="Ausgewählte Fotos"><li>Noch keine Bilder ausgewählt.</li></ul>
+      <div class="actions"><button id="upload" class="primary" disabled>Fotos hochladen</button><button id="cancel" hidden>Nach diesem Bild stoppen</button></div>
+      <progress id="progress" value="0" max="1" hidden aria-label="Upload-Fortschritt"></progress>
+      <p id="status" class="status" role="status" aria-live="polite">Bitte Bilder auswählen.</p>
+    </section>
+    <section class="panel"><div class="heading"><h2>Bereitgestellte Fotos</h2><button id="refresh">Aktualisieren</button></div>
+      <p id="list-status" role="status">Fotos werden geladen …</p>
+      <div id="gallery" class="gallery"></div>
+    </section>
+  </div>
+  <footer>Neue Dateien erhalten eindeutige Namen. Vorhandene Bilder werden nicht überschrieben oder gelöscht. Die MuPiBox prüft Dateitypen, Berechtigungen und Speichergrenzen.</footer>
+</main><script src="upload-store.js"></script><script src="app.js"></script></body></html>

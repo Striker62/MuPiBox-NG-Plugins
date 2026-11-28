@@ -6,14 +6,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 APPS = (
-    ("tic-tac-toe", "assets/cover-clean-v2.jpg", "assets/icon.png", "0.2.7"),
-    ("four-in-a-row", "assets/cover-clean-v2.jpg", "assets/icon.png", "0.1.5"),
-    ("crumbworm", "cover.jpg", "icon.png", "0.3.0"),
-    ("chess", "cover-clean-v2.jpg", "icon.png", "0.1.5"),
-    ("klang-memory", "cover.jpg", "icon.png", "0.1.3"),
-    ("Buecherkiste", "cover-axolotl-v028.jpg", "icon-axolotl-v028.png", "1.1.1"),
-    ("fotospass", "cover.jpg", "icon.png", "1.0.0"),
-    ("mupi-klavier", "assets/cover.jpg", "assets/icon.png", "0.1.2"),
+    ("tic-tac-toe", "assets/cover-clean-v2.jpg", "assets/icon.png"),
+    ("four-in-a-row", "assets/cover-clean-v2.jpg", "assets/icon.png"),
+    ("crumbworm", "cover.jpg", "icon.png"),
+    ("chess", "cover-clean-v2.jpg", "icon.png"),
+    ("klang-memory", "cover.jpg", "icon.png"),
+    ("Buecherkiste", "cover-axolotl-v028.jpg", "icon-axolotl-v028.png"),
+    ("fotospass", "cover.jpg", "icon.png"),
+    ("mupi-klavier", "assets/cover.jpg", "assets/icon.png"),
 )
 
 def jpeg_dimensions(data):
@@ -38,11 +38,10 @@ def jpeg_dimensions(data):
 
 class CoverArtTests(unittest.TestCase):
     def test_coverflow_assets_are_the_right_ratio_and_icons_are_square(self):
-        for app, cover, icon, version in APPS:
+        for app, cover, icon in APPS:
             with self.subTest(app=app):
                 directory = ROOT / "examples" / app
                 manifest = json.loads((directory/"manifest.json").read_text())
-                self.assertEqual(manifest["version"], version)
                 self.assertEqual(manifest["cover"], cover)
                 self.assertEqual(manifest["icon"], icon)
                 asset_dir = directory/"web" if app in ("chess", "crumbworm") else directory

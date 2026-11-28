@@ -27,7 +27,7 @@ HOST_ALLOWED_EXTENSIONS = {
     ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico",
     ".woff", ".woff2", ".ttf", ".mp3", ".ogg", ".wav", ".txt",
 }
-ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "shared-assets", "network", "links", "homeassistant", "device-status", "playback", "playback-control", "optical-media", "cover-art", "coloring-pages"}
+ALLOWED_PERMISSIONS = {"storage", "controller", "audio", "camera", "photo-save", "photo-import", "shared-assets", "network", "links", "homeassistant", "device-status", "playback", "playback-control", "optical-media", "cover-art", "coloring-pages"}
 ALLOWED_FIELDS = {
     "apiVersion", "id", "name", "version", "runtime", "entry", "icon", "cover",
     "description", "author", "permissions", "networkHosts", "display",
@@ -257,7 +257,7 @@ def validate_manifest(data: object, files: set[str]) -> dict:
                 raise PackageError("invalid gallery directory object")
             path = directory.get("path")
             if (not isinstance(path, str) or len(path) > 160
-                    or not re.fullmatch(r"photos(?:/[A-Za-z0-9_-]+){0,5}", path)
+                    or not re.fullmatch(r"(?:photos(?:/[A-Za-z0-9_-]+){0,5}|edited)", path)
                     or path in seen_gallery_paths):
                 raise PackageError("unsafe or duplicate gallery directory path")
             seen_gallery_paths.add(path)

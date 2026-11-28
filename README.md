@@ -216,8 +216,19 @@ Klang-Memory **0.1.2** hat nun ein eigenes Ton-Einstellungsmenü mit Lautstärke
 
 Das neue SDK erlaubt per `camera`-Berechtigung USB-Webcams. Ein Beispiel `Webcam-Vorschau` ist als experimentelle, lokal begrenzte Kamera-App verfügbar. Vor jeder Nutzung muss direkt am Touchdisplay eine zweite Freigabe bestätigt werden; ein roter Hinweis zeigt den Kamerabetrieb und bietet sofortiges Stoppen. Fotos werden nicht automatisch gespeichert oder hochgeladen. Auf Box 85 war bisher keine USB-Kamera angeschlossen, weshalb ein echter Hardwaretest noch aussteht.
 
-## Community-Fotobox: FotoSpaß 0.4.2
+## Community-Fotobox: FotoSpaß 1.3.0
 
-[FotoSpaß](examples/fotospass) wurde von [@Striker62](https://github.com/Striker62) mit [Pull Request #4](https://github.com/splitti/MuPiBox-NG-Plugins/pull/4) beigesteuert. Die App bietet einen lokalen Webcam-Fotomodus, Countdown, Malen, Accessoires und eine Foto-Galerie mit Einzelbildlöschung. Berechtigungen: `camera` und `photo-save`, **kein** `network`. Die Kamera erfordert die Freigabe am Gerät, die lokale Speicherung die explizite Foto-Berechtigung. Weitere Details und Prüfnachweis: [CONTRIBUTORS.md](CONTRIBUTORS.md).
+[FotoSpaß](examples/fotospass) wurde von [@Striker62](https://github.com/Striker62) mit [Pull Request #4](https://github.com/splitti/MuPiBox-NG-Plugins/pull/4) beigesteuert. Die auf der Box getestete Version **1.3.0** bietet:
+
+- **Kamera und Countdown:** gespiegeltes Livebild und Foto, automatische Anpassung an Vorschau-Limits sowie eine in der Adminseite einstellbare Aufnahmeauflösung. Die Kameraauswahl erfolgt automatisch, damit Kinder keinen technischen Auswahldialog bedienen müssen.
+- **Bild ausrichten:** Nach der Aufnahme oder dem Laden zuerst den Ausschnitt mit zwei Fingern zoomen und verschieben, anschließend mit dem Haken zur Bearbeitung wechseln.
+- **Fotos bearbeiten:** Bilder aus der eigenen Galerie erneut öffnen, malen und Accessoires hinzufügen. Originale bleiben erhalten; bearbeitete Bilder werden als neue JPEG-Dateien gespeichert.
+- **Fotoalbum und Originale:** freigegebene Fotoalben durchsuchen und ausgewählte Bilder als Originale übernehmen. Bearbeitete Fotos können weiterhin im Fotoalbum der Box erscheinen, wenn die Freigabe dafür aktiviert ist.
+- **Adminseite für Eltern:** Fotos hochladen und die Kameraauflösung festlegen. Uploads werden als JPEG gespeichert und liegen unter `CommunityApps/community.fotospass/originale/`, erreichbar auch über SMB. Eigene PNG-Accessoires bleiben im Ordner `accessoires/` nutzbar.
+- **Kompakte Touch-Galerie:** kurze Album-Navigation, große Vorschaubilder und keine technischen Dateipfade unter den Bildern; getrennte Bereiche für eigene Fotos, Originale, Fotoalbum und Vorlagen.
+
+Benötigte App-Berechtigungen sind `camera`, `photo-save`, `shared-assets`, `photo-import` und `storage`; die Adminfunktionen werden separat freigegeben. Es wird kein `network`-Recht angefordert. Neue Kamera- und Albumfunktionen setzen die entsprechenden Host-Capabilities voraus. [Anleitung, Speicherorte und technische Details](examples/fotospass/README.md) · [Foto-/Kamera-SDK](docs/photo-camera-sdk.md) · [Beitrag und Prüfnachweis](CONTRIBUTORS.md).
+
+**Noch offen:** direkter Fotodruck. Bei automatischer Kameraauflösung wurde außerdem ein Helligkeitsunterschied zwischen Vorschau und Aufnahme gemeldet; bei 640 × 480 trat er im Gerätetest nicht auf.
 
 Die Aufnahme des Quellcodes in `main` ist **keine** Aufnahme in den offiziellen App-Katalog. Erst ein geprüftes, veröffentlichtes `.mupiapp`-Paket mit kontrollierter SHA-256 darf dort eingetragen werden. Die internen Ordner-/App-IDs älterer Spiele bleiben aus Kompatibilitätsgründen bestehen; ihre **sichtbaren Titel** lauten MuPi Kreuz & Kreis, MuPi 4er-Reihe und MuPi Krümelwurm.
