@@ -66,3 +66,17 @@ test('GIF validation accepts animation and rejects oversized or truncated conten
  assert.equal(model.validateGif(animated).frames,2);
  assert.equal(model.validate([event({image:'bilder/pinguin.gif'})])[0].image,'bilder/pinguin.gif');
 });
+test('wait clock uses one full clockwise turn over minutes or multiple days and clamps at the endpoints',()=>{
+ for(const duration of [60000,7*86400000]){
+  const start=Date.parse('2026-12-01T00:00:00Z'),item=event({display:'dial',waitStart:new Date(start).toISOString(),target:new Date(start+duration).toISOString()});
+  const valid=model.validate([item])[0];
+  assert.equal(model.dial(valid,start-5000).progress,0);assert.equal(model.dial(valid,start).angle,0);
+  assert.equal(model.dial(valid,start+duration/4).angle,90);assert.equal(model.dial(valid,start+duration/2).angle,180);
+  assert.equal(model.dial(valid,start+duration).angle,360);assert.equal(model.dial(valid,start+duration+5000).sector,'');
+  assert.match(model.dial(valid,start).sector,/A100 100/);
+  assert.equal(model.dial(valid,start+duration*.75).progress,.75);
+ }
+ assert.throws(()=>model.validate([event({display:'dial',waitStart:''})]));
+ assert.throws(()=>model.validate([event({display:'dial',waitStart:'2027-01-01T00:00:00Z'})]));
+ assert.equal(model.validate([event()])[0].display,'numbers');
+});

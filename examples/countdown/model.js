@@ -42,6 +42,8 @@
       const {id,title,target,zone,theme,mode,image,animation}=item;
       const imageLayout=item.imageLayout===undefined?'side':item.imageLayout;
       const imageFit=item.imageFit===undefined?'contain':item.imageFit;
+      const display=item.display===undefined?'numbers':item.display;
+      const waitStart=item.waitStart===undefined?'':item.waitStart;
       const showText=item.showText===undefined?false:item.showText;
       if(typeof id!=='string'||!/^[a-zA-Z0-9_-]{1,64}$/.test(id)||ids.has(id))throw Error('Ungültige oder doppelte Countdown-Kennung.');ids.add(id);
       if(typeof title!=='string'||!title.trim()||title.length>80)throw Error('Bitte einen Titel mit höchstens 80 Zeichen eingeben.');
@@ -53,7 +55,11 @@
       if(!['side','background'].includes(imageLayout))throw Error('Ungültige Bilddarstellung.');
       if(!['contain','cover'].includes(imageFit))throw Error('Ungültige Bildanpassung.');
       if(typeof showText!=='boolean')throw Error('Ungültige Textdarstellung.');
-      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation,imageLayout,imageFit,showText,units:unitsFor(item)};
+      if(!['numbers','dial'].includes(display))throw Error('Ungültige Countdown-Darstellung.');
+      if(typeof waitStart!=='string'||(waitStart!==''&&!Number.isFinite(Date.parse(waitStart))))throw Error('Ungültiger Startzeitpunkt.');
+      if(display==='dial'&&(!waitStart||Date.parse(waitStart)>=Date.parse(target)))throw Error('Für die Warte-Uhr muss der Start vor dem Ziel liegen.');
+      const units=display==='dial'&&Array.isArray(item.units)&&!item.units.length?['days']:unitsFor(item);
+      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation,imageLayout,imageFit,showText,units,display,waitStart};
     });
   }
   function day(date,zone){
@@ -72,7 +78,16 @@
     let rest=Math.ceil(Math.max(0,Date.parse(item.target)-now)/(smallest*1000))*smallest;
     return units.map(unit=>{const value=Math.floor(rest/scales[unit]);rest%=scales[unit];return {unit,value};});
   }
-  const api={validate,remaining,picture,validateGif,unitsFor,parts};
+  function dial(item,now=Date.now()){
+    const start=Date.parse(item.waitStart),target=Date.parse(item.target);
+    if(!Number.isFinite(start)||!Number.isFinite(target)||start>=target)throw Error('Start und Ziel der Warte-Uhr prüfen.');
+    const progress=Math.max(0,Math.min(1,(now-start)/(target-start))),angle=progress*360;
+    let sector='';
+    if(progress===0)sector='M120 120 L120 20 A100 100 0 1 1 120 220 A100 100 0 1 1 120 20 Z';
+    else if(progress<1){const radians=angle*Math.PI/180,x=120+100*Math.sin(radians),y=120-100*Math.cos(radians);sector=`M120 120 L${x} ${y} A100 100 0 ${progress<.5?1:0} 1 120 20 Z`;}
+    return {progress,angle,sector};
+  }
+  const api={validate,remaining,picture,validateGif,unitsFor,parts,dial};
   if(typeof module!=='undefined')module.exports=api;
   if(typeof window!=='undefined')window.CountdownModel=api;
 })();

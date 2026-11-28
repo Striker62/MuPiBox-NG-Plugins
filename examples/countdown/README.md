@@ -1,6 +1,22 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.9** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.10** · eigenständige Community-App von Striker62.
+
+Beta 10 ergänzt die **Warte-Uhr mit einem Zeiger**. In der Verwaltung unter
+„Countdown darstellen“ wählen und einen Start vor dem Ziel festlegen;
+„Jetzt als Start übernehmen“ setzt ihn auf den aktuellen Zeitpunkt. Eine
+volle Runde entspricht dem gesamten gewählten Zeitraum, egal ob Minuten,
+Stunden oder mehrere Tage. Der Zeiger beginnt oben, wandert im Uhrzeigersinn
+und kommt am Ende wieder oben beim Stern an. Die farbige Restfläche wird
+kleiner und ist am Ziel leer; der Stern wird grün. Damit unterscheiden sich
+Start und Ziel trotz derselben oberen Zeigerposition sichtbar.
+
+Die Uhr zeigt keine Ziffern. Bilder, animierte GIFs, optionale Texte und
+Konfetti bleiben kombinierbar. Start und Ziel werden gespeichert; beim
+Neustart wird der Fortschritt aus der aktuellen Uhrzeit berechnet. Vor
+dem Start bleibt die Fläche voll, nach dem Ziel leer. Bei der Warte-Uhr
+sind die Zahlen-Einheiten ausgeblendet. Alte Countdowns behalten ihre
+Zahlendarstellung. Gerätetest der neuen Uhr steht noch aus.
 
 Beta 9 ergänzt **„Bild anpassen“**: standardmäßig wird das ganze Bild bzw.
 GIF ohne Abschneiden und mit erhaltenen Proportionen gezeigt. Freie Ränder
@@ -116,8 +132,8 @@ spätere Erweiterungen. Die App ist noch nicht im offiziellen Katalog.
 
 ```sh
 node --test tests/test_countdown.cjs tests/test_countdown_admin.cjs tests/test_countdown_runtime.cjs
-python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.8.mupiapp --exclude README.md
-python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.8.mupiapp
+python3 tools/mupiapp.py pack examples/countdown dist/Wie-lange-noch-0.1.0-beta.10.mupiapp --exclude README.md
+python3 tools/mupiapp.py validate dist/Wie-lange-noch-0.1.0-beta.10.mupiapp
 ```
 
 Die grundlegende Logik ist automatisiert geprüft. Gerätetest und visuelle

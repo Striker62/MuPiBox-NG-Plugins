@@ -44,3 +44,10 @@ test('unit checkboxes and optional text persist and empty unit selection is reje
  for(const name of ['hours','minutes','seconds'])h.get('unit-'+name).checked=false;h.get('unit-seconds').input();await h.get('save').onclick();
  assert.equal(h.writes,1);assert.match(h.get('status').textContent,/mindestens eine/);
 });
+test('parents can save a fixed clock start which survives reloading and reject start after target',async()=>{
+ const h=setup();await tick();h.get('add').onclick();h.get('display').value='dial';h.get('display').input();
+ assert.equal(h.get('dial-settings').hidden,false);assert.equal(h.get('unit-settings').hidden,true);
+ await h.get('save').onclick();assert.equal(h.stored.countdowns[0].display,'dial');
+ const start=h.stored.countdowns[0].waitStart;await h.get('reload').onclick();await tick();assert.equal(h.stored.countdowns[0].waitStart,start);
+ h.get('start-date').value='2100-12-31';h.get('start-date').input();await h.get('save').onclick();assert.equal(h.writes,1);assert.match(h.get('status').textContent,/Start vor dem Ziel/);
+});
