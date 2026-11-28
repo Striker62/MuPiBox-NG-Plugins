@@ -1,6 +1,12 @@
 # Wie lange noch? – Kinder-Countdown
 
-Version **0.1.0-beta.8** · eigenständige Community-App von Striker62.
+Version **0.1.0-beta.9** · eigenständige Community-App von Striker62.
+
+Beta 9 ergänzt **„Bild anpassen“**: standardmäßig wird das ganze Bild bzw.
+GIF ohne Abschneiden und mit erhaltenen Proportionen gezeigt. Freie Ränder
+sind bei abweichendem Seitenverhältnis normal. Alternativ lässt sich die
+Fläche mit beschnittenen Bildrändern vollständig ausfüllen. Die Einstellung
+gilt für Hintergrund und seitliches Bild und wird pro Countdown gespeichert.
 
 Beta 8 vereinfacht die Kinderansicht: oben bleibt nur ein transparenter
 Zurück-Pfeil. App-Titel und Aktualisieren-Schaltfläche entfallen; zum Laden

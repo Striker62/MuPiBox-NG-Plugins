@@ -18,7 +18,7 @@
   }
   async function render(){
     const item=events[index],run=++loadRun;shown=item?.id||'';notice='';releaseImage();
-    for(const id of ['picture','background-picture']){$(id).hidden=true;$(id).removeAttribute('src');}
+    for(const id of ['picture','background-picture']){$(id).hidden=true;$(id).removeAttribute('src');$(id).style.objectFit=item?.imageFit||'contain';}
     document.body.classList.toggle('background-mode',Boolean(item?.image&&item.imageLayout==='background'));
     document.body.classList.toggle('text-free',Boolean(item&&!item.showText));
     $('confetti').replaceChildren();

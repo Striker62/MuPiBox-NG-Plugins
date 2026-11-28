@@ -10,6 +10,7 @@ test('child runtime navigates, pauses, resumes and celebrates completed targets 
  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../examples/countdown/app.js'),'utf8'),context);await tick();
  assert.equal(get('title').textContent,'Geburtstag');assert.equal(get('prev').disabled,true);assert.equal(intervals,1);
  assert.equal(get('background-picture').hidden,false);assert.equal(get('picture').hidden,true);
+ assert.equal(get('background-picture').style.objectFit,'contain');
  get('next').onclick();await tick();assert.equal(get('title').textContent,'Schon da');assert.equal(get('numbers').children[0].children[0].textContent,'★');assert.equal(get('message').textContent,'');assert.equal(get('confetti').children.length,24);
  assert.equal(get('background-picture').hidden,true);
  get('prev').onclick();await tick();get('next').onclick();await tick();assert.equal(get('confetti').children.length,0,'celebrates only once per session');

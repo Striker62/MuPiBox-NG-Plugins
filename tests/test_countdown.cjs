@@ -38,6 +38,9 @@ test('background choice is retained and older countdowns keep the side image lay
  assert.equal(model.validate([event()])[0].imageLayout,'side');
  assert.equal(model.validate([event({imageLayout:'background'})])[0].imageLayout,'background');
  assert.throws(()=>model.validate([event({imageLayout:'unknown'})]));
+ assert.equal(model.validate([event()])[0].imageFit,'contain');
+ assert.equal(model.validate([event({imageFit:'cover'})])[0].imageFit,'cover');
+ assert.throws(()=>model.validate([event({imageFit:'stretch'})]));
 });
 test('all unit checkbox combinations roll larger units into the first selected unit',()=>{
  const units=['days','hours','minutes','seconds'],scales={days:86400,hours:3600,minutes:60,seconds:1};

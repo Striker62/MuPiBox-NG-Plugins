@@ -41,6 +41,7 @@
       if(!item||typeof item!=='object')throw Error('Ungültiger Countdown.');
       const {id,title,target,zone,theme,mode,image,animation}=item;
       const imageLayout=item.imageLayout===undefined?'side':item.imageLayout;
+      const imageFit=item.imageFit===undefined?'contain':item.imageFit;
       const showText=item.showText===undefined?false:item.showText;
       if(typeof id!=='string'||!/^[a-zA-Z0-9_-]{1,64}$/.test(id)||ids.has(id))throw Error('Ungültige oder doppelte Countdown-Kennung.');ids.add(id);
       if(typeof title!=='string'||!title.trim()||title.length>80)throw Error('Bitte einen Titel mit höchstens 80 Zeichen eingeben.');
@@ -50,8 +51,9 @@
       try{new Intl.DateTimeFormat('de',{timeZone:zone}).format(new Date());}catch{throw Error('Ungültige Zeitzone.');}
       if(!themes.includes(theme)||!modes.includes(mode)||!picture(image)||typeof animation!=='boolean')throw Error('Ungültiges Design oder Bild.');
       if(!['side','background'].includes(imageLayout))throw Error('Ungültige Bilddarstellung.');
+      if(!['contain','cover'].includes(imageFit))throw Error('Ungültige Bildanpassung.');
       if(typeof showText!=='boolean')throw Error('Ungültige Textdarstellung.');
-      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation,imageLayout,showText,units:unitsFor(item)};
+      return {id,title:title.trim(),target:new Date(target).toISOString(),zone,theme,mode,image,animation,imageLayout,imageFit,showText,units:unitsFor(item)};
     });
   }
   function day(date,zone){
