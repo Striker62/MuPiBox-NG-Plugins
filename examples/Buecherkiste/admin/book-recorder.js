@@ -13,6 +13,7 @@
     let context = null, candidate = null, preview = null, active = false, command = false;
     let inputs = [], scanning = false, durationMs = 0, state = 'idle', message = '';
     let locked = false, disposed = false, timer = null, generation = 0;
+    let playbackMs = 0, playbackDurationMs = 0, previewCleanup = () => {};
     const supported = Boolean(audio && ['listInputDevices','startRecording','getRecordingStatus','stopRecording','cancelRecording','playRecording','deleteRecording'].every(name => typeof audio[name] === 'function'));
     const notify = () => {
       const next = active || command || Boolean(candidate);
@@ -20,6 +21,7 @@
       if (!disposed) update();
     };
     function stopPreview() {
+      previewCleanup();previewCleanup = () => {};
       if (preview) { const current=preview;preview=null;try {current.player.pause();} finally {current.release();} }
     }
     function clearTimer() { if (timer !== null) { clearTimeout(timer);timer = null; } }
@@ -38,7 +40,7 @@
     function setPage(value) {
       if (locked) return;
       if (context?.page !== value?.page || context?.bookId !== value?.bookId) {
-        stopPreview();++generation;
+        stopPreview();++generation;playbackMs = 0;playbackDurationMs = 0;durationMs = 0;
         message = supported ? '' : 'Audioaufnahme benötigt die freigegebene Admin-Audio-SDK (Alpha 87 oder neuer).';
       }
       context = value;notify();
@@ -66,7 +68,7 @@
       const token = unique();if (!/^[a-zA-Z0-9_-]{8,80}$/.test(token)) throw Error('Ungültige Aufnahmekennung.');
       const relative = 'audio/seite-' + String(target.number).padStart(3,'0') + '-' + token + '.' + (device.source === 'box' ? 'ogg' : browserFormat);
       const path = 'books/' + target.bookId + '/' + relative;
-      stopPreview();active = true;state = 'pending';durationMs = 0;
+      stopPreview();playbackMs = 0;playbackDurationMs = 0;active = true;state = 'pending';durationMs = 0;
       message = 'Aufnahme im MuPiBox-Dialog bestätigen. Stoppen speichert die neue Datei.';
       const run = ++generation;notify();void poll(run);
       try {
@@ -86,6 +88,7 @@
         if (action === 'cancel') await audio.cancelRecording();
         else {
           const result = await audio.getRecordingStatus();
+          if (Number.isFinite(result.durationMs)) durationMs = Math.max(0,result.durationMs);
           if (!['recording','paused'].includes(result.state)) throw Error('Die Aufnahme zuerst im MuPiBox-Dialog bestätigen.');
           await audio.stopRecording();
         }
@@ -103,6 +106,25 @@
         const result = await audio.playRecording(path);
         if (disposed || run !== generation) { result.player.pause();result.release();return; }
         preview = result;if (candidate) candidate.heard = true;
+        playbackMs = 0;playbackDurationMs = 0;
+        const player = result.player;
+        const refresh = () => {
+          if (preview !== result || disposed) return;
+          playbackMs = Number.isFinite(player.currentTime) ? Math.max(0,player.currentTime*1000) : 0;
+          playbackDurationMs = Number.isFinite(player.duration) ? Math.max(0,player.duration*1000) : 0;
+          notify();
+        };
+        const finish = () => {
+          if (preview !== result) return;
+          refresh();stopPreview();message = player.error ? 'Wiedergabe fehlgeschlagen.' : 'Wiedergabe beendet.';notify();
+        };
+        if (typeof player.addEventListener === 'function') {
+          const events = ['timeupdate','loadedmetadata','durationchange'];
+          events.forEach(event => player.addEventListener(event,refresh));
+          player.addEventListener('ended',finish);player.addEventListener('error',finish);
+          previewCleanup = () => {events.forEach(event => player.removeEventListener(event,refresh));player.removeEventListener('ended',finish);player.removeEventListener('error',finish);};
+        }
+        refresh();
         message = candidate ? 'Aufnahme anhören. Danach übernehmen oder verwerfen.' : 'Gespeicherte Seitenaufnahme wird abgespielt.';
       } finally { command = false;notify(); }
     }
@@ -130,7 +152,7 @@
       active = false;command = false;
     }
     return {setPage,scan,start,stop:()=>control('stop'),cancel:()=>control('cancel'),play,stopPreview:()=>{stopPreview();notify();},adopt,discard,unassign,dispose,
-      get snapshot(){return {supported,context,candidate,active,command,inputs,scanning,durationMs,state,message,locked,playing:Boolean(preview)};}};
+      get snapshot(){return {supported,context,candidate,active,command,inputs,scanning,durationMs,state,message,locked,playing:Boolean(preview),playbackMs,playbackDurationMs};}};
   }
   const api = {create,recordingPath};
   if (typeof module !== 'undefined') module.exports = api;

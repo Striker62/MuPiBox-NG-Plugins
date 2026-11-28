@@ -2,6 +2,16 @@ const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const {create,recordingPath} = require('../examples/Buecherkiste/admin/book-recorder.js');
 const tick = () => new Promise(resolve => setImmediate(resolve));
+test('playback reports media duration and progress and removes listeners at the end',async()=>{
+  const h=setup(),listeners=new Map();
+  const player={currentTime:0,duration:12.5,pause(){},addEventListener(name,fn){listeners.set(name,fn);},removeEventListener(name){listeners.delete(name);}};
+  h.sdk.audio.playRecording=async()=>({player,release(){}});
+  await h.recorder.play();assert.equal(h.recorder.snapshot.playbackDurationMs,12500);
+  player.currentTime=4;listeners.get('timeupdate')();assert.equal(h.recorder.snapshot.playbackMs,4000);
+  listeners.get('ended')();assert.equal(h.recorder.snapshot.playing,false);assert.equal(listeners.size,0);
+  h.recorder.setPage({bookId:'buch',page:{path:'images/02.jpg'},number:2,saved:true});
+  assert.equal(h.recorder.snapshot.playbackDurationMs,0);
+});
 function setup() {
   const calls=[],locks=[];let finish,reject,serial=0;
   const page={path:'images/01.jpg',recording:{path:'audio/old.ogg',revision:'old',size:25}};

@@ -2,6 +2,18 @@
 
 Mit der Bücherkiste können Kinder Bilderbücher auswählen, durchblättern, vergrößern und vorlesen lassen. Die App bringt **Ole und der verschwundene Knopf** (16 Bildseiten) und **Henne und Adler** (10 Bild- und Textseiten plus eine Urheberseite) mit. Eigene Bücher erscheinen zusätzlich im Regal.
 
+## 1.2.0-beta.3: Aufnahme- und Wiedergabeanzeige
+
+Die Verwaltung zeigt die ausgewählte Buchseite sowie bei der Wiedergabe
+„neue Aufnahme“ oder „gespeicherte Aufnahme“. Während der Aufnahme erscheinen
+die verstrichene Zeit und das Limit von zwei Minuten. Beim Anhören werden
+die aktuelle Position, die Gesamtdauer und ein Fortschrittsbalken angezeigt.
+Die genaue Dauer vorhandener Dateien wird beim Anhören ermittelt.
+Beim Seitenwechsel werden die Zeitangaben zurückgesetzt.
+
+Die Mikrofonbestätigung der MuPiBox bleibt bestehen. Eine echte Pegelanzeige
+für das Box-Mikrofon benötigt zusätzliche Pegeldaten aus der Admin-SDK.
+
 ## 1.2.0-beta.2: Buchwechsel nach dem Speichern
 
 Die Rückfrage zum Verwerfen erscheint nur noch bei tatsächlichen ungespeicherten

@@ -76,7 +76,12 @@
     get('audio-unassign').disabled = state.locked;
     get('audio-assignment').textContent = page?.recording ? 'Zugeordnet: ' + page.recording.path : 'Noch keine eigene Aufnahme zugeordnet.';
     get('audio-status').textContent = state.message || (cover ? 'Das separate Cover hat keine Seitenaufnahme.' : !loadedId || !page?.path ? 'Das Buch zuerst speichern. Danach kannst du diese Seite einsprechen.' : 'Seite bereit. Mikrofon auswählen und aufnehmen.');
-    if (state.active) get('audio-status').textContent += ' · ' + Math.floor(state.durationMs/1000) + ' / 120 s';
+    const clock = ms => {const seconds=Math.floor(Math.max(0,ms || 0)/1000);return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');};
+    const pageLabel = cover ? 'Cover' : state.context?.number > 0 ? 'Seite ' + state.context.number : 'keine Buchseite';
+    get('audio-now').textContent = state.active ? (state.state === 'pending' ? 'Aufnahme bestätigen · ' : 'Aufnahme · ') + pageLabel : state.playing ? 'Wiedergabe · ' + pageLabel + (state.candidate ? ' · neue Aufnahme' : ' · gespeicherte Aufnahme') : 'Ausgewählt: ' + pageLabel;
+    get('audio-time').textContent = state.active ? clock(state.durationMs)+' / 02:00' : state.playbackDurationMs > 0 ? clock(state.playbackMs)+' / '+clock(state.playbackDurationMs) : 'Dauer: '+(state.candidate && state.durationMs > 0 ? clock(state.durationMs) : 'zum Ermitteln anhören');
+    get('audio-progress').max = state.active ? 120000 : state.playbackDurationMs || 1;
+    get('audio-progress').value = state.active ? state.durationMs : state.playbackMs;
   }
   function audioAction(id, action) {
     get(id).onclick = async () => {try {await action();} catch (error) {get('audio-status').textContent = error.message;showError(error);} };
